@@ -5,7 +5,6 @@ const Doctors = require('../doctor/doctor_model');
 const Patient = require('../../patient/patient_model');
 const Notification = require('../notifications/notifications_model')
 const Admin = require('../admin_model')
-hehe
 const countTotalPatients = (req, res) => {
     Patient.countDocuments()
         .then((totalPatients) => {
