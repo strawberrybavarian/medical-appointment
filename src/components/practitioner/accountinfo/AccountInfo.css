@@ -1,0 +1,98 @@
+.container1{
+    background-color: aqua;
+}
+
+.container2{
+    display: block;
+    background-color: aqua;
+}
+.ai-container1{
+  text-align: center;
+}
+.ai-image {
+    width: 300px;
+    height: 300px;
+    margin-bottom: 20px;
+    border-radius: 1000px;
+    object-fit: cover;
+}
+
+.ai-container2{
+  display:inline-flex;
+  justify-content: center;
+
+  width: 100%;
+}
+/* Ensure the sidebar has a lower z-index */
+.sidebar-menu {
+    z-index: 1; /* Ensure it's lower than the modal */
+  }
+  
+  /* Modal specific styles */
+  .modal-backdrop {
+    z-index: 1040 !important;
+  }
+  .modal-dialog {
+    z-index: 1050 !important;
+  }
+/* AccountInfo.css */
+.image-upload-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+ 
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+    z-index: 6634534; /* Ensure modal is on top of other content */
+  }
+  
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black overlay */
+    z-index: 9934349; /* Ensure overlay is behind the modal but on top of other content */
+  }
+    
+/* AccountInfo.css */
+.ai-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.ai-image-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.ai-image {
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+}
+
+.ai-upload-button {
+  position: absolute;
+  bottom: 30px;
+  right: 30px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.ai-upload-button:hover {
+  background-color: #0056b3;
+}

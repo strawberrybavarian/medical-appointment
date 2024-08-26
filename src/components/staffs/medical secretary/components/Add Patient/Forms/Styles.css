@@ -1,0 +1,115 @@
+/* Main container */
+.msd-main {
+    width: 90vw; /* Adjusted for better responsiveness */
+    margin: auto;
+    max-width: 1200px;
+}
+
+/* Box styling */
+.msd-box1 {
+    position: relative;
+    padding: 3vw; /* Adjusted padding using viewport width */
+    padding-top: 6vw; /* Adjusted top padding using viewport width */
+    width: 100%;
+    border-radius: 7px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    background-color: #fff;
+    overflow: hidden;
+    margin-bottom: 3vh;
+  
+}
+
+.msd-box2 {
+    position: relative;
+    padding: 1vw; 
+
+    width: 100%;
+    border-radius: 7px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    background-color: #fff;
+    overflow: hidden;
+    margin-bottom: 3vh;
+    margin-top: 3vh;
+}
+
+/* Title box styling */
+.msd-boxtitle {
+    display: flex;
+    align-items: center;
+    padding: 1.5vh 1.5vh 0 1.5vh;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    max-height: 5vh;
+    background-color: #f5f5f5;
+    border-bottom: 1px solid #e0e0e0;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Content styling */
+.msd-content {
+    margin-top: 2vw; /* Adjusted margin using viewport width */
+}
+
+/* Text styling */
+.msd-text {
+    line-height: 1.5;
+    margin-bottom: 3.5vh;
+}
+
+/* Responsive adjustments for smaller screens */
+@media (max-width: 768px) {
+    .msd-box1{
+        padding: 5vw; /* Adjusted padding using viewport width */
+        padding-top: 10vw; /* Adjusted top padding using viewport width */
+    }
+
+    .msd-boxtitle {
+        padding: 3vw; /* Adjusted padding using viewport width */
+    }
+}
+
+/* Additional responsive adjustments for very small screens */
+@media (max-width: 480px) {
+    .msd-box1, .msd-box2 {
+        padding: 10vw; /* Further adjusted padding for smaller screens */
+        padding-top: 15vw; /* Further adjusted top padding for smaller screens */
+    }
+
+    .msd-boxtitle {
+        padding: 5vw; /* Further adjusted padding for smaller screens */
+    }
+}
+
+/* Responsive adjustments for larger screens */
+@media (min-width: 1200px) {
+    .msd-main {
+        width: 80vw; /* Reduce width slightly for large screens */
+    }
+
+    .msd-box1 {
+        padding: 2vw; /* Reduce padding for large screens */
+        padding-top: 4vw; /* Reduce top padding for large screens */
+    }
+
+    .msd-boxtitle {
+        padding: 1.5vw 1.5vw 0 1.5vw; /* Adjust title box padding */
+    }
+}
+
+/* Further adjustments for extra-large screens */
+@media (min-width: 1600px) {
+    .msd-main {
+        width: 70vw; /* Further reduce width for extra-large screens */
+    }
+
+    .msd-box1 {
+        height: 80%;
+        padding-top: 1vw; /* Further reduce top padding for extra-large screens */
+    }
+
+    .msd-boxtitle {
+        padding: 1vw 1vw 0 1vw; /* Further adjust title box padding */
+    }
+}

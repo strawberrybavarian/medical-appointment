@@ -1,0 +1,22 @@
+.pi-container{
+
+    display:inline-flex;
+    justify-content: center;
+    width: 100%;
+   
+}
+
+.pi-container2{
+   
+    border-radius: 20px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+    padding: 20px;
+   
+}
+
+.pi-main{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding-top: 30px;
+}

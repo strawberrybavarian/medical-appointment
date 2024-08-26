@@ -1,0 +1,178 @@
+.removegutter {
+  --bs-gutter-x: 0rem !important;
+}
+
+.container1 {
+  margin-top: 10px !important;
+  min-height: 100vh !important;
+  background-color: white !important; 
+}
+
+.container2 {
+  display: inline-flex;
+}
+
+.container3 {
+  --bs-gutter-x: 0rem !important;
+  margin-left: 10px;
+}
+
+.container4 {
+  margin-top: 20px;
+}
+
+.btn1 {
+  background: #f2f4f8 !important;
+  color: rgb(0, 0, 0);
+  text-align: center;
+}
+
+.dashboard-title {
+  font-family: 'Roboto', sans-serif !important;
+  font-weight: 700;
+}
+
+.p1 {
+  text-align: center;
+}
+
+.dOaoyM {
+  position: relative;
+  background-color: rgb(255, 255, 255);
+  border: 1px solid rgb(226, 226, 226) !important;
+  padding: 15px;
+  margin-left: 0px !important;
+  margin-bottom: 10px;
+  height: 100px;
+}
+
+.compact-card {
+  margin-bottom: 0.5rem; /* Adjust the value to your preference */
+}
+
+.ccp1,
+.cch2 {
+  margin-bottom: 0.5rem; /* Adjust the value to your preference */
+}
+
+.compact-card .cc1 {
+  margin: 0;
+  margin-left: 10px;
+  font-family: "Roboto-Regular", Helvetica !important;
+  font-size: 16px !important;
+  font-style: unset !important;
+  font-weight: 400 !important;
+  letter-spacing: 0 !important;
+  line-height: 22.4px !important;
+}
+
+.cch2-container {
+  display: flex;
+  align-items: center;
+  margin-left: 10px !important;
+}
+
+.cch2 {
+  margin-right: 5px;
+  line-height: 0.2 !important;
+}
+
+.divider {
+  margin-top: 10px;
+}
+
+.form-control {
+  max-width: 100%; 
+  height: 90px;
+
+}
+
+
+.thirdcontainer {
+  width: 100%; 
+  max-width: 600px; 
+  margin: 0 auto; 
+  padding: 10px; 
+}
+
+
+@media (max-width: 768px) {
+  .thirdcontainer {
+    max-width: 100%; 
+  }
+}
+
+@media (min-width: 992px) {
+  .d-lg-inline-flex {
+    display: block !important;
+  }
+}
+
+@media (max-width: 1024px) {
+  .d-lg-inline-flex {
+ 
+    display: block !important;
+  }
+}
+
+@media (min-width: 1500px) {
+  .d-lg-inline-flex {
+    display: inline-flex!important;
+  }
+}
+
+.dropdown-toggle::after {
+  display: none;
+  margin-left: 0.255em;
+  vertical-align: 0.255em;
+  border-top: 0.3em solid;
+  border-right: 0.3em solid transparent;
+  border-bottom: 0;
+  border-left: 0.3em solid transparent;
+}
+
+.threedots
+{
+  color: black;
+  font-size: 20px;
+}
+
+/* DashboardMain.css */
+
+/* Make the main dashboard container take the full height of the viewport */
+.dashboard-container {
+  display: flex;
+  flex: 1 0 auto;
+  height: 100vh;
+  overflow-y: hidden;
+  justify-content: center;
+}
+
+/* Make the content area scrollable with custom scrollbars */
+.content-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+
+  justify-content: center;
+  overflow-y: auto;
+ 
+}
+
+/* Custom scrollbar styles for the content area */
+.content-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.content-container::-webkit-scrollbar-track {
+  background: #f1f1f1; 
+}
+
+.content-container::-webkit-scrollbar-thumb {
+  background: #888; 
+  border-radius: 4px;
+}
+
+.content-container::-webkit-scrollbar-thumb:hover {
+  background: #555; 
+}

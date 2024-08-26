@@ -1,0 +1,141 @@
+.navbar{
+    background-color: rgb(248, 248, 248);
+    box-shadow: 4px 4px 8px rgba(29, 29, 29, 0.144);
+}
+
+.pnb-logoimage{
+    width: 150px;
+    object-fit: cover;
+}
+
+
+.navbar-collapse{
+    justify-content: end !important;
+}
+
+
+.pnb-navbar {
+    justify-content: end;
+    align-items: end;
+    background-color: #fff; /* Change this to your preferred background color */
+    padding: 1rem 1.5rem;
+}
+
+
+.pnb-nav-link {
+    position: relative;
+    padding: 0.5rem 1rem;
+    color: #5e5c5c; /* Change this to your preferred text color */
+    font-size: 16px;
+    transition: color 0.3s ease-in-out;
+}
+
+.pnb-nav-link:hover,
+.pnb-nav-link:focus {
+    color: #007bff; /* Change this to your preferred hover color */
+    text-decoration: none;
+}
+
+.pnb-nav-link::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    display: block;
+    left: 50%;
+    bottom: -5px;
+    background: #007bff; /* Change this to your preferred hover color */
+    transition: width 0.3s ease-in-out, left 0.3s ease-in-out;
+}
+
+.pnb-nav-link:hover::after,
+.pnb-nav-link:focus::after {
+    width: 100%;
+    left: 0;
+}
+
+
+
+/* navlink1 */
+.pnb-nav-link1 {
+    position: relative;
+    padding: 0.5rem 1rem;
+    color: #5e5c5c; /* Change this to your preferred text color */
+    font-size: 16px;
+    transition: color 0.3s ease-in-out;
+}
+
+.pnb-nav-link1:hover,
+.pnb-nav-link1:focus {
+    color: #007bff; /* Change this to your preferred hover color */
+    text-decoration: none;
+}
+
+.pnb-nav-link1::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    display: block;
+    left: 50%;
+    bottom: 2px;
+    background: #007bff; /* Change this to your preferred hover color */
+    transition: width 0.3s ease-in-out, left 0.3s ease-in-out;
+}
+
+.pnb-nav-link1:hover::after,
+.pnb-nav-link1:focus::after {
+    width: 100%;
+    left: 0;
+}
+
+.pnb-navbar .dropdown-menu {
+    background-color: #fff; /* Change this to your preferred background color */
+    border: none;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.pnb-navbar .dropdown-item {
+    color: #000; /* Change this to your preferred text color */
+    padding: 0.5rem 1rem;
+    transition: background-color 0.3s ease-in-out;
+}
+
+.pnb-navbar .dropdown-item:hover,
+.pnb-navbar .dropdown-item:focus {
+    background-color: #f8f9fa; /* Change this to your preferred hover background color */
+    color: #007bff; /* Change this to your preferred hover text color */
+}
+
+
+
+.notification-overlay {
+   
+    height: 100vh; /* Set a max height for the overlay */
+    width: 400px;
+    overflow-y: auto; /* Make the overlay scrollable */
+    position: absolute;
+    background: white;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 10px;
+    border-radius: 4px;
+    z-index: 1000; /* Ensure it appears above other content */
+}
+
+/* Customize the scrollbar */
+.notification-overlay::-webkit-scrollbar {
+    width: 8px;
+}
+
+.notification-overlay::-webkit-scrollbar-track {
+    background: #f1f1f1; 
+}
+
+.notification-overlay::-webkit-scrollbar-thumb {
+    background: #888; 
+    border-radius: 4px;
+}
+
+.notification-overlay::-webkit-scrollbar-thumb:hover {
+    background: #555; 
+}

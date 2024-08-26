@@ -1,0 +1,52 @@
+.tfa-card {
+
+    border-radius: 20px;
+    padding: 20px;
+}
+
+.tfa-container {
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.tfa-cardqr {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    width: 100%;
+}
+
+.tfa-cardqr1 {
+    background-color: white;
+    width: 100%;
+    max-width: 500px; /* Ensures the card doesn't get too wide */
+    padding: 20px;
+    box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.26);
+    border-radius: 20px;
+    text-align: center;
+}
+
+.tfa-cardqr1 img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 10px;
+}
+
+.tfa-cardqr2 {
+    margin-top: 20px;
+}
+
+.tfa-cardqr2 p {
+    margin: 0;
+    font-size: 16px; /* Adjust the font size as needed */
+}
+
+.tfa-text {
+    font-weight: bold;
+    word-wrap: break-word;
+    font-size: 8px; /* Adjust the font size to fit within the container */
+    margin: 0;
+}

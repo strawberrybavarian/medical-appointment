@@ -1,0 +1,45 @@
+.cd-acontent{
+    width: 500%;
+    height: 150px;
+}
+.cd-card{
+    cursor: pointer;
+
+    width: 100%;
+    
+
+    background-color: white;
+
+    transition: transform 0.1s ease-in-out; 
+    box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.26);
+}
+
+.cd-card:active{
+    transform: scale(0.95);
+}
+.cd-card:hover{
+    cursor: pointer;
+}
+.cd-container{
+
+    padding-top: 10px;
+    width: 100%;
+    justify-content: center;
+    display: flex;
+}
+
+
+.cd-containergrid{
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); 
+    gap: 20px; 
+ 
+    /* background-color: aqua; */
+    width: 120vh;
+    padding: 5vh;
+}
+
+.cd-main{
+    display: flex;
+    justify-content: center;
+}

@@ -1,0 +1,56 @@
+/* Appointment.css */
+.mainContainer {
+    padding-top: 10px;
+    width: 100%;
+   
+    justify-content: center;
+    display: flex;
+  }
+
+.ma-container{
+  margin-top: 20px;
+  justify-content: center;
+  display: flex;
+  width: 100%;
+ 
+}
+
+.app-containerCenter{
+  width: 100%;
+}
+
+
+
+.ma-container1{
+
+ 
+  /* background-color: aqua; */
+  border-radius: 10px;
+}
+  
+  .subContainer {
+
+    align-items: center;
+    padding: 20px;
+    width: 100%;
+    background-color: white;
+    border-radius: 30px;
+    margin-bottom: 10px;
+    margin-top: 10px;
+    box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.26);
+  }
+
+  .aContainer{
+    display: flex;
+  }
+  .bContainer{
+    display: flex;
+    justify-content: center;
+  }
+
+  .app-image{
+    object-fit: cover;
+    width: 100px;
+    height: 100px;
+    border-radius: 100%;
+  }

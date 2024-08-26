@@ -1,0 +1,102 @@
+
+.sidebar-link {
+    color: #fff;
+    text-decoration: none;
+}
+
+.sidebar-link:hover {
+    color: #ccc;
+}
+.pis-container {
+
+    height: 150vh;
+
+    padding: 20px;
+    width: 100%;
+
+    
+}
+
+body {
+    overflow: hidden;
+}
+
+ .pis-container::-webkit-scrollbar {
+    width: 8px; 
+}
+
+.pis-container::-webkit-scrollbar-track {
+    background-color: transparent; 
+}
+
+.pis-container::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.3);
+    border-radius: 4px; 
+}
+
+.pis-container::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(0, 0, 0, 0.5); 
+} 
+.pisb-newheader {
+ 
+ 
+        font-weight: bold;
+        font-size: 17px;
+        align-items: center !important;
+        letter-spacing: 1px;
+        overflow: hidden;
+        display: flex;
+        justify-content: space-between;
+        white-space: nowrap;
+}
+
+.pisb-newheader .head-div{
+    padding: 0 !important;
+}
+
+.sidebar-container {
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.cdb-sidebar {
+    position: fixed;
+    height: 100%;
+}
+
+.content-container {
+    flex: 1;
+    margin-left: 250px; /* Adjust according to your sidebar width */
+    height: 100vh;
+  
+    padding: 20px;
+    width: 100%;
+}
+
+
+.iaHJyQ {
+    background: rgba(152, 160, 168, 0.048) !important;
+    color: rgb(255, 255, 255);
+    height: 100vh;
+    border-right: 2px solid rgba(0, 0, 0, 0.082) !important;
+    width: 270px;
+    min-width: 270px;
+    text-align: left;
+    transition: width 0s ease 0s, left 0s ease 0s, right 0s ease 0s, all 0.3s ease 0s;
+    position: relative;
+    z-index: 1009;
+}
+
+.pisb-sidebarcontainer {
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.pisb-name{
+    color: #6982D8 ;
+    
+}
+
+

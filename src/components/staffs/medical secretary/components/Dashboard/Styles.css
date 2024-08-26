@@ -1,0 +1,70 @@
+.dash-main {
+ 
+  width: 250px;
+  height: 150px;
+  border-width: 0;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  margin-bottom: 1.5rem;
+
+
+}
+
+.dash-container{
+    padding-top: 2.5rem;
+    
+}
+
+
+.dash-box1 {
+    position: relative;
+    padding: 30px;
+    padding-top: 60px; 
+    width: 100%;
+    border-radius: 7px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    background-color: #fff;
+    overflow: hidden; 
+    margin-bottom: 3vh;
+    margin-top: 3vh;
+    margin-bottom: 1.5vh;
+}
+
+
+
+.dash-boxtitle {
+    display: flex;
+    align-items: center;
+    padding-top: 1.5vh;
+    padding-left: 1.5vh;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+
+    background-color: #f5f5f5; 
+    border-bottom: 1px solid #e0e0e0;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+
+
+.dash-content {
+    margin-top: 20px; 
+}
+
+.dash-text {
+    line-height: 1.5; 
+    margin-bottom: 3.5vh;
+}
+
+@media (max-width: 768px) {
+    .dash-box1, .dash-box2 {
+        padding: 20px;
+        padding-top: 50px;
+    }
+
+    .dash-boxtitle {
+        padding-top: 1vh;
+        padding-left: 1vh;
+    }
+}

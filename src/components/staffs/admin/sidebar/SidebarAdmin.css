@@ -1,0 +1,37 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+/* font-family: 'Poppins', sans-serif !important; */
+.sa-sidebar{
+    background-color: #1d294e !important;
+    border-radius: 0px 0px 0px  0px !important;
+    font-family: 'Poppins', sans-serif !important;
+}
+
+
+.CDBSidebarMenuItem .fa {
+    margin-left: auto !important; /* Ensures the icon stays on the far right */
+    vertical-align: middle !important; /* Aligns icon vertically with the text */
+  }
+  
+
+/* SidebarAdmin.css */
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+/* Apply Poppins font to all elements within the sidebar */
+/* .sa-sidebar, .sa-sidebar * {
+    font-family: 'Poppins', sans-serif !important;
+    font-size: 14px !important;
+} */
+
+/* Ensure Font Awesome icons are not affected by the custom font */
+.sa-sidebar .fa, 
+.sa-sidebar .fas, 
+.sa-sidebar .far, 
+.sa-sidebar .fal, 
+.sa-sidebar .fab {
+    font-family: "Font Awesome 5 Free", sans-serif !important;
+
+}
+
+
