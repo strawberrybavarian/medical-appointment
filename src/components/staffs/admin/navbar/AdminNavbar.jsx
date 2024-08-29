@@ -1,11 +1,12 @@
 import React from 'react'
 import { useNavigate, useParams } from "react-router-dom";
 import { Container, Navbar, Nav, NavDropdown } from 'react-bootstrap';
-import { ChevronDown } from 'react-bootstrap-icons';
-import {image} from '../../../../ContentExport'
-import  './Styles.css'
+import {  ChevronDown } from 'react-bootstrap-icons';
 
-function MedSecNavbar() {
+import { image } from '../../../../ContentExport';
+import './AdminNavbar.css'
+
+function AdminNavbar() {
 
     const navigate = useNavigate();
     const {msid} = useParams();
@@ -16,10 +17,6 @@ function MedSecNavbar() {
     const onNavigateCreatePatient = () => {
         navigate(`/medsec/createpatient/${msid}`)
     }
-
-    const onNavigateCalendar = () => {
-        navigate(`/medsec/calendar/${msid}`)
-    }
     
     const onButtonContainer1Click = () => {
         navigate("/");
@@ -29,7 +26,7 @@ function MedSecNavbar() {
     
         <div className="landing-page">
             <div className="navbar-3">
-                <Navbar bg="light" expand="lg" className="pnb-navbar">
+                <Navbar bg="light" expand="lg" className="an-navbar">
                 <Container>
                            
                             <img className="molino-logo" src={image.logo} alt="Logo" />
@@ -43,10 +40,8 @@ function MedSecNavbar() {
                     <Navbar.Toggle aria-controls="basic-navbar-nav" />
                     <Navbar.Collapse id="basic-navbar-nav justify-content-end">
                         <Nav>
-                            <Nav.Link className="pnb-nav-link" onClick={onNavigateAppoinments}>Appointments </Nav.Link>
-                            <Nav.Link className="pnb-nav-link" onClick={onNavigateCalendar}>Calendar </Nav.Link>
-                            <Nav.Link className="pnb-nav-link" onClick={onNavigateCreatePatient}>Create Appointment </Nav.Link>
-                            
+                            {/* <Nav.Link className="pnb-nav-link" onClick={onNavigateAppoinments}>Appointments </Nav.Link>
+                            <Nav.Link className="pnb-nav-link" onClick={onNavigateCreatePatient}>Create Appointment </Nav.Link> */}
                             
                         </Nav>
 
@@ -67,4 +62,4 @@ function MedSecNavbar() {
   )
 }
 
-export default MedSecNavbar
+export default AdminNavbar;

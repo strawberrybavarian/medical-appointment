@@ -32,7 +32,7 @@ function DashboardMain() {
   return (
     <div style={{ display: "flex", flex: "1 0 auto", height: "100vh", overflowY: "hidden"}}>
       <SidebarMenu doctor_image={doctorData.image} doctor_name={doctorData.name} did={doctorData.id}/>
-      <Container className="overflow-y-scroll" xxl={2}>
+      <Container style={{ height: '100vh', overflowY: 'auto', padding: '20px' }}>
         <Dashboard />
         <PostAnnouncement />
       </Container>

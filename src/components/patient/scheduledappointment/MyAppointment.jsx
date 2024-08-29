@@ -27,34 +27,43 @@ function MyAppointment() {
 
     return (
         <>
+          
             <PatientNavBar/>
 
-            <div className="ma-container">
-                <div className="ma-container1">
-                    <Nav fill variant="tabs" defaultActiveKey="/home">
-                        <Nav.Item>
-                            <Nav.Link onClick={() => setActiveTab("pending")}>Pending Appointments</Nav.Link>
-                        </Nav.Item>
-                        <Nav.Item>
-                            <Nav.Link onClick={() => setActiveTab("active")}>Scheduled Appointments</Nav.Link>
-                        </Nav.Item>
-                        <Nav.Item>
-                            <Nav.Link onClick={() => setActiveTab("cancel")}>Cancelled Appointments</Nav.Link>
-                        </Nav.Item>
-                        <Nav.Item>
-                            <Nav.Link onClick={() => setActiveTab("completed")}>Completed Appointment</Nav.Link>
-                        </Nav.Item>
-                        <Nav.Item>
-                            <Nav.Link onClick={() => setActiveTab("rescheduled")}>Rescheduled Appointment</Nav.Link>
-                        </Nav.Item>
-                    </Nav>
-                </div>
-            </div>
+            <Container className="pt-5">
+    <h2>My Appointments</h2>
+    <p className="text-muted">See your appointment details.</p>
+</Container>
 
+            <Container className="d-flex pt-4">
+    
+            <Nav fill variant="tabs" className="app-navtabs" activeKey={activeTab}>
+                <Nav.Item>
+                    <Nav.Link eventKey="pending" onClick={() => setActiveTab("pending")}>Pending</Nav.Link>
+                </Nav.Item>
+                <Nav.Item>
+                    <Nav.Link eventKey="active" onClick={() => setActiveTab("active")}>Scheduled </Nav.Link>
+                </Nav.Item>
+                <Nav.Item>
+                    <Nav.Link eventKey="cancel" onClick={() => setActiveTab("cancel")}>Cancelled </Nav.Link>
+                </Nav.Item>
+                <Nav.Item>
+                    <Nav.Link eventKey="completed" onClick={() => setActiveTab("completed")}>Completed </Nav.Link>
+                </Nav.Item>
+                <Nav.Item>
+                    <Nav.Link eventKey="rescheduled" onClick={() => setActiveTab("rescheduled")}>Rescheduled </Nav.Link>
+                </Nav.Item>
+            </Nav>
+
+
+            </Container>
+
+            {/* Lalagay kung sino mga doctors parang suggestion */}
+   
             {activeTab === "pending" && <PendingAppointments appointments={appointments} setAppointments={setAppointments} />}
             {activeTab === "active" && <ActiveAppointment appointments={appointments} setAppointments={setAppointments} />}
-            {activeTab === "cancel" && <CancelledAppointments />}
-            {activeTab === "completed" && <CompleteAppointment />}
+            {activeTab === "cancel" && <CancelledAppointments appointments={appointments} setAppointments={setAppointments}/>}
+            {activeTab === "completed" && <CompleteAppointment appointments={appointments} setAppointments={setAppointments}/>}
             {activeTab === "rescheduled" && <RescheduledAppointment />}
         </>
     );

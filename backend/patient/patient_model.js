@@ -43,7 +43,8 @@ const PatientSchema = new Schema({
     accountStatus:{
         type:String,
         
-        enum: ['Registered','Unregistered','Deactivated','Deleted']
+        enum: ['Registered','Unregistered','Deactivated','Deleted'],
+        default: 'Registered'
     },
     patient_contactNumber: {
         type: String,

@@ -14,4 +14,7 @@ module.exports = app => {
     app.get('/medicalsecretary/api/allappointments', MSController.getAllAppointments);
     app.put('/medicalsecretary/api/:uid/ongoing', MSController.ongoingAppointment)
 
+    //Patient Statistic
+    app.get('/medicalsecretary/api/patient-stats', MSController.getPatientStats);
+
 }

@@ -93,13 +93,42 @@ const ongoingAppointment = async (req, res) => {
     }
 };
 
+const getPatientStats = async (req, res) => {
+    try {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        // Count total pending patients
+        const pendingPatientsCount = await Appointment.countDocuments({ status: 'Pending' });
+
+        // Count total today's patients
+        const todaysPatientsCount = await Appointment.countDocuments({
+            date: today,
+            status: { $in: ['Scheduled', 'Completed', 'Pending', 'Ongoing'] }
+        });
+
+        // Count total ongoing patients
+        const ongoingPatientsCount = await Appointment.countDocuments({ status: 'Ongoing' });
+
+        res.json({
+            pendingPatients: pendingPatientsCount,
+            todaysPatients: todaysPatientsCount,
+            ongoingPatients: ongoingPatientsCount,
+        });
+    } catch (err) {
+        res.status(500).json({ message: 'Something went wrong', error: err });
+    }
+};
+
+
 
 
 module.exports = {
     NewMedicalSecretaryignUp,
     findAllMedicalSecretary,
     getAllAppointments,
-    ongoingAppointment
+    ongoingAppointment,
+    getPatientStats
 
 
 };

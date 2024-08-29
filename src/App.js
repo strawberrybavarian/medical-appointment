@@ -39,13 +39,18 @@ import StaffLogIn from './components/staffs/login page/StaffLogin';
 import MedSecMain from './components/staffs/medical secretary/components/Main/MedSecMain';
 import CreatePatient from './components/staffs/medical secretary/components/Add Patient/Main/CreatePatientMain';
 
+import MedSecCalendar from './components/staffs/medical secretary/components/Calendar/MedSecCalendar';
+
 
 //Cashier
 import CashierMain from './components/staffs/cashier/main page/CashierMain';
 
 //Admin
-import AdminDashboard from './components/staffs/admin/dashboard/AdminDashboard';
 
+import PatientMain from './components/staffs/admin/dashboard/patient/PatientMain';
+import DoctorMain from './components/staffs/admin/dashboard/doctors/DoctorMain';
+import DoctorManagement from './components/staffs/admin/management/account/DoctorManagement';
+import PatientManagement from './components/staffs/admin/management/account/PatientManagement';
 
 
 
@@ -83,12 +88,16 @@ function App() {
         {/* Medical Secretary Routes */}
           <Route path={"/medsec/:msid"} element={<MedSecMain />}/>
           <Route path={"/medsec/createpatient/:msid"} element={<CreatePatient />}/>
+          <Route path={"/medsec/calendar/:msid"} element={<MedSecCalendar />}/>
         
         {/* Cashier Routes */}
           <Route path={"/cashier/:cid"} element={<CashierMain />}/>
 
         {/* Admin Routes */}
-          <Route path={"/admin/dashboard/:aid"} element={<AdminDashboard />}/>
+          <Route path={"/admin/dashboard/patient/:aid"} element={<PatientMain />}/>
+          <Route path={"/admin/dashboard/doctor/:aid"} element={<DoctorMain />}/>
+          <Route path={"/admin/account/doctor/:aid"} element={<DoctorManagement />}/>
+          <Route path={"/admin/account/patient/:aid"} element={<PatientManagement />}/>
       </Routes>
     </BrowserRouter>
 

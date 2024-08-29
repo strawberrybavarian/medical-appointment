@@ -117,7 +117,7 @@ const MedSecPending = ({allAppointments, setAllAppointments}) => {
 
 
   return (
-    <Container>
+  <>
       <div style={{ padding: '30px', width: '100%' }}>
         <h1>Pending Appointments</h1>
         
@@ -272,7 +272,11 @@ const MedSecPending = ({allAppointments, setAllAppointments}) => {
           handleConfirm={handleConfirmReschedule}
         />
       )}
-    </Container>
+
+<div style={{paddingBottom:'50px'}}>
+   
+   </div>
+  </>
   );
 };
 

@@ -4,26 +4,24 @@ import Chart from 'chart.js/auto';
 import axios from 'axios';
 import { ip } from '../../../../../ContentExport';
 
-function BarAppointment() {
+function LineCompletedAppointments() {
   const chartRef = useRef(null);
   const chartInstanceRef = useRef(null);
   const [chartData, setChartData] = useState({ labels: [], data: [] });
 
   useEffect(() => {
     // Fetch appointment stats from the backend
-    axios.get(`${ip.address}/admin/api/appointments/stats`)
+    axios.get(`${ip.address}/admin/api/appointments/completed-by-month`)
       .then(response => {
         const data = response.data;
 
-        // Ensure we have labels and counts for all required statuses
-        const requiredStatuses = ['Completed', 'Scheduled', 'Pending', 'Cancelled'];
         const labels = [];
         const counts = [];
 
-        requiredStatuses.forEach(status => {
-          const stat = data.find(item => item.status === status);
-          labels.push(status);
-          counts.push(stat ? stat.count : 0);
+        data.forEach(item => {
+          const monthName = new Date(item.year, item.month - 1).toLocaleString('default', { month: 'long' });
+          labels.push(`${monthName} ${item.year}`);
+          counts.push(item.count);
         });
 
         setChartData({ labels, data: counts });
@@ -38,15 +36,16 @@ function BarAppointment() {
 
     const ctx = chartRef.current.getContext('2d');
     chartInstanceRef.current = new Chart(ctx, {
-      type: 'bar',
+      type: 'line',
       data: {
-        labels: chartData.labels, // ['Completed', 'Scheduled', 'Pending', 'Cancelled']
+        labels: chartData.labels, // ['January 2023', 'February 2023', ...]
         datasets: [{
-          label: 'Appointment Statuses', // General label for the dataset
-          backgroundColor: "#4e73df",
-          hoverBackgroundColor: "#2e59d9",
+          label: 'Completed Appointments',
           borderColor: "#4e73df",
-          data: chartData.data, // Data points corresponding to each status
+          pointBackgroundColor: "#4e73df",
+          pointBorderColor: "#4e73df",
+          fill: false,
+          data: chartData.data, // Data points corresponding to each month
         }],
       },
       options: {
@@ -66,9 +65,8 @@ function BarAppointment() {
               drawBorder: false
             },
             ticks: {
-              maxTicksLimit: 6
+              maxTicksLimit: 12
             },
-            maxBarThickness: 25,
           },
           y: {
             ticks: {
@@ -90,7 +88,7 @@ function BarAppointment() {
         },
         plugins: {
           legend: {
-            display: false
+            display: true
           },
           tooltip: {
             titleMarginBottom: 10,
@@ -116,7 +114,6 @@ function BarAppointment() {
         }
       }
     });
-    
 
     return () => {
       if (chartInstanceRef.current) {
@@ -126,21 +123,17 @@ function BarAppointment() {
   }, [chartData]);
 
   return (
-    
-        <Card className="card-bar-chart shadow mb-4">
-            <Card.Header className="py-3">
-            <h6 className="m-0 font-weight-bold text-primary">Appointment Statuses</h6>
-            </Card.Header>
-            <Card.Body>
-            <div className="chart-bar">
-                <canvas id="myBarChart" ref={chartRef}></canvas>
-            </div>
-            </Card.Body>
-        </Card>
-
-
-
+    <Card className="card-line-chart shadow mb-4">
+      <Card.Header className="py-3">
+        <h6 className="m-0 font-weight-bold text-primary">Completed Appointments by Month</h6>
+      </Card.Header>
+      <Card.Body>
+        <div className="chart-line">
+          <canvas id="myLineChart" ref={chartRef}></canvas>
+        </div>
+      </Card.Body>
+    </Card>
   );
 }
 
-export default BarAppointment;
+export default LineCompletedAppointments;

@@ -61,7 +61,7 @@ const StaffLogIn = () => {
                 : userRole === 'Cashier' 
                 ? `/cashier/${userId}` 
                 : userRole === 'Admin' 
-                ? `/admin/dashboard/${userId}` 
+                ? `/admin/dashboard/patient/${userId}` 
                 : `/staffs`);
         } else {
             setErrorMessage("Invalid username or password. Please try again.");

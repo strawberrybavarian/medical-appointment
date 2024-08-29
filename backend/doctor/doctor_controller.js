@@ -162,6 +162,22 @@ const verifyTwoFactor = async (req, res) => {
       res.status(500).json({ message: 'Error verifying 2FA token', error });
     }
 };
+
+const updateActivityStatus = async (doctorId, status) => {
+    try {
+        const updateData = {
+            activityStatus: status
+        };
+        if (status === 'Online') {
+            updateData.lastActive = Date.now();
+        }
+        await Doctor.findByIdAndUpdate(doctorId, updateData);
+    } catch (err) {
+        console.error('Error updating activity status:', err);
+    }
+};
+
+
 const NewDoctorSignUp = (req, res) => {
     Doctors.create(req.body)
         .then((newDoctor) => {
@@ -193,13 +209,26 @@ const updateDoctorDetails = (req, res) => {
 const findAllDoctors = (req, res) => {
     Doctors.find()
         .populate('dr_posts')
-        .then((allDataDoctors) => {
+        .then(async (allDataDoctors) => {
+            // Update the activity status to 'Online' and set the lastActive timestamp
+            const updatePromises = allDataDoctors.map(doctor => {
+                return Doctors.findByIdAndUpdate(doctor._id, {
+                    activityStatus: 'Online',
+                    lastActive: Date.now()
+                });
+            });
+
+            // Wait for all the updates to complete
+            await Promise.all(updatePromises);
+
+            // Send the updated doctors data as a response
             res.json({ theDoctor: allDataDoctors });
         })
         .catch((err) => {
             res.json({ message: 'Something went wrong', error: err });
         });
 };
+
 const findUniqueSpecialties = (req, res) => {
     Doctors.distinct('dr_specialty')
         .then((specialties) => {
@@ -718,5 +747,6 @@ module.exports = {
     findUniqueSpecialties,
     getPrescriptions,
     rescheduleAppointment,
-    rescheduledStatus
+    rescheduledStatus,
+    updateActivityStatus
 };
