@@ -28,6 +28,8 @@ const CreateAppointment = () => {
     axios
       .get("http://localhost:8000/patient/api/allpatient")
       .then((res) => {
+        console.log(res.data);
+        
         setPatients(res.data.thePatient);
       })
       .catch((err) => {
@@ -79,11 +81,11 @@ const CreateAppointment = () => {
   };
 
   const getPatientOptions = () => {
-    return patients.map((patient) => ({
+    return (patients || []).map((patient) => ({
       value: patient._id,
       label: `${patient.patient_firstName} ${patient.patient_lastName}`,
     }));
-  };
+};
 
   const getDoctorOptions = () => {
     return doctors.map((doctor) => ({
@@ -163,19 +165,6 @@ const CreateAppointment = () => {
         </Card.Body>
       </Card>
       
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-
 
       <AppointmentModal
         show={showModal}

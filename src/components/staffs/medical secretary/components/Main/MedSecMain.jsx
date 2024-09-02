@@ -7,6 +7,8 @@ import MedSecDashboard from '../Dashboard/MedSecDashboard'; // Fixed typo in com
 import { Container, Nav, Row } from 'react-bootstrap';
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
+import './MedSecMain.css';
+import MSDoctorProfile from '../Manage Doctors/MSDoctorProfile';
 
 function MedSecMain() {
   const { msid } = useParams();
@@ -15,7 +17,6 @@ function MedSecMain() {
   const [alldoctors, setalldoctors] = useState([]);
   const [selectedDoctor, setSelectedDoctor] = useState("");
   const [activeTab, setActiveTab] = useState("pending");
-
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -48,10 +49,25 @@ function MedSecMain() {
   return (
     <>
       <MedSecNavbar /> {/* Fixed navbar at the top */}
-      <div className="content-wrapper justify-content-center" style={{ overflowY: 'auto', height: 'calc(100vh - 56px)', width: '100%' }}>
-        <Container style={{ paddingTop: '10px' }}>
+      <div style={{ overflowY: 'auto', height: 'calc(100vh - 56px)', width: '100%' }}>
+        
+        <Container className=" d-flex justify-content-between">
+
+       
+          <div className='ms-maincontainer1'>
+            <h2>All Appointments</h2>
+            <p className="text-muted">See the appointment details.</p>
+          </div>
+         
+        </Container>
+
+        <Container>
+        <MedSecDashboard />
+        </Container>
+
+        <Container className="ms-container mt-4">
           <Row>
-            <Nav fill variant="tabs" activeKey={activeTab} onSelect={setActiveTab}>
+            <Nav fill variant="tabs" className="ms-navtabs" activeKey={activeTab} onSelect={setActiveTab}>
               <Nav.Item>
                 <Nav.Link eventKey="pending">Pending Appointments</Nav.Link>
               </Nav.Item>
@@ -66,8 +82,6 @@ function MedSecMain() {
         </Container>
 
         <Container>
-          <MedSecDashboard />
-
           {activeTab === "todays" && (
             <MedSecTodaysApp
               allAppointments={allappointments}

@@ -40,7 +40,8 @@ import MedSecMain from './components/staffs/medical secretary/components/Main/Me
 import CreatePatient from './components/staffs/medical secretary/components/Add Patient/Main/CreatePatientMain';
 
 import MedSecCalendar from './components/staffs/medical secretary/components/Calendar/MedSecCalendar';
-
+import DoctorCards from './components/staffs/medical secretary/components/Manage Doctors/DoctorCards';
+import DoctorScheduleManagement from './components/staffs/medical secretary/components/Manage Doctors/DoctorScheduleManagement';
 
 //Cashier
 import CashierMain from './components/staffs/cashier/main page/CashierMain';
@@ -89,6 +90,9 @@ function App() {
           <Route path={"/medsec/:msid"} element={<MedSecMain />}/>
           <Route path={"/medsec/createpatient/:msid"} element={<CreatePatient />}/>
           <Route path={"/medsec/calendar/:msid"} element={<MedSecCalendar />}/>
+          <Route path={"/medsec/doctors/:msid"} element={<DoctorCards />}/>
+          <Route path={"/medsec/:msid/doctors/:did/schedule"} element={<DoctorScheduleManagement />} />
+
         
         {/* Cashier Routes */}
           <Route path={"/cashier/:cid"} element={<CashierMain />}/>

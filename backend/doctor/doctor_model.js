@@ -20,7 +20,7 @@ const DoctorSchema = new Schema({
 
     activityStatus: {
         type: String,
-        enum: ['Online', 'Offline'],
+        enum: ['Online', 'Offline', 'In Session'],
         default: 'Offline'
     },
     lastActive: {

@@ -5,7 +5,7 @@ import { ChevronDown } from 'react-bootstrap-icons';
 import {image} from '../../../../ContentExport'
 import  './Styles.css'
 
-function MedSecNavbar() {
+function MedSecNavbar({did}) {
 
     const navigate = useNavigate();
     const {msid} = useParams();
@@ -19,6 +19,10 @@ function MedSecNavbar() {
 
     const onNavigateCalendar = () => {
         navigate(`/medsec/calendar/${msid}`)
+    }
+
+    const onNavigateDoctors = () => {
+        navigate(`/medsec/doctors/${msid}`)
     }
     
     const onButtonContainer1Click = () => {
@@ -46,6 +50,7 @@ function MedSecNavbar() {
                             <Nav.Link className="pnb-nav-link" onClick={onNavigateAppoinments}>Appointments </Nav.Link>
                             <Nav.Link className="pnb-nav-link" onClick={onNavigateCalendar}>Calendar </Nav.Link>
                             <Nav.Link className="pnb-nav-link" onClick={onNavigateCreatePatient}>Create Appointment </Nav.Link>
+                            <Nav.Link className="pnb-nav-link" onClick={onNavigateDoctors}>Manage Doctors </Nav.Link>
                             
                             
                         </Nav>

@@ -50,7 +50,7 @@ const ongoingAppointment = async (req, res) => {
     try {
         const appointmentId = req.params.uid; // Appointment ID from URL parameter
 
-        // Find the appointment and update its status to 'Completed'
+        // Find the appointment and update its status to 'Ongoing'
         const updatedAppointment = await Appointment.findByIdAndUpdate(
             appointmentId,
             { status: 'Ongoing' },
@@ -64,6 +64,13 @@ const ongoingAppointment = async (req, res) => {
         // Get doctor and patient IDs from the appointment
         const doctorId = updatedAppointment.doctor;
         const patientId = updatedAppointment.patient;
+
+        // Update doctor's activity status to 'In Session'
+        await Doctors.findByIdAndUpdate(
+            doctorId,
+            { activityStatus: 'In Session' },
+            { new: true }
+        );
 
         // Update doctor's list of patients if the patient is not already in the list
         await Doctors.findByIdAndUpdate(

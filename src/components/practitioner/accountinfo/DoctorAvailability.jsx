@@ -15,6 +15,8 @@ const initialAvailability = {
 };
 
 function DoctorAvailability({ doctorId }) {
+    
+    
     const [availability, setAvailability] = useState(initialAvailability);
     const [activeAppointmentStatus, setActiveAppointmentStatus] = useState(true);
 

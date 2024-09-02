@@ -37,23 +37,23 @@ function MyAppointment() {
 
             <Container className="d-flex pt-4">
     
-            <Nav fill variant="tabs" className="app-navtabs" activeKey={activeTab}>
-                <Nav.Item>
-                    <Nav.Link eventKey="pending" onClick={() => setActiveTab("pending")}>Pending</Nav.Link>
-                </Nav.Item>
-                <Nav.Item>
-                    <Nav.Link eventKey="active" onClick={() => setActiveTab("active")}>Scheduled </Nav.Link>
-                </Nav.Item>
-                <Nav.Item>
-                    <Nav.Link eventKey="cancel" onClick={() => setActiveTab("cancel")}>Cancelled </Nav.Link>
-                </Nav.Item>
-                <Nav.Item>
-                    <Nav.Link eventKey="completed" onClick={() => setActiveTab("completed")}>Completed </Nav.Link>
-                </Nav.Item>
-                <Nav.Item>
-                    <Nav.Link eventKey="rescheduled" onClick={() => setActiveTab("rescheduled")}>Rescheduled </Nav.Link>
-                </Nav.Item>
-            </Nav>
+                <Nav fill variant="tabs" className="app-navtabs" activeKey={activeTab}>
+                    <Nav.Item>
+                        <Nav.Link eventKey="pending" onClick={() => setActiveTab("pending")}>Pending</Nav.Link>
+                    </Nav.Item>
+                    <Nav.Item>
+                        <Nav.Link eventKey="active" onClick={() => setActiveTab("active")}>Scheduled </Nav.Link>
+                    </Nav.Item>
+                    <Nav.Item>
+                        <Nav.Link eventKey="cancel" onClick={() => setActiveTab("cancel")}>Cancelled </Nav.Link>
+                    </Nav.Item>
+                    <Nav.Item>
+                        <Nav.Link eventKey="completed" onClick={() => setActiveTab("completed")}>Completed </Nav.Link>
+                    </Nav.Item>
+                    <Nav.Item>
+                        <Nav.Link eventKey="rescheduled" onClick={() => setActiveTab("rescheduled")}>Rescheduled </Nav.Link>
+                    </Nav.Item>
+                </Nav>
 
 
             </Container>

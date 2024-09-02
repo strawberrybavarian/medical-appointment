@@ -9,7 +9,7 @@ import axios from 'axios';
 import { Container, Card } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom'; // Import useNavigate
 
-function AppointmentFullCalendar() {
+function AppointmentFullCalendar({msid}) {
   const [allAppointments, setAllappointments] = useState([]);
   const calendarRef = useRef(null); // Reference to FullCalendar
   const navigate = useNavigate(); // Replace useHistory with useNavigate
@@ -49,10 +49,10 @@ function AppointmentFullCalendar() {
       id: appointment._id,
       title: `${appointment.patient.patient_firstName} ${appointment.patient.patient_lastName}`,
       start: startTime,
-      end: new Date(startTime.getTime() + 30 * 60000), // Assuming each appointment is 30 minutes long
+      end: new Date(startTime.getTime() + 30 * 60000), 
       description: appointment.reason,
-      status: appointment.status, // Add status for use in eventClassNames
-      doctorName: `${appointment.doctor.dr_firstName} ${appointment.doctor.dr_lastName}` // Include doctor's name
+      status: appointment.status, 
+      doctorName: `${appointment.doctor.dr_firstName} ${appointment.doctor.dr_lastName}` 
     };
   });
 
@@ -69,7 +69,7 @@ function AppointmentFullCalendar() {
     }
 
     if (tab) {
-      navigate(`/medsec/${eventInfo.event.id}?tab=${tab}`); // Use navigate instead of history.push
+      navigate(`/medsec/${msid}?tab=${tab}`); // Use navigate instead of history.push
     }
   };
 
@@ -107,7 +107,7 @@ function AppointmentFullCalendar() {
       const calendarApi = calendarRef.current.getApi();
       if (calendarApi) {
         const calendarEl = calendarApi.el;
-        calendarEl.style.transition = 'transform 0.4s ease-in-out';
+        calendarEl.style.transition = 'transform 2s ease-in-out';
         calendarEl.style.transform = 'translateX(100%)'; // Start from the right
         setTimeout(() => {
           calendarEl.style.transform = 'translateX(0)'; // Slide to center

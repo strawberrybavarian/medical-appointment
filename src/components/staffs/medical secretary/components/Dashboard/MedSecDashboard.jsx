@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import './Styles.css';
 import { Container, Card, Row, Col } from 'react-bootstrap';
 import axios from 'axios';
-import { ip } from '../../../../../ContentExport';
 import { People } from 'react-bootstrap-icons';
+import { ip } from '../../../../../ContentExport';
 
 function MedSecDashboard() {
   const [stats, setStats] = useState({
@@ -29,51 +28,51 @@ function MedSecDashboard() {
 
   return (
     <Container className="mt-4">
-      <Row className="gy-3">
+      <Row className="g-3"> {/* Use g-3 for smaller gaps between cards */}
         <Col xs={12} md={6} lg={4}>
-          <Card className="border-left-blue p-3 shadow-sm">
+          <Card 
+            className="shadow-sm border-left-blue"
+            style={{
+              minHeight: '100px',
+              padding: '10px',
+            }}
+          >
             <Card.Header className="msd-cardtitle">Total Pending Patients</Card.Header>
-            <Card.Body>
-              <Row className="no-gutters align-items-center">
-                <Col className="mr-2">
-                  <div className="h5 mb-0 font-weight-bold text-gray-800">{stats.pendingPatients}</div>
-                </Col>
-                <Col className="col-auto">
-                  <People size="40px" className="text-gray-300" />
-                </Col>
-              </Row>
+            <Card.Body className="d-flex justify-content-between align-items-center">
+              <div className="h5 text-gray-800 mb-0">{stats.pendingPatients}</div>
+              <People size="30px" className="text-gray-300" />
             </Card.Body>
           </Card>
         </Col>
 
         <Col xs={12} md={6} lg={4}>
-          <Card className="border-left-green p-3 shadow-sm">
+          <Card 
+            className="shadow-sm border-left-green"
+            style={{
+              minHeight: '100px',
+              padding: '10px',
+            }}
+          >
             <Card.Header className="msd-cardtitle">Total Today's Patients</Card.Header>
-            <Card.Body>
-              <Row className="no-gutters align-items-center">
-                <Col className="mr-2">
-                  <div className="h5 mb-0 font-weight-bold text-gray-800">{stats.todaysPatients}</div>
-                </Col>
-                <Col className="col-auto">
-                  <People size="40px" className="text-gray-300" />
-                </Col>
-              </Row>
+            <Card.Body className="d-flex justify-content-between align-items-center">
+              <div className="h5 text-gray-800 mb-0">{stats.todaysPatients}</div>
+              <People size="30px" className="text-gray-300" />
             </Card.Body>
           </Card>
         </Col>
 
         <Col xs={12} md={6} lg={4}>
-          <Card className="border-left-yellow p-3 shadow-sm">
+          <Card 
+            className="shadow-sm border-left-yellow"
+            style={{
+              minHeight: '100px',
+              padding: '10px',
+            }}
+          >
             <Card.Header className="msd-cardtitle">Total Ongoing Patients</Card.Header>
-            <Card.Body>
-              <Row className="no-gutters align-items-center">
-                <Col className="mr-2">
-                  <div className="h5 mb-0 font-weight-bold text-gray-800">{stats.ongoingPatients}</div>
-                </Col>
-                <Col className="col-auto">
-                  <People size="40px" className="text-gray-300" />
-                </Col>
-              </Row>
+            <Card.Body className="d-flex justify-content-between align-items-center">
+              <div className="h5 text-gray-800 mb-0">{stats.ongoingPatients}</div>
+              <People size="30px" className="text-gray-300" />
             </Card.Body>
           </Card>
         </Col>

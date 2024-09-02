@@ -2,14 +2,12 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import Table from 'react-bootstrap/Table';
-import { Container, Row, Col, Button, Navbar, Nav } from 'react-bootstrap';
-
+import { Button } from 'react-bootstrap';
 
 import './Appointment.css';
-import MainInformation from "../patientinformation/MainInformation";
 
-const OngoingAppointment = ({allAppointments}) => {
-  const { did,pid } = useParams();
+const OngoingAppointment = ({ allAppointments }) => {
+  const { did } = useParams();
   
   const [appointments, setAppointments] = useState([]);
   const [error, setError] = useState("");
@@ -17,24 +15,27 @@ const OngoingAppointment = ({allAppointments}) => {
   const [selectedPatientId, setSelectedPatientId] = useState("");
   const [selectedAppointmentId, setSelectedAppointmentId] = useState("");
 
-  console.log(pid);
+  // Initialize the appointments state from allAppointments
+  useEffect(() => {
+    setAppointments(allAppointments);
+  }, [allAppointments]);
+
+  console.log(selectedPatientId);
+
   const completeAppointment = (appointmentID) => {
-    const newStatus = {
-        status: 'Completed'
-    };
-    window.location.reload();
-    axios.put(`http://localhost:8000/doctor/api/${appointmentID}/completeappointment`, newStatus)
-        .then((response) => {
-            console.log(response.data);
-            setAppointments(prevAppointments => 
-                prevAppointments.map(appointment => 
-                    appointment._id === appointmentID ? { ...appointment, status: 'Completed' } : appointment
-                )
-            );
-        })
-        .catch((err) => {
-            console.log(err);
-        });
+    console.log("Completing appointment with ID:", appointmentID);
+    axios.put(`http://localhost:8000/doctor/api/${appointmentID}/completeappointment`)
+      .then((response) => {
+        console.log(response.data);
+        setAppointments(prevAppointments =>
+          prevAppointments.map(appointment =>
+            appointment._id === appointmentID ? { ...appointment, status: 'Completed' } : appointment
+          )
+        );
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   }
 
   const handleCreatePrescription = (patientId, appointmentId) => {
@@ -57,9 +58,10 @@ const OngoingAppointment = ({allAppointments}) => {
 
   const todayDate = getTodayDate();
 
-  const OngoingAppointments = allAppointments.filter(appointment => {
+  // Filter ongoing appointments
+  const OngoingAppointments = appointments.filter(appointment => {
     const appointmentDate = new Date(appointment.date).toISOString().split('T')[0];
-    return appointmentDate === todayDate;
+    return appointmentDate === todayDate && appointment.status === 'Ongoing';
   });
 
   return (
@@ -67,7 +69,7 @@ const OngoingAppointment = ({allAppointments}) => {
       <div>
         <div style={{ padding:'30px', width: '100%' }}>
           <h1>Ongoing Appointment</h1>
-          <Table striped bordered hover variant ="blue">
+          <Table striped bordered hover variant="blue">
             <thead>
               <tr>
                 <th style={{border: "1px solid #00000018"}}>Appointment ID</th>
@@ -80,9 +82,7 @@ const OngoingAppointment = ({allAppointments}) => {
               </tr>
             </thead>
             <tbody>
-              {OngoingAppointments
-                .filter(appointment => appointment.status === 'Ongoing')
-                .map((appointment,index) => {
+              {OngoingAppointments.map((appointment, index) => {
                 const patient = appointment.patient;
                 const patientName = `${patient.patient_firstName} ${patient.patient_middleInitial}. ${patient.patient_lastName}`;
                 return (
@@ -109,7 +109,6 @@ const OngoingAppointment = ({allAppointments}) => {
           {error && <p>{error}</p>}
         </div>
       </div>
-  
     </>
   );
 };

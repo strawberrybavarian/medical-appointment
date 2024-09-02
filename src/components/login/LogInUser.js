@@ -38,18 +38,28 @@ const LogInUser = () => {
     const loginuser = async (e) => {
         e.preventDefault();
     
-  
         const user = users.find(user => user.patient_email === email || user.dr_email === email);
     
         if (user) {
             if (userRole === "Practitioner" && user.accountStatus === "Review") {
-                window.alert("Your account has been reviewed and you cannot log in at this time.");
+                window.alert("Your account is under review and you cannot log in at this time.");
                 return;
             }
     
             // Validate password
             if (user.patient_password === password || user.dr_password === password) {
                 const userId = user._id;
+
+                // Update status to 'Online' if the user is a practitioner
+                if (userRole === 'Practitioner') {
+                    try {
+                        await axios.put(`${ip.address}/doctor/${userId}/status`, { status: 'Online' });
+                        console.log('Doctor status updated to Online.');
+                    } catch (err) {
+                        console.error('Error updating doctor status:', err);
+                    }
+                }
+
                 window.alert("Successfully logged in");
                 navigate(userRole === 'Patient' ? `/homepage/${userId}` : `/dashboard/${userId}`);
             } else {
@@ -93,7 +103,7 @@ const LogInUser = () => {
                             </Row>
                             <Row>
                                 <Form.Group as={Col} controlId="formChoose">
-                                    <Form.Label>Choose what to register:</Form.Label>
+                                    <Form.Label>Choose your role:</Form.Label>
                                     <Form.Select value={userRole} onChange={(e) => setUserRole(e.target.value)} defaultValue="Choose">
                                         <option value="Patient">Patient</option>
                                         <option value="Practitioner">Practitioner</option>
