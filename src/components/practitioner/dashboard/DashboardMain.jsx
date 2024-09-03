@@ -32,8 +32,10 @@ function DashboardMain() {
   return (
     <div style={{ display: "flex", flex: "1 0 auto", height: "100vh", overflowY: "hidden"}}>
       <SidebarMenu doctor_image={doctorData.image} doctor_name={doctorData.name} did={doctorData.id}/>
-      <Container style={{ height: '100vh', overflowY: 'auto', padding: '20px' }}>
-        <Dashboard />
+      <Container fluid style={{ height: '100vh', overflowY: 'auto', padding: '20px' }}>
+          <h1 className="dashboard-title">Dashboard</h1>
+          <p>Overview</p>
+          <Dashboard />
         <PostAnnouncement />
       </Container>
     </div>

@@ -62,11 +62,11 @@ module.exports = app => {
   //Update Information Details
   app.put('/doctor/api/:id/updateDetails', DoctorController.updateDoctorDetails);
   // For Post
-  app.post('/doctor/api/addpost/:id', DoctorController.addNewPostById);
-  app.get('/doctor/api/finduser/:id', DoctorController.findDoctorById);
-  app.get('/doctor/api/post/getallpost/:id', DoctorController.getAllPostbyId);
-  app.delete('/doctor/api/post/deletepost/:id/:index', DoctorController.findPostByIdDelete);
-  app.put('/doctor/api/post/updatepost/:id/:index', DoctorController.updatePostAtIndex);
+  // app.post('/doctor/api/addpost/:id', DoctorController.addNewPostById);
+  // app.get('/doctor/api/finduser/:id', DoctorController.findDoctorById);
+  // app.get('/doctor/api/post/getallpost/:id', DoctorController.getAllPostbyId);
+  // app.delete('/doctor/api/post/deletepost/:id/:index', DoctorController.findPostByIdDelete);
+  // app.put('/doctor/api/post/updatepost/:id/:index', DoctorController.updatePostAtIndex);
 
   // For Appointments
   app.put('/doctor/api/:uid/acceptpatient', DoctorController.acceptPatient)

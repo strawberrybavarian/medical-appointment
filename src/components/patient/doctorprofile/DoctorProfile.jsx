@@ -154,9 +154,9 @@ function DoctorProfile() {
                             {thePost.slice().reverse().map((post, index) => (
                                 <div key={index}>
                                     <div className="d-flex align-items-center justify-content-between">
-                                        <li className="list-unstyled decoration-none" key={index}>
-                                            {post.content}
-                                        </li>
+                                    <li className="list-unstyled decoration-none" key={index}>
+                                        <div dangerouslySetInnerHTML={{ __html: post.content }} />
+                                    </li>
                                     </div>
                                     <hr className="divider d-lg" />
                                 </div>
