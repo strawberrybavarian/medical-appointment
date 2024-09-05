@@ -33,7 +33,7 @@ function MyAppointment() {
             <Container className="pt-5">
     <h2>My Appointments</h2>
     <p className="text-muted">See your appointment details.</p>
-</Container>
+            </Container>
 
             <Container className="d-flex pt-4">
     

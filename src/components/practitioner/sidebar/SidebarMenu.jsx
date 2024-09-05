@@ -42,52 +42,36 @@ const SidebarMenu = (props) => {
 
     return (
         <>
+        <div style={{ height: '100vh' }}>
             <CDBSidebar>
                 <CDBSidebarHeader prefix={<i className={`fa ${isLeftIcon ? "fa-angle-left" : "fa-angle-right"}`} onClick={toggleIcon} />}>
-                    <div className={`sidebar-btn-wrapper ${isLeftIcon ? 'logo-expanded' : 'logo-collapsed'} d-flex justify-content-start`}>
-                        <img className="pnb-logoimage" src={image.logo} alt="Logo" />
-                        <Container className="msn-container pt-3">
-                            <p>Molino <br /> Polyclinic</p>
-                        </Container>
-                    </div>
+                    
                 </CDBSidebarHeader>
 
                 <CDBSidebarContent>
                     <CDBSidebarMenu>
                         <Link to={`/dashboard/${props.did}`}>
-                            <CDBSidebarMenuItem suffix={<CDBBadge size="small" borderType="pill">10+</CDBBadge>} icon="th-large"> Dashboard </CDBSidebarMenuItem>
+                            <CDBSidebarMenuItem className="font-style-poppins" suffix={<CDBBadge size="small" borderType="pill">10+</CDBBadge>} icon="th-large"> Dashboard </CDBSidebarMenuItem>
                         </Link>
                         <Link to={`/mainappointment/${props.did}`}>
-                            <CDBSidebarMenuItem icon="calendar-alt"> Appointment </CDBSidebarMenuItem>
+                            <CDBSidebarMenuItem className="font-style-poppins" icon="calendar-alt"> Appointment </CDBSidebarMenuItem>
                         </Link>
-                        <CDBSidebarMenuItem icon="bell"> Notification </CDBSidebarMenuItem>
+                        <CDBSidebarMenuItem className="font-style-poppins" icon="bell"> Notification </CDBSidebarMenuItem>
                         <Link to={`/medicalrecord/${props.did}`}>
-                            <CDBSidebarMenuItem icon="book" iconType="solid"> Medical Records </CDBSidebarMenuItem>
+                            <CDBSidebarMenuItem className="font-style-poppins" icon="book" iconType="solid"> Medical Records </CDBSidebarMenuItem>
                         </Link>
                         <Link to={`/account/${props.did}`}>
-                            <CDBSidebarMenuItem icon="user" iconType="solid"> Account Information </CDBSidebarMenuItem>
+                            <CDBSidebarMenuItem className="font-style-poppins" icon="user" iconType="solid"> Account Information </CDBSidebarMenuItem>
                         </Link>
-                        <CDBSidebarMenuItem icon="arrow-left" iconType="solid" onClick={handleLogout}> Log Out </CDBSidebarMenuItem>
+                        <CDBSidebarMenuItem className="font-style-poppins" icon="arrow-left" iconType="solid" onClick={handleLogout}> Log Out </CDBSidebarMenuItem>
                     </CDBSidebarMenu>
                 </CDBSidebarContent>
 
                 <CDBSidebarFooter className="d-flex msn-footer justify-content-center">
-                    <div className={`sidebar-btn-wrapper ${isLeftIcon ? 'logo-collapsed' : 'logo-expanded'} d-flex`}>
-                        <img
-                            src={props.doctor_image ? `http://localhost:8000/${props.doctor_image}` : defaultImage}
-                            alt="Doctor"
-                            style={{ width: "40px", height: "40px", borderRadius: "100%", objectFit: 'cover', textAlign: 'center' }}
-                        />
-
-                        {isLeftIcon && (
-                            <Container className="msn-container pt-3">
-                                <span className="headercustom">Hello! Dr. {props.doctor_name}</span>
-                            </Container>
-                        )}
-                    </div>
+                    {/*  */}
                 </CDBSidebarFooter>
             </CDBSidebar>
-
+        </div>
             <Modal show={showLogoutModal} onHide={cancelLogout}>
                 <Modal.Header closeButton>
                     <Modal.Title>Confirm Logout</Modal.Title>

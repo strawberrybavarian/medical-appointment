@@ -7,7 +7,8 @@ const MedicalSecretary = require('../medicalsecretary/medicalsecretary_model');
 const Notification = require('../notifications/notifications_model');
 const mongoose = require('mongoose');
 const Payment = require('../payments/payment_model');
-
+const fs = require('fs');
+const path = require('path');
 const findDoctorById = (req, res) => {
     Doctors.findOne({ _id: req.params.id })
         .populate('dr_posts')
@@ -18,27 +19,48 @@ const findDoctorById = (req, res) => {
             res.json({ message: 'Something went wrong', error: err });
         });
 };
-const addNewPostById = (req, res) => {
-    const newPost = new Post({
-        content: req.body.content, 
-        doctor_id: req.params.id,
-    });
 
-    newPost.save()
-        .then((post) => {
-            return Doctors.findByIdAndUpdate(
-                req.params.id,
-                { $push: { dr_posts: post._id } },
-                { new: true }
-            ).populate('dr_posts');
-        })
-        .then((updatedDoctor) => {
-            res.json({ updatedDoctor, message: 'New post added successfully' });
-        })
-        .catch((error) => {
-            res.json({ message: 'Error adding post', error });
+const addNewPostById = async (req, res) => {
+    try {
+        let imagePaths = [];
+
+        console.log('Files received:', req.files);  // Debug: Log the files information
+
+        if (req.files && req.files.length > 0) {
+            imagePaths = req.files.map(file => {
+                const imageBuffer = fs.readFileSync(file.path);
+                const base64Image = `data:${file.mimetype};base64,${imageBuffer.toString('base64')}`;
+                
+                // Optionally delete the file after encoding
+                fs.unlinkSync(file.path);
+                
+                return base64Image;
+            });
+        }
+
+        const newPost = new Post({
+            content: req.body.content,
+            doctor_id: req.params.id,
+            images: imagePaths,  // Store array of images
         });
+
+        console.log('New Post Object:', newPost);  // Debug: Check the post object before saving
+
+        const savedPost = await newPost.save();
+        const updatedDoctor = await Doctors.findByIdAndUpdate(
+            req.params.id,
+            { $push: { dr_posts: savedPost._id } },
+            { new: true }
+        ).populate('dr_posts');
+
+        res.json({ updatedDoctor, message: 'New post added successfully' });
+    } catch (error) {
+        console.error('Error adding post:', error);
+        res.status(500).json({ message: 'Error adding post', error });
+    }
 };
+
+
 // Retrieve all posts 
 const getAllPostbyId = (req, res) => {
     Doctors.findOne({ _id: req.params.id })

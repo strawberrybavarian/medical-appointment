@@ -1,10 +1,8 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import Table from 'react-bootstrap/Table';
+import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { Nav, Container } from 'react-bootstrap';
 import './Appointment.css';
-import SidebarMenu from "../sidebar/SidebarMenu";
-import Nav from 'react-bootstrap/Nav';
 
 import TodaysAppointment from "./TodaysAppointment";
 import UpcomingAppointment from "./UpcomingAppointment";
@@ -13,8 +11,13 @@ import OngoingAppointment from "./OngoingAppointment";
 
 const MyPatientsNav = () => {
   const { did } = useParams();
+  const navigate = useNavigate();
+  const location = useLocation();
+
   const [allAppointments, setAllAppointments] = useState([]);
-  const [activeTab, setActiveTab] = useState("upcoming");
+
+  // Get the innerTab from the URL query params
+  const innerTabFromUrl = new URLSearchParams(location.search).get("innerTab") || "upcoming";
 
   useEffect(() => {
     axios
@@ -27,38 +30,44 @@ const MyPatientsNav = () => {
       });
   }, [did]);
 
+  // Handle tab selection and update the query parameter in the URL
+  const handleSelect = (selectedKey) => {
+    // Maintain the outerTab while changing the innerTab in the URL
+    const outerTab = new URLSearchParams(location.search).get("outerTab") || "mypatients";
+    navigate(`?outerTab=${outerTab}&innerTab=${selectedKey}`);
+  };
+
   return (
     <>
-      <div style={{ padding: "20px", overflowY: "auto", overflowX: "hidden" }} className="container1 container-fluid">
-        <h1 className="removegutter dashboard-title">My Patients</h1>
-        <div style={{ paddingLeft: '30px', paddingRight: '30px' }}>
-          <Nav fill variant="tabs" defaultActiveKey="/home">
+      <div className="white-background p-4" style={{ overflowY: "hidden" }}>
+        <Container className="d-flex justify-content-center">
+          <Nav
+            fill
+            variant="tabs"
+            className="app-navtabs-doctor"
+            activeKey={innerTabFromUrl}
+            onSelect={handleSelect}
+          >
             <Nav.Item>
-              <Nav.Link onClick={() => setActiveTab("upcoming")}>Upcoming Appointment</Nav.Link>
+              <Nav.Link eventKey="upcoming">Upcoming</Nav.Link>
             </Nav.Item>
             <Nav.Item>
-              <Nav.Link onClick={() => setActiveTab("todays")}>Today's Appointment</Nav.Link>
+              <Nav.Link eventKey="todays">Today's</Nav.Link>
             </Nav.Item>
             <Nav.Item>
-              <Nav.Link onClick={() => setActiveTab("ongoing")}>Ongoing Appointment</Nav.Link>
+              <Nav.Link eventKey="ongoing">Ongoing</Nav.Link>
             </Nav.Item>
             <Nav.Item>
-              <Nav.Link onClick={() => setActiveTab("completed")}>Completed Appointment</Nav.Link>
-            </Nav.Item>
-            <Nav.Item>
-              <Nav.Link eventKey="disabled" disabled>
-                Disabled
-              </Nav.Link>
+              <Nav.Link eventKey="completed">Completed</Nav.Link>
             </Nav.Item>
           </Nav>
-        </div>
+        </Container>
 
-        {activeTab === "upcoming" && <UpcomingAppointment allAppointments={allAppointments} />}
-        {activeTab === "todays" && <TodaysAppointment allAppointments={allAppointments} />}
-        {activeTab === "ongoing" && <OngoingAppointment allAppointments={allAppointments} />}
-        {activeTab === "completed" && <CompletedAppointment allAppointments={allAppointments} />}
-        
-      
+        {/* Render components based on the innerTab */}
+        {innerTabFromUrl === "upcoming" && <UpcomingAppointment allAppointments={allAppointments} />}
+        {innerTabFromUrl === "todays" && <TodaysAppointment allAppointments={allAppointments} />}
+        {innerTabFromUrl === "ongoing" && <OngoingAppointment allAppointments={allAppointments} />}
+        {innerTabFromUrl === "completed" && <CompletedAppointment allAppointments={allAppointments} />}
       </div>
     </>
   );

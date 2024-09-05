@@ -7,8 +7,9 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import Table from 'react-bootstrap/Table';
 
 import './MainInformation.css'; 
-import Nav from 'react-bootstrap/Nav';
+import {Container} from 'react-bootstrap';
 import PractitionerNavBar from './navbar/PractitionerNavBar';
+import DoctorNavbar from '../navbar/DoctorNavbar';
 function MainInformation() {
 
   const { did,pid } = useParams();
@@ -46,10 +47,17 @@ function MainInformation() {
 
 
          
-          <div style={{display: "flex", flex: "1 0 auto", height: "100vh", overflowY: "hidden"}} className='mi-navside'>
+          <div className="maincolor-container d-flex justify-content-center" style={{ display: "flex" }}>            
+            
             <SidebarMenu doctor_image={theImage} doctor_name={theName} did={theId} />
-              <div className="mi-container"> 
-                <PractitionerNavBar/>
+              <div style={{ width: '100%' }}>
+                <DoctorNavbar doctor_image={theImage}/> 
+                <Container fluid className="ad-container" style={{ maxHeight: 'calc(100vh - 80px)', overflowY: 'auto', padding: '20px', paddingBottom:'50px' }}>
+                  <PractitionerNavBar/>
+                </Container>
+                
+              
+                
               </div>
           </div>
          

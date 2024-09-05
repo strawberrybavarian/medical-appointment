@@ -7,7 +7,7 @@
     text-align: left;
     transition: width 0s ease 0s, left 0s ease 0s, right 0s ease 0s, all 0.3s ease 0s;
     position: relative;
-    z-index: 1009;
+    z-index: 1009 !important;
     border-radius: 0px 40px 40px 0 !important;
 }
 
@@ -74,12 +74,3 @@ body{
   font-family: 'Poppins', sans-serif;
 }
 
-.logo-expanded .pnb-logoimage {
-    width: 75px; /* Size for expanded sidebar */
-  }
-  
-.logo-collapsed .pnb-logoimage {
-    width: 75px; /* Size for collapsed sidebar */
-    transition: width 0.3s ease-in-out;
-  }
-  

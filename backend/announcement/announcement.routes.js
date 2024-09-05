@@ -5,9 +5,11 @@ const AnnouncementController = require('./announcement_controller');
 console.log("Announcement routes connected");
 
 //For Images
+
+
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        const dir = path.join(__dirname, 'images');  // Changed from 'images' to 'uploads' for clarity
+        const dir = path.join(__dirname, 'images');
         if (!fs.existsSync(dir)) {
             fs.mkdirSync(dir, { recursive: true });
         }
@@ -18,6 +20,7 @@ const storage = multer.diskStorage({
     }
 });
 
+// Set up a file filter to allow only certain file types
 const fileFilter = (req, file, cb) => {
     if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png') {
         cb(null, true);
@@ -26,10 +29,17 @@ const fileFilter = (req, file, cb) => {
     }
 };
 
-const upload = multer({ storage: storage, fileFilter: fileFilter });
+// Create the upload middleware with multer to handle multiple file uploads
+const upload = multer({ 
+    storage: storage, 
+    fileFilter: fileFilter 
+});
+
+
 
 module.exports = app => {
-    app.post('/doctor/api/addpost/:id', AnnouncementController.addNewPostById);
+    app.post('/doctor/api/addpost/:id', upload.array('images', 10), AnnouncementController.addNewPostById);
+
   app.get('/doctor/api/finduser/:id', AnnouncementController.findDoctorById);
   app.get('/doctor/api/post/getallpost/:id', AnnouncementController.getAllPostbyId);
   app.delete('/doctor/api/post/deletepost/:id/:index', AnnouncementController.findPostByIdDelete);

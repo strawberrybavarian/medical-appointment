@@ -67,10 +67,11 @@
 
 .app-navtabs {
     border-width: 0px;
-    background-color: #F8F8F8;
+    background-color: #ffffff;
     border-radius: 10px;
     justify-content: center; /* Center-align the nav tabs */
     padding: 10px 0; /* Padding around the nav bar */
+    
 }
 
 .app-image {
@@ -81,7 +82,7 @@
 }
 
 .app-navtabs .nav-item {
-    background-color: #f5f5f5; /* Light gray background */
+   /* Light gray background */
     width: auto;
     border-radius: 100px; /* Rounded corners */
   
@@ -94,13 +95,14 @@
     font-weight: bold;
     padding: 10px 20px; /* Padding inside tabs */
     text-align: center;
-    transition: all 0.3s ease; /* Smooth transition for hover effect */
+    transition: all 0.3s ease; 
+     border: 0;/* Smooth transition for hover effect */
 }
 
 .app-navtabs .nav-link.active {
     background-color: #ffffff; /* White background for active tab */
     color: #000; /* Text color for active tab */
-    border-color : #ffffff;
+    border-color : #ffffff !important;
     border-radius: 10px;
    
 }

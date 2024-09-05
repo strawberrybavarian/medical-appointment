@@ -14,4 +14,13 @@ body{
  height:5.2rem
 }
 
+.table
+{
+  border-radius: 10px !important;
+}
 
+.select-dropdown{
+  border-radius: 10px;
+
+  color: gray;
+}

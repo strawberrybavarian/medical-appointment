@@ -69,7 +69,7 @@ function App() {
           <Route path={'/verify-otp'} element={<VerifyOTP/>}> </Route>
         {/* Practitioner Routes */}
           <Route path={"/dashboard/:did"} element={<DashboardMain />}/>
-          <Route path={"/dashboard/edit/:uid/:index"}element={<EditMode/>}/>  
+     
           <Route path={'/mainappointment/:did'} element={<TheAppointments/>}></Route>
           <Route path={'/medicalrecord/:did'} element={<MainMedicalRecord/>}/>
           <Route path={"/information/:pid/:did/:apid"} element={<MainInformation />}/>
