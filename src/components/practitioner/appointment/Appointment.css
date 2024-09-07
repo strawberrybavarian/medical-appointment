@@ -138,3 +138,17 @@
   color: #000; /* Text color on hover */
   border-radius: 10px;
 }
+
+.accept-link {
+  color: green; /* Green color for the Accept link */
+}
+
+.reschedule-link {
+  color: #fabc02; /* Yellow color for the Reschedule link */
+}
+
+.accept-link:hover, 
+.reschedule-link:hover {
+  text-decoration: underline; /* Underline on hover */
+}
+

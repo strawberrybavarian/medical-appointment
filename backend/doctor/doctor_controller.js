@@ -560,25 +560,24 @@ const updateAvailability = async (req, res) => {
 
 const rescheduleAppointment = async (req, res) => {
     try {
-        const appointmentId = req.params.uid; // Appointment ID from URL parameter
-        const { newDate, newTime } = req.body; // New date and time from request body
+        const appointmentId = req.params.uid; 
+        const { newDate, newTime } = req.body; 
 
-        // Find the appointment and update its date and time
         const updatedAppointment = await Appointment.findByIdAndUpdate(
             appointmentId,
             { date: newDate, time: newTime, status:'Scheduled' },
             { new: true }
-        ).populate('doctor').populate('patient'); // Populate doctor and patient
+        ).populate('doctor').populate('patient'); 
 
         if (!updatedAppointment) {
             return res.status(404).json({ message: "Appointment not found" });
         }
 
-        // Get doctor and patient names from the populated fields
+   
         const doctorName = `${updatedAppointment.doctor.dr_firstName} ${updatedAppointment.doctor.dr_lastName}`;
         const patientName = `${updatedAppointment.patient.patient_firstName} ${updatedAppointment.patient.patient_lastName}`;
 
-        // Create a notification for the patient
+    
         const patientObjectId = new mongoose.Types.ObjectId(updatedAppointment.patient._id);
         const notification = new Notification({
             message: `Your appointment with Dr. ${doctorName} has been rescheduled to ${newDate} at ${newTime}.`,
@@ -587,7 +586,7 @@ const rescheduleAppointment = async (req, res) => {
         });
         await notification.save();
 
-        // Add notification reference to the patient
+
         await Patient.findByIdAndUpdate(
             patientObjectId,
             { $push: { notifications: notification._id } },
@@ -603,12 +602,11 @@ const rescheduleAppointment = async (req, res) => {
 const rescheduledStatus = async (req, res) => {
     try {
       const { rescheduledReason } = req.body;
-      const appointmentId = req.params.uid; // Appointment ID from URL parameter
-  
-      // Find the appointment and update its cancelReason and status
+      const appointmentId = req.params.uid; 
+
       const updatedAppointment = await Appointment.findByIdAndUpdate(
         appointmentId,
-        { $set: { rescheduledReason: rescheduledReason, status: 'Rescheduled' } }, // Update cancelReason and status
+        { $set: { rescheduledReason: rescheduledReason, status: 'Rescheduled' } }, 
         { new: true }
       );
   
@@ -625,7 +623,7 @@ const rescheduledStatus = async (req, res) => {
 
 
 
-//For Prescription
+//Prescription
 const createPrescription = async (req, res) => {
     const { patientId, appointmentId } = req.params;
     const { gender, dateOfConsultation, doctor, medications } = req.body;
@@ -638,13 +636,13 @@ const createPrescription = async (req, res) => {
         });
 
         if (prescription) {
-            // Update existing prescription
+       
             prescription.gender = gender;
             prescription.dateOfConsultation = dateOfConsultation;
             prescription.medications = medications;
             await prescription.save();
         } else {
-            // Create new prescription
+    
             prescription = new Prescription({
                 patient: patientId,
                 appointment: appointmentId || null,
@@ -655,21 +653,21 @@ const createPrescription = async (req, res) => {
             });
             await prescription.save();
 
-            // Update the patient's record
+
             const patient = await Patient.findById(patientId);
             if (patient) {
                 patient.prescriptions.push(prescription._id);
                 await patient.save();
             }
 
-            // Update the doctor's record
+
             const doctorRecord = await Doctors.findById(doctor);
             if (doctorRecord) {
                 doctorRecord.dr_prescriptions.push(prescription._id);
                 await doctorRecord.save();
             }
 
-            // Update the appointment
+
             if (appointmentId) {
                 const appointment = await Appointment.findById(appointmentId);
                 if (appointment) {
@@ -725,6 +723,11 @@ const getPrescriptions = async (req, res) => {
         res.status(500).json({ message: 'Internal server error', error });
     }
 };
+
+
+
+
+
 //Getting the patient
 const getPatientsByDoctor = async (req, res) => {
     try {

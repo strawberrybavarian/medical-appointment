@@ -9,6 +9,11 @@ const createPrescription = async (req, res) => {
     const { gender, dateOfConsultation, doctorId, medications } = req.body;
     const imagePath = req.file ? `images/${req.file.filename}` : '';
 
+    // Ensure patientId, doctorId, and appointmentId are provided
+    if (!patientId || !doctorId || !appointmentId) {
+      return res.status(400).json({ message: 'Missing required fields: patientId, doctorId, or appointmentId' });
+    }
+
     // Ensure that medications is parsed correctly
     let parsedMedications = [];
 
@@ -21,7 +26,6 @@ const createPrescription = async (req, res) => {
           return res.status(400).json({ message: 'Invalid medications format' });
         }
       } else if (Array.isArray(medications)) {
-        // If it's already an array, use it as is
         parsedMedications = medications;
       } else {
         return res.status(400).json({ message: 'Medications should be an array or a valid JSON string' });
@@ -55,7 +59,7 @@ const createPrescription = async (req, res) => {
         gender,
         dateOfConsultation,
         doctor: doctorId,
-        medications: parsedMedications,  // Ensure medications is an array
+        medications: parsedMedications,
         prescriptionImage: imagePath,
       });
       await prescription.save();
@@ -90,6 +94,7 @@ const createPrescription = async (req, res) => {
     res.status(500).json({ message: 'Internal server error', error });
   }
 };
+
 
 
 

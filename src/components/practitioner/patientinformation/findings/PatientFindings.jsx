@@ -1,11 +1,10 @@
 import { useNavigate, useParams } from "react-router-dom";
-import { Container, Row, Col, Button, Card, Form } from 'react-bootstrap';
+import { Container, Row, Col, Button, Card, Form, Table } from 'react-bootstrap';
 import axios from "axios";
 import { useEffect, useState } from "react";
-import './PatientFindings.css';
+import './PatientFindings.css'; 
 
 function PatientFindings({ patientId, appointmentId, doctorId }) {
-    // Patient Information State
     const [fname, setFname] = useState('');
     const [lname, setLname] = useState('');
     const [age, setAge] = useState('');
@@ -22,33 +21,50 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
         remarks: ''
     });
 
+
+    
+
+    const [loading, setLoading] = useState(true);  // Loading state for data fetching
+    const [error, setError] = useState(null);      // Error state for data fetching
+
     const navigate = useNavigate();
 
+    // Fetching patient data and findings when the component loads
     useEffect(() => {
-        axios
-            .get(`http://localhost:8000/patient/api/onepatient/${patientId}`)
-            .then((res) => {
-                setFname(res.data.thePatient.patient_firstName);
-                setLname(res.data.thePatient.patient_lastName);
-                setAge(res.data.thePatient.patient_age);
-                setEmail(res.data.thePatient.patient_email);
-            })
-            .catch((err) => {
-                console.log(err);
-            });
-
-        axios
-            .get(`http://localhost:8000/api/getfindings/${appointmentId}`)
-            .then((res) => {
-                if (res.data) {
-                    setFindings(res.data);
+        const fetchPatientAndFindings = async () => {
+            setLoading(true);
+            try {
+                // Fetch patient details
+                const patientRes = await axios.get(`http://localhost:8000/patient/api/onepatient/${patientId}`);
+                setFname(patientRes.data.thePatient.patient_firstName);
+                setLname(patientRes.data.thePatient.patient_lastName);
+                setAge(patientRes.data.thePatient.patient_age);
+                setEmail(patientRes.data.thePatient.patient_email);
+    
+                // Fetch findings for the appointment
+                const findingsRes = await axios.get(`http://localhost:8000/getfindings/${appointmentId}`);
+                console.log('Findings Response:', findingsRes.data);  // Debug log
+    
+                // Correct data structure check
+                if (findingsRes.data && findingsRes.data.findings) {
+                    setFindings(findingsRes.data.findings);
+                } else {
+                    console.warn("No findings data returned for this appointmentId.");
                 }
-            })
-            .catch((err) => {
-                console.log(err);
-            });
+    
+                setLoading(false);
+            } catch (err) {
+                console.error('Error fetching data:', err);
+                setError('Failed to load data. Please try again later.');
+                setLoading(false);
+            }
+        };
+    
+        fetchPatientAndFindings();
     }, [patientId, appointmentId]);
+    
 
+    // Handle field changes in the form
     const handleChange = (e) => {
         const { name, value } = e.target;
         if (name === 'systole' || name === 'diastole') {
@@ -67,23 +83,32 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
         }
     };
 
-    const handleSubmit = (e) => {
+    // Handle saving updates from the form
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        axios
-            .post('http://localhost:8000/createfindings', {
+        try {
+            // Save or update findings
+            await axios.post('http://localhost:8000/createfindings', {
                 ...findings,
                 patient: patientId,
                 appointment: appointmentId,
                 doctor: doctorId
-            })
-            .then((res) => {
-                console.log(res.data);
-                alert('Findings saved successfully');
-            })
-            .catch((err) => {
-                console.log(err);
             });
+            alert('Findings saved successfully');
+        } catch (err) {
+            console.error('Error saving findings:', err);
+            alert('Error saving findings');
+        }
     };
+
+    // Display loading or error message
+    if (loading) {
+        return <div>Loading...</div>;
+    }
+
+    if (error) {
+        return <div>{error}</div>;
+    }
 
     return (
         <Container fluid>
@@ -112,15 +137,38 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
                             <h4 className="m-0 font-weight-bold text-gray">Preview Findings</h4>
                         </Card.Header>
                         <Card.Body>
-                            <Card.Text>
-                                <strong>Patient Name:</strong> {fname} {lname}
-                            </Card.Text>
-                            <Card.Text>
-                                <strong>Patient Age:</strong> {age}
-                            </Card.Text>
-                            <Card.Text>
-                                <strong>Patient Email:</strong> {email}
-                            </Card.Text>
+                        <Table striped bordered hover>
+    <tbody>
+        <tr>
+            <td>Blood Pressure</td>
+            <td>{findings?.bloodPressure?.systole || 'N/A'}/{findings?.bloodPressure?.diastole || 'N/A'}</td>
+        </tr>
+        <tr>
+            <td>Respiratory Rate</td>
+            <td>{findings?.respiratoryRate || 'N/A'}</td>
+        </tr>
+        <tr>
+            <td>Pulse Rate</td>
+            <td>{findings?.pulseRate || 'N/A'}</td>
+        </tr>
+        <tr>
+            <td>Temperature (°C) </td>
+            <td>{findings?.temperature || 'N/A'}</td>
+        </tr>
+        <tr>
+            <td>Weight</td>
+            <td>{findings?.weight || 'N/A'}</td>
+        </tr>
+        <tr>
+            <td>Height</td>
+            <td>{findings?.height || 'N/A'}</td>
+        </tr>
+        <tr>
+            <td>Remarks</td>
+            <td>{findings?.remarks || 'N/A'}</td>
+        </tr>
+    </tbody>
+</Table>
                         </Card.Body>
                     </Card>
                 </Col>
@@ -137,19 +185,22 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
                                     <Form.Group as={Col} className="mb-3">
                                         <Form.Label>Blood Pressure (Systole):</Form.Label>
                                         <Form.Control
-                                            type="number"
-                                            name="systole"
-                                            value={findings.bloodPressure.systole}
-                                            onChange={handleChange}
-                                            style={{ fontSize: 18 }}
+                                        type="number"
+                                        name="systole"
+                                        value={findings?.bloodPressure?.systole || ''}
+                                        onChange={handleChange}
+                                        style={{ fontSize: 18 }}
                                         />
+
+
                                     </Form.Group>
                                     <Form.Group as={Col} className="mb-3">
                                         <Form.Label>Blood Pressure (Diastole):</Form.Label>
+                                        
                                         <Form.Control
                                             type="number"
                                             name="diastole"
-                                            value={findings.bloodPressure.diastole}
+                                            value={findings?.bloodPressure?.diastole || ''}
                                             onChange={handleChange}
                                             style={{ fontSize: 18 }}
                                         />
@@ -162,7 +213,7 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
                                         <Form.Control
                                             type="number"
                                             name="respiratoryRate"
-                                            value={findings.respiratoryRate}
+                                            value={findings.respiratoryRate || ''}
                                             onChange={handleChange}
                                             style={{ fontSize: 18 }}
                                         />
@@ -172,17 +223,17 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
                                         <Form.Control
                                             type="number"
                                             name="pulseRate"
-                                            value={findings.pulseRate}
+                                            value={findings.pulseRate || ''}
                                             onChange={handleChange}
                                             style={{ fontSize: 18 }}
                                         />
                                     </Form.Group>
                                     <Form.Group as={Col} className="mb-3">
-                                        <Form.Label>Temperature:</Form.Label>
+                                        <Form.Label>Temperature :</Form.Label>
                                         <Form.Control
                                             type="number"
                                             name="temperature"
-                                            value={findings.temperature}
+                                            value={findings.temperature || ''}
                                             onChange={handleChange}
                                             style={{ fontSize: 18 }}
                                         />
@@ -194,7 +245,7 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
                                     <Form.Control
                                         type="number"
                                         name="weight"
-                                        value={findings.weight}
+                                        value={findings.weight || ''}
                                         onChange={handleChange}
                                         style={{ fontSize: 18 }}
                                     />
@@ -204,7 +255,7 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
                                     <Form.Control
                                         type="number"
                                         name="height"
-                                        value={findings.height}
+                                        value={findings.height || ''}
                                         onChange={handleChange}
                                         style={{ fontSize: 18 }}
                                     />
@@ -214,7 +265,7 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
                                     <Form.Control
                                         type="text"
                                         name="remarks"
-                                        value={findings.remarks}
+                                        value={findings.remarks || ''}
                                         onChange={handleChange}
                                         style={{ fontSize: 18 }}
                                     />

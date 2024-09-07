@@ -1,7 +1,7 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { Table, Button, Container, Pagination, Form, Row, Col } from 'react-bootstrap';
+import { Table, Button, Container, Pagination, Form, Row, Col, Nav } from 'react-bootstrap';
 
 import './Appointment.css';
 import RescheduleModal from "./Reschedule Modal/RescheduleModal";
@@ -185,8 +185,27 @@ const TodaysAppointment = () => {
                   <td>{appointment.reason}</td>
                   <td>{appointment.status}</td>
                   <td>
-                    <Button variant="success" onClick={() => acceptAppointment(appointment._id)}>Accept</Button>
-                    <Button variant="warning" onClick={() => handleReschedule(appointment)}>Reschedule</Button>
+                  <div className="d-flex justify-content-center">
+                    <Nav onSelect={(selectedKey) => alert(`selected ${selectedKey}`)}>
+                      <Nav.Item>
+                        <Nav.Link 
+                          className="accept-link" 
+                          onClick={() => acceptAppointment(appointment._id)}>
+                          Accept
+                        </Nav.Link>
+                      </Nav.Item>
+
+                      <Nav.Item>
+                        <Nav.Link 
+                          className="reschedule-link" 
+                          onClick={() => handleReschedule(appointment)}>
+                          Reschedule
+                        </Nav.Link>
+                      </Nav.Item>
+                    </Nav>
+</div>
+
+                    
                   </td>
                 </tr>
               );

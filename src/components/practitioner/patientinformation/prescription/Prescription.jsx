@@ -8,7 +8,11 @@ function Prescription({ patientId, appointmentId, doctorId }) {
   const [medication, setMedication] = useState({
     name: "",
     type: "",
+    dosage: "",
+    frequency: "",
+    duration: "",
     instruction: "",
+    notes: "",
   });
   const [medications, setMedications] = useState([]);
   const [rximage, setRximage] = useState(null);
@@ -17,12 +21,15 @@ function Prescription({ patientId, appointmentId, doctorId }) {
   useEffect(() => {
     const fetchPrescription = async () => {
       try {
-        const response = await axios.get(
-          `${ip.address}/doctor/api/getPrescription/${patientId}/${doctorId}`
-        );
-        if (response.data) {
-          setMedications(response.data.medications);
-        }
+        // const response = await axios.get(`${ip.address}/doctor/api/getPrescription/${patientId}/${doctorId}`);
+        // setMedications(response.data.medications);
+     
+
+        const medicationRes = await axios.get(`${ip.address}/getfindings/${appointmentId}`)
+        console.log(medicationRes.data.prescription);
+        
+      
+      
       } catch (err) {
         console.log("Error fetching prescription:", err);
       }
@@ -36,9 +43,17 @@ function Prescription({ patientId, appointmentId, doctorId }) {
   };
 
   const addMedication = () => {
-    if (medication.name && medication.type && medication.instruction) {
+    if (medication.name && medication.type && medication.dosage && medication.frequency && medication.duration && medication.instruction) {
       setMedications((prevMedications) => [...prevMedications, medication]);
-      setMedication({ name: "", type: "", instruction: "" });
+      setMedication({
+        name: "",
+        type: "",
+        dosage: "",
+        frequency: "",
+        duration: "",
+        instruction: "",
+        notes: "",
+      });
       setError("");
     } else {
       setError("Please fill in all fields");
@@ -85,8 +100,7 @@ function Prescription({ patientId, appointmentId, doctorId }) {
   return (
     <Container fluid>
       <Row className="mt-4">
-        {/* Left Section - Form for adding medications */}
-        <Col md={6}>
+        <Col md={4}>
           <Card className="mb-4">
             <Card.Header>
               <h4 className="m-0 font-weight-bold text-gray">Add Medication</h4>
@@ -120,6 +134,44 @@ function Prescription({ patientId, appointmentId, doctorId }) {
                   </Col>
                   <Col>
                     <Form.Group className="mb-3">
+                      <Form.Label>Dosage</Form.Label>
+                      <Form.Control
+                        type="text"
+                        value={medication.dosage}
+                        onChange={(e) =>
+                          handleMedicationChange("dosage", e.target.value)
+                        }
+                      />
+                    </Form.Group>
+                  </Col>
+                </Row>
+                <Row>
+                  <Col>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Frequency</Form.Label>
+                      <Form.Control
+                        type="text"
+                        value={medication.frequency}
+                        onChange={(e) =>
+                          handleMedicationChange("frequency", e.target.value)
+                        }
+                      />
+                    </Form.Group>
+                  </Col>
+                  <Col>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Duration</Form.Label>
+                      <Form.Control
+                        type="text"
+                        value={medication.duration}
+                        onChange={(e) =>
+                          handleMedicationChange("duration", e.target.value)
+                        }
+                      />
+                    </Form.Group>
+                  </Col>
+                  <Col>
+                    <Form.Group className="mb-3">
                       <Form.Label>Instructions</Form.Label>
                       <Form.Control
                         type="text"
@@ -131,6 +183,17 @@ function Prescription({ patientId, appointmentId, doctorId }) {
                     </Form.Group>
                   </Col>
                 </Row>
+                <Form.Group className="mb-3">
+                  <Form.Label>Notes (optional)</Form.Label>
+                  <Form.Control
+                    type="text"
+                    value={medication.notes}
+                    onChange={(e) =>
+                      handleMedicationChange("notes", e.target.value)
+                    }
+                  />
+                </Form.Group>
+
                 <div style={{ display: "flex", justifyContent: "center" }}>
                   <Button variant="secondary" onClick={addMedication}>
                     Add Medication
@@ -142,18 +205,20 @@ function Prescription({ patientId, appointmentId, doctorId }) {
           </Card>
         </Col>
 
-        {/* Right Section - Medication Preview */}
-        <Col md={6}>
+        <Col md={8}>
           <Card className="mb-4">
             <Card.Header>
               <h4 className="m-0 font-weight-bold text-gray">Prescription Preview</h4>
             </Card.Header>
             <Card.Body>
-              <Table striped bordered hover>
+              <Table responsive striped bordered hover>
                 <thead>
                   <tr>
                     <th>Name of Drug</th>
                     <th>Type of Drug</th>
+                    <th>Dosage</th>
+                    <th>Frequency</th>
+                    <th>Duration</th>
                     <th>Instructions</th>
                     <th>Actions</th>
                   </tr>
@@ -163,6 +228,9 @@ function Prescription({ patientId, appointmentId, doctorId }) {
                     <tr key={index}>
                       <td>{med.name}</td>
                       <td>{med.type}</td>
+                      <td>{med.dosage}</td>
+                      <td>{med.frequency}</td>
+                      <td>{med.duration}</td>
                       <td>{med.instruction}</td>
                       <td>
                         <Button

@@ -65,12 +65,16 @@ function DoctorAvailability({ doctorId }) {
     };
 
     const handleStatusChange = () => {
-        axios.put(`http://localhost:8000/doctor/${doctorId}/status`, { activeAppointmentStatus: !activeAppointmentStatus })
-            .then(res => {
-                setActiveAppointmentStatus(!activeAppointmentStatus);
+        axios
+            .put(`http://localhost:8000/doctor/${doctorId}/appointmentstatus`, {
+                activeAppointmentStatus: !activeAppointmentStatus
             })
-            .catch(err => console.log(err));
+            .then((res) => {
+                setActiveAppointmentStatus(res.data.activeAppointmentStatus); // Ensure you're setting the updated status
+            })
+            .catch((err) => console.log(err));
     };
+    
 
     return (
         <div style={{display: "flex", flex: "1 0 auto", height: "100vh", overflowY: "hidden"}}>

@@ -81,7 +81,7 @@ function DoctorScheduleManagement() {
 
     const handleStatusChange = async () => {
         try {
-            await axios.put(`http://localhost:8000/doctor/${did}/status`, { activeAppointmentStatus: !activeAppointmentStatus });
+            await axios.put(`http://localhost:8000/doctor/${did}/appointmentstatus`, { activeAppointmentStatus: !activeAppointmentStatus });
             setActiveAppointmentStatus(!activeAppointmentStatus);
         } catch (err) {
             console.error('Error updating appointment status:', err);

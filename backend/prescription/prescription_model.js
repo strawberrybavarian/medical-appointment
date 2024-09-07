@@ -17,7 +17,8 @@ const PrescriptionSchema = new Schema({
         ref: 'Doctor',
         required: true,
     },
-    
+
+    // Detailed medication array
     medications: [{
         name: {
             type: String,
@@ -25,15 +26,51 @@ const PrescriptionSchema = new Schema({
         },
         type: {
             type: String,
-            required: true
+            required: true // E.g., tablet, syrup, ointment, etc.
+        },
+        dosage: {
+            type: String,
+            required: true // E.g., "500mg"
+        },
+        frequency: {
+            type: String,
+            required: true // E.g., "Twice a day", "Once in the morning"
+        },
+        duration: {
+            type: String,
+            required: true // E.g., "7 days", "2 weeks"
         },
         instruction: {
             type: String,
-            required: true
+            required: true // E.g., "Take after meals", "Avoid dairy"
+        },
+        notes: {
+            type: String,
+            default: '' // Additional notes, if any
         }
     }],
 
-    prescriptionImage:{
+
+    // Optional fields for additional prescription details
+    status: {
+        type: String,
+        enum: ['active', 'completed', 'expired'],
+        default: 'active'
+    },
+    
+    prescriptionImage: {
+        type: String,
+        default: '' // Path to prescription image, if available
+    },
+    
+    // Optional expiry date for prescription validity
+    expiryDate: {
+        type: Date,
+        default: null // Prescription expiry date
+    },
+
+    // Additional notes or instructions for the whole prescription
+    generalNotes: {
         type: String,
         default: ''
     }

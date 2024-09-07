@@ -59,7 +59,7 @@ const TheAppointmentsNav = () => {
         <DoctorNavbar doctor_image={theImage} />
 
         <Container>
-          <Nav fill variant="tabs" className="app-navtabs" activeKey={outerTabFromUrl} onSelect={handleSelect}>
+          <Nav fill variant="tabs" className="navtabs-pxmanagement" activeKey={outerTabFromUrl} onSelect={handleSelect}>
             <Nav.Item>
               <Nav.Link eventKey="pending">Pending Appointments</Nav.Link>
             </Nav.Item>

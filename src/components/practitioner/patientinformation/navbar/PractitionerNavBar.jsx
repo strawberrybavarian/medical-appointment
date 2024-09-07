@@ -48,7 +48,12 @@ function PractitionerNavBar() {
                         </Nav.Item>
                         <Nav.Item>
                             <Nav.Link eventKey="radiology" onClick={() => navigate(`/choosedoctor/${pid}`)}>
-                                Radiology Result
+                                Laboratory Result
+                            </Nav.Link>
+                        </Nav.Item>
+                        <Nav.Item>
+                            <Nav.Link eventKey="radiology" onClick={() => navigate(`/choosedoctor/${pid}`)}>
+                                Immunization
                             </Nav.Link>
                         </Nav.Item>
                     </Nav>

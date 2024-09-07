@@ -73,7 +73,7 @@ module.exports = app => {
   app.get('/doctor/appointments/:doctorId', DoctorController.getAllAppointments);
   app.put('/doctor/api/:appointmentID/completeappointment', DoctorController.completeAppointment)
   app.put('/doctor/:doctorId/availability', DoctorController.doctorAvailability)
-  app.put('/doctor/:doctorId/status', DoctorController.updateAvailability);
+  app.put('/doctor/:doctorId/appointmentstatus', DoctorController.updateAvailability);
  
 
   app.get('/doctor/:doctorId/available', DoctorController.getAvailability);

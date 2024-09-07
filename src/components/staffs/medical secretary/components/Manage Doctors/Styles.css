@@ -1,7 +1,7 @@
 
 .doctor-card {
 
-   
+    width: 15vw!important;
     cursor: pointer;
     transition: transform 0.2s ease;
   }
