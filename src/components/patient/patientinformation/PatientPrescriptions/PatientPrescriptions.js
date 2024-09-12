@@ -15,6 +15,7 @@ function PatientPrescriptions() {
                 console.log(res.data);  // Log the entire response to understand its structure
                 if (res.data && res.data.thePatient && Array.isArray(res.data.thePatient.patient_appointments)) {
                     setPrescriptions(res.data.thePatient.patient_appointments);
+                    console.log(res.data.thePatient);
                 } else {
                     setPrescriptions([]);  // If data is not as expected, set to empty array
                 }

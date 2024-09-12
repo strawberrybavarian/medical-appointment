@@ -5,7 +5,6 @@ const PostSchema = new Schema({
   content: {
     type: String,
     required: true,
-    minlength: 3,
   },
   doctor_id: {
     type: Schema.Types.ObjectId,

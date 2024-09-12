@@ -7,7 +7,7 @@ import './Appointment.css';
 import MainInformation from "../patientinformation/MainInformation";
 
 const TodaysAppointment = ({ allAppointments }) => {
-  const { did, pid } = useParams();
+  
 
   const [error, setError] = useState("");
   const [currentPage, setCurrentPage] = useState(1); // Current page state

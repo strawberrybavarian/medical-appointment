@@ -49,7 +49,7 @@ function MainInformation() {
          
           <div className="maincolor-container d-flex justify-content-center" style={{ display: "flex" }}>            
             
-            <SidebarMenu doctor_image={theImage} doctor_name={theName} did={theId} />
+            <SidebarMenu doctor_image={theImage} doctor_name={theName} did={did} />
               <div style={{ width: '100%' }}>
                 <DoctorNavbar doctor_image={theImage}/> 
                 <Container fluid className="ad-container" style={{ maxHeight: 'calc(100vh - 80px)', overflowY: 'auto', padding: '20px', paddingBottom:'50px' }}>

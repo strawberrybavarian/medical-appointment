@@ -52,7 +52,10 @@ function AppointmentFullCalendar({msid}) {
       end: new Date(startTime.getTime() + 30 * 60000), 
       description: appointment.reason,
       status: appointment.status, 
-      doctorName: `${appointment.doctor.dr_firstName} ${appointment.doctor.dr_lastName}` 
+      doctorName: appointment.doctor 
+      ? `${appointment.doctor.dr_firstName} ${appointment.doctor.dr_lastName}` 
+      : 'No doctor assigned',  // Fallback if no doctor is assigned
+ 
     };
   });
 

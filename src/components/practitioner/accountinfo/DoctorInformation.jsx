@@ -1,15 +1,17 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import {Nav, Container} from 'react-bootstrap';
 
 import SidebarMenu from "../sidebar/SidebarMenu";
 import AccountInfo from "./AccountInfo";
 import DrTwoFactorAuth from "./DrTwoFactorAuth";
 import DoctorAvailability from "./DoctorAvailability"; // Import the new component
-
+import DoctorNavbar from "../navbar/DoctorNavbar";
+// DoctorNavbar
 function DoctorInformation() {
-    const { did } = useParams();
+    const location = useLocation();
+    const { did } = location.state || {};
     const [allAppointments, setAllAppointments] = useState([]);
     const [theId, setTheId] = useState("");
     const [theName, setTheName] = useState("");
@@ -40,25 +42,36 @@ function DoctorInformation() {
     }, [did]);
 
     return (
-        <div style={{ display: "flex", flex: "1 0 auto", height: "100vh", overflowY: "hidden" }}>
+        <div className="maincolor-container d-flex justify-content-center">
             <SidebarMenu doctor_image={theImage} doctor_name={theName} did={theId} />
-            <Container> 
-                <Nav fill variant="tabs" defaultActiveKey="/home">
-                    <Nav.Item>
-                        <Nav.Link onClick={() => setActiveTab("info")}>My Personal Information</Nav.Link>
-                    </Nav.Item>
-                    <Nav.Item>
-                        <Nav.Link onClick={() => setActiveTab("availability")}>Manage Availability</Nav.Link>
-                    </Nav.Item>
-                    <Nav.Item>
-                        <Nav.Link onClick={() => setActiveTab("DrTwoFactorAuth")}>Two Factor Authentication</Nav.Link>
-                    </Nav.Item>
-                   
-                </Nav>
-                {activeTab === 'info' && <AccountInfo />}
-                {activeTab === 'DrTwoFactorAuth' && <DrTwoFactorAuth setId={did} />}
-                {activeTab === 'availability' && <DoctorAvailability doctorId={did} />} 
-            </Container>
+            <div style={{ width: '100%' }}> 
+                <DoctorNavbar doctor_image={theImage}/>
+                    <Container fluid className="ad-container" style={{ height: 'calc(100vh - 80px)', overflowY: 'auto', padding: '20px' }}>
+                        <Nav fill variant="tabs" className="app-navtabs-doctor" defaultActiveKey="/home">
+                            <Nav.Item>
+                                <Nav.Link onClick={() => setActiveTab("info")}>My Personal Information</Nav.Link>
+                            </Nav.Item>
+                            <Nav.Item>
+                                <Nav.Link onClick={() => setActiveTab("availability")}>Manage Availability</Nav.Link>
+                            </Nav.Item>
+                            <Nav.Item>
+                                <Nav.Link onClick={() => setActiveTab("DrTwoFactorAuth")}>Two Factor Authentication</Nav.Link>
+                            </Nav.Item>
+                        </Nav>
+                    
+                        {activeTab === 'info' && <AccountInfo did={did} />}
+                        {activeTab === 'DrTwoFactorAuth' && <DrTwoFactorAuth setId={did} />}
+                        {activeTab === 'availability' && <DoctorAvailability doctorId={did} />} 
+                    
+                    </Container>
+                    
+
+
+              
+                    
+              
+                
+            </div>
         </div>
     );
 }

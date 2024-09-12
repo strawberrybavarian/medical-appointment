@@ -56,6 +56,10 @@ const AppointmentSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'Findings'
     },
+    immunization: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Immunization'
+    }],
     payment: {
         type: Schema.Types.ObjectId,
         ref: 'Payment'

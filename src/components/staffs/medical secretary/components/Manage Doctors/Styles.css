@@ -1,21 +1,19 @@
 
 .doctor-card {
+  max-width: 250px; /* Set a reasonable max-width */
+  margin: 0 auto; /* Center the card */
+  transition: transform 0.2s; /* Add hover effect */
+}
 
-    width: 15vw!important;
-    cursor: pointer;
-    transition: transform 0.2s ease;
-  }
-  
-  .doctor-card:hover {
-    transform: scale(1.05);
-  }
-  
+.doctor-card:hover {
+  transform: scale(1.05); /* Slight scale on hover */
+}
 
-  .doctor-card img {
-    height:250px;
-
-    object-fit: cover; 
-  }
+/* Ensures the card image does not stretch beyond its container */
+.doctor-card img {
+  height: 200px; /* Set a fixed height */
+  object-fit: cover; /* Keep the image aspect ratio */
+}
   
 
   .doctor-card .text-center {

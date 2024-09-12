@@ -6,11 +6,11 @@ import { useParams } from 'react-router-dom';
 import CropResizeTiltModal from './CropResizeTiltModal';
 import './UploadImageModal.css';
 
-const ImageUploadModal = ({ isOpen, onRequestClose }) => {
+const ImageUploadModal = ({ isOpen, onRequestClose, did }) => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [imageSrc, setImageSrc] = useState(null);
   const [editedImage, setEditedImage] = useState(null);
-  const { did } = useParams();
+
 
   const handleFileChange = (event) => {
     const file = event.target.files[0];

@@ -1,6 +1,6 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { Table, Button, Container, Pagination, Form, Row, Col, Nav } from 'react-bootstrap';
 
 import './Appointment.css';
@@ -8,7 +8,8 @@ import RescheduleModal from "./Reschedule Modal/RescheduleModal";
 
 
 const TodaysAppointment = () => {
-  const { did } = useParams();
+  const location = useLocation();
+  const { did } = location.state || {}; 
   const [allAppointments, setAllAppointments] = useState([]);
   const [error, setError] = useState("");
   const [currentPage, setCurrentPage] = useState(1);

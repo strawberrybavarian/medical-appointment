@@ -15,28 +15,24 @@ function Prescription({ patientId, appointmentId, doctorId }) {
     notes: "",
   });
   const [medications, setMedications] = useState([]);
+  const [editingIndex, setEditingIndex] = useState(null); // Track if editing an existing medication
   const [rximage, setRximage] = useState(null);
   const [error, setError] = useState("");
 
   useEffect(() => {
     const fetchPrescription = async () => {
       try {
-        // const response = await axios.get(`${ip.address}/doctor/api/getPrescription/${patientId}/${doctorId}`);
-        // setMedications(response.data.medications);
-     
-
-        const medicationRes = await axios.get(`${ip.address}/getfindings/${appointmentId}`)
-        console.log(medicationRes.data.prescription);
-        
-      
-      
+        const medicationRes = await axios.get(`${ip.address}/getfindings/${appointmentId}`);
+        if (medicationRes.data.prescription) {
+          setMedications(medicationRes.data.prescription.medications); // Assuming response contains medication list
+        }
       } catch (err) {
         console.log("Error fetching prescription:", err);
       }
     };
 
     fetchPrescription();
-  }, [patientId, doctorId]);
+  }, [appointmentId]);
 
   const handleMedicationChange = (field, value) => {
     setMedication({ ...medication, [field]: value });
@@ -44,7 +40,16 @@ function Prescription({ patientId, appointmentId, doctorId }) {
 
   const addMedication = () => {
     if (medication.name && medication.type && medication.dosage && medication.frequency && medication.duration && medication.instruction) {
-      setMedications((prevMedications) => [...prevMedications, medication]);
+      if (editingIndex !== null) {
+        // Update existing medication
+        const updatedMedications = [...medications];
+        updatedMedications[editingIndex] = medication;
+        setMedications(updatedMedications);
+        setEditingIndex(null);
+      } else {
+        // Add new medication
+        setMedications((prevMedications) => [...prevMedications, medication]);
+      }
       setMedication({
         name: "",
         type: "",
@@ -65,6 +70,11 @@ function Prescription({ patientId, appointmentId, doctorId }) {
     setMedications(newMedications);
   };
 
+  const editMedication = (index) => {
+    setMedication(medications[index]);
+    setEditingIndex(index);
+  };
+
   const handleImageChange = (e) => {
     setRximage(e.target.files[0]);
   };
@@ -81,7 +91,7 @@ function Prescription({ patientId, appointmentId, doctorId }) {
 
     try {
       const response = await axios.post(
-        `http://localhost:8000/doctor/api/createPrescription/${patientId}/${appointmentId}`,
+        `${ip.address}/doctor/api/createPrescription/${patientId}/${appointmentId}`,
         formData,
         {
           headers: {
@@ -196,7 +206,7 @@ function Prescription({ patientId, appointmentId, doctorId }) {
 
                 <div style={{ display: "flex", justifyContent: "center" }}>
                   <Button variant="secondary" onClick={addMedication}>
-                    Add Medication
+                    {editingIndex !== null ? "Update Medication" : "Add Medication"}
                   </Button>
                 </div>
                 {error && <p className="text-danger mt-2">{error}</p>}
@@ -233,6 +243,9 @@ function Prescription({ patientId, appointmentId, doctorId }) {
                       <td>{med.duration}</td>
                       <td>{med.instruction}</td>
                       <td>
+                        <Button variant="warning" onClick={() => editMedication(index)}>
+                          Edit
+                        </Button>{" "}
                         <Button
                           variant="danger"
                           onClick={() => removeMedication(index)}

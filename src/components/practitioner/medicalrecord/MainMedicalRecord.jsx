@@ -1,13 +1,14 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 
 import SidebarMenu from "../sidebar/SidebarMenu";
 import MedicalRecord from "./MedicalRecord";
 import PatientRecord from "./PatientRecord";
 
 const MainMedicalRecord = () => {
-    const { did } = useParams();
+    const location = useLocation();
+    const { did } = location.state || {};
     const [theId, setTheId] = useState("");
     const [theName, setTheName] = useState("");
     const [theImage, setTheImage] = useState("");
@@ -29,7 +30,7 @@ const MainMedicalRecord = () => {
 
     return (
       <div style={{display: "flex", flex: "1 0 auto", height: "100vh",overflowY: "hidden",}}>
-        <SidebarMenu doctor_image={theImage} doctor_name={theName} did={theId} />
+        <SidebarMenu doctor_image={theImage} doctor_name={theName} did={did} />
         {viewingPatientId ? (
           <PatientRecord patientId={viewingPatientId} onClose={() => setViewingPatientId(null)} />
         ) : (

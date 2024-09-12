@@ -42,6 +42,7 @@ import CreatePatient from './components/staffs/medical secretary/components/Add 
 import MedSecCalendar from './components/staffs/medical secretary/components/Calendar/MedSecCalendar';
 import DoctorCards from './components/staffs/medical secretary/components/Manage Doctors/DoctorCards';
 import DoctorScheduleManagement from './components/staffs/medical secretary/components/Manage Doctors/DoctorScheduleManagement';
+import MedSecMainDashboard from './components/staffs/medical secretary/components/Dashboard/MedSecMainDashboard';
 
 //Cashier
 import CashierMain from './components/staffs/cashier/main page/CashierMain';
@@ -52,6 +53,8 @@ import PatientMain from './components/staffs/admin/dashboard/patient/PatientMain
 import DoctorMain from './components/staffs/admin/dashboard/doctors/DoctorMain';
 import DoctorManagement from './components/staffs/admin/management/account/DoctorManagement';
 import PatientManagement from './components/staffs/admin/management/account/PatientManagement';
+import NewsDetailPage from './components/staffs/news/NewsDetailPage';
+
 
 
 
@@ -67,13 +70,13 @@ function App() {
           <Route path={'/medapp/signup'} element={<NewSignUp/>}> </Route>
           <Route path={'/medapp/login'} element={<LogInUser/>}> </Route>
           <Route path={'/verify-otp'} element={<VerifyOTP/>}> </Route>
+          <Route path={'/news/:id'} element={<NewsDetailPage/>}/>
         {/* Practitioner Routes */}
-          <Route path={"/dashboard/:did"} element={<DashboardMain />}/>
-     
-          <Route path={'/mainappointment/:did'} element={<TheAppointments/>}></Route>
-          <Route path={'/medicalrecord/:did'} element={<MainMedicalRecord/>}/>
+          <Route path="/dashboard" element={<DashboardMain />} />
+          <Route path={'/mainappointment'} element={<TheAppointments/>}></Route>
+          <Route path={'/medicalrecord'} element={<MainMedicalRecord/>}/>
           <Route path={"/information/:pid/:did/:apid"} element={<MainInformation />}/>
-          <Route path={"/account/:did"} element={<DoctorInformation />}/>
+          <Route path={"/account"} element={<DoctorInformation />}/>
         
         {/* Patient Routes */}
           <Route path={"/homepage/:pid"} element={<HomePagePatient />}/>
@@ -88,6 +91,7 @@ function App() {
 
         {/* Medical Secretary Routes */}
           <Route path={"/medsec/:msid"} element={<MedSecMain />}/>
+          <Route path={"/medsec/dashboard/:msid"} element={<MedSecMainDashboard />}/>
           <Route path={"/medsec/createpatient/:msid"} element={<CreatePatient />}/>
           <Route path={"/medsec/calendar/:msid"} element={<MedSecCalendar />}/>
           <Route path={"/medsec/doctors/:msid"} element={<DoctorCards />}/>

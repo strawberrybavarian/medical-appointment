@@ -1,6 +1,6 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Nav, Container } from 'react-bootstrap';
 import './Appointment.css';
 
@@ -10,9 +10,12 @@ import CompletedAppointment from "./CompletedAppointment";
 import OngoingAppointment from "./OngoingAppointment";
 
 const MyPatientsNav = () => {
-  const { did } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
+  
+  // Get the doctor ID (did) from state or redirect if missing
+  const { did } = location.state || {}; 
+ 
 
   const [allAppointments, setAllAppointments] = useState([]);
 
@@ -20,6 +23,11 @@ const MyPatientsNav = () => {
   const innerTabFromUrl = new URLSearchParams(location.search).get("innerTab") || "upcoming";
 
   useEffect(() => {
+
+    if (!did) {
+      navigate('/'); // If `did` is missing, navigate to home
+      return null; // Render nothing while navigating
+    }
     axios
       .get(`http://localhost:8000/doctor/appointments/${did}`)
       .then((res) => {
@@ -34,7 +42,9 @@ const MyPatientsNav = () => {
   const handleSelect = (selectedKey) => {
     // Maintain the outerTab while changing the innerTab in the URL
     const outerTab = new URLSearchParams(location.search).get("outerTab") || "mypatients";
-    navigate(`?outerTab=${outerTab}&innerTab=${selectedKey}`);
+    
+    // Navigate with both outerTab and innerTab and pass `did` in the state
+    navigate(`?outerTab=${outerTab}&innerTab=${selectedKey}`, { state: { did } });
   };
 
   return (

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 
-const UploadImage = () => {
+const UploadImage = ({did}) => {
     const [selectedFile, setSelectedFile] = useState(null);
 
     const handleFileChange = (event) => {
@@ -15,7 +15,7 @@ const UploadImage = () => {
         formData.append('image', selectedFile);
 
         try {
-            const response = await axios.post('http://localhost:8000/doctor/api/:id/updateimage', formData, {
+            const response = await axios.post(`http://localhost:8000/doctor/api/${did}/updateimage`, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data'
                 }

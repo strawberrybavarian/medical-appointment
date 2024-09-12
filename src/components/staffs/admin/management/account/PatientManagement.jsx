@@ -1,24 +1,30 @@
-import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom'; // Import useParams if you need to pass params
-import { Table, Button, Container, Modal, Form } from 'react-bootstrap';
+import React, { useState, useEffect, useRef } from 'react';
+import { Button, Container, Modal } from 'react-bootstrap';
+import { useParams } from 'react-router-dom';
 import axios from 'axios';
-import AdminNavbar from '../../navbar/AdminNavbar'; // Adjust the import path as needed
-import SidebarAdmin from '../../sidebar/SidebarAdmin'; // Adjust the import path as needed
+import AdminNavbar from '../../navbar/AdminNavbar';
+import SidebarAdmin from '../../sidebar/SidebarAdmin';
+import DataTable from 'datatables.net-react';
+import DT from 'datatables.net-bs5'; // For Bootstrap 5 styling
+import $ from 'jquery';
+
+// Import Bootstrap 5 DataTable styles
+import 'datatables.net-bs5/css/dataTables.bootstrap5.min.css';
+
+DataTable.use(DT); // Initialize DataTables with Bootstrap 5 styling
 
 function PatientManagement() {
   const [patients, setPatients] = useState([]);
   const [selectedPatient, setSelectedPatient] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [modalAction, setModalAction] = useState("");
-  const [searchTerm, setSearchTerm] = useState("");
-  const { aid } = useParams(); // If you need to get params from the URL
+  const { aid } = useParams();
+  const tableRef = useRef();
 
   useEffect(() => {
     axios.get('http://localhost:8000/patient/api/allpatient')
       .then((result) => {
         setPatients(result.data.thePatient);
-
-        
       })
       .catch((error) => {
         console.log(error);
@@ -48,56 +54,67 @@ function PatientManagement() {
       });
   };
 
-  const filteredPatients = patients.filter(patient =>
-    `${patient.patient_firstName} ${patient.patient_middleInitial} ${patient.patient_lastName}`.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  useEffect(() => {
+    // Destroy the existing table if it exists
+    if ($.fn.DataTable.isDataTable(tableRef.current)) {
+      $(tableRef.current).DataTable().destroy();
+    }
+
+    // Reinitialize the table
+    const table = $(tableRef.current).DataTable({
+      data: patients,  // Use patients state for the table data
+      columns: [
+        { data: 'patient_firstName', title: 'First Name' },
+        { data: 'patient_middleInitial', title: 'Middle Initial' },
+        { data: 'patient_lastName', title: 'Last Name' },
+        { 
+          data: 'patient_email', 
+          title: 'Email', 
+          defaultContent: 'No Email'  // Fallback if email is missing or null
+        },
+        { data: 'patient_gender', title: 'Gender' },
+        { data: 'accountStatus', title: 'Account Status' },
+        {
+          data: null,
+          title: 'Actions',
+          render: function (data, type, row) {
+            return `
+              <button class="btn btn-primary register-btn" ${row.accountStatus === 'Registered' ? 'disabled' : ''}>Register</button>
+              <button class="btn btn-danger deactivate-btn" ${row.accountStatus === 'Deactivated' ? 'disabled' : ''}>Deactivate</button>
+            `;
+          }
+        }
+      ]
+      
+      
+    });
+
+    // Attach click handlers for dynamically created buttons
+    $(tableRef.current).on('click', '.register-btn', function () {
+      const rowData = table.row($(this).parents('tr')).data();
+      handleShowModal(rowData, 'register');
+    });
+
+    $(tableRef.current).on('click', '.deactivate-btn', function () {
+      const rowData = table.row($(this).parents('tr')).data();
+      handleShowModal(rowData, 'deactivate');
+    });
+
+    // Clean up event listeners when the component unmounts
+    return () => {
+      $(tableRef.current).off('click', '.register-btn');
+      $(tableRef.current).off('click', '.deactivate-btn');
+    };
+  }, [patients]);
 
   return (
     <div className='d-flex justify-content-center'>
-      <SidebarAdmin aid={aid} /> {/* Sidebar integration */}
-      
+      <SidebarAdmin aid={aid} />
       <div style={{ width: '100%' }}>
-        <AdminNavbar /> {/* Navbar integration */}
-        
+        <AdminNavbar />
         <Container className='ad-container' style={{ height: 'calc(100vh - 56px)', overflowY: 'auto', padding: '20px' }}>
           <h1>Patient Management</h1>
-          <Form.Group controlId="formPatientSearch">
-            <Form.Control
-              type="text"
-              placeholder="Search patients..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </Form.Group>
-          <Table striped bordered hover variant="light" className="mt-3">
-            <thead>
-              <tr>
-                <th>Patient Name</th>
-                <th>Email</th>
-                <th>Gender</th>
-                <th>Account Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredPatients.map((patient) => (
-                <tr key={patient._id}>
-                  <td>{`${patient.patient_firstName} ${patient.patient_middleInitial}. ${patient.patient_lastName}`}</td>
-                  <td>{patient.patient_email}</td>
-                  <td>{patient.patient_gender}</td>
-                  <td>{patient.accountStatus}</td>
-                  <td>
-                    <Button variant="primary" onClick={() => handleShowModal(patient, 'register')} disabled={patient.accountStatus === 'Registered'}>
-                      Register
-                    </Button>{' '}
-                    <Button variant="danger" onClick={() => handleShowModal(patient, 'deactivate')} disabled={patient.accountStatus === 'Deactivated'}>
-                      Deactivate
-                    </Button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </Table>
+          <table ref={tableRef} id="dataTable" className="table table-striped table-bordered display" style={{ width: '100%' }}></table>
 
           <Modal show={showModal} onHide={handleCloseModal}>
             <Modal.Header closeButton>

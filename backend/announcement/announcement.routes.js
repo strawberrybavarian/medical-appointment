@@ -30,9 +30,13 @@ const fileFilter = (req, file, cb) => {
 };
 
 // Create the upload middleware with multer to handle multiple file uploads
-const upload = multer({ 
-    storage: storage, 
-    fileFilter: fileFilter 
+const upload = multer({
+    storage: storage,
+    limits: {
+        fieldSize: 25 * 1024 * 1024,  // 25MB for text fields (content)
+        fileSize: 10 * 1024 * 1024,   // 10MB per file
+        files: 5,                     // Max number of files
+    }
 });
 
 
@@ -43,5 +47,7 @@ module.exports = app => {
   app.get('/doctor/api/finduser/:id', AnnouncementController.findDoctorById);
   app.get('/doctor/api/post/getallpost/:id', AnnouncementController.getAllPostbyId);
   app.delete('/doctor/api/post/deletepost/:id/:index', AnnouncementController.findPostByIdDelete);
-  app.put('/doctor/api/post/updatepost/:id/:index', AnnouncementController.updatePostAtIndex);
+
+  app.put('/doctor/api/post/updatepost/:doctorId/:postId', upload.array('images'), AnnouncementController.updatePostAtIndex);
+
 };

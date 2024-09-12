@@ -59,25 +59,21 @@ function DoctorCards() {
               <h2 className="section-title">In Session</h2>
               {inSessionDoctors.map(doctor => (
                 <Col key={doctor._id} xs={12} sm={6} md={4} lg={3}>
-                  <Card
-                    onClick={() => handleDoctorClick(doctor._id)}
-                    className="doctor-card"
-                  >
-                    <Card.Img
-                      variant="top"
-                      src={`http://localhost:8000/${doctor.dr_image || defaultImage}`}
-                    />
-                    <Card.Body>
-                      <Card.Title className="text-center">
-                        {doctor.dr_firstName} {doctor.dr_middleInitial}. {doctor.dr_lastName}
-                      </Card.Title>
-                      <p className="text-center text-muted">{doctor.dr_specialty}</p>
-                      <p className="text-center text-muted" style={{ fontSize: '12px' }}>
-                        <span className="status-indicator in-session"></span> In Session
-                      </p>
-                    </Card.Body>
-                  </Card>
-                </Col>
+                <Card onClick={() => handleDoctorClick(doctor._id)} className="doctor-card">
+                  <Card.Img variant="top" src={`http://localhost:8000/${doctor.dr_image || defaultImage}`} />
+                  <Card.Body>
+                    <Card.Title className="text-center">
+                      {doctor.dr_firstName} {doctor.dr_middleInitial}. {doctor.dr_lastName}
+                    </Card.Title>
+                    <p className="text-center text-muted">{doctor.dr_specialty}</p>
+                    <p className="text-center text-muted" style={{ fontSize: "12px" }}>
+                      <span className={`status-indicator ${doctor.activityStatus.toLowerCase().replace(" ", "-")}`}></span>
+                      {doctor.activityStatus === "Offline" && timeSinceLastActive(doctor.lastActive)}
+                    </p>
+                  </Card.Body>
+                </Card>
+              </Col>
+              
               ))}
             </React.Fragment>
           )}

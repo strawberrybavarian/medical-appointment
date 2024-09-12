@@ -10,9 +10,9 @@ import { Container, Form, Button, Row, Col, Card } from "react-bootstrap";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 
-function Dashboard({doctor_image, doctor_name}) {
+function Dashboard({doctor_image, doctor_name, did}) {
   //to store the state
-    const { did, role } = useParams();
+
 
     const [thePost, setThePost] = useState([]);
 

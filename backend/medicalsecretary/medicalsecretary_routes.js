@@ -16,5 +16,6 @@ module.exports = app => {
 
     //Patient Statistic
     app.get('/medicalsecretary/api/patient-stats', MSController.getPatientStats);
+    app.get('/medicalsecretary/api/findone/:msid', MSController.findMedSecById)
 
 }

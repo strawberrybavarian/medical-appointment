@@ -55,7 +55,7 @@ function DoctorMain() {
                 <SidebarAdmin aid={aid} />
                 <div style={{ width: '100%' }}>
                     <AdminNavbar />
-                    <Container className='ad-container' style={{ height: 'calc(100vh - 56px)', overflowY: 'auto', padding: '20px' }}>
+                    <Container fluid className='ad-container p-5' style={{ height: 'calc(100vh - 56px)', overflowY: 'auto', padding: '20px' }}>
                         <DoctorStatsCards 
                             totalDoctors={totalDoctors} 
                             registeredDoctors={registeredDoctors} 

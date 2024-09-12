@@ -128,6 +128,21 @@ const getPatientStats = async (req, res) => {
 };
 
 
+const findMedSecById = (req, res) => {
+    MedicalSecretary.findOne({ _id: req.params.msid })
+      .then((theMedSec) => {
+        if (!theMedSec) {
+          return res.status(404).json({ message: 'Medical Secretary not found' });
+        }
+        res.json({ theMedSec });
+      })
+      .catch((err) => {
+        console.error('Error finding Medical Secretary:', err);
+        res.status(500).json({ message: 'Something went wrong', error: err });
+      });
+  };
+
+
 
 
 module.exports = {
@@ -135,7 +150,8 @@ module.exports = {
     findAllMedicalSecretary,
     getAllAppointments,
     ongoingAppointment,
-    getPatientStats
+    getPatientStats,
+    findMedSecById
 
 
 };

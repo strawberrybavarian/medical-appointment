@@ -6,11 +6,12 @@ import axios from 'axios';
 import Prescription from '../prescription/Prescription';
 import PatientFindings from '../findings/PatientFindings';
 import './PractitionerNavBarStyles.css';
+import Immunization from '../immunization/Immunization';
 
 function PractitionerNavBar() {
     const navigate = useNavigate();
     const { pid, did, apid } = useParams();
-    console.log(pid, did, apid);
+
 
     // Default active tab
     const [activeTab, setActiveTab] = useState("findings");
@@ -20,7 +21,7 @@ function PractitionerNavBar() {
         const fetchPatientData = async () => {
             try {
                 const response = await axios.get(`http://localhost:8000/patient/api/onepatient/${pid}`);
-                console.log(response.data);
+
             } catch (error) {
                 console.error('Error fetching patient data', error);
             }
@@ -47,15 +48,9 @@ function PractitionerNavBar() {
                             <Nav.Link eventKey="prescription">Create Prescription</Nav.Link>
                         </Nav.Item>
                         <Nav.Item>
-                            <Nav.Link eventKey="radiology" onClick={() => navigate(`/choosedoctor/${pid}`)}>
-                                Laboratory Result
-                            </Nav.Link>
+                            <Nav.Link eventKey="immunization">Immunization</Nav.Link>
                         </Nav.Item>
-                        <Nav.Item>
-                            <Nav.Link eventKey="radiology" onClick={() => navigate(`/choosedoctor/${pid}`)}>
-                                Immunization
-                            </Nav.Link>
-                        </Nav.Item>
+                        
                     </Nav>
                 </Container>
 
@@ -63,6 +58,7 @@ function PractitionerNavBar() {
                 <Container className="pnb-content">
                     {activeTab === 'findings' && <PatientFindings patientId={pid} doctorId={did} appointmentId={apid} />}
                     {activeTab === 'prescription' && <Prescription patientId={pid} doctorId={did} appointmentId={apid} />}
+                    {activeTab === 'immunization' && <Immunization patientId={pid} doctorId={did} appointmentId={apid} />}
                 </Container>
             </div>
         </>

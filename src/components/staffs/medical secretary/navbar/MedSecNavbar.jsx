@@ -24,6 +24,10 @@ function MedSecNavbar({did}) {
     const onNavigateDoctors = () => {
         navigate(`/medsec/doctors/${msid}`)
     }
+
+    const onNavigateDashboard = () => {
+        navigate(`/medsec/dashboard/${msid}`)
+    }
     
     const onButtonContainer1Click = () => {
         navigate("/");
@@ -47,6 +51,8 @@ function MedSecNavbar({did}) {
                     <Navbar.Toggle aria-controls="basic-navbar-nav" />
                     <Navbar.Collapse id="basic-navbar-nav justify-content-end">
                         <Nav>
+                            <Nav.Link className="pnb-nav-link" onClick={onNavigateDashboard}>Dashboard </Nav.Link>
+
                             <Nav.Link className="pnb-nav-link" onClick={onNavigateAppoinments}>Appointments </Nav.Link>
                             <Nav.Link className="pnb-nav-link" onClick={onNavigateCalendar}>Calendar </Nav.Link>
                             <Nav.Link className="pnb-nav-link" onClick={onNavigateCreatePatient}>Create Appointment </Nav.Link>

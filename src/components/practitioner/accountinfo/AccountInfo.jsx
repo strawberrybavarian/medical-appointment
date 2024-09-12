@@ -1,15 +1,16 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import SidebarMenu from "../sidebar/SidebarMenu";
-import { Button, Form, Row, Col } from "react-bootstrap";
+import { Button, Form, Row, Col, Container } from "react-bootstrap";
 import * as Icon from "react-bootstrap-icons";
 import ImageUploadModal from "./modal/ImageUploadModal";
 import UpdateInfoModal from "./modal/UpdateInfoModal";
 import './AccountInfo.css';
 
 const AccountInfo = () => {
-  const { did } = useParams();
+  const location = useLocation();
+  const { did } = location.state || {};
   const [doctorData, setDoctorData] = useState({
     theId: "",
     theName: "",
@@ -88,8 +89,8 @@ const AccountInfo = () => {
 
   return (
     <>
-      <div style={{display: "flex", flex: "1 0 auto", height: "100vh", overflowY: "hidden"}}>
-        <div style={{ padding: "20px", paddingBottom: '100px', overflowY: "auto", overflowX: "hidden" }} className="container1 container-fluid ">
+      <div  style={{display: "flex", flex: "1 0 auto"}}>
+        <div  style={{  paddingBottom: '100px', overflowX: "hidden",  }} className="container1 p-5 container-fluid ">
           <h1 className="removegutter dashboard-title">Account Information</h1>
           <hr className=" divider d-lg" />
           <div className="ai-container">
@@ -157,6 +158,7 @@ const AccountInfo = () => {
       <ImageUploadModal 
         isOpen={isModalOpen}
         onRequestClose={closeImageModal}
+        did={did}
       />
       <UpdateInfoModal
         show={isUpdateModalOpen}

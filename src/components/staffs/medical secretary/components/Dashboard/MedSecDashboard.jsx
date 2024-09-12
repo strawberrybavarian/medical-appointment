@@ -27,7 +27,7 @@ function MedSecDashboard() {
   }, []);
 
   return (
-    <Container className="mt-4">
+    <div className="mt-4">
       <Row className="g-3"> {/* Use g-3 for smaller gaps between cards */}
         <Col xs={12} md={6} lg={4}>
           <Card 
@@ -77,7 +77,7 @@ function MedSecDashboard() {
           </Card>
         </Col>
       </Row>
-    </Container>
+    </div>
   );
 }
 

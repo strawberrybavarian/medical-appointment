@@ -76,6 +76,11 @@ const PatientSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'Prescription'
     }],
+
+    immunizations: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Immunization'
+    }],
     notifications: [{
         type: Schema.Types.ObjectId,
         ref: 'Notification'

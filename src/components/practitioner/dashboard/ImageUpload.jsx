@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Form } from "react-bootstrap";
 
-function ImageUpload({ postImages, setPostImages }) {
+function ImageUpload({ postImages, setPostImages, handleImageDelete }) {
   const [dragActive, setDragActive] = useState(false);
 
   const handleImageChange = (e) => {
@@ -34,6 +34,8 @@ function ImageUpload({ postImages, setPostImages }) {
   };
 
   const removeImage = (index) => {
+    const imageToDelete = postImages[index]; // Get the image to delete
+    handleImageDelete(imageToDelete); // Call the delete function passed from EditPostModal
     const newImages = [...postImages];
     newImages.splice(index, 1);
     setPostImages(newImages);
@@ -49,33 +51,31 @@ function ImageUpload({ postImages, setPostImages }) {
         onDrop={handleDrop}
       >
         <div className="upload-inside-container">
-
-     
-        {postImages.length === 0 ? (
-          <div className="add-photos-placeholder">
-            <span>Add Photos/Videos</span>
-            <span>or drag and drop</span>
-          </div>
-        ) : (
-          <div className="image-previews">
-            {postImages.map((image, index) => (
-              <div key={index} className="image-preview">
-                <img
-                  src={image.preview}
-                  alt="preview"
-                  style={{ cursor: "pointer" }}
-                />
-                <button
-                  className="button-delete-image"
-                  onClick={() => removeImage(index)}
-                >
-                  X
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-           </div>
+          {postImages.length === 0 ? (
+            <div className="add-photos-placeholder">
+              <span>Add Photos/Videos</span>
+              <span>or drag and drop</span>
+            </div>
+          ) : (
+            <div className="image-previews">
+              {postImages.map((image, index) => (
+                <div key={index} className="image-preview">
+                  <img
+                    src={image.preview || image} // Use image.preview for new images or existing images
+                    alt="preview"
+                    style={{ cursor: "pointer" }}
+                  />
+                  <button
+                    className="button-delete-image"
+                    onClick={() => removeImage(index)} // Call removeImage to delete the image
+                  >
+                    X
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       <input

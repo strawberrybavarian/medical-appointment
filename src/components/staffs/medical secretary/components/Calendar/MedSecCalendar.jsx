@@ -18,7 +18,7 @@ function MedSecCalendar() {
           className='calendar-container overflow-y-scroll p-4'  
           style={{ height: 'calc(100vh - 90px)' }}
         >
-          <MedSecDashboard/>
+  
          <AppointmentFullCalendar msid={msid}/>
         </Container>
     </>

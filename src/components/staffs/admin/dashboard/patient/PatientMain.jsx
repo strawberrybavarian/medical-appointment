@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 
-import { Container } from 'react-bootstrap';
+import { Container, Row , Col } from 'react-bootstrap';
 import { useParams } from 'react-router-dom';
 import '../../AdminStyles.css'
 import AdminNavbar from '../../navbar/AdminNavbar';
@@ -57,22 +57,28 @@ function PatientMain() {
                 <SidebarAdmin aid={aid} />
                 <div style={{ width: '100%' }}>
                     <AdminNavbar />
-                    <Container fluid className='ad-container' style={{ height: 'calc(100vh - 56px)', overflowY: 'auto',  padding: '20px'}}>
+                    <Container fluid className='ad-container p-5' style={{ height: 'calc(100vh - 56px)', overflowY: 'auto',  padding: '20px'}}>
                         <PatientStatsCards 
                             totalPatients={totalPatients} 
                             registeredPatients={registeredPatients} 
                             unregisteredPatients={unregisteredPatients}
                         />
 
-                        {/* <DoctorStatsCards
-                            totalDoctors={totalDoctors}
-                        /> */}
 
-                        <div className="d-flex justify-content-between" style={{ paddingTop: '1.5rem' }}> 
-                            <BarAppointment />
-                            <LineCompletedAppointments/>
+                    <Row className="mt-4">
+                        <Col md={6} className="mb-3">
+                        <BarAppointment />
+                        
+                        </Col>
 
-                        </div>
+                        <Col md={6} className="mb-3">
+                        <LineCompletedAppointments/>
+                        </Col>
+                    </Row>
+                        
+                        
+                        
+                
                     </Container>
                 </div>
             </div>

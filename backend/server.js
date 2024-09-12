@@ -37,6 +37,10 @@ const AppointmentRoutes = require('./appointments/appointment_routes')
 AppointmentRoutes(app);
 const AnnouncementRoutes = require('./announcement/announcement.routes')
 AnnouncementRoutes(app);
+const ImmunizationRoutes = require('./immunization/immunization_routes')
+ImmunizationRoutes(app);
+const NewsRoutes = require('./news/news_routes')
+NewsRoutes(app);
 
 
 

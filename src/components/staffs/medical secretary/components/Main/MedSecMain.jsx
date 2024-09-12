@@ -51,19 +51,9 @@ function MedSecMain() {
       <MedSecNavbar /> {/* Fixed navbar at the top */}
       <div style={{ overflowY: 'auto', height: 'calc(100vh - 56px)', width: '100%' }}>
         
-        <Container className=" d-flex justify-content-between">
+      
 
-       
-          <div className='ms-maincontainer1'>
-            <h2>All Appointments</h2>
-            <p className="text-muted">See the appointment details.</p>
-          </div>
-         
-        </Container>
-
-        <Container>
-        <MedSecDashboard />
-        </Container>
+     
 
         <Container className="ms-container mt-4">
           <Row>

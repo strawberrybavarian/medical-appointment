@@ -1,12 +1,13 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useLocation } from "react-router-dom";
 import Table from 'react-bootstrap/Table';
 import { Button, Pagination, Form, Row, Col } from 'react-bootstrap';
 import './Appointment.css';
 
 const CompletedAppointment = ({ allAppointments }) => {
-  const { did } = useParams();
+  const location = useLocation();
+  const { did } = location.state || {}; 
 
   const [appointments, setAppointments] = useState([]);
   const [error, setError] = useState("");
