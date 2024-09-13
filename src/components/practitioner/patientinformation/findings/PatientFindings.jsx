@@ -10,7 +10,6 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
     const [age, setAge] = useState('');
     const [email, setEmail] = useState('');
 
-    // Findings State with all fields
     const [findings, setFindings] = useState({
         bloodPressure: { systole: '', diastole: '' },
         respiratoryRate: '',
@@ -122,23 +121,35 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
+    
+        // Validation for Chief Complaint and Current Symptoms
+        if (!findings.historyOfPresentIllness.chiefComplaint.trim()) {
+            alert('Chief Complaint is required.');
+            return;
+        }
+    
+        const validSymptoms = findings.historyOfPresentIllness.currentSymptoms.filter(
+            (symptom) => symptom.trim() !== ''
+        );
+        if (validSymptoms.length === 0) {
+            alert('At least one valid symptom is required.');
+            return;
+        }
+    
         let updatedSkinConditions = findings.skinCondition;
-
         if (updatedSkinConditions.includes('Other') && findings.otherSkinCondition) {
             updatedSkinConditions = updatedSkinConditions.map(condition =>
                 condition === 'Other' ? findings.otherSkinCondition : condition
             );
         }
-
+    
         let updatedAllergies = findings.allergy;
-
         if (updatedAllergies.includes('Other') && findings.otherAllergy) {
             updatedAllergies = updatedAllergies.map(allergy =>
                 allergy === 'Other' ? findings.otherAllergy : allergy
             );
         }
-
+    
         try {
             await axios.post('http://localhost:8000/createfindings', {
                 ...findings,
@@ -154,6 +165,7 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
             alert('Error saving findings');
         }
     };
+    
 
     if (loading) {
         return <div>Loading...</div>;
@@ -269,14 +281,6 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
 
                                 <hr/>
 
-
-
-
-
-
-
-
-
                             <h4>Vitals</h4>
                             <hr/>
                             <Form onSubmit={handleSubmit}>
@@ -356,18 +360,10 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
                                         />
                                     </Form.Group>
                                 </Row>
-                                
-
-
-                                    
-                 
-                                
-
-
 
                                 <hr/>
-                                    <h4>Habitual Behavior</h4>
-                                    <hr/>
+                                    <h4>Lifestyle</h4>
+                                <hr/>
                                 {/* Lifestyle */}
                                 <Row>
                               
@@ -426,12 +422,12 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
                                     </Row>
                                 ))}
                             </Form.Group>
-                            <Button variant="secondary" onClick={() => {
+                            <Link variant="secondary" onClick={() => {
                                 setFindings({
                                     ...findings,
                                     familyHistory: [...findings.familyHistory, { relation: '', condition: '' }]
                                 });
-                            }}>Add Family History</Button>
+                            }}>Add Family History</Link>
 
                             {/* Skin Condition */}
 

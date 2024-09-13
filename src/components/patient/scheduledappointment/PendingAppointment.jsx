@@ -27,12 +27,15 @@ function PendingAppointments({ appointments, setAppointments }) {
 
         axios.put(`http://localhost:8000/patient/api/${selectedAppointment._id}/updateappointment`, { cancelReason: cancelReason })
             .then((response) => {
+                
                 console.log(response.data);
+
                 setAppointments(prevAppointments => 
                     prevAppointments.map(appointment => 
                         appointment._id === selectedAppointment._id ? { ...appointment, status: 'Cancelled', cancelReason: cancelReason } : appointment
                     )
                 );
+
                 handleCloseModal();
             })
             .catch((err) => {

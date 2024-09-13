@@ -1,7 +1,7 @@
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { Table } from 'react-bootstrap';
+import { Table, Container } from 'react-bootstrap';
 
 import './PatientPrescriptions.css';
 
@@ -37,18 +37,20 @@ function PatientPrescriptions() {
                 <h1>Prescriptions</h1>
             </div>
 
-            <div className="pi-container">
+            <Container fluid >
                 <div>
                 {thePrescriptions.length > 0 ? (
-                    thePrescriptions.map((appointment, index) => (
+                    thePrescriptions.reverse().map((appointment, index) => (
                         <div key={index} className="pi-container2" style={{marginBottom: '40px'}}>
                             
                             <h3>Appointment {index + 1}</h3>
+                            <hr/>
 
                                 <p> Physician: {appointment.doctor.dr_firstName} {appointment.doctor.dr_middleInitial}. {appointment.doctor.dr_lastName} </p>
                                 <p> Date of Appointment: {new Date(appointment.date).toLocaleDateString()}</p>
                             <div>
-                            {appointment.prescription && Array.isArray(appointment.prescription.medications) && appointment.status === 'Completed' ? (
+                            {/* {appointment.prescription && Array.isArray(appointment.prescription.medications) && appointment.status === 'Completed' ? ( */}
+                                 {appointment.prescription && Array.isArray(appointment.prescription.medications) && appointment.status ? (
                                 <Table striped bordered hover>
                                     <thead>
                                         <tr>
@@ -77,10 +79,18 @@ function PatientPrescriptions() {
                     <p>No prescriptions found.</p>
                 )}
                 </div>
-            </div>
-                <div style={{marginBottom: '12vh'}}>
-
-                </div>
+            </Container>
+             <p>
+             <p>
+             <p>
+             <p><p>
+                
+                </p>
+                
+                </p>
+                </p>
+                </p>
+             </p>
             {/* </Scrollbars> */}
             </div>
         </>
