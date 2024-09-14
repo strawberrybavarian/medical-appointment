@@ -1,19 +1,17 @@
 const mongoose = require('mongoose');
-const { Schema, model } = mongoose;
+const { Schema } = mongoose;
 
 const PostSchema = new Schema({
   content: {
     type: String,
     required: true,
-    minlength: 3,
   },
   doctor_id: {
-    //referencing the doctor_id
     type: Schema.Types.ObjectId,
     ref: 'Doctor',
     required: true,
   },
+  images: [{type: String}],  // Array of image base64 strings //ewan ko bakit base64 masyadong mababa
 }, { timestamps: true });
 
-const Post = model('Post', PostSchema);
-module.exports = Post;
+module.exports = mongoose.model('Post', PostSchema);

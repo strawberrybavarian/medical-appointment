@@ -1,11 +1,11 @@
 import React from 'react'
 import { useNavigate, useParams } from "react-router-dom";
 import { Container, Navbar, Nav, NavDropdown } from 'react-bootstrap';
-import { Bell, ChevronDown } from 'react-bootstrap-icons';
+import { ChevronDown } from 'react-bootstrap-icons';
 import {image} from '../../../../ContentExport'
 import  './Styles.css'
-console.log(image.logo)
-function MedSecNavbar() {
+
+function MedSecNavbar({did}) {
 
     const navigate = useNavigate();
     const {msid} = useParams();
@@ -15,6 +15,18 @@ function MedSecNavbar() {
     }
     const onNavigateCreatePatient = () => {
         navigate(`/medsec/createpatient/${msid}`)
+    }
+
+    const onNavigateCalendar = () => {
+        navigate(`/medsec/calendar/${msid}`)
+    }
+
+    const onNavigateDoctors = () => {
+        navigate(`/medsec/doctors/${msid}`)
+    }
+
+    const onNavigateDashboard = () => {
+        navigate(`/medsec/dashboard/${msid}`)
     }
     
     const onButtonContainer1Click = () => {
@@ -39,8 +51,13 @@ function MedSecNavbar() {
                     <Navbar.Toggle aria-controls="basic-navbar-nav" />
                     <Navbar.Collapse id="basic-navbar-nav justify-content-end">
                         <Nav>
+                            <Nav.Link className="pnb-nav-link" onClick={onNavigateDashboard}>Dashboard </Nav.Link>
+
                             <Nav.Link className="pnb-nav-link" onClick={onNavigateAppoinments}>Appointments </Nav.Link>
+                            <Nav.Link className="pnb-nav-link" onClick={onNavigateCalendar}>Calendar </Nav.Link>
                             <Nav.Link className="pnb-nav-link" onClick={onNavigateCreatePatient}>Create Appointment </Nav.Link>
+                            <Nav.Link className="pnb-nav-link" onClick={onNavigateDoctors}>Manage Doctors </Nav.Link>
+                            
                             
                         </Nav>
 

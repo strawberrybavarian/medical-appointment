@@ -241,6 +241,10 @@ const findPatientById = (req, res) => {
       path: 'prescriptions',
       model: 'Prescription'
     })
+    .populate({
+      path: 'immunizations',
+      model: 'Immunization'
+    })
 
     .then((thePatient) => {
       if (!thePatient) {

@@ -5,33 +5,44 @@ const MedicalHistorySchema = new Schema({
     patient: {
         type: Schema.Types.ObjectId,
         ref: 'Patient',
+        required: true
     },
-    appointment:{
+    appointment: {
         type: Schema.Types.ObjectId,
-        ref:'Appointment',
+        ref: 'Appointment',
+        required: true
     },
     doctor: {
         type: Schema.Types.ObjectId,
         ref: 'Doctor',
+        required: true
     },
     historyOfPresentIllness: {
         chiefComplaint: {
             type: String,
+            required: true
         },
         currentSymptoms: [{
             type: String,
-      
+            required: true
         }]
     },
-    diagnosis:{
+    diagnosis: {
         type: String,
-      
+        required: true
     },
     pastMedicalHistory: [{
-        type: String
+        type: String,
+        required: false
     }],
     familyHistory: [{
-        type: String
+        type: String,
+        required: false
+    }],
+    immunizations: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Immunization',
+        required: false
     }]
 }, { timestamps: true });
 

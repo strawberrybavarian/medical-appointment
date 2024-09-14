@@ -17,6 +17,32 @@ const NewAdminSignUp = (req, res) => {
         });
 };
 
+const updateDoctorAccountStatus = (req, res) => {
+    const { doctorId } = req.params;
+    const { status } = req.body;
+
+    const validStatuses = ['Review', 'Registered', 'Deactivated', 'Deleted'];
+
+    if (!validStatuses.includes(status)) {
+        return res.status(400).json({ message: 'Invalid status provided.' });
+    }
+
+    Doctors.findByIdAndUpdate(
+        doctorId,
+        { accountStatus: status },
+        { new: true }
+    )
+    .then((updatedDoctor) => {
+        if (!updatedDoctor) {
+            return res.status(404).json({ message: 'Doctor not found' });
+        }
+        res.json({ updatedDoctor, status: `Doctor status has been successfully updated to ${status}.` });
+    })
+    .catch((err) => {
+        res.status(500).json({ message: 'Something went wrong. Please try again.', error: err });
+    });
+};
+
 const findAllAdmin = (req,res) => {
     Admin.find()
         .then((allAdmin)=>{
@@ -26,38 +52,7 @@ const findAllAdmin = (req,res) => {
             res.json({message: 'Something went wrong', error: err})
         })
 }
-
-
-const countTotalPatients = (req, res) => {
-    Patient.countDocuments()
-        .then((totalPatients) => {
-            res.json({ totalPatients });
-        })
-        .catch((err) => {
-            res.status(500).json({ message: 'Something went wrong', error: err });
-        });
-};
-
-const countRegisteredPatients = (req, res) => {
-    Patient.countDocuments({ accountStatus: 'Registered' })
-        .then((registeredPatients) => {
-            res.json({ registeredPatients });
-        })
-        .catch((err) => {
-            res.status(500).json({ message: 'Something went wrong', error: err });
-        });
-};
-
-const countUnregisteredPatients = (req, res) => {
-    Patient.countDocuments({ accountStatus: 'Unregistered' })
-        .then((unregisteredPatients) => {
-            res.json({ unregisteredPatients });
-        })
-        .catch((err) => {
-            res.status(500).json({ message: 'Something went wrong', error: err });
-        });
-};
-
+//Doctors 
 const getAppointmentStats = (req, res) => {
     Appointment.aggregate([
         {
@@ -87,13 +82,101 @@ const getAppointmentStats = (req, res) => {
     });
 };
 
+const getCompletedAppointmentsByMonth = (req, res) => {
+    Appointment.aggregate([
+        {
+            $match: {
+                status: 'Completed'
+            }
+        },
+        {
+            $group: {
+                _id: { month: { $month: "$date" }, year: { $year: "$date" } },
+                count: { $sum: 1 }
+            }
+        },
+        {
+            $project: {
+                _id: 0,
+                month: "$_id.month",
+                year: "$_id.year",
+                count: 1
+            }
+        },
+        {
+            $sort: { year: 1, month: 1 }
+        }
+    ])
+    .then(stats => {
+        res.json(stats);
+    })
+    .catch(err => {
+        res.status(500).json({ message: 'Something went wrong', error: err });
+    });
+};
+
+
+const getDoctorSpecialtyStats = (req, res) => {
+    Doctors.aggregate([
+        {
+            $group: {
+                _id: "$dr_specialty",
+                count: { $sum: 1 }
+            }
+        },
+        {
+            $project: {
+                _id: 0,
+                specialty: "$_id",
+                count: 1
+            }
+        }
+    ])
+    .then(stats => {
+        res.json(stats);
+    })
+    .catch(err => {
+        res.status(500).json({ message: 'Something went wrong', error: err });
+    });
+};
+
+const updatePatientAccountStatus = (req, res) => {
+    const { patientId } = req.params;
+    const { status } = req.body;
+
+    const validStatuses = ['Registered', 'Unregistered', 'Deactivated', 'Deleted'];
+
+    if (!validStatuses.includes(status)) {
+        return res.status(400).json({ message: 'Invalid status provided.' });
+    }
+
+    Patient.findByIdAndUpdate(
+        patientId,
+        { accountStatus: status },
+        { new: true }
+    )
+    .then((updatedPatient) => {
+        if (!updatedPatient) {
+            return res.status(404).json({ message: 'Patient not found' });
+        }
+        res.json({ updatedPatient, status: `Patient status has been successfully updated to ${status}.` });
+    })
+    .catch((err) => {
+        res.status(500).json({ message: 'Something went wrong. Please try again.', error: err });
+    });
+};
+
+
+
 
 module.exports = {
     NewAdminSignUp,
     findAllAdmin,
-    countTotalPatients,
-    countRegisteredPatients,
-    countUnregisteredPatients,
-    getAppointmentStats
+    getAppointmentStats,
+    getDoctorSpecialtyStats,
+    getCompletedAppointmentsByMonth,
+    updateDoctorAccountStatus,
+    updatePatientAccountStatus
+
 
 };

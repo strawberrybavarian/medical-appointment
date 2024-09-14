@@ -1,0 +1,101 @@
+.ms-navtabs {
+    border-width: 0px;
+    background-color: #F8F8F8;
+    border-radius: 10px;
+    justify-content: center; /* Center-align the nav tabs */
+    padding: 10px 0; /* Padding around the nav bar */
+}
+
+.ms-image {
+    object-fit: cover;
+    width: 100px;
+    height: 100px;
+    border-radius: 100%;
+}
+
+.ms-navtabs .nav-item {
+     /* Light gray background */
+    width: auto;
+    border-radius: 100px; /* Rounded corners */
+    border: 0;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem
+}
+
+.ms-navtabs .nav-link {
+    color: #333; /* Text color */
+    font-weight: bold;
+    padding: 10px 20px; /* Padding inside tabs */
+    text-align: center;
+    border: 0;
+    transition: all 0.3s ease; /* Smooth transition for hover effect */
+}
+
+.ms-navtabs .nav-link.active {
+    background-color: #ffffff; /* White background for active tab */
+    color: #000; /* Text color for active tab */
+    border: 0;
+    border-radius: 10px;
+   
+}
+
+.ms-navtabs .nav-link:hover {
+    background-color: #ffffff; /* Background color on hover */
+    color: #000; /* Text color on hover */
+    border-radius: 10px;
+}
+/* Ensure the container has a max-width of 700px for the cards */
+/* Adjust card size */
+/* Adjust card size */
+.card-width .card {
+    height: 130px; /* Keep the height smaller */
+    max-width: 950px; /* Keep the width smaller */
+    width: 100%;
+}
+
+/* Ensure proper padding and text alignment inside the card */
+.card-width .card-body {
+    
+    display: flex;
+    justify-content: space-between; /* Align the number and icon on the same line */
+    align-items: center; /* Vertically align content */
+}
+
+/* Adjust the icon size */
+.card-width .text-gray-300 {
+    font-size: 30px;
+}
+
+/* Adjust the font size and weight for the number */
+.card-width .h5 {
+    font-size: 1.5rem; /* Slightly larger font size */
+    margin-bottom: 0; /* Remove bottom margin */
+    font-weight: bold;
+}
+
+
+.font-gray{
+    color: #575859
+}
+
+.ms-container{
+    width: 100%;
+    padding-left: 2.5rem;
+    padding-right: 2.5rem;
+ 
+
+}
+
+.ms-maincontainer{
+    padding-top: 1.5rem;
+    padding-left: 2rem;
+    
+
+}
+.ms-maincontainer1{
+    padding-left: 1rem;
+    padding-top: 1.5rem;
+
+    
+
+}

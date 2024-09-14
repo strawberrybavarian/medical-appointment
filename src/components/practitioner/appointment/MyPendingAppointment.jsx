@@ -1,14 +1,15 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import { Table, Button, Container, Pagination, Form } from 'react-bootstrap';
+import { useLocation } from "react-router-dom";
+import { Table, Button, Container, Pagination, Form, Row, Col, Nav } from 'react-bootstrap';
 
 import './Appointment.css';
 import RescheduleModal from "./Reschedule Modal/RescheduleModal";
 
 
 const TodaysAppointment = () => {
-  const { did } = useParams();
+  const location = useLocation();
+  const { did } = location.state || {}; 
   const [allAppointments, setAllAppointments] = useState([]);
   const [error, setError] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -113,39 +114,52 @@ const TodaysAppointment = () => {
 
 
   return (
-    <Container>
+    <Container className="white-background shadow-sm">
       <div style={{ padding: '30px', width: '100%' }}>
-        <h1>Pending Appointments</h1>
+        {/* <h1>Pending Appointments</h1> */}
         
-        <div style={{ marginTop: '20px', width: '100%' }} className="d-flex align-items-center">
-          <div style={{width:'20%'}}>
-            <label>Entries per page:</label>
+        <div style={{ marginTop: '20px', width: '100%' }}>
+        <Row className="d-flex align-items-center">
+
+        <Col xs={12} md={3} className="mb-3 d-flex align-items-center">
+          <div className="d-flex align-items-center w-100">
+            <Form.Label className="me-2">Entries per page:</Form.Label> {/* Add margin to right (me-2) */}
+            <Form.Control 
+              as="select"
+              value={entriesPerPage}
+              onChange={(e) => setEntriesPerPage(parseInt(e.target.value))}
+              className="select-dropdown"
+              style={{ width: 'auto' }}  
+            >
+              <option value={5}>5</option>
+              <option value={15}>15</option>
+              <option value={30}>30</option>
+              <option value={50}>50</option>
+            </Form.Control>
           </div>
-          <select value={entriesPerPage} onChange={(e) => setEntriesPerPage(parseInt(e.target.value))}>
-            <option value={5}>5</option>
-            <option value={15}>15</option>
-            <option value={30}>30</option>
-            <option value={50}>50</option>
-          </select>
-         
-          <Container className="justify-content-end d-flex">
-            <Form.Group controlId="formSearch" className="d-flex align-items-center ">
-              <div style={{width:'100%'}}>
-                <p>Search by Patient Name: </p>
-              </div>
-              <div className="d-flex justify-content-end" style={{width: '100%'}}>
+        </Col>
+
+        <Col xs={12} md={9} className="mb-3 d-flex align-items-center">
+          <div className="d-flex align-items-center w-100">
+            <Form.Group controlId="formSearch" className="w-100 d-flex flex-wrap align-items-center">
+              <Col xs={12} md={4} className="">
+                <Form.Label className="me-2">Search by Patient Name:</Form.Label>
+              </Col>
+              <Col xs={12} md={8} className="d-flex justify-content-end">
                 <Form.Control
                   type="text"
                   placeholder="Search..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
-              </div>
+              </Col>
             </Form.Group>
-          </Container>
-        </div>
+          </div>
+        </Col>
+  </Row>
+</div>
         
-        <Table striped bordered hover variant="blue">
+        <Table responsive striped bordered hover variant="blue" className="table-border-radius">
           <thead>
             <tr>
               <th style={{ border: "1px solid #00000018" }}>Patient Name</th>
@@ -172,8 +186,27 @@ const TodaysAppointment = () => {
                   <td>{appointment.reason}</td>
                   <td>{appointment.status}</td>
                   <td>
-                    <Button variant="success" onClick={() => acceptAppointment(appointment._id)}>Accept</Button>
-                    <Button variant="warning" onClick={() => handleReschedule(appointment)}>Reschedule</Button>
+                  <div className="d-flex justify-content-center">
+                    <Nav onSelect={(selectedKey) => alert(`selected ${selectedKey}`)}>
+                      <Nav.Item>
+                        <Nav.Link 
+                          className="accept-link" 
+                          onClick={() => acceptAppointment(appointment._id)}>
+                          Accept
+                        </Nav.Link>
+                      </Nav.Item>
+
+                      <Nav.Item>
+                        <Nav.Link 
+                          className="reschedule-link" 
+                          onClick={() => handleReschedule(appointment)}>
+                          Reschedule
+                        </Nav.Link>
+                      </Nav.Item>
+                    </Nav>
+</div>
+
+                    
                   </td>
                 </tr>
               );

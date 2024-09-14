@@ -41,11 +41,14 @@ module.exports = app => {
   // Uploading Image
   app.post('/doctor/api/:id/updateimage', upload.single('image'), DoctorController.updateDoctorImage);
 
-  
+  //Activity Status
+  app.put('/doctor/api/:id/logout', DoctorController.offlineActivityStatus);
+  app.put('/doctor/:id/status', DoctorController.updateDoctorStatus);
+
   app.get('/doctor/api/test', (req, res) => { res.json({ message: "the api is working" }) });
   // For Registration
   app.post('/doctor/api/signup', DoctorController.NewDoctorSignUp);
-  
+  app.get('/doctor/one/:id', DoctorController.findOneDoctor )
   // For LogIn
   app.get('/doctor/api/alldoctor', DoctorController.findAllDoctors);
   app.post('/doctor/api/setup-2fa/:id', DoctorController.setupTwoFactorForDoctor);
@@ -62,18 +65,18 @@ module.exports = app => {
 
 
   // For Post
-  app.post('/doctor/api/addpost/:id', DoctorController.addNewPostById);
-  app.get('/doctor/api/finduser/:id', DoctorController.findDoctorById);
-  app.get('/doctor/api/post/getallpost/:id', DoctorController.getAllPostbyId);
-  app.delete('/doctor/api/post/deletepost/:id/:index', DoctorController.findPostByIdDelete);
-  app.put('/doctor/api/post/updatepost/:id/:index', DoctorController.updatePostAtIndex);
+  // app.post('/doctor/api/addpost/:id', DoctorController.addNewPostById);
+  // app.get('/doctor/api/finduser/:id', DoctorController.findDoctorById);
+  // app.get('/doctor/api/post/getallpost/:id', DoctorController.getAllPostbyId);
+  // app.delete('/doctor/api/post/deletepost/:id/:index', DoctorController.findPostByIdDelete);
+  // app.put('/doctor/api/post/updatepost/:id/:index', DoctorController.updatePostAtIndex);
 
   // For Appointments
   app.put('/doctor/api/:uid/acceptpatient', DoctorController.acceptPatient)
   app.get('/doctor/appointments/:doctorId', DoctorController.getAllAppointments);
-  app.put('/doctor/api/:uid/completeappointment', DoctorController.completeAppointment)
+  app.put('/doctor/api/:appointmentID/completeappointment', DoctorController.completeAppointment)
   app.put('/doctor/:doctorId/availability', DoctorController.doctorAvailability)
-  app.put('/doctor/:doctorId/status', DoctorController.updateAvailability);
+  app.put('/doctor/:doctorId/appointmentstatus', DoctorController.updateAvailability);
  
 
   app.get('/doctor/:doctorId/available', DoctorController.getAvailability);

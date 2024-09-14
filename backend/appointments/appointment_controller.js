@@ -10,9 +10,8 @@ const Payment = require('../payments/payment_model');
 
 const createAppointment = async (req, res) => {
   try {
-      const { doctorId, date, time, reason, medium, paymentMethod } = req.body;
+      const { doctorId, date, time, reason, medium } = req.body;
       const patientId = req.params.uid;
-      const proofOfPayment = req.file ? `images/${req.file.filename}` : '';
 
       const newAppointment = new Appointment({
           patient: new mongoose.Types.ObjectId(patientId),
@@ -24,31 +23,6 @@ const createAppointment = async (req, res) => {
       });
 
       const savedAppointment = await newAppointment.save();
-
-      // Conditionally create a payment if a payment method is provided
-      if (paymentMethod) {
-        // Set payment status based on payment method
-        let paymentStatus;
-        if (paymentMethod === "Cash") {
-            paymentStatus = "Unpaid";
-        } else if (paymentMethod === "GCash" || paymentMethod === "Bank Transfer") {
-            paymentStatus = "Review";
-        }
-
-        // Create a new payment document
-        const newPayment = new Payment({
-            appointment: savedAppointment._id,
-            paymentMethod,
-            paymentStatus,
-            proofOfPayment 
-        });
-
-        const savedPayment = await newPayment.save();
-
-        // Reference the payment in the appointment
-        savedAppointment.payment = savedPayment._id;
-        await savedAppointment.save();
-      }
 
       // Update related documents
       await Doctors.findByIdAndUpdate(doctorId, { $push: { dr_appointments: savedAppointment._id } });
@@ -82,6 +56,7 @@ const createAppointment = async (req, res) => {
       res.status(500).json({ message: `Failed to create appointment: ${error.message}` });
   }
 };
+
 
 
 const updatePaymentStatus = (req, res) => {
@@ -142,7 +117,12 @@ const updatePaymentStatus = (req, res) => {
                 });
               });
             });
-          } else {
+          }
+          
+          // add another elif
+          
+          
+          else {
             res.status(200).json({
               message: 'Payment status updated successfully',
               payment: updatedPayment
@@ -156,6 +136,11 @@ const updatePaymentStatus = (req, res) => {
     });
 };
 
+
+
+
+
+  
 
 module.exports = {
   createAppointment,

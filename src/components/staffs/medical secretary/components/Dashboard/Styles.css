@@ -68,3 +68,135 @@
         padding-left: 1vh;
     }
 }
+.appointments-wrapper {
+  max-height: 100%; /* Set this to whatever height is appropriate for your layout */
+  overflow-y: auto;
+}
+
+/* AppointmentFullCalendar.css */
+.calendar-container {
+
+  padding: 10px;
+  
+  }
+  
+  .fc {
+    font-size: 0.85em; /* Reduce font size for smaller text */
+  }
+
+  /* In your CSS file (e.g., Styles.css or within a style tag) */
+.fc-event.Scheduled {
+  background-color:#3788D8;
+  border-color: #3788D8;
+}
+
+.fc-event.Ongoing {
+  background-color: orange;
+  border-color: orange;
+}
+
+.fc-event.Completed {
+  background-color: green;
+  border-color: green;
+}
+/* Custom styles for FullCalendar buttons */
+.fc-button-primary {
+  background-color: #0D6EFD !important; /* Button background color */
+  border-color: #0D6EFD !important;     /* Button border color */
+}
+
+.fc-button-primary:not(:disabled):hover, 
+.fc-button-primary:not(:disabled):focus {
+  background-color: #0056b3 !important; /* Button hover background color */
+  border-color: #0056b3 !important;     /* Button hover border color */
+}
+
+.fc-button-primary.fc-button-active {
+  background-color: #004085 !important; /* Button active background color */
+  border-color: #004085 !important;     /* Button active border color */
+}
+
+/* Custom styles for FullCalendar buttons */
+.fc-button-primary {
+  background-color: #0D6EFD !important; /* Default background color */
+  border-color: #0D6EFD !important;     /* Default border color */
+  color: #fff !important;               /* Text color */
+  transition: background-color 0.3s ease, border-color 0.3s ease, transform 0.3s ease; /* Add transitions */
+}
+
+.fc-button-primary:not(:disabled):hover, 
+.fc-button-primary:not(:disabled):focus {
+  background-color: #0056b3 !important; /* Hover background color */
+  border-color: #0056b3 !important;     /* Hover border color */
+  transform: scale(1.05);               /* Slight scale effect on hover */
+}
+
+.fc-button-primary.fc-button-active {
+  background-color: #004085 !important; /* Active background color */
+  border-color: #004085 !important;     /* Active border color */
+}
+
+.fc-button-primary:active {
+  transform: scale(0.95); /* Slight scale-down effect when clicked */
+}
+
+.fc-button-primary {
+  padding: 0.375rem 0.75rem; /* Ensure padding is appropriate for buttons */
+  border-radius: 0.25rem; /* Button border-radius */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+}
+
+/* Custom transition effect */
+.fc .fc-view {
+  transition: transform 0.4s ease-in-out;
+}
+
+
+
+  /* Add these styles to your CSS file */
+
+body, html {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden; /* Prevent overflow on the body */
+  }
+  
+  .main-content {
+    margin-top: 56px; /* Offset for the fixed navbar height */
+    height: calc(100vh - 56px); /* Full height minus navbar */
+    overflow-y: auto; /* Enable vertical scrolling */
+    padding: 20px; /* Optional padding for content */
+  }
+  
+
+
+  /* Add this to your CSS file */
+
+
+
+  
+  .dash-container {
+    display: block;
+    width: auto;
+  }
+  
+  .dash-main {
+    display: flex;
+    justify-content: space-between;
+    width: 90%;
+    margin-bottom: 20px;
+  }
+  
+  @media (min-width: 768px) {
+    .dash-container .dash-main {
+      display: block;
+    }
+  }
+  
+
+  .msd-cardtitle{
+    border-bottom: 0;
+    background-color: white;
+  }
+  

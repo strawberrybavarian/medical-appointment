@@ -40,13 +40,13 @@ function BarAppointment() {
     chartInstanceRef.current = new Chart(ctx, {
       type: 'bar',
       data: {
-        labels: chartData.labels,
+        labels: chartData.labels, // ['Completed', 'Scheduled', 'Pending', 'Cancelled']
         datasets: [{
-          label: "Appointments",
+          label: 'Appointment Statuses', // General label for the dataset
           backgroundColor: "#4e73df",
           hoverBackgroundColor: "#2e59d9",
           borderColor: "#4e73df",
-          data: chartData.data,
+          data: chartData.data, // Data points corresponding to each status
         }],
       },
       options: {
@@ -108,13 +108,15 @@ function BarAppointment() {
             caretPadding: 10,
             callbacks: {
               label: function(tooltipItem) {
-                return tooltipItem.dataset.label + ': ' + tooltipItem.raw;
+                const label = chartData.labels[tooltipItem.dataIndex]; // Get the correct label
+                return label + ': ' + tooltipItem.raw;
               }
             }
           },
         }
       }
     });
+    
 
     return () => {
       if (chartInstanceRef.current) {
@@ -124,7 +126,7 @@ function BarAppointment() {
   }, [chartData]);
 
   return (
-    <div style={{paddingTop: '1.5rem'}}>
+    
         <Card className="card-bar-chart shadow mb-4">
             <Card.Header className="py-3">
             <h6 className="m-0 font-weight-bold text-primary">Appointment Statuses</h6>
@@ -135,7 +137,7 @@ function BarAppointment() {
             </div>
             </Card.Body>
         </Card>
-    </div>
+
 
 
   );

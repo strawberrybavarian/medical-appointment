@@ -1,63 +1,66 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams,  } from "react-router-dom";
-import { Container, Navbar, Nav,  } from 'react-bootstrap';
+import { useNavigate, useParams } from "react-router-dom";
+import { Container, Nav } from 'react-bootstrap';
 
 import axios from 'axios';
 import Prescription from '../prescription/Prescription';
 import PatientFindings from '../findings/PatientFindings';
-import './PractitionerNavBarStyles.css'
+import './PractitionerNavBarStyles.css';
+import Immunization from '../immunization/Immunization';
 
 function PractitionerNavBar() {
     const navigate = useNavigate();
     const { pid, did, apid } = useParams();
-    console.log(pid,did, apid);
 
+
+    // Default active tab
     const [activeTab, setActiveTab] = useState("findings");
-    useEffect(() => {
 
-        const fetchNotifications = async () => {
+    // Fetch patient data when the component loads
+    useEffect(() => {
+        const fetchPatientData = async () => {
             try {
                 const response = await axios.get(`http://localhost:8000/patient/api/onepatient/${pid}`);
-    
-                console.log(response.data);
+
             } catch (error) {
-                console.error('Error fetching notifications', error);
+                console.error('Error fetching patient data', error);
             }
         };
 
-        fetchNotifications();
+        fetchPatientData();
     }, [pid]);
 
-    const onButtonContainerClick = () => {
-        navigate(`/choosedoctor/${pid}`);
+    const handleSelect = (selectedKey) => {
+        // Update the active tab based on the selected event key
+        setActiveTab(selectedKey);
     };
 
     return (
-        <>  <div className='pnb-component'>
-            <Navbar expand="lg" className="pnb-navbar">
+        <>
+            <div className='pnb-component'>
+                {/* Use Nav to create tab-like navigation */}
                 <Container>
-                    
-                    <Navbar.Toggle aria-controls="basic-navbar-nav" />
-                    <Navbar.Collapse id="basic-navbar-nav justify-content-end">
-                        <Nav>
-                            <Nav.Link className="pnb-nav-link" onClick={()=> setActiveTab("findings")}>Patient Findings</Nav.Link>
-                            <Nav.Link className="pnb-nav-link" onClick={()=> setActiveTab("prescription")}>Create Prescription</Nav.Link>
-                            <Nav.Link className="pnb-nav-link" onClick={onButtonContainerClick}>Radiology Result</Nav.Link>
-                            <Nav.Link className="pnb-nav-link" onClick={onButtonContainerClick}>Radiology Result</Nav.Link>
-                        </Nav>
-
-                
-            
-                    </Navbar.Collapse>
+                    <Nav fill variant="tabs" className='navtabs-pxmanagement' activeKey={activeTab} onSelect={handleSelect}>
+                        <Nav.Item>
+                            <Nav.Link eventKey="findings">Patient Findings</Nav.Link>
+                        </Nav.Item>
+                        <Nav.Item>
+                            <Nav.Link eventKey="prescription">Create Prescription</Nav.Link>
+                        </Nav.Item>
+                        <Nav.Item>
+                            <Nav.Link eventKey="immunization">Immunization</Nav.Link>
+                        </Nav.Item>
+                        
+                    </Nav>
                 </Container>
-            </Navbar>
-            
-                {activeTab === 'findings' && <PatientFindings patientId={pid} doctorId={did} appointmentId={apid}/>}
-                {activeTab === 'prescription' && <Prescription patientId={pid} doctorId={did} appointmentId={apid}/>}
-         
+
+                {/* Render components based on the active tab */}
+                <Container className="pnb-content">
+                    {activeTab === 'findings' && <PatientFindings patientId={pid} doctorId={did} appointmentId={apid} />}
+                    {activeTab === 'prescription' && <Prescription patientId={pid} doctorId={did} appointmentId={apid} />}
+                    {activeTab === 'immunization' && <Immunization patientId={pid} doctorId={did} appointmentId={apid} />}
+                </Container>
             </div>
-            
-            
         </>
     );
 }

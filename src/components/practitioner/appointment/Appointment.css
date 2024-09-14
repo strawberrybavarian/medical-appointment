@@ -84,3 +84,71 @@
  padding-top: 2.5rem;
 
 }
+
+.white-background{
+  background-color: white;
+  border-radius: 10px;
+}
+
+.app-navtabs-doctor {
+  border-width: 0px;
+  background-color: #f8f8f8;
+  border-radius: 10px;
+  justify-content: center; /* Center-align the nav tabs */
+  padding: 10px 0; /* Padding around the nav bar */
+}
+
+
+
+.app-image-doctor {
+  object-fit: cover;
+  width: 100px;
+  height: 100px;
+  border-radius: 100%;
+}
+
+.app-navtabs-doctor .nav-item {
+ /* Light gray background */
+  width: auto;
+  border-radius: 100px; /* Rounded corners */
+
+  padding-left: 0.5rem;
+  padding-right: 0.5rem
+}
+
+.app-navtabs-doctor .nav-link {
+  color: #333; /* Text color */
+  font-weight: bold;
+  padding: 10px 20px; /* Padding inside tabs */
+  text-align: center;
+  transition: all 0.3s ease; /* Smooth transition for hover effect */
+  border: 0;
+}
+
+.app-navtabs-doctor .nav-link:active {
+  background-color: #941818; /* White background for active tab */
+  color: #000; /* Text color for active tab */
+  border-color : #ffffff !important;
+  border-radius: 0px;
+ 
+}
+
+.app-navtabs-doctor .nav-link:hover {
+  background-color: #e6e6e6; /* Background color on hover */
+  color: #000; /* Text color on hover */
+  border-radius: 10px;
+}
+
+.accept-link {
+  color: green; /* Green color for the Accept link */
+}
+
+.reschedule-link {
+  color: #fabc02; /* Yellow color for the Reschedule link */
+}
+
+.accept-link:hover, 
+.reschedule-link:hover {
+  text-decoration: underline; /* Underline on hover */
+}
+

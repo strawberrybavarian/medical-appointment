@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Row, Form, Col, Button, Container } from 'react-bootstrap';
 import './LogIn.css';
 import NavigationalBar from '../landpage/navbar';
+import { ip } from '../../ContentExport';
 
 const LogInUser = () => {
     const navigate = useNavigate();
@@ -17,9 +18,11 @@ const LogInUser = () => {
             try {
                 let response;
                 if (userRole === "Patient") {
-                    response = await axios.get("http://localhost:8000/patient/api/allpatient");
+                    // Fetch all patient data
+                    response = await axios.get(`${ip.address}/patient/api/allpatient`);
                 } else if (userRole === "Practitioner") {
-                    response = await axios.get("http://localhost:8000/doctor/api/alldoctor");
+                    // Fetch all doctor data
+                    response = await axios.get(`${ip.address}/doctor/api/alldoctor`);
                 }
 
                 if (response && response.data) {
@@ -37,11 +40,54 @@ const LogInUser = () => {
     const loginuser = async (e) => {
         e.preventDefault();
 
-        const user = users.find(user => user.patient_email === email || user.dr_email === email);
-        if (user && (user.patient_password === password || user.dr_password === password)) {
-            const userId = user._id;
-            window.alert("Successfully logged in");
-            navigate(userRole === 'Patient' ? `/homepage/${userId}` : `/dashboard/${userId}`);
+        // Find user based on email, depending on the selected role
+        const user = users.find(user => {
+            if (userRole === "Patient") {
+                return user.patient_email === email;
+            } else if (userRole === "Practitioner") {
+                return user.dr_email === email;
+            }
+            return false;
+        });
+
+        if (user) {
+            // Practitioner login flow
+            if (userRole === "Practitioner") {
+                // Check if account is still under review
+                if (user.accountStatus === "Review") {
+                    window.alert("Your account is under review and you cannot log in at this time.");
+                    return;
+                }
+
+                // Validate practitioner password
+                if (user.dr_password !== password) {
+                    window.alert("Invalid email or password. Please try again.");
+                    return;
+                }
+
+                // Update practitioner status to 'Online'
+                const userId = user._id;
+                try {
+                    await axios.put(`${ip.address}/doctor/${userId}/status`, { status: 'Online' });
+                    console.log('Doctor status updated to Online.');
+                } catch (err) {
+                    console.error('Error updating doctor status:', err);
+                }
+
+                window.alert("Successfully logged in");
+                navigate("/dashboard", { state: { did: userId } });
+
+            // Patient login flow
+            } else if (userRole === "Patient") {
+                const userId = user._id;
+                // Validate patient password
+                if (user.patient_password === password) {
+                    window.alert("Successfully logged in");
+                    navigate(`/homepage/${userId}`,  { state: { pid: userId } }); // Navigate to patient's homepage
+                } else {
+                    window.alert("Invalid email or password. Please try again.");
+                }
+            }
         } else {
             window.alert("Invalid email or password. Please try again.");
         }
@@ -79,7 +125,7 @@ const LogInUser = () => {
                             </Row>
                             <Row>
                                 <Form.Group as={Col} controlId="formChoose">
-                                    <Form.Label>Choose what to register:</Form.Label>
+                                    <Form.Label>Choose your role:</Form.Label>
                                     <Form.Select value={userRole} onChange={(e) => setUserRole(e.target.value)} defaultValue="Choose">
                                         <option value="Patient">Patient</option>
                                         <option value="Practitioner">Practitioner</option>

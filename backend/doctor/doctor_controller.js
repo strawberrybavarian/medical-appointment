@@ -5,14 +5,41 @@ const Appointment = require('../appointments/appointment_model');
 const MedicalSecretary = require('../medicalsecretary/medicalsecretary_model');
 const Prescription = require('../prescription/prescription_model');
 const Notification = require('../notifications/notifications_model')
-
+const DoctorService = require('../doctor/doctor_service')
 const mongoose = require('mongoose');
 const QRCode = require('qrcode');
 const speakeasy = require('speakeasy');
 
 
 const nodemailer = require('nodemailer');
-const { get } = require('lodash');
+const { find } = require('lodash');
+
+
+
+// Define the route handler function
+const updateDoctorStatus = async (req, res) => {
+    const { id } = req.params;
+    const { status } = req.body;  // 'Online' or 'Offline'
+
+    try {
+        await DoctorService.updateActivityStatus(id, status);
+        res.status(200).json({ message: `Doctor ${id} status updated to ${status}.` });
+    } catch (err) {
+        res.status(500).json({ message: 'Failed to update status', error: err.message });
+    }
+};
+
+const offlineActivityStatus = async (req, res) => {
+    const doctorId = req.params.id;
+    try {
+        console.log(`Setting doctor ${doctorId} status to Offline`);
+        await DoctorService.updateActivityStatus(doctorId, 'Offline');
+        res.status(200).json({ message: 'Doctor logged out and status set to Offline.' });
+    } catch (err) {
+        console.error('Error logging out doctor:', err);
+        res.status(500).json({ message: 'Error logging out doctor.', error: err });
+    }
+};
 
 
 //For Email
@@ -66,6 +93,8 @@ const sendOTP = async (req, res) => {
         res.status(500).send('Error sending OTP');
     }
 };
+
+
 // Verify OTP
 const verifyOTP = async (req, res) => {
   try {
@@ -163,6 +192,14 @@ const verifyTwoFactor = async (req, res) => {
       res.status(500).json({ message: 'Error verifying 2FA token', error });
     }
 };
+
+
+
+
+
+
+
+
 const NewDoctorSignUp = (req, res) => {
     Doctors.create(req.body)
         .then((newDoctor) => {
@@ -194,13 +231,44 @@ const updateDoctorDetails = (req, res) => {
 const findAllDoctors = (req, res) => {
     Doctors.find()
         .populate('dr_posts')
-        .then((allDataDoctors) => {
+        .then(allDataDoctors => {
             res.json({ theDoctor: allDataDoctors });
         })
         .catch((err) => {
             res.json({ message: 'Something went wrong', error: err });
         });
 };
+
+
+
+
+const findOneDoctor = (req, res) => {
+    const doctorId = req.params.id;
+
+    Doctors.findById(doctorId)
+        .then(doctor => {
+            if (!doctor) {
+                return res.status(404).json({ message: 'Doctor not found' });
+            }
+
+            // Optionally, update status here based on specific conditions, such as an explicit login action
+            // For example:
+            // if (req.query.updateStatus === 'true') {
+            //     doctor.activityStatus = 'Online';
+            //     doctor.lastActive = Date.now();
+            // }
+
+            res.json({ doctor });
+        })
+        .catch(err => {
+            res.status(500).json({ message: 'Something went wrong', error: err });
+        });
+};
+;
+
+
+
+
 const findUniqueSpecialties = (req, res) => {
     Doctors.distinct('dr_specialty')
         .then((specialties) => {
@@ -243,17 +311,6 @@ const findDoctorByEmail = (req, res) => {
         })
         .catch((err) => {
             res.json({ message: 'Something went wrong', error: err });
-        });
-};
-const getAllDoctorEmails = (req, res) => {
-    Doctor.find({}, 'dr_email')
-        .then((doctors) => {
-            const emails = doctors.map(doctor => doctor.dr_email);
-            res.json(emails); // Send raw doctors data for inspection
-        })
-        .catch((err) => {
-            console.error('Error fetching doctor emails:', err);
-            res.status(500).json({ message: 'Something went wrong', error: err });
         });
 };
 // Add a new post
@@ -385,51 +442,37 @@ const getAllAppointments = (req, res) => {
         res.status(500).json({ message: error.message });
       });
   };
+
 const completeAppointment = async (req, res) => {
-    try {
-        const appointmentId = req.params.uid; // Appointment ID from URL parameter
+  try {
+    const appointmentId = req.params.appointmentID;
 
-        // Find the appointment and update its status to 'Completed'
-        const updatedAppointment = await Appointment.findByIdAndUpdate(
-            appointmentId,
-            { status: 'Completed' },
-            { new: true }
-        );
+    // Find the appointment and update its status to 'Completed'
+    const updatedAppointment = await Appointment.findByIdAndUpdate(
+      appointmentId,
+      { status: 'Completed' },
+      { new: true }
+    );
 
-        if (!updatedAppointment) {
-            return res.status(404).json({ message: "Appointment not found" });
-        }
-
-        // Get doctor and patient IDs from the appointment
-        const doctorId = updatedAppointment.doctor;
-        const patientId = updatedAppointment.patient;
-
-        // Update doctor's list of patients if the patient is not already in the list
-        await Doctors.findByIdAndUpdate(
-            doctorId,
-            { $addToSet: { dr_patients: patientId } }, // AddToSet ensures no duplicates
-            { new: true }
-        );
-
-        // Create a notification for the patient
-        const notification = new Notification({
-            message: `Your appointment with Dr. ${doctorId} has been completed.`,
-            patient: patientId
-        });
-        await notification.save();
-
-        // Add notification reference to the patient
-        await Patient.findByIdAndUpdate(
-            patientId,
-            { $push: { notifications: notification._id } },
-            { new: true }
-        );
-
-        res.status(200).json(updatedAppointment);
-    } catch (error) {
-        res.status(400).json({ message: error.message });
+    if (!updatedAppointment) {
+      return res.status(404).json({ message: "Appointment not found" });
     }
+
+    const doctorId = updatedAppointment.doctor;
+
+    // Update doctor's activity status back to 'Online' or 'Offline'
+    await Doctors.findByIdAndUpdate(
+      doctorId,
+      { activityStatus: 'Online' }, // or 'Offline' if that's the default
+      { new: true }
+    );
+
+    res.status(200).json(updatedAppointment);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
 };
+
 const acceptPatient = async (req, res) => {
     try {
         const appointmentId = req.params.uid; // Appointment ID from URL parameter
@@ -517,25 +560,24 @@ const updateAvailability = async (req, res) => {
 
 const rescheduleAppointment = async (req, res) => {
     try {
-        const appointmentId = req.params.uid; // Appointment ID from URL parameter
-        const { newDate, newTime } = req.body; // New date and time from request body
+        const appointmentId = req.params.uid; 
+        const { newDate, newTime } = req.body; 
 
-        // Find the appointment and update its date and time
         const updatedAppointment = await Appointment.findByIdAndUpdate(
             appointmentId,
             { date: newDate, time: newTime, status:'Scheduled' },
             { new: true }
-        ).populate('doctor').populate('patient'); // Populate doctor and patient
+        ).populate('doctor').populate('patient'); 
 
         if (!updatedAppointment) {
             return res.status(404).json({ message: "Appointment not found" });
         }
 
-        // Get doctor and patient names from the populated fields
+   
         const doctorName = `${updatedAppointment.doctor.dr_firstName} ${updatedAppointment.doctor.dr_lastName}`;
         const patientName = `${updatedAppointment.patient.patient_firstName} ${updatedAppointment.patient.patient_lastName}`;
 
-        // Create a notification for the patient
+    
         const patientObjectId = new mongoose.Types.ObjectId(updatedAppointment.patient._id);
         const notification = new Notification({
             message: `Your appointment with Dr. ${doctorName} has been rescheduled to ${newDate} at ${newTime}.`,
@@ -544,7 +586,7 @@ const rescheduleAppointment = async (req, res) => {
         });
         await notification.save();
 
-        // Add notification reference to the patient
+
         await Patient.findByIdAndUpdate(
             patientObjectId,
             { $push: { notifications: notification._id } },
@@ -560,12 +602,11 @@ const rescheduleAppointment = async (req, res) => {
 const rescheduledStatus = async (req, res) => {
     try {
       const { rescheduledReason } = req.body;
-      const appointmentId = req.params.uid; // Appointment ID from URL parameter
-  
-      // Find the appointment and update its cancelReason and status
+      const appointmentId = req.params.uid; 
+
       const updatedAppointment = await Appointment.findByIdAndUpdate(
         appointmentId,
-        { $set: { rescheduledReason: rescheduledReason, status: 'Rescheduled' } }, // Update cancelReason and status
+        { $set: { rescheduledReason: rescheduledReason, status: 'Rescheduled' } }, 
         { new: true }
       );
   
@@ -582,7 +623,7 @@ const rescheduledStatus = async (req, res) => {
 
 
 
-//For Prescription
+//Prescription
 const createPrescription = async (req, res) => {
     const { patientId, appointmentId } = req.params;
     const { gender, dateOfConsultation, doctor, medications } = req.body;
@@ -595,13 +636,13 @@ const createPrescription = async (req, res) => {
         });
 
         if (prescription) {
-            // Update existing prescription
+       
             prescription.gender = gender;
             prescription.dateOfConsultation = dateOfConsultation;
             prescription.medications = medications;
             await prescription.save();
         } else {
-            // Create new prescription
+    
             prescription = new Prescription({
                 patient: patientId,
                 appointment: appointmentId || null,
@@ -612,21 +653,21 @@ const createPrescription = async (req, res) => {
             });
             await prescription.save();
 
-            // Update the patient's record
+
             const patient = await Patient.findById(patientId);
             if (patient) {
                 patient.prescriptions.push(prescription._id);
                 await patient.save();
             }
 
-            // Update the doctor's record
+
             const doctorRecord = await Doctors.findById(doctor);
             if (doctorRecord) {
                 doctorRecord.dr_prescriptions.push(prescription._id);
                 await doctorRecord.save();
             }
 
-            // Update the appointment
+
             if (appointmentId) {
                 const appointment = await Appointment.findById(appointmentId);
                 if (appointment) {
@@ -682,6 +723,11 @@ const getPrescriptions = async (req, res) => {
         res.status(500).json({ message: 'Internal server error', error });
     }
 };
+
+
+
+
+
 //Getting the patient
 const getPatientsByDoctor = async (req, res) => {
     try {
@@ -731,5 +777,8 @@ module.exports = {
     getPrescriptions,
     rescheduleAppointment,
     rescheduledStatus,
-    getAllDoctorEmails
+    findOneDoctor,
+    offlineActivityStatus,
+    updateDoctorStatus,
+
 };

@@ -27,6 +27,7 @@ const CashierRoutes = require("./cashier/cashier_routes");
 CashierRoutes(app);
 const AdminRoutes = require('./admin/admin_routes');
 AdminRoutes(app);
+
 //
 const FindingsRoutes = require("./findings/findings_routes")
 FindingsRoutes(app);
@@ -34,6 +35,12 @@ const PrescriptionRoutes = require("./prescription/prescription_routes")
 PrescriptionRoutes(app);
 const AppointmentRoutes = require('./appointments/appointment_routes')
 AppointmentRoutes(app);
+const AnnouncementRoutes = require('./announcement/announcement.routes')
+AnnouncementRoutes(app);
+const ImmunizationRoutes = require('./immunization/immunization_routes')
+ImmunizationRoutes(app);
+const NewsRoutes = require('./news/news_routes')
+NewsRoutes(app);
 
 app.listen(port, () => console.log("\nThe server is all fired up on port 8000"));
 

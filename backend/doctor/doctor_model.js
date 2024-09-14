@@ -17,6 +17,16 @@ const dailyAvailabilitySchema = new mongoose.Schema({
 
 // Define DoctorSchema
 const DoctorSchema = new Schema({
+
+    activityStatus: {
+        type: String,
+        enum: ['Online', 'Offline', 'In Session'],
+        default: 'Offline'
+    },
+    lastActive: {
+        type: Date,
+        default: Date.now
+    },
     dr_image: {
         type: String,
         default: '' // Default image path if needed
@@ -99,6 +109,11 @@ const DoctorSchema = new Schema({
         friday: { type: dailyAvailabilitySchema, default: () => ({}) },
         saturday: { type: dailyAvailabilitySchema, default: () => ({}) },
         sunday: { type: dailyAvailabilitySchema, default: () => ({}) }
+    },
+    accountStatus:{
+        type: String,
+        enum: ['Review', 'Registered', 'Deactivated', 'Deleted'],
+        default: 'Review'
     }
 }, { timestamps: true });
 

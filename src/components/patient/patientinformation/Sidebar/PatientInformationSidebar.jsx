@@ -5,6 +5,7 @@ import './PatientInformationSidebar.css';
 import PatientInformation from "../PatientInformation/PatientInformation";
 import PatientPrescriptions from '../PatientPrescriptions/PatientPrescriptions';
 import TwoFactorAuth from '../TwoFactorAuth/TwoFactorAuth';
+import { Container } from "react-bootstrap";
 
 function PatientInformationSidebar() {
     const navigate = useNavigate();
@@ -57,22 +58,17 @@ function PatientInformationSidebar() {
                 </CDBSidebarFooter>
             </CDBSidebar>
             
-            <div className=" pis-container">
+            <div className=" pis-container maincolor-container overflow-y-scroll" style={{paddingBottom: '95vh'}}>
                 {activeTab === 'profile' && <PatientInformation />}
                 {activeTab === 'records' && <div>My Medical Record Component</div>}
                 {activeTab === 'prescriptions' && <PatientPrescriptions />}
                 {activeTab === 'twofactor' && <TwoFactorAuth />}
                 
-                <div>
-                <div>
-                <div>
-                <div>
-         
-                </div>
-                </div>
-                </div>
-                </div>
+               <div style={{marginBottom: '150px'
+               }}>
 
+               </div>
+             
 
             </div>
         </div>

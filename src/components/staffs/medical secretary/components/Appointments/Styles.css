@@ -1,3 +1,20 @@
 .msp-background{
     background-color: aqua;
 }
+
+/* Add this to your global CSS file or a dedicated CSS module */
+.fc .fc-toolbar-title {
+    font-size: 1.25rem;
+    color: #007bff;
+  }
+  
+  .fc .fc-daygrid-event {
+    background-color: #28a745;
+    border-color: #28a745;
+    color: white;
+  }
+  
+  .fc .fc-daygrid-day-number {
+    color: #007bff;
+  }
+  

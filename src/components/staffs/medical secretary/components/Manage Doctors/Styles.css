@@ -1,0 +1,152 @@
+
+.doctor-card {
+  max-width: 250px; /* Set a reasonable max-width */
+  margin: 0 auto; /* Center the card */
+  transition: transform 0.2s; /* Add hover effect */
+}
+
+.doctor-card:hover {
+  transform: scale(1.05); /* Slight scale on hover */
+}
+
+/* Ensures the card image does not stretch beyond its container */
+.doctor-card img {
+  height: 200px; /* Set a fixed height */
+  object-fit: cover; /* Keep the image aspect ratio */
+}
+  
+
+  .doctor-card .text-center {
+    text-align: center;
+  }
+  
+  .doctor-card .text-muted {
+    color: #6c757d;
+    text-align: center;
+  }
+
+    .msdc-container{
+        padding-left: 3rem;
+        padding-right: 3rem;
+    }
+
+.dsm-card{
+    height: 1320px;
+}
+
+.msdp-card{
+    height: 700px !important;
+}
+
+.dsm-containerheader{
+    height: 60px;
+}
+.dsm-header{
+    line-height: 3;
+}
+
+
+
+.dsm-container {
+    display: flex;
+    flex-direction: row;
+    height: calc(100vh - 30px); 
+    overflow-y: auto;
+    width: 100%;
+    padding-left: 5rem;
+    padding-right: 7rem;
+    padding-bottom: 90px;
+
+}
+
+.dsm-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+.dsm-container::-webkit-scrollbar-thumb {
+    background-color: #888;
+    border-radius: 10px;
+}
+
+.dsm-container::-webkit-scrollbar-thumb:hover {
+    background-color: #555;
+}
+
+.dsm-container::-webkit-scrollbar-track {
+    background-color: #f1f1f1;
+}
+
+
+.dsm-container .card {
+    flex: 1;
+    margin-left: 20px;
+}
+
+.dsm-container .ms-doctor-profile {
+    flex: 1;
+}
+
+.status-indicator {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 5px;
+  }
+  
+  .status-indicator.online {
+    background-color: green;
+  }
+  
+  .status-indicator.offline {
+    border: 1px solid gray;
+  }
+  
+  .status-indicator.in-session {
+    background-color: blue;
+    animation: pulse 1.5s infinite;
+  }
+  
+  @keyframes pulse {
+    0% {
+      transform: scale(0.9);
+      opacity: 0.7;
+    }
+    50% {
+      transform: scale(1.1);
+      opacity: 1;
+    }
+    100% {
+      transform: scale(0.9);
+      opacity: 0.7;
+    }
+  }
+
+
+
+
+.msdc-container {
+  height: 90vh; 
+  overflow-y: auto; 
+  padding-bottom: 15px; 
+}
+
+.msdc-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.msdc-container::-webkit-scrollbar-thumb {
+  background-color: #888;
+  border-radius: 10px;
+}
+
+.msdc-container::-webkit-scrollbar-thumb:hover {
+  background-color: #555;
+}
+
+.section-title {
+  margin-top: 20px;
+  margin-bottom: 10px;
+  font-size: 1.5rem;
+  color: #333;
+}

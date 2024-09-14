@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-
+const {Schema, model} = mongoose
 
 const AdminSchema = new mongoose.Schema({
     firstName: {
@@ -26,7 +26,15 @@ const AdminSchema = new mongoose.Schema({
     isActive: {
         type: Boolean,
         default: true
-    }
+    },
+    role:{
+        type:String,
+        default: 'Admin'
+    },
+    news: [{
+        type: Schema.Types.ObjectId,
+        ref: 'News'  // Refers to the 'News' model
+      }]
 }, { timestamps: true });
 
 
