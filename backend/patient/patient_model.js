@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const bcrypt = require('bcrypt');
+// const bcrypt = require('bcryptjs');
 const { Schema, model } = mongoose;
 
 const PatientSchema = new Schema({
@@ -10,8 +10,8 @@ const PatientSchema = new Schema({
     },
     patient_firstName: {
         type: String,
-        minlength: 3,
-        maxlength: 20
+        // minlength: 3,
+        // maxlength: 20
     },
     patient_middleInitial: {
         type: String,
@@ -19,20 +19,20 @@ const PatientSchema = new Schema({
     },
     patient_lastName: {
         type: String,
-        minlength: 2,
-        maxlength: 20
+        // minlength: 2,
+        // maxlength: 20
     },
     patient_email: {
 
         type: String,
-        unique: true,
-        sparse: true
+        // unique: true,
+        // sparse: true
 
 
     },
     patient_password: {
         type: String,
-        minlength: 6,
+        // minlength: 6,
     },
     patient_dob: {
         type: Date,
@@ -43,20 +43,20 @@ const PatientSchema = new Schema({
     accountStatus:{
         type:String,
         
-        enum: ['Registered','Unregistered','Deactivated','Deleted']
+        // enum: ['Registered','Unregistered','Deactivated','Deleted']
     },
     patient_contactNumber: {
         type: String,
-        validate: {
-            validator: function (v) {
-                return v.length === 11;
-            },
-            message: props => `${props.value} has to be 11 characters long.`
-        }
+        // validate: {
+        //     validator: function (v) {
+        //         return v.length === 11;
+        //     },
+        //     message: props => `${props.value} has to be 11 characters long.`
+        // }
     },
     patient_gender: {
         type: String,
-        enum: ['Male', 'Female', 'Other']
+        // enum: ['Male', 'Female', 'Other']
     },
     patient_appointments: [{
         type: Schema.Types.ObjectId,

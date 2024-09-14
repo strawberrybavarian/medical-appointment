@@ -266,6 +266,17 @@ const findPatientByEmail = (req, res) => {
       });
 }
 
+const getAllPatientEmails = (req, res) => {
+  Patient.find({}, 'patient_email')
+  .then((patients) => {
+      const emails = patients.map(patient => patient.patient_email);
+      res.json(emails);
+  })
+  .catch((err) => {
+      res.json({ message: 'Something went wrong', error: err });
+  });
+};
+
 // Array New Post
 const addNewPostById = (req, res) => {
     Patient.findById({_id:req.params.id})
@@ -347,13 +358,12 @@ const createAppointment = async (req, res) => {
     const { doctorId, date, time, reason, cancelReason, rescheduledReason, secretaryId, prescriptionId, medium, payment } = req.body;
     const patientId = req.params.uid; 
 
-
     const doctorObjectId = new mongoose.Types.ObjectId(doctorId);
     const patientObjectId = new mongoose.Types.ObjectId(patientId);
     const secretaryObjectId = secretaryId ? new mongoose.Types.ObjectId(secretaryId) : null;
     const prescriptionObjectId = prescriptionId ? new mongoose.Types.ObjectId(prescriptionId) : null;
 
-
+    // Create the new appointment with a default status of "Pending"
     const newAppointment = new Appointment({
       patient: patientObjectId,
       doctor: doctorObjectId,
@@ -365,7 +375,8 @@ const createAppointment = async (req, res) => {
       rescheduledReason,
       medium,
       payment,
-      secretary: secretaryObjectId
+      secretary: secretaryObjectId,
+      status: 'Pending'  // Set status to Pending
     });
 
     await newAppointment.save();
@@ -389,19 +400,19 @@ const createAppointment = async (req, res) => {
 
     // Create a notification for the patient
     const patientNotification = new Notification({
-      message: `You have an pending appointment scheduled on ${date} at ${time}.`,
+      message: `You have a pending appointment scheduled on ${date} at ${time}.`,
       recipient: patientObjectId,
       recipientType: 'Patient'
     });
     await patientNotification.save();
 
-    
     // Add notification reference to the patient
     await Patient.findByIdAndUpdate(
       patientObjectId,
       { $push: { notifications: patientNotification._id } },
       { new: true }
     );
+
     // Create a notification for the doctor
     const doctorNotification = new Notification({
       message: `You have a new pending appointment scheduled with a patient on ${date} at ${time}.`,
@@ -424,6 +435,66 @@ const createAppointment = async (req, res) => {
   }
 };
 
+
+const findAllAppointmentsForPatient = (req, res) => {
+  const patientId = req.params.uid;
+
+  Patient.findById(patientId)
+    .populate({
+      path: 'patient_appointments',
+      populate: [
+        { path: 'doctor', model: 'Doctor' },
+        { path: 'prescription', model: 'Prescription' },
+        { path: 'secretary', model: 'MedicalSecretary' }
+      ]
+    })
+    .then((patient) => {
+      if (!patient) {
+        return res.status(404).json({ message: 'Patient not found' });
+      }
+      res.json({ appointments: patient.patient_appointments });
+    })
+    .catch((err) => {
+      res.status(500).json({ message: 'Something went wrong', error: err });
+    });
+};
+
+const findAppointmentByIdForPatient = (req, res) => {
+  const { uid, id } = req.params;
+  console.log(`Received UID: ${uid}, AppointmentID: ${id}`);
+
+  Patient.findById(uid)
+    .populate({
+      path: 'patient_appointments',
+      populate: [
+        { path: 'doctor', model: 'Doctor' },
+        { path: 'prescription', model: 'Prescription' },
+        { path: 'secretary', model: 'MedicalSecretary' }
+      ]
+    })
+    .then((patient) => {
+      if (!patient) {
+        console.log('Patient not found');
+        return res.status(404).json({ message: 'Patient not found' });
+      }
+      console.log('Patient found:', patient);
+
+      // Finding the specific appointment in the populated array
+      const appointment = patient.patient_appointments.find(appt => appt._id.toString() === id);
+
+      if (!appointment) {
+        console.log('Appointment not found');
+        return res.status(404).json({ message: 'Appointment not found' });
+      }
+
+      console.log('Appointment found:', appointment);
+      res.json({ appointment });
+    })
+    .catch((err) => {
+      console.error('Error in findAppointmentByIdForPatient:', err);
+      res.status(500).json({ message: 'Something went wrong', error: err.message });
+    });
+};
 
 const bookedSlots = async (req, res) => {
   try {
@@ -490,5 +561,8 @@ module.exports = {
     verifyOTP,
     sendOTP,
     bookedSlots,
-    createUnregisteredPatient
+    createUnregisteredPatient,
+    getAllPatientEmails,
+    findAllAppointmentsForPatient,
+    findAppointmentByIdForPatient
 }

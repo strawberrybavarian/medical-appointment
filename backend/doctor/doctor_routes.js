@@ -58,6 +58,9 @@ module.exports = app => {
   app.post('/doctor/verify-otp', DoctorController.verifyOTP);
   //Update Information Details
   app.put('/doctor/api/:id/updateDetails', DoctorController.updateDoctorDetails);
+  app.get('/doctor/api/allemail', DoctorController.getAllDoctorEmails);
+
+
   // For Post
   app.post('/doctor/api/addpost/:id', DoctorController.addNewPostById);
   app.get('/doctor/api/finduser/:id', DoctorController.findDoctorById);

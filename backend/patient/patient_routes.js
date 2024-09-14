@@ -33,6 +33,9 @@ module.exports = app => {
     app.get('/doctor/:doctorId/booked-slots', PatientController.bookedSlots)
         // app.post('/patient/api/:uid/createappointment', PatientController.createAppointment);
     app.put('/patient/api/:uid/updateappointment', PatientController.cancelAppointment)
+    app.get('/patient/api/:uid/allappt', PatientController.findAllAppointmentsForPatient)
+    app.get('/patient/api/:uid/oneappt/:id', PatientController.findAppointmentByIdForPatient)
+
         // app.put('patient/api/:uid/rescheduleappointment', PatientController.)
 
 

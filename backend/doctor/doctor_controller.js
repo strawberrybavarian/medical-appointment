@@ -12,6 +12,7 @@ const speakeasy = require('speakeasy');
 
 
 const nodemailer = require('nodemailer');
+const { get } = require('lodash');
 
 
 //For Email
@@ -242,6 +243,17 @@ const findDoctorByEmail = (req, res) => {
         })
         .catch((err) => {
             res.json({ message: 'Something went wrong', error: err });
+        });
+};
+const getAllDoctorEmails = (req, res) => {
+    Doctor.find({}, 'dr_email')
+        .then((doctors) => {
+            const emails = doctors.map(doctor => doctor.dr_email);
+            res.json(emails); // Send raw doctors data for inspection
+        })
+        .catch((err) => {
+            console.error('Error fetching doctor emails:', err);
+            res.status(500).json({ message: 'Something went wrong', error: err });
         });
 };
 // Add a new post
@@ -718,5 +730,6 @@ module.exports = {
     findUniqueSpecialties,
     getPrescriptions,
     rescheduleAppointment,
-    rescheduledStatus
+    rescheduledStatus,
+    getAllDoctorEmails
 };

@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const bcrypt = require('bcrypt');
+// const bcrypt = require('bcryptjs');
 const {Schema, model} = mongoose
 
 const PractitionerSchema = new Schema ({
@@ -46,11 +46,11 @@ const PractitionerSchema = new Schema ({
  
 
 
-PractitionerSchema.method({
-    async authenticate(password) {
-       return bcrypt.compare(password, this.password);
-    },
-  }); 
+// PractitionerSchema.method({
+//     async authenticate(password) {
+//        return bcrypt.compare(password, this.password);
+//     },
+//   }); 
 
   //collection
 const User = mongoose.model('practitioner', PractitionerSchema);

@@ -37,7 +37,7 @@ const AppointmentSchema = new Schema({
     },
     medium: {
         type: String,
-        enum: ['Online', 'Face to Face'],
+        // enum: ['Online', 'Face to Face'],
     },
     prescription: {
         type: Schema.Types.ObjectId,

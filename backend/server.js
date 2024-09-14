@@ -35,7 +35,5 @@ PrescriptionRoutes(app);
 const AppointmentRoutes = require('./appointments/appointment_routes')
 AppointmentRoutes(app);
 
-
-
 app.listen(port, () => console.log("\nThe server is all fired up on port 8000"));
 
