@@ -57,7 +57,7 @@ const StaffLogIn = () => {
 
             // Redirect to respective dashboard based on the role
             navigate(userRole === 'Medical Secretary' 
-                ? `/medsec/${userId}` 
+                ? `/medsec/dashboard/${userId}` 
                 : userRole === 'Cashier' 
                 ? `/cashier/${userId}` 
                 : userRole === 'Admin' 

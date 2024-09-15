@@ -9,19 +9,53 @@ import axios from 'axios';
 import { Container, Card } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom'; // Import useNavigate
 
-function AppointmentFullCalendar({msid}) {
+function AppointmentFullCalendar({ msid }) {
   const [allAppointments, setAllappointments] = useState([]);
   const calendarRef = useRef(null); // Reference to FullCalendar
   const navigate = useNavigate(); // Replace useHistory with useNavigate
 
+  // State variable for headerToolbar
+  const [headerToolbar, setHeaderToolbar] = useState({
+    left: 'prev,next today',
+    center: 'title',
+    right: 'dayGridMonth,timeGridWeek,timeGridDay',
+  });
+
   useEffect(() => {
-    axios.get(`http://localhost:8000/medicalsecretary/api/allappointments`)
+    axios
+      .get(`http://localhost:8000/medicalsecretary/api/allappointments`)
       .then((result) => {
         setAllappointments(result.data.Appointments);
       })
       .catch((error) => {
         console.log(error);
       });
+
+    // Handle window resize
+    const handleResize = () => {
+      if (window.innerWidth < 768) {
+        // Small screen
+        setHeaderToolbar({
+          left: 'prev,next',
+          center: 'title',
+          right: 'today',
+        });
+      } else {
+        // Large screen
+        setHeaderToolbar({
+          left: 'prev,next today',
+          center: 'title',
+          right: 'dayGridMonth,timeGridWeek,timeGridDay',
+        });
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    handleResize(); // Call once to set initial state
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
   }, []);
 
   const parseTimeString = (timeString) => {
@@ -39,7 +73,7 @@ function AppointmentFullCalendar({msid}) {
     return `${hours}:${minutes}:00`;
   };
 
-  const events = allAppointments.map(appointment => {
+  const events = allAppointments.map((appointment) => {
     const datePart = appointment.date.split('T')[0];
     const timePart = parseTimeString(appointment.time);
     const dateTimeString = `${datePart}T${timePart}`;
@@ -49,13 +83,12 @@ function AppointmentFullCalendar({msid}) {
       id: appointment._id,
       title: `${appointment.patient.patient_firstName} ${appointment.patient.patient_lastName}`,
       start: startTime,
-      end: new Date(startTime.getTime() + 30 * 60000), 
+      end: new Date(startTime.getTime() + 30 * 60000),
       description: appointment.reason,
-      status: appointment.status, 
-      doctorName: appointment.doctor 
-      ? `${appointment.doctor.dr_firstName} ${appointment.doctor.dr_lastName}` 
-      : 'No doctor assigned',  // Fallback if no doctor is assigned
- 
+      status: appointment.status,
+      doctorName: appointment.doctor
+        ? `${appointment.doctor.dr_firstName} ${appointment.doctor.dr_lastName}`
+        : 'No doctor assigned', // Fallback if no doctor is assigned
     };
   });
 
@@ -67,8 +100,8 @@ function AppointmentFullCalendar({msid}) {
       tab = 'todays';
     } else if (status === 'Ongoing') {
       tab = 'ongoing';
-    } else if (status === 'Pending'){
-      tab = 'pending'
+    } else if (status === 'Pending') {
+      tab = 'pending';
     }
 
     if (tab) {
@@ -91,8 +124,8 @@ function AppointmentFullCalendar({msid}) {
         allowHTML={true}
         theme="light-border"
       >
-        <div 
-          style={{ cursor: 'pointer' }} 
+        <div
+          style={{ cursor: 'pointer' }}
           onClick={() => handleEventClick(eventInfo)} // Attach click handler here
         >
           {eventInfo.event.title}
@@ -120,7 +153,7 @@ function AppointmentFullCalendar({msid}) {
   };
 
   return (
-    <Container className='d-flex justify-content-between pt-3'>
+    <div className="d-flex justify-content-between pt-3">
       <Card className="shadow mb-4 w-100">
         <Card.Header className="py-3">
           <h6 className="m-0 font-weight-bold text-primary">Appointment Calendar</h6>
@@ -130,12 +163,8 @@ function AppointmentFullCalendar({msid}) {
             ref={calendarRef}
             plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
             initialView="dayGridMonth"
-            headerToolbar={{
-              left: 'prev,next today',
-              center: 'title',
-              right: 'dayGridMonth,timeGridWeek,timeGridDay',
-            }}
-            height="auto"  // Or a fixed height like '500px'
+            headerToolbar={headerToolbar} // Use the responsive headerToolbar
+            height="auto" // Or a fixed height like '500px'
             events={events}
             editable={false}
             selectable={true}
@@ -145,7 +174,7 @@ function AppointmentFullCalendar({msid}) {
           />
         </Card.Body>
       </Card>
-    </Container>
+    </div>
   );
 }
 

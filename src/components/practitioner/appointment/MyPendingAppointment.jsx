@@ -1,11 +1,10 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
-import { Table, Button, Container, Pagination, Form, Row, Col, Nav } from 'react-bootstrap';
+import { Table, Container, Pagination, Form, Row, Col, Nav } from 'react-bootstrap';
 
 import './Appointment.css';
 import RescheduleModal from "./Reschedule Modal/RescheduleModal";
-
 
 const TodaysAppointment = () => {
   const location = useLocation();
@@ -31,22 +30,17 @@ const TodaysAppointment = () => {
     });
   }, [did]);
 
-
-
-  const acceptAppointment = (appointmentID) => {
-    const newStatus = { status: 'Scheduled' };
-    axios.put(`http://localhost:8000/doctor/api/${appointmentID}/acceptpatient`, newStatus)
-      .then((response) => {
+  const updateAppointmentStatus = (appointmentID, newStatus) => {
+    axios.put(`http://localhost:8000/appointments/${appointmentID}/status`, { status: newStatus })
+      .then(() => {
         setAllAppointments(prevAppointments =>
           prevAppointments.map(appointment =>
-            appointment._id === appointmentID ? { ...appointment, status: 'Scheduled' } : appointment
+            appointment._id === appointmentID ? { ...appointment, status: newStatus } : appointment
           )
         );
       })
-      .catch((err) => {
-        console.log(err);
-      });
-  }
+      .catch(err => console.log(err));
+  };
 
   const handleConfirmReschedule = (rescheduledReason) => {
     const newStatus = {
@@ -65,8 +59,8 @@ const TodaysAppointment = () => {
       .catch((err) => {
         console.log(err);
       });
-  }
-  //For Queries
+  };
+
   const handleSort = (key) => {
     let direction = 'ascending';
     if (sortConfig.key === key && sortConfig.direction === 'ascending') {
@@ -111,53 +105,48 @@ const TodaysAppointment = () => {
     setSelectedAppointment(null);
   };
 
-
-
   return (
     <Container className="white-background shadow-sm">
       <div style={{ padding: '30px', width: '100%' }}>
-        {/* <h1>Pending Appointments</h1> */}
-        
         <div style={{ marginTop: '20px', width: '100%' }}>
-        <Row className="d-flex align-items-center">
+          <Row className="d-flex align-items-center">
+            <Col xs={12} md={3} className="mb-3 d-flex align-items-center">
+              <div className="d-flex align-items-center w-100">
+                <Form.Label className="me-2">Entries per page:</Form.Label>
+                <Form.Control 
+                  as="select"
+                  value={entriesPerPage}
+                  onChange={(e) => setEntriesPerPage(parseInt(e.target.value))}
+                  className="select-dropdown"
+                  style={{ width: 'auto' }}  
+                >
+                  <option value={5}>5</option>
+                  <option value={15}>15</option>
+                  <option value={30}>30</option>
+                  <option value={50}>50</option>
+                </Form.Control>
+              </div>
+            </Col>
 
-        <Col xs={12} md={3} className="mb-3 d-flex align-items-center">
-          <div className="d-flex align-items-center w-100">
-            <Form.Label className="me-2">Entries per page:</Form.Label> {/* Add margin to right (me-2) */}
-            <Form.Control 
-              as="select"
-              value={entriesPerPage}
-              onChange={(e) => setEntriesPerPage(parseInt(e.target.value))}
-              className="select-dropdown"
-              style={{ width: 'auto' }}  
-            >
-              <option value={5}>5</option>
-              <option value={15}>15</option>
-              <option value={30}>30</option>
-              <option value={50}>50</option>
-            </Form.Control>
-          </div>
-        </Col>
-
-        <Col xs={12} md={9} className="mb-3 d-flex align-items-center">
-          <div className="d-flex align-items-center w-100">
-            <Form.Group controlId="formSearch" className="w-100 d-flex flex-wrap align-items-center">
-              <Col xs={12} md={4} className="">
-                <Form.Label className="me-2">Search by Patient Name:</Form.Label>
-              </Col>
-              <Col xs={12} md={8} className="d-flex justify-content-end">
-                <Form.Control
-                  type="text"
-                  placeholder="Search..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </Col>
-            </Form.Group>
-          </div>
-        </Col>
-  </Row>
-</div>
+            <Col xs={12} md={9} className="mb-3 d-flex align-items-center">
+              <div className="d-flex align-items-center w-100">
+                <Form.Group controlId="formSearch" className="w-100 d-flex flex-wrap align-items-center">
+                  <Col xs={12} md={4} className="">
+                    <Form.Label className="me-2">Search by Patient Name:</Form.Label>
+                  </Col>
+                  <Col xs={12} md={8} className="d-flex justify-content-end">
+                    <Form.Control
+                      type="text"
+                      placeholder="Search..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                  </Col>
+                </Form.Group>
+              </div>
+            </Col>
+          </Row>
+        </div>
         
         <Table responsive striped bordered hover variant="blue" className="table-border-radius">
           <thead>
@@ -175,23 +164,24 @@ const TodaysAppointment = () => {
             </tr>
           </thead>
           <tbody>
-            {currentAppointments.map((appointment) => {
-              const patient = appointment.patient;
-              const patientName = `${patient.patient_firstName} ${patient.patient_middleInitial}. ${patient.patient_lastName}`;
-              return (
-                <tr key={appointment._id}>
-                  <td>{patientName}</td>
-                  <td>{new Date(appointment.date).toLocaleDateString()}</td>
-                  <td>{appointment.time}</td>
-                  <td>{appointment.reason}</td>
-                  <td>{appointment.status}</td>
-                  <td>
+          {currentAppointments.map((appointment) => {
+            const patient = appointment.patient || {}; // Ensure patient is an object
+            const patientName = `${patient.patient_firstName || ''} ${patient.patient_middleInitial || ''}. ${patient.patient_lastName || ''}`.trim();
+            
+            return (
+              <tr key={appointment._id}>
+                <td>{patientName}</td>
+                <td>{new Date(appointment.date).toLocaleDateString()}</td>
+                <td>{appointment.time}</td>
+                <td>{appointment.reason}</td>
+                <td>{appointment.status}</td>
+                <td>
                   <div className="d-flex justify-content-center">
                     <Nav onSelect={(selectedKey) => alert(`selected ${selectedKey}`)}>
                       <Nav.Item>
                         <Nav.Link 
                           className="accept-link" 
-                          onClick={() => acceptAppointment(appointment._id)}>
+                          onClick={() => updateAppointmentStatus(appointment._id, 'Scheduled')}>
                           Accept
                         </Nav.Link>
                       </Nav.Item>
@@ -204,14 +194,13 @@ const TodaysAppointment = () => {
                         </Nav.Link>
                       </Nav.Item>
                     </Nav>
-</div>
+                  </div>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
 
-                    
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
         </Table>
         {error && <p>{error}</p>}
         <Pagination>

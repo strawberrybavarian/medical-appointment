@@ -17,7 +17,7 @@ const NewsSchema = new Schema({
   },
   role: {
     type: String,
-    enum: ['MedicalSecretary', 'Admin'],
+    enum: ['Medical Secretary', 'Admin'],
     required: true,
   },
   images: [{ type: String }],  // Array of image base64 strings

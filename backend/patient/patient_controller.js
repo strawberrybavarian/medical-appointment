@@ -346,87 +346,6 @@ const updatePostAtIndex = (req, res) => {
     });
 };
 
-const createAppointment = async (req, res) => {
-  try {
-    const { doctorId, date, time, reason, cancelReason, rescheduledReason, secretaryId, prescriptionId, medium, payment } = req.body;
-    const patientId = req.params.uid; 
-
-
-    const doctorObjectId = new mongoose.Types.ObjectId(doctorId);
-    const patientObjectId = new mongoose.Types.ObjectId(patientId);
-    const secretaryObjectId = secretaryId ? new mongoose.Types.ObjectId(secretaryId) : null;
-    const prescriptionObjectId = prescriptionId ? new mongoose.Types.ObjectId(prescriptionId) : null;
-
-
-    const newAppointment = new Appointment({
-      patient: patientObjectId,
-      doctor: doctorObjectId,
-      prescription: prescriptionObjectId,
-      date,
-      time,
-      reason,
-      cancelReason,
-      rescheduledReason,
-      medium,
-      payment,
-      secretary: secretaryObjectId
-    });
-
-    await newAppointment.save();
-
-    // Update Doctor's appointments
-    await Doctor.findByIdAndUpdate(doctorObjectId, {
-      $push: { dr_appointments: newAppointment._id }
-    });
-
-    // Update Patient's appointments
-    await Patient.findByIdAndUpdate(patientObjectId, {
-      $push: { patient_appointments: newAppointment._id } // Ensure this field matches the model
-    });
-
-    // Update Medical Secretary's appointments 
-    if (secretaryObjectId) {
-      await MedicalSecretary.findByIdAndUpdate(secretaryObjectId, {
-        $push: { ms_appointments: newAppointment._id }
-      });
-    }
-
-    // Create a notification for the patient
-    const patientNotification = new Notification({
-      message: `You have an pending appointment scheduled on ${date} at ${time}.`,
-      recipient: patientObjectId,
-      recipientType: 'Patient'
-    });
-    await patientNotification.save();
-
-    
-    // Add notification reference to the patient
-    await Patient.findByIdAndUpdate(
-      patientObjectId,
-      { $push: { notifications: patientNotification._id } },
-      { new: true }
-    );
-    // Create a notification for the doctor
-    const doctorNotification = new Notification({
-      message: `You have a new pending appointment scheduled with a patient on ${date} at ${time}.`,
-      recipient: doctorObjectId,
-      recipientType: 'Doctor'
-    });
-    await doctorNotification.save();
-
-    // Add notification reference to the doctor
-    await Doctor.findByIdAndUpdate(
-      doctorObjectId,
-      { $push: { notifications: doctorNotification._id } },
-      { new: true }
-    );
-
-    res.status(201).json(newAppointment);
-  } catch (error) {
-    console.error(error); // Log the error details
-    res.status(400).json({ message: error.message });
-  }
-};
 
 
 const bookedSlots = async (req, res) => {
@@ -487,7 +406,6 @@ module.exports = {
     findPostByIdDelete,
     findPatientById,
     updatePostAtIndex,
-    createAppointment,
     cancelAppointment,
     setupTwoFactor,
     verifyTwoFactor,

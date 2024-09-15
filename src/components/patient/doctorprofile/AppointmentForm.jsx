@@ -14,11 +14,9 @@ function AppointmentForm() {
   const [reason, setReason] = useState("");
   const [medium, setMedium] = useState("Online");
   const [availableTimes, setAvailableTimes] = useState([]);
-  const [bookedTimes, setBookedTimes] = useState([]);
   const [availability, setAvailability] = useState({});
   const [doctorName, setDoctorName] = useState("");
   const [activeAppointmentStatus, setActiveAppointmentStatus] = useState(true);
-  const [totalAvailableSlots, setTotalAvailableSlots] = useState(0);
 
   const createAppointment = () => {
     if (!time) {
@@ -97,20 +95,8 @@ function AppointmentForm() {
 
       const times = getAvailableTimes(day);
       setAvailableTimes(times);
-      setTotalAvailableSlots(times.length);
-
-      axios
-        .get(`http://localhost:8000/doctor/${did}/booked-slots?date=${date}`)
-        .then((response) => {
-          setBookedTimes(response.data.bookedSlots);
-        })
-        .catch((err) => {
-          console.log(err.response.data);
-        });
     } else {
       setAvailableTimes([]);
-      setBookedTimes([]);
-      setTotalAvailableSlots(0);
     }
   }, [date, did, availability]);
 
@@ -119,47 +105,35 @@ function AppointmentForm() {
     return today.toISOString().split("T")[0];
   };
 
-  const generateTimeIntervals = (start, end, interval) => {
-    const times = [];
-    const [startHour, startMinute] = start.split(":").map(Number);
-    const [endHour, endMinute] = end.split(":").map(Number);
-    let currentTime = new Date(1970, 0, 1, startHour, startMinute);
-    const endTime = new Date(1970, 0, 1, endHour, endMinute);
-
-    while (currentTime <= endTime) {
-      times.push(
-        currentTime.toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        })
-      );
-      currentTime = new Date(currentTime.getTime() + interval * 60000);
-    }
-
-    return times;
-  };
-
   const getAvailableTimes = (day) => {
     const dayAvailability = availability[day];
     if (!dayAvailability) return [];
 
     let times = [];
     if (dayAvailability.morning.available) {
-      const morningTimes = generateTimeIntervals(
-        dayAvailability.morning.startTime,
-        dayAvailability.morning.endTime,
-        dayAvailability.morning.interval || 30
-      );
-      times = times.concat(morningTimes);
+      const morningTime = `${new Date(
+        `1970-01-01T${dayAvailability.morning.startTime}`
+      ).toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      })} - ${new Date(
+        `1970-01-01T${dayAvailability.morning.endTime}`
+      ).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
+      times.push({ label: "Morning", timeRange: morningTime });
     }
+
     if (dayAvailability.afternoon.available) {
-      const afternoonTimes = generateTimeIntervals(
-        dayAvailability.afternoon.startTime,
-        dayAvailability.afternoon.endTime,
-        dayAvailability.afternoon.interval || 30
-      );
-      times = times.concat(afternoonTimes);
+      const afternoonTime = `${new Date(
+        `1970-01-01T${dayAvailability.afternoon.startTime}`
+      ).toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      })} - ${new Date(
+        `1970-01-01T${dayAvailability.afternoon.endTime}`
+      ).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
+      times.push({ label: "Afternoon", timeRange: afternoonTime });
     }
+
     return times;
   };
 
@@ -170,7 +144,6 @@ function AppointmentForm() {
         return;
       }
     }
-
     setStep(step + 1);
   };
 
@@ -179,7 +152,6 @@ function AppointmentForm() {
   };
 
   const todayDate = getTodayDate();
-  const availableSlots = totalAvailableSlots - bookedTimes.length;
 
   return (
     <>
@@ -238,23 +210,21 @@ function AppointmentForm() {
                         {availableTimes.map((timeSlot, index) => (
                           <Button
                             key={index}
-                            variant="outline-primary"
-                            onClick={() => setTime(timeSlot)}
-                            disabled={
-                              bookedTimes.includes(timeSlot) ||
-                              time === timeSlot
-                            }
+                            variant={
+                              time === timeSlot.timeRange
+                                ? "secondary"
+                                : "outline-primary"
+                            } // Grayed out if selected
+                            onClick={() => setTime(timeSlot.timeRange)}
+                            disabled={time === timeSlot.timeRange} // Disable button if selected
                             className="m-1"
                           >
-                            {timeSlot}
+                            {timeSlot.label}: {timeSlot.timeRange}
                           </Button>
                         ))}
                       </div>
                     </center>
                   </Form.Group>
-                  <center>
-                    <h5>Slots Available: {availableSlots}</h5>
-                  </center>
                 </Row>
               ) : (
                 <Row>

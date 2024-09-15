@@ -93,8 +93,6 @@ const sendOTP = async (req, res) => {
         res.status(500).send('Error sending OTP');
     }
 };
-
-
 // Verify OTP
 const verifyOTP = async (req, res) => {
   try {
@@ -193,13 +191,6 @@ const verifyTwoFactor = async (req, res) => {
     }
 };
 
-
-
-
-
-
-
-
 const NewDoctorSignUp = (req, res) => {
     Doctors.create(req.body)
         .then((newDoctor) => {
@@ -239,9 +230,6 @@ const findAllDoctors = (req, res) => {
         });
 };
 
-
-
-
 const findOneDoctor = (req, res) => {
     const doctorId = req.params.id;
 
@@ -265,9 +253,6 @@ const findOneDoctor = (req, res) => {
         });
 };
 ;
-
-
-
 
 const findUniqueSpecialties = (req, res) => {
     Doctors.distinct('dr_specialty')
@@ -427,6 +412,19 @@ const updatePostAtIndex = async (req, res) => {
     }
 };
 //For Appointments
+
+const specificAppointmentsforDoctor = (req,res) => {
+    const {doctorId} = req.params;
+    Appointment.find({ doctor: doctorId })
+    .populate('patient', 'patient_firstName patient_lastName') // Populate patient details
+    .then(appointments => {
+      res.status(200).json(appointments); // Return the appointments to the client
+    })
+    .catch(err => {
+      res.status(500).json({ error: 'Error fetching appointments', details: err });
+    });
+
+};
 const getAllAppointments = (req, res) => {
     const { doctorId } = req.params;
     
@@ -442,7 +440,6 @@ const getAllAppointments = (req, res) => {
         res.status(500).json({ message: error.message });
       });
   };
-
 const completeAppointment = async (req, res) => {
   try {
     const appointmentId = req.params.appointmentID;
@@ -472,7 +469,6 @@ const completeAppointment = async (req, res) => {
     res.status(400).json({ message: error.message });
   }
 };
-
 const acceptPatient = async (req, res) => {
     try {
         const appointmentId = req.params.uid; // Appointment ID from URL parameter
@@ -519,7 +515,6 @@ const acceptPatient = async (req, res) => {
         res.status(400).json({ message: error.message });
     }
 };
-
 const doctorAvailability = async (req, res) => {
     try {
         const { availability } = req.body;
@@ -533,7 +528,6 @@ const doctorAvailability = async (req, res) => {
         res.status(400).json({ message: error.message });
     }
 };
-
 const getAvailability = async (req, res) => {
     try {
         const doctor = await Doctors.findById(req.params.doctorId).select('availability activeAppointmentStatus');
@@ -556,6 +550,34 @@ const updateAvailability = async (req, res) => {
         res.status(400).json({ message: error.message });
     }
 };
+
+const requestDeactivation = async (req, res) => {
+    try {
+        const { reason } = req.body;
+
+        // Set the deactivation request status and reason
+        const doctor = await Doctors.findByIdAndUpdate(
+            req.params.doctorId,
+            { 
+                deactivationRequest: {
+                    requested: true,
+                    reason,
+                    confirmed: null
+                }
+            },
+            { new: true }
+        );
+
+        // Notify the admin or medical secretary (e.g., send an email, or push notification)
+        // For now, we'll just log it
+        console.log(`Deactivation request for Doctor ${doctor.dr_firstName} ${doctor.dr_lastName} pending confirmation.`);
+
+        res.status(200).json({ message: 'Deactivation request sent successfully', doctor });
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+};
+
 
 
 const rescheduleAppointment = async (req, res) => {
@@ -780,5 +802,7 @@ module.exports = {
     findOneDoctor,
     offlineActivityStatus,
     updateDoctorStatus,
+    requestDeactivation,
+    specificAppointmentsforDoctor
 
 };

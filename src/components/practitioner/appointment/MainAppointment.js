@@ -23,11 +23,6 @@ const MyPatientsNav = () => {
   const innerTabFromUrl = new URLSearchParams(location.search).get("innerTab") || "upcoming";
 
   useEffect(() => {
-
-    if (!did) {
-      navigate('/'); // If `did` is missing, navigate to home
-      return null; // Render nothing while navigating
-    }
     axios
       .get(`http://localhost:8000/doctor/appointments/${did}`)
       .then((res) => {
@@ -74,7 +69,7 @@ const MyPatientsNav = () => {
         </Container>
 
         {/* Render components based on the innerTab */}
-        {innerTabFromUrl === "upcoming" && <UpcomingAppointment allAppointments={allAppointments} />}
+        {innerTabFromUrl === "upcoming" && <UpcomingAppointment allAppointments={allAppointments} setAllAppointments={setAllAppointments} />}
         {innerTabFromUrl === "todays" && <TodaysAppointment allAppointments={allAppointments} />}
         {innerTabFromUrl === "ongoing" && <OngoingAppointment allAppointments={allAppointments} />}
         {innerTabFromUrl === "completed" && <CompletedAppointment allAppointments={allAppointments} />}

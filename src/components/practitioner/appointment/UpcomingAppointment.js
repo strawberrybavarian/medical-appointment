@@ -1,14 +1,17 @@
 import { useEffect, useState } from "react";
 import Table from 'react-bootstrap/Table';
-import { Link } from "react-router-dom";
 import { Pagination, Form, Container, Row, Col } from 'react-bootstrap';
 import './Appointment.css';
+import RescheduleModal from "./Reschedule Modal/RescheduleModal"; 
+import axios from "axios";
 
-const UpcomingAppointment = ({ allAppointments }) => {
+const UpcomingAppointment = ({ allAppointments, setAllAppointments }) => {
   const [error, setError] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [entriesPerPage, setEntriesPerPage] = useState(5); // Default entries per page
-  const [searchTerm, setSearchTerm] = useState(""); // Search term
+  const [entriesPerPage, setEntriesPerPage] = useState(5);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [showRescheduleModal, setShowRescheduleModal] = useState(false);
+  const [selectedAppointment, setSelectedAppointment] = useState(null);
 
   // Get today's date
   const getTodayDate = () => {
@@ -21,10 +24,12 @@ const UpcomingAppointment = ({ allAppointments }) => {
 
   const todayDate = getTodayDate();
 
+  
+
   // Filter upcoming appointments
   const upcomingAppointments = allAppointments.filter(appointment => {
     const appointmentDate = new Date(appointment.date).toISOString().split('T')[0];
-    return appointmentDate > todayDate;
+    return appointmentDate > todayDate && appointment.status === 'Scheduled';
   });
 
   // Filter based on search term
@@ -43,6 +48,35 @@ const UpcomingAppointment = ({ allAppointments }) => {
   for (let i = 1; i <= Math.ceil(filteredAppointments.length / entriesPerPage); i++) {
     pageNumbers.push(i);
   }
+
+  // Function to handle showing reschedule modal
+  const handleReschedule = (appointment) => {
+    setSelectedAppointment(appointment);
+    setShowRescheduleModal(true);
+  };
+
+  
+  const handleConfirmReschedule = (rescheduledReason) => {
+    const newStatus = {
+      rescheduledReason: rescheduledReason,
+      status: 'Rescheduled'
+    };
+    axios.put(`http://localhost:8000/doctor/${selectedAppointment._id}/rescheduledstatus`, newStatus)
+      .then(() => {
+        setAllAppointments(prevAppointments =>
+          prevAppointments.map(appointment =>
+            appointment._id === selectedAppointment._id ? { ...appointment, status: 'Rescheduled', rescheduledReason: rescheduledReason } : appointment
+          )
+        );
+        setCurrentPage(1); 
+        setShowRescheduleModal(false);  // Close modal after reschedule
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
+
+  
 
   return (
     <div>
@@ -100,23 +134,28 @@ const UpcomingAppointment = ({ allAppointments }) => {
             </tr>
           </thead>
           <tbody>
-            {currentAppointments
-              .map((appointment) => {
-                const patient = appointment.patient;
-                const patientName = `${patient.patient_firstName} ${patient.patient_middleInitial}. ${patient.patient_lastName}`;
-                return (
-                  <tr key={appointment._id}>
-                    <td>{patientName}</td>
-                    <td>{new Date(appointment.date).toLocaleDateString()}</td>
-                    <td>{appointment.time}</td>
-                    <td>{appointment.reason}</td>
-                    <td>{appointment.status}</td>
-                    <td>
-                      <Link to={`/edit/${appointment._id}`}>Edit</Link>
-                    </td>
-                  </tr>
-                );
-              })}
+            {currentAppointments.map((appointment) => {
+              const patient = appointment.patient || {}; // Ensure patient is an object
+              const patientName = `${patient.patient_firstName || ''} ${patient.patient_middleInitial || ''}. ${patient.patient_lastName || ''}`.trim();
+              
+              return (
+                <tr key={appointment._id}>
+                  <td>{patientName}</td>
+                  <td>{new Date(appointment.date).toLocaleDateString()}</td>
+                  <td>{appointment.time}</td>
+                  <td>{appointment.reason}</td>
+                  <td>{appointment.status}</td>
+                  <td>
+                    <span 
+                      onClick={() => handleReschedule(appointment)} 
+                      style={{ cursor: 'pointer', color: 'orange', textDecoration: 'underline' }}
+                    >
+                      Reschedule
+                    </span>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </Table>
 
@@ -136,6 +175,16 @@ const UpcomingAppointment = ({ allAppointments }) => {
           <Pagination.Last onClick={() => setCurrentPage(pageNumbers.length)} disabled={currentPage === pageNumbers.length} />
         </Pagination>
       </div>
+
+      {/* Reschedule Modal */}
+      {selectedAppointment && (
+        <RescheduleModal
+          show={showRescheduleModal}
+          handleClose={() => setShowRescheduleModal(false)}
+          handleConfirm={handleConfirmReschedule}
+          appointment={selectedAppointment}
+        />
+      )}
     </div>
   );
 };

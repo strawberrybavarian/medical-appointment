@@ -87,21 +87,21 @@ function MSDoctorProfile() {
                     Doctor Profile
                 </Card.Header>
                 <Card.Body>
-                    <div className="d-flex">
+                    <div className="d-flex align-items-center">
                         <div className="flex-shrink-0">
                             <img src={`${ip.address}/${theImage}`} alt="Doctor" className="dp-image" style={{ maxWidth: '150px' }} />
                         </div>
                         <div className="flex-grow-1 ms-3">
-                            <Card.Title>{fullName}</Card.Title>
+                            <Card.Title style={{fontSize: '2rem', fontWeight: '800'}}>{fullName}</Card.Title>
                             <Card.Text style={{ fontStyle: 'italic' }}>{theDoctor.dr_specialty}</Card.Text>
-                            <Button variant="primary" onClick={handleDoctorClick} className="mt-3">Book Now</Button>
+                            
                         </div>
                     </div>
 
                     <hr />
 
                     <h5>Weekly Schedule</h5>
-                    <Table bordered className="dp-schedule">
+                    <Table responsive bordered className="dp-schedule">
                         <thead>
                             <tr>
                                 <th>Day</th>

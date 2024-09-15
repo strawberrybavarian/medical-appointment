@@ -1,11 +1,10 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { Table, Button, Container, Pagination, Form, Row, Col } from 'react-bootstrap';
 import './Styles.css'
 // import './Appointment.css';
 import RescheduleModal from '../../../../practitioner/appointment/Reschedule Modal/RescheduleModal'
-
 
 const MedSecPending = ({allAppointments, setAllAppointments}) => {
   const { did } = useParams();
@@ -118,12 +117,13 @@ const MedSecPending = ({allAppointments, setAllAppointments}) => {
 
   return (
   <>
-      <div style={{ padding: '30px', width: '100%' }}>
+  <Container>
+      <div style={{padding:'30px', width: '100%' }}>
         <h1>Pending Appointments</h1>
         
         
       <Container className="p-0">
-        <Row className="g-3"> {/* Use gutter spacing to control the space between columns */}
+        <Row> {/* Use gutter spacing to control the space between columns */}
           
           <Col lg={4} md={6} sm={12}>
             <Form.Group controlId="formDoctorSearch" className="d-flex align-items-center">
@@ -197,7 +197,7 @@ const MedSecPending = ({allAppointments, setAllAppointments}) => {
               <th style={{ border: "1px solid #00000018", cursor: 'pointer' }} onClick={() => handleSort('time')}>
                 Time {sortConfig.key === 'time' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
               </th>
-              <th style={{ border: "1px solid #00000018" }}>Reason</th>
+              
               <th style={{ border: "1px solid #00000018" }}>Account Status</th>
               <th style={{ border: "1px solid #00000018" }}>Appointment Status</th>
               <th style={{ border: "1px solid #00000018" }}>Actions</th>
@@ -219,13 +219,15 @@ const MedSecPending = ({allAppointments, setAllAppointments}) => {
                   <td>{new Date(appointment.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</td>
 
                   <td>{appointment.time}</td>
-                  <td>{appointment.reason}</td>
                   <td>{appointment.patient.accountStatus}</td>
                   <td>{appointment.status}</td>
                   
                   <td>
-                    <Button variant="success" onClick={() => acceptAppointment(appointment._id)}>Accept</Button>
-                    <Button variant="warning" onClick={() => handleReschedule(appointment)}>Reschedule</Button>
+                    <div className="d-flex justify-content-around flex-wrap">
+                      <Link variant="success" onClick={() => acceptAppointment(appointment._id)}>Accept</Link>
+                      <Link variant="warning" onClick={() => handleReschedule(appointment)}>Reschedule</Link>
+                    </div>
+                    
                   </td>
                 </tr>
               );
@@ -276,6 +278,7 @@ const MedSecPending = ({allAppointments, setAllAppointments}) => {
 <div style={{paddingBottom:'50px'}}>
    
    </div>
+   </Container>
   </>
   );
 };

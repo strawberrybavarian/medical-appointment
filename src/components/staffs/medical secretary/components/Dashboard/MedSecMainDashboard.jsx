@@ -8,6 +8,7 @@ import axios from 'axios';
 import { ip } from '../../../../../ContentExport';
 import BarAppointment from '../../../admin/dashboard/charts/BarAppointment';
 import LineCompletedAppointments from '../../../admin/dashboard/charts/LineCompletedAppointments';
+import AppointmentFullCalendar from '../Calendar/AppointmentFullCalendar';
 function MedSecMainDashboard() {
     const { msid } = useParams();  // Extract msid from the route
     const [medSecData, setMedSecData] = useState(null); 
@@ -41,6 +42,7 @@ function MedSecMainDashboard() {
                     
                     <Row className="mt-4">
                         <Col md={6} className="mb-3">
+                            <AppointmentFullCalendar/>
                             <BarAppointment /> {/* Appointment bar chart */}
                             <LineCompletedAppointments/>
                         

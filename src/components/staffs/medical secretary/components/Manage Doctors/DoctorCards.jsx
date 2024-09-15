@@ -23,7 +23,6 @@ function DoctorCards() {
     navigate(`/medsec/${msid}/doctors/${did}/schedule`);
   };
 
-  // Function to calculate how long ago the doctor was active
   const timeSinceLastActive = (lastActive) => {
     const now = new Date();
     const lastActiveDate = new Date(lastActive);
@@ -40,105 +39,87 @@ function DoctorCards() {
     return `Active ${weeksAgo} week${weeksAgo > 1 ? 's' : ''} ago`;
   };
 
-  // Categorize doctors based on their activity status
   const inSessionDoctors = doctors.filter(doctor => doctor.activityStatus === 'In Session');
   const onlineDoctors = doctors.filter(doctor => doctor.activityStatus === 'Online');
   const offlineDoctors = doctors.filter(doctor => doctor.activityStatus === 'Offline');
 
   return (
     <>
-      <MedSecNavbar />
       <div className="msdc-container">
+        <Container fluid className="py-3 d-flex justify-content-center">
+          <Row className="g-3">
 
-      <Container fluid className=" py-3  d-flex justify-content-center">
-        <Row className="g-3">
+            {/* In Session Doctors */}
+            {inSessionDoctors.length > 0 && (
+              <React.Fragment>
+                <h2 className="section-title">In Session</h2>
+                {inSessionDoctors.map(doctor => (
+                  <Col key={doctor._id} xs={12} sm={6} md={4} lg={3}>
+                    <Card className="doctor-card" onClick={() => handleDoctorClick(doctor._id)}>
+                      <Card.Img variant="top" src={`http://localhost:8000/${doctor.dr_image || defaultImage}`} />
+                      <Card.Body>
+                        <Card.Title className="text-center">
+                          {doctor.dr_firstName} {doctor.dr_middleInitial}. {doctor.dr_lastName}
+                        </Card.Title>
+                        <p className="text-center text-muted">{doctor.dr_specialty}</p>
+                        <p className="text-center text-muted" style={{ fontSize: "12px" }}>
+                          <span className="status-indicator in-session"></span> In Session
+                        </p>
+                      </Card.Body>
+                    </Card>
+                  </Col>
+                ))}
+              </React.Fragment>
+            )}
 
-          {/* In Session Doctors */}
-          {inSessionDoctors.length > 0 && (
-            <React.Fragment>
-              <h2 className="section-title">In Session</h2>
-              {inSessionDoctors.map(doctor => (
-                <Col key={doctor._id} xs={12} sm={6} md={4} lg={3}>
-                <Card onClick={() => handleDoctorClick(doctor._id)} className="doctor-card">
-                  <Card.Img variant="top" src={`http://localhost:8000/${doctor.dr_image || defaultImage}`} />
-                  <Card.Body>
-                    <Card.Title className="text-center">
-                      {doctor.dr_firstName} {doctor.dr_middleInitial}. {doctor.dr_lastName}
-                    </Card.Title>
-                    <p className="text-center text-muted">{doctor.dr_specialty}</p>
-                    <p className="text-center text-muted" style={{ fontSize: "12px" }}>
-                      <span className={`status-indicator ${doctor.activityStatus.toLowerCase().replace(" ", "-")}`}></span>
-                      {doctor.activityStatus === "Offline" && timeSinceLastActive(doctor.lastActive)}
-                    </p>
-                  </Card.Body>
-                </Card>
-              </Col>
-              
-              ))}
-            </React.Fragment>
-          )}
+            {/* Online Doctors */}
+            {onlineDoctors.length > 0 && (
+              <React.Fragment>
+                <h2 className="section-title">Online</h2>
+                {onlineDoctors.map(doctor => (
+                  <Col key={doctor._id} xs={12} sm={6} md={4} lg={3}>
+                    <Card className="doctor-card" onClick={() => handleDoctorClick(doctor._id)}>
+                      <Card.Img variant="top" src={`http://localhost:8000/${doctor.dr_image || defaultImage}`} />
+                      <Card.Body>
+                        <Card.Title className="text-center">
+                          {doctor.dr_firstName} {doctor.dr_middleInitial}. {doctor.dr_lastName}
+                        </Card.Title>
+                        <p className="text-center text-muted">{doctor.dr_specialty}</p>
+                        <p className="text-center text-muted" style={{ fontSize: '12px' }}>
+                          <span className="status-indicator online"></span> Online
+                        </p>
+                      </Card.Body>
+                    </Card>
+                  </Col>
+                ))}
+              </React.Fragment>
+            )}
 
-          {/* Online Doctors */}
-          {onlineDoctors.length > 0 && (
-            <React.Fragment>
-              <h2 className="section-title">Online</h2>
-              {onlineDoctors.map(doctor => (
-                <Col key={doctor._id} xs={12} sm={6} md={4} lg={3}>
-                  <Card
-                    onClick={() => handleDoctorClick(doctor._id)}
-                    className="doctor-card"
-                  >
-                    <Card.Img
-                      variant="top"
-                      src={`http://localhost:8000/${doctor.dr_image || defaultImage}`}
-                    />
-                    <Card.Body>
-                      <Card.Title className="text-center">
-                        {doctor.dr_firstName} {doctor.dr_middleInitial}. {doctor.dr_lastName}
-                      </Card.Title>
-                      <p className="text-center text-muted">{doctor.dr_specialty}</p>
-                      <p className="text-center text-muted" style={{ fontSize: '12px' }}>
-                        <span className="status-indicator online"></span> Online
-                      </p>
-                    </Card.Body>
-                  </Card>
-                </Col>
-              ))}
-            </React.Fragment>
-          )}
+            {/* Offline Doctors */}
+            {offlineDoctors.length > 0 && (
+              <React.Fragment>
+                <h2 className="section-title">Offline</h2>
+                {offlineDoctors.map(doctor => (
+                  <Col key={doctor._id} xs={12} sm={6} md={4} lg={3}>
+                    <Card className="doctor-card" onClick={() => handleDoctorClick(doctor._id)}>
+                      <Card.Img variant="top" src={`http://localhost:8000/${doctor.dr_image || defaultImage}`} />
+                      <Card.Body>
+                        <Card.Title className="text-center">
+                          {doctor.dr_firstName} {doctor.dr_middleInitial}. {doctor.dr_lastName}
+                        </Card.Title>
+                        <p className="text-center text-muted">{doctor.dr_specialty}</p>
+                        <p className="text-center text-muted" style={{ fontSize: '12px' }}>
+                          <span className="status-indicator offline"></span> {timeSinceLastActive(doctor.lastActive)}
+                        </p>
+                      </Card.Body>
+                    </Card>
+                  </Col>
+                ))}
+              </React.Fragment>
+            )}
 
-          {/* Offline Doctors */}
-          {offlineDoctors.length > 0 && (
-            <React.Fragment>
-              <h2 className="section-title">Offline</h2>
-              {offlineDoctors.map(doctor => (
-                <Col key={doctor._id} xs={12} sm={6} md={4} lg={3}>
-                  <Card
-                    onClick={() => handleDoctorClick(doctor._id)}
-                    className="doctor-card"
-                  >
-                    <Card.Img
-                      variant="top"
-                      src={`http://localhost:8000/${doctor.dr_image || defaultImage}`}
-                    />
-                    <Card.Body>
-                      <Card.Title className="text-center">
-                        {doctor.dr_firstName} {doctor.dr_middleInitial}. {doctor.dr_lastName}
-                      </Card.Title>
-                      <p className="text-center text-muted">{doctor.dr_specialty}</p>
-                      <p className="text-center text-muted" style={{ fontSize: '12px' }}>
-                        <span className="status-indicator offline"></span> {timeSinceLastActive(doctor.lastActive)}
-                      </p>
-                    </Card.Body>
-                  </Card>
-                </Col>
-              ))}
-            </React.Fragment>
-          )}
-
-        </Row>
-      </Container>
-              
+          </Row>
+        </Container>
       </div>
     </>
   );

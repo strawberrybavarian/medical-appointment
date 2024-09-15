@@ -67,7 +67,7 @@ const SidebarAdmin = (props) => {
                 </Link>
               </div>
 
-              <Link to={`/admin/appointments/${props.did}`}>
+              <Link to={`/admin/appointments/${props.aid}`}>
                 <CDBSidebarMenuItem icon="calendar-alt" className="font-style-poppins"> Appointments </CDBSidebarMenuItem>
               </Link>
 

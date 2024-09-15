@@ -24,7 +24,10 @@ module.exports = app => {
     //Appointment Stats
     app.get('/api/doctor-specialty-stats', AdminController.getDoctorSpecialtyStats)
     app.get('/admin/api/appointments/completed-by-month', AdminController.getCompletedAppointmentsByMonth)
-
+    
+    //For Deactivation of Appointment
+    app.get('/admin/deactivation-requests', AdminController.getDeactivationRequests);
+    app.post('/admin/confirm-deactivation/:doctorId', AdminController.confirmDeactivation);
     
 
 

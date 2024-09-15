@@ -1,25 +1,22 @@
 import { useNavigate, useParams } from "react-router-dom";
-import { Container, Row, Col, Button, Navbar, Nav, Card } from 'react-bootstrap';
+import { Card } from 'react-bootstrap';
 import axios from "axios";
-import { useEffect, useState,  } from "react";
-import './ChooseDoctor.css'
+import { useEffect, useState } from "react";
+import './ChooseDoctor.css';
 import PatientNavBar from "../PatientNavBar/PatientNavBar";
 
+const defaultImage = "images/014ef2f860e8e56b27d4a3267e0a193a.jpg";
+
 function ChooseDoctor() {
-    const [theDoctors, setAllDoctors] = useState([]);
-    const [theDocId, setAllDocId] = useState([]);
-    const [allImage, setAllImage] = useState([])
+    const [doctors, setDoctors] = useState([]);
     const { pid } = useParams(); 
     const navigate = useNavigate();
-    const defaultImage = "images/014ef2f860e8e56b27d4a3267e0a193a.jpg";
-    // Display all the available doctors and able to direct to appointment form and pass it through the frontend.
+
+    // Fetch all the doctors when the component loads
     useEffect(() => {
         axios.get(`http://localhost:8000/doctor/api/alldoctor`)
             .then((res) => {
-                console.log(res.data.theDoctor); // Log the response data
-                setAllDoctors(res.data.theDoctor);
-                setAllImage(res.data.theDoctor.dr_image || defaultImage)
-                // Set state to the data property of the response
+                setDoctors(res.data.theDoctor);
             })
             .catch((err) => {
                 console.log(err);
@@ -27,37 +24,60 @@ function ChooseDoctor() {
     }, []);
 
     const handleDoctorClick = (did) => {
-        navigate(`/doctorprofile/${pid}/${did}`); // Navigate to appointment page with uid and doctorId
+        navigate(`/doctorprofile/${pid}/${did}`); // Navigate to doctor profile with the patient ID
+    };
+
+    const timeSinceLastActive = (lastActive) => {
+        const now = new Date();
+        const lastActiveDate = new Date(lastActive);
+        const secondsAgo = Math.floor((now - lastActiveDate) / 1000);
+        const minutesAgo = Math.floor(secondsAgo / 60);
+        const hoursAgo = Math.floor(minutesAgo / 60);
+        const daysAgo = Math.floor(hoursAgo / 24);
+        const weeksAgo = Math.floor(daysAgo / 7);
+
+        if (minutesAgo < 1) return "Active just now";
+        if (minutesAgo < 60) return `Active ${minutesAgo} minute${minutesAgo > 1 ? 's' : ''} ago`;
+        if (hoursAgo < 24) return `Active ${hoursAgo} hour${hoursAgo > 1 ? 's' : ''} ago`;
+        if (daysAgo < 7) return `Active ${daysAgo} day${daysAgo > 1 ? 's' : ''} ago`;
+        return `Active ${weeksAgo} week${weeksAgo > 1 ? 's' : ''} ago`;
     };
 
     return (
         <>
-            <PatientNavBar/>
-
-           
-            <div style={{paddingTop: '40px'}}>
-           
-            </div>
+            <PatientNavBar />
+            <div style={{ paddingTop: '40px' }}></div>
             <div className="cd-main">
-                
                 <div className="cd-containergrid">
-                    {theDoctors.map((doctor, index) => {
-                        console.log(doctor.dr_image);
-                        const doctorImage = doctor.dr_image || defaultImage
+                    {doctors.map((doctor) => {
+                        const doctorImage = doctor.dr_image || defaultImage;
+
+                        // Define the status color based on the activity status
+                        const statusColor = doctor.activityStatus === 'Online' ? 'green' 
+                                            : doctor.activityStatus === 'In Session' ? 'orange' 
+                                            : 'gray';
+
                         return (
-                            <>
-                                <Card  className="cd-card" onClick={() => handleDoctorClick(doctor._id)}>
-                                    <Card.Img variant="top" src={`http://localhost:8000/${doctorImage}`} />
-                                        <Card.Body>
-                                            <Card.Title style={{textAlign: "center"}}>{doctor.dr_firstName} {doctor.dr_middleInitial}. {doctor.dr_lastName}</Card.Title>
-                                            <p style={{textAlign: 'center', fontSize:'14px', fontStyle:'italic'}}>{doctor.dr_specialty}</p>
-                                            <Card.Text>
-                                            "Lorem ipsum dolor sit "Lorem ipsum dolor sit amet, consectetur 
-                                            </Card.Text>
-                                        </Card.Body>
-                                </Card>
-                            </>
-                        )
+                            <Card key={doctor._id} className="cd-card" onClick={() => handleDoctorClick(doctor._id)}>
+                                <Card.Img variant="top" src={`http://localhost:8000/${doctorImage}`} />
+                                <Card.Body>
+                                    <Card.Title style={{ textAlign: "center" }}>
+                                        {doctor.dr_firstName} {doctor.dr_middleInitial}. {doctor.dr_lastName}
+                                    </Card.Title>
+                                    <p style={{ textAlign: 'center', fontSize: '14px', fontStyle: 'italic' }}>
+                                        {doctor.dr_specialty}
+                                    </p>
+
+                                    {/* Adding Activity Status below the card */}
+                                    <p style={{ textAlign: 'center',  fontSize: '12px' }}>
+                                        <span className="status-indicator" style={{ backgroundColor: statusColor, borderRadius: '50%', display: 'inline-block', width: '10px', height: '10px', marginRight: '8px' }}></span>
+                                        {doctor.activityStatus === 'Online' ? 'Online' 
+                                            : doctor.activityStatus === 'In Session' ? 'In Session' 
+                                            : `Last Active: ${timeSinceLastActive(doctor.lastActive)}`}
+                                    </p>
+                                </Card.Body>
+                            </Card>
+                        );
                     })}
                 </div>
             </div>

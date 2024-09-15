@@ -4,12 +4,12 @@ import MedSecTodaysApp from '../Appointments/MedSecTodaysApp';
 import MedSecPending from '../Appointments/MedSecPending';
 import MedSecOngoing from '../Appointments/MedSecOngoing';
 import MedSecDashboard from '../Dashboard/MedSecDashboard'; // Fixed typo in component name
-import { Container, Nav, Row } from 'react-bootstrap';
+import { Container, Nav, Row, Col } from 'react-bootstrap';
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import './MedSecMain.css';
 import MSDoctorProfile from '../Manage Doctors/MSDoctorProfile';
-
+import AppointmentFullCalendar from '../Calendar/AppointmentFullCalendar';
 function MedSecMain() {
   const { msid } = useParams();
   const location = useLocation(); 
@@ -49,13 +49,13 @@ function MedSecMain() {
   return (
     <>
       <MedSecNavbar /> {/* Fixed navbar at the top */}
-      <div style={{ overflowY: 'auto', height: 'calc(100vh - 56px)', width: '100%' }}>
+      <div style={{ overflowY: 'auto', height: 'calc(100vh - 56px)', width: '100%', paddingBottom: '1.5rem' }}>
         
       
 
      
 
-        <Container className="ms-container mt-4">
+        <Container className="ms-container mt-5">
           <Row>
             <Nav fill variant="tabs" className="ms-navtabs" activeKey={activeTab} onSelect={setActiveTab}>
               <Nav.Item>
@@ -71,28 +71,32 @@ function MedSecMain() {
           </Row>
         </Container>
 
-        <Container>
-          {activeTab === "todays" && (
-            <MedSecTodaysApp
-              allAppointments={allappointments}
-              setAllAppointments={setallappointments}
-              selectedDoctor={selectedDoctor}
-            />
-          )}
-          {activeTab === "pending" && (
-            <MedSecPending
-              allAppointments={allappointments}
-              setAllAppointments={setallappointments}
-              selectedDoctor={selectedDoctor}
-            />
-          )}
-          {activeTab === "ongoing" && (
-            <MedSecOngoing
-              allAppointments={allappointments}
-              setAllAppointments={setallappointments}
-              selectedDoctor={selectedDoctor}
-            />
-          )}
+        <Container  style={{ marginTop:'2rem'}}>
+      
+            
+              {activeTab === "todays" && (
+                <MedSecTodaysApp
+                  allAppointments={allappointments}
+                  setAllAppointments={setallappointments}
+                  selectedDoctor={selectedDoctor}
+                />
+              )}
+              {activeTab === "pending" && (
+                <MedSecPending
+                  allAppointments={allappointments}
+                  setAllAppointments={setallappointments}
+                  selectedDoctor={selectedDoctor}
+                />
+              )}
+              {activeTab === "ongoing" && (
+                <MedSecOngoing
+                  allAppointments={allappointments}
+                  setAllAppointments={setallappointments}
+                  selectedDoctor={selectedDoctor}
+                />
+              )}
+         
+          
         </Container>
       </div>
     </>

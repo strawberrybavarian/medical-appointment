@@ -31,7 +31,7 @@
     }
 
 .dsm-card{
-    height: 1320px;
+  padding: 1.5rem;
 }
 
 .msdp-card{
@@ -149,4 +149,21 @@
   margin-bottom: 10px;
   font-size: 1.5rem;
   color: #333;
+}
+
+.custom-link {
+  text-decoration: none; /* Remove underline */
+  transition: text-decoration 0.3s ease; /* Smooth transition for hover effect */
+  margin: 5px; /* Add some spacing between links */
+}
+
+.custom-link:hover {
+  text-decoration: underline; /* Show underline on hover */
+}
+
+@media (max-width: 768px) {
+  .d-flex {
+      flex-direction: column !important; /* Stack the links on smaller screens */
+      align-items: center;
+  }
 }

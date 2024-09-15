@@ -32,7 +32,7 @@ const MedicalSecretarySchema = new Schema({
     }],
     role:{
         type:String,
-        default: 'MedicalSecretary'
+        default: 'Medical Secretary'
     },
     news: [{
         type: Schema.Types.ObjectId,

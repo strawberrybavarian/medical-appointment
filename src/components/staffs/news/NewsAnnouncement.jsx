@@ -16,7 +16,8 @@ function NewsAnnouncement({ user_image, user_name, user_id, role }) {
   const [headline, setHeadline] = useState(""); // Add this line to define the headline state
 
   const defaultImage = "images/014ef2f860e8e56b27d4a3267e0a193a.jpg";
-
+  console.log(role);
+  
   // Fetch all news (Disregard API logic)
   useEffect(() => {
     axios

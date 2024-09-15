@@ -214,7 +214,7 @@ function Immunization({ patientId, doctorId, appointmentId }) {
                     <Card className="mb-4">
                         <Card.Header>Immunization History</Card.Header>
                         <Card.Body>
-                            <Table striped bordered hover>
+                            <Table responsive striped bordered hover>
                                 <thead>
                                     <tr>
                                         <th>Vaccine</th>

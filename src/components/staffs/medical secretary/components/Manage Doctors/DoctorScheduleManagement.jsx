@@ -5,7 +5,7 @@ import { useParams } from 'react-router-dom';
 import MedSecNavbar from '../../navbar/MedSecNavbar';
 import './Styles.css';
 import MSDoctorProfile from './MSDoctorProfile';
-
+import DeactivationRequests from '../../../admin/appointment/doctors/DeactivationRequests';
 const initialTimeSlot = { startTime: '', endTime: '', interval: 0, available: false };
 
 const initialAvailability = {
@@ -90,17 +90,16 @@ function DoctorScheduleManagement() {
 
     return (
         <>
-            <MedSecNavbar did={did}/>
-            <Container fluid className=' dsm-container d-flex'>
+          
+            
         
-                <MSDoctorProfile/>
-         
-  
-                <Card className="dsm-card shadow-sm mt-4">
+
+                <Card className=" shadow-sm mt-4">
                     <Card.Header as="h5">
-                       Appointment Schedule
+                       Appointments
                     </Card.Header>
-                    <Card.Body>
+                    <Card.Body className='dsm-card'>
+                   
                         <Form>
                             {Object.keys(availability).map(day => (
                                 <div key={day} className="mb-4">
@@ -206,7 +205,7 @@ function DoctorScheduleManagement() {
                         </Form>
                     </Card.Body>
                 </Card>
-            </Container>
+   
         </>
     );
 }

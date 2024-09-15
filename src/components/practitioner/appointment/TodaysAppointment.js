@@ -27,7 +27,7 @@ const TodaysAppointment = ({ allAppointments }) => {
   // Filter today's appointments based on today's date
   const todaysAppointments = allAppointments.filter(appointment => {
     const appointmentDate = new Date(appointment.date).toISOString().split('T')[0];
-    return appointmentDate === todayDate;
+    return appointmentDate === todayDate && appointment.status === 'Scheduled';
   });
 
   // Filter appointments based on search term

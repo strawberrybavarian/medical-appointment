@@ -21,7 +21,7 @@ const getGeneralNews = async (req, res) => {
 const findNewsByUserId = (req, res) => {
     const { id, role } = req.params;
     
-    const UserModel = role === 'MedicalSecretary' ? MedicalSecretary : Admin;
+    const UserModel = role === 'Medical Secretary' ? MedicalSecretary : Admin;
     
     UserModel.findOne({ _id: id })
         .populate('news')
@@ -63,7 +63,7 @@ const addNewNewsByUserId = async (req, res) => {
 
         // Save the new news entry
         const savedNews = await newNews.save();
-        const UserModel = req.body.role === 'MedicalSecretary' ? MedicalSecretary : Admin;
+        const UserModel = req.body.role === 'Medical Secretary' ? MedicalSecretary : Admin;
 
         const updatedUser = await UserModel.findByIdAndUpdate(
             req.params.id,
@@ -81,7 +81,7 @@ const addNewNewsByUserId = async (req, res) => {
 // Retrieve all news
 const getAllNewsByUserId = (req, res) => {
     const { id, role } = req.params;
-    const UserModel = role === 'MedicalSecretary' ? MedicalSecretary : Admin;
+    const UserModel = role === 'Medical Secretary' ? MedicalSecretary : Admin;
 
     UserModel.findOne({ _id: id })
         .populate('news')
@@ -103,7 +103,7 @@ const deleteNewsByIndex = async (req, res) => {
     const role = req.body.role;
 
     try {
-        const UserModel = role === 'MedicalSecretary' ? MedicalSecretary : Admin;
+        const UserModel = role === 'Medical Secretary' ? MedicalSecretary : Admin;
         const user = await UserModel.findById(userId);
 
         if (!user) {
@@ -143,7 +143,7 @@ const updateNewsAtIndex = async (req, res) => {
   
 
     try {
-        const UserModel = role === 'MedicalSecretary' ? MedicalSecretary : Admin;
+        const UserModel = role === 'Medical Secretary' ? MedicalSecretary : Admin;
         const user = await UserModel.findById(userId);
 
         if (!user) {

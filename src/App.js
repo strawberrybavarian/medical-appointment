@@ -38,11 +38,12 @@ import StaffLogIn from './components/staffs/login page/StaffLogin';
 // Medical Secretary
 import MedSecMain from './components/staffs/medical secretary/components/Main/MedSecMain';
 import CreatePatient from './components/staffs/medical secretary/components/Add Patient/Main/CreatePatientMain';
-
 import MedSecCalendar from './components/staffs/medical secretary/components/Calendar/MedSecCalendar';
 import DoctorCards from './components/staffs/medical secretary/components/Manage Doctors/DoctorCards';
 import DoctorScheduleManagement from './components/staffs/medical secretary/components/Manage Doctors/DoctorScheduleManagement';
 import MedSecMainDashboard from './components/staffs/medical secretary/components/Dashboard/MedSecMainDashboard';
+import ManageDoctorMain from './components/staffs/medical secretary/components/Manage Doctors/ManageDoctorMain';
+import AllDoctors from './components/staffs/medical secretary/components/Manage Doctors/AllDoctors';
 
 //Cashier
 import CashierMain from './components/staffs/cashier/main page/CashierMain';
@@ -54,7 +55,7 @@ import DoctorMain from './components/staffs/admin/dashboard/doctors/DoctorMain';
 import DoctorManagement from './components/staffs/admin/management/account/DoctorManagement';
 import PatientManagement from './components/staffs/admin/management/account/PatientManagement';
 import NewsDetailPage from './components/staffs/news/NewsDetailPage';
-
+import AdminAppointmentMain from './components/staffs/admin/appointment/AdminAppointmentMain';
 
 
 
@@ -90,13 +91,12 @@ function App() {
           <Route path={"/staffs"} element={<StaffLogIn />}/>
 
         {/* Medical Secretary Routes */}
-          <Route path={"/medsec/:msid"} element={<MedSecMain />}/>
+          <Route path={"/medsec/appointments/:msid"} element={<MedSecMain />}/>
           <Route path={"/medsec/dashboard/:msid"} element={<MedSecMainDashboard />}/>
           <Route path={"/medsec/createpatient/:msid"} element={<CreatePatient />}/>
-          <Route path={"/medsec/calendar/:msid"} element={<MedSecCalendar />}/>
-          <Route path={"/medsec/doctors/:msid"} element={<DoctorCards />}/>
-          <Route path={"/medsec/:msid/doctors/:did/schedule"} element={<DoctorScheduleManagement />} />
-
+          <Route path={"/medsec/doctors/:msid"} element={<AllDoctors />}/>
+          <Route path={"/medsec/:msid/doctors/:did/schedule"} element={<ManageDoctorMain />} />
+          
         
         {/* Cashier Routes */}
           <Route path={"/cashier/:cid"} element={<CashierMain />}/>
@@ -106,6 +106,8 @@ function App() {
           <Route path={"/admin/dashboard/doctor/:aid"} element={<DoctorMain />}/>
           <Route path={"/admin/account/doctor/:aid"} element={<DoctorManagement />}/>
           <Route path={"/admin/account/patient/:aid"} element={<PatientManagement />}/>
+          <Route path={"/admin/appointments/:aid"} element={<AdminAppointmentMain />}/>
+      
       </Routes>
     </BrowserRouter>
 
