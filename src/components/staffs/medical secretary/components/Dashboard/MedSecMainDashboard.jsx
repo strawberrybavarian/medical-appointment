@@ -6,8 +6,8 @@ import MedSecNavbar from '../../navbar/MedSecNavbar';
 import NewsAnnouncement from '../../../news/NewsAnnouncement';
 import axios from 'axios';
 import { ip } from '../../../../../ContentExport';
-import BarAppointment from '../../../admin/dashboard/charts/BarAppointment';
-import LineCompletedAppointments from '../../../admin/dashboard/charts/LineCompletedAppointments';
+import BarAppointment from '../../../admin/dashboard/Charts/BarAppointment';
+import LineCompletedAppointments from '../../../admin/dashboard/Charts/LineCompletedAppointments';
 import AppointmentFullCalendar from '../Calendar/AppointmentFullCalendar';
 function MedSecMainDashboard() {
     const { msid } = useParams();  // Extract msid from the route

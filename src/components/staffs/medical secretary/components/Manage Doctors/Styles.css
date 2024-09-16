@@ -156,9 +156,25 @@
   text-decoration: underline; /* Show underline on hover */
 }
 
-@media (max-width: 768px) {
-  .d-flex {
-      flex-direction: column !important; /* Stack the links on smaller screens */
-      align-items: center;
-  }
+
+
+.dt-column-order {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  margin-left: 5px; /* Space between the text and arrows */
+}
+
+.arrow {
+  font-size: 0.6rem;  /* Adjust arrow size */
+  color: lightgray;   /* Default gray color for inactive arrows */
+  cursor: pointer;
+}
+
+.arrow.active {
+  color: black; /* Darker color for active arrows */
+}
+
+.arrow.inactive {
+  color: lightgray;
 }

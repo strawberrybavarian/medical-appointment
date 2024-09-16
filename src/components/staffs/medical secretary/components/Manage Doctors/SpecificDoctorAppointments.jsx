@@ -12,12 +12,15 @@ function SpecificDoctorAppointments({ did }) {
   const [showRescheduleModal, setShowRescheduleModal] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState(null);
 
+  const [sortColumn, setSortColumn] = useState(null);  // Track the column being sorted
+  const [sortDirection, setSortDirection] = useState('asc'); // Track the sorting direction
+
   // Fetch appointments for the doctor
   const fetchAppointments = () => {
     axios.get(`http://localhost:8000/doctor/${did}/appointments`)
       .then(res => {
         setAppointments(res.data);
-        setFilteredAppointments(res.data);
+        setFilteredAppointments(res.data);  // Set filteredAppointments only once
       })
       .catch(err => console.log(err));
   };
@@ -28,22 +31,86 @@ function SpecificDoctorAppointments({ did }) {
 
   useEffect(() => {
     filterAppointments(); // Filter the appointments every time the search term or status changes
-  }, [selectedStatus, searchTerm]);
+  }, [selectedStatus, searchTerm, appointments]);  // Added `appointments` as a dependency
 
   // Function to filter appointments based on status and search term
   const filterAppointments = () => {
-    let filtered = appointments;
+    let filtered = [...appointments];  // Work with a copy of the appointments state
     if (selectedStatus !== 'All') {
       filtered = filtered.filter(appointment => appointment.status === selectedStatus);
     }
     if (searchTerm) {
-      filtered = filtered.filter(appointment => 
-        appointment.patient.patient_firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        appointment.patient.patient_lastName.toLowerCase().includes(searchTerm.toLowerCase())
-      );
+      filtered = filtered.filter(appointment => {
+        const fullName = `${appointment.patient.patient_firstName} ${appointment.patient.patient_lastName}`.toLowerCase();
+        return (
+          fullName.includes(searchTerm.toLowerCase()) || 
+          appointment.patient.patient_firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          appointment.patient.patient_lastName.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+      });
     }
-    setFilteredAppointments(filtered);
+    applySorting(filtered);  // Apply sorting before setting filteredAppointments
   };
+
+  // Function to apply sorting to filtered appointments
+  const applySorting = (appointmentsToSort) => {
+    let sortedAppointments = [...appointmentsToSort];
+
+    if (sortColumn) {
+      sortedAppointments.sort((a, b) => {
+        let aValue = a[sortColumn];
+        let bValue = b[sortColumn];
+
+        // Handle sorting for nested values like patient name
+        if (sortColumn === 'patient') {
+          aValue = `${a.patient.patient_firstName} ${a.patient.patient_lastName}`;
+          bValue = `${b.patient.patient_firstName} ${b.patient.patient_lastName}`;
+        }
+
+        if (sortColumn === 'date') {
+          aValue = new Date(aValue);
+          bValue = new Date(bValue);
+        }
+
+        if (sortDirection === 'asc') {
+          return aValue > bValue ? 1 : -1;
+        } else {
+          return aValue < bValue ? 1 : -1;
+        }
+      });
+    }
+    setFilteredAppointments(sortedAppointments);  // Set the sorted appointments
+  };
+
+  // Handle sorting when the user clicks a table header
+  const handleSort = (column) => {
+    const direction = (sortColumn === column && sortDirection === 'asc') ? 'desc' : 'asc';
+    setSortColumn(column);
+    setSortDirection(direction);
+    applySorting(filteredAppointments);  // Reapply sorting immediately
+  };
+
+  // Function to render the sort arrow in the header
+// Function to render the sort arrow in the header
+const renderSortArrow = (column) => {
+  return (
+    <span className="dt-column-order">
+      {/* Up Arrow */}
+      <span
+        className={`arrow ${sortColumn === column && sortDirection === 'asc' ? 'active' : 'inactive'}`}
+      >
+        &#9650;
+      </span>
+      {/* Down Arrow */}
+      <span
+        className={`arrow ${sortColumn === column && sortDirection === 'desc' ? 'active' : 'inactive'}`}
+      >
+        &#9660;
+      </span>
+    </span>
+  );
+};
+
 
   // Update the status of the appointment and refetch the appointments
   const updateAppointmentStatus = (appointmentID, newStatus) => {
@@ -76,8 +143,6 @@ function SpecificDoctorAppointments({ did }) {
 
   return (
     <Container>
-      <h3>Doctor's Appointments</h3>
-
       <Row className="g-3">
         <Col lg={4} md={6}>
           <Form.Group>
@@ -104,17 +169,18 @@ function SpecificDoctorAppointments({ did }) {
         </Col>
       </Row>
 
-      <Table striped bordered hover style={{ marginTop: '20px' }}>
+      <Table responsive striped variant="light" className="mt-3">
         <thead>
           <tr>
-            <th>Patient Name</th>
-            <th>Date</th>
-            <th>Time</th>
+            <th onClick={() => handleSort('patient')}>Patient Name {renderSortArrow('patient')}</th>
+            <th onClick={() => handleSort('date')}>Date {renderSortArrow('date')}</th>
+            <th onClick={() => handleSort('time')}>Time {renderSortArrow('time')}</th>
             <th>Reason</th>
             <th>Status</th>
             <th>Actions</th>
           </tr>
         </thead>
+
         <tbody>
           {filteredAppointments.length > 0 ? (
             filteredAppointments.map((appointment) => {

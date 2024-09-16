@@ -18,24 +18,24 @@ const LaboratorySchema = new Schema({
     doctor: {
         type: Schema.Types.ObjectId,
         ref: 'Doctor',
-        required: true,
+        
     },
 
     testResults: [{
-        name: { type: String, required: true },
-        value: { type: String, required: true },
-        unit: { type: String, required: true },
+        name: { type: String,  },
+        value: { type: String,  },
+        unit: { type: String,  },
         referenceRange: {
-            lower: { type: Number, required: true },
-            upper: { type: Number, required: true }
+            lower: { type: Number,},
+            upper: { type: Number, }
         },
-        status: { type: String, enum: ['Normal', 'Abnormal', 'Critical'], required: true, default: 'Normal' },
+        status: { type: String, enum: ['Normal', 'Abnormal', 'Critical'], default: 'Normal' },
         notes: { type: String, default: '' }
     }],
-    interpretation: { type: String, required: true },
-    recommendations: { type: String, required: true },
+    interpretation: { type: String,  },
+    recommendations: { type: String, },
   
-    interpretationDate: { type: Date, required: true, default: Date.now },
+    interpretationDate: { type: Date, default: Date.now },
     remarks: { type: String, default: '' },
 
    

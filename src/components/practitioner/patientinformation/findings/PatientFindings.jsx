@@ -26,7 +26,8 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
         familyHistory: [{ relation: '', condition: '' }],
         socialHistory: { employmentStatus: '', livingSituation: '', socialSupport: true },
         mentalHealth: { mood: '', anxietyLevel: '', depressionLevel: '' },
-        skinCondition: '',
+        skinCondition: [],  // Ensure this is an array
+        allergy: [],        // Ensure this is an array
         neurologicalFindings: '',
         gastrointestinalSymptoms: '',
         cardiovascularSymptoms: '',
@@ -36,6 +37,7 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
         recommendations: '',
         assessment: '',
     });
+    
 
     const [loading, setLoading] = useState(true);  
     const [error, setError] = useState(null);      
@@ -136,19 +138,20 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
             return;
         }
     
-        let updatedSkinConditions = findings.skinCondition;
+        let updatedSkinConditions = findings.skinCondition || [];
         if (updatedSkinConditions.includes('Other') && findings.otherSkinCondition) {
             updatedSkinConditions = updatedSkinConditions.map(condition =>
                 condition === 'Other' ? findings.otherSkinCondition : condition
             );
         }
-    
-        let updatedAllergies = findings.allergy;
+        
+        let updatedAllergies = findings.allergy || [];
         if (updatedAllergies.includes('Other') && findings.otherAllergy) {
             updatedAllergies = updatedAllergies.map(allergy =>
                 allergy === 'Other' ? findings.otherAllergy : allergy
             );
         }
+        
     
         try {
             await axios.post('http://localhost:8000/createfindings', {
@@ -440,7 +443,7 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
                                 label="Rash"
                                 name="skinCondition"
                                 value="Rash"
-                                checked={findings?.skinCondition?.includes('Rash')}
+                                checked={(findings?.skinCondition || []).includes('Rash')}
                                 onChange={(e) => {
                                     const { value, checked } = e.target;
                                     let updatedConditions = findings.skinCondition || [];
@@ -454,12 +457,13 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
                                     setFindings({ ...findings, skinCondition: updatedConditions });
                                 }}
                             />
+
                             <Form.Check
                                 type="checkbox"
                                 label="Jaundice"
                                 name="skinCondition"
                                 value="Jaundice"
-                                checked={findings?.skinCondition?.includes('Jaundice')}
+                                checked={(findings?.skinCondition || []).includes('Jaundice')}
                                 onChange={(e) => {
                                     const { value, checked } = e.target;
                                     let updatedConditions = findings.skinCondition || [];
@@ -478,7 +482,7 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
                                 label="Dry Skin"
                                 name="skinCondition"
                                 value="Dry Skin"
-                                checked={findings?.skinCondition?.includes('Dry Skin')}
+                                checked={(findings?.skinCondition || []).includes('Dry Skin')}
                                 onChange={(e) => {
                                     const { value, checked } = e.target;
                                     let updatedConditions = findings.skinCondition || [];
@@ -499,7 +503,7 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
                                 label="Other"
                                 name="skinCondition"
                                 value="Other"
-                                checked={findings?.skinCondition?.includes('Other')}
+                                checked={(findings?.skinCondition || []).includes('Other')}
                                 onChange={(e) => {
                                     const { value, checked } = e.target;
                                     let updatedConditions = findings.skinCondition || [];
@@ -540,7 +544,7 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
                                 label="Peanuts"
                                 name="allergy"
                                 value="Peanuts"
-                                checked={findings?.allergy?.includes('Peanuts')}
+                                checked={(findings?.allergy || []).includes('Peanuts')}
                                 onChange={(e) => {
                                     const { value, checked } = e.target;
                                     let updatedAllergies = findings.allergy || [];
@@ -554,12 +558,13 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
                                     setFindings({ ...findings, allergy: updatedAllergies });
                                 }}
                             />
+
                             <Form.Check
                                 type="checkbox"
                                 label="Shellfish"
                                 name="allergy"
                                 value="Shellfish"
-                                checked={findings?.allergy?.includes('Shellfish')}
+                                checked={(findings?.allergy || []).includes('Shellfish')}
                                 onChange={(e) => {
                                     const { value, checked } = e.target;
                                     let updatedAllergies = findings.allergy || [];
@@ -578,7 +583,7 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
                                 label="Pollen"
                                 name="allergy"
                                 value="Pollen"
-                                checked={findings?.allergy?.includes('Pollen')}
+                                checked={(findings?.allergy || []).includes('Pollen')}
                                 onChange={(e) => {
                                     const { value, checked } = e.target;
                                     let updatedAllergies = findings.allergy || [];
@@ -599,7 +604,7 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
                                 label="Other"
                                 name="allergy"
                                 value="Other"
-                                checked={findings?.allergy?.includes('Other')}
+                                checked={(findings?.allergy || []).includes('Other')}
                                 onChange={(e) => {
                                     const { value, checked } = e.target;
                                     let updatedAllergies = findings.allergy || [];

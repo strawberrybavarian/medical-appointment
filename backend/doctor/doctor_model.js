@@ -119,6 +119,32 @@ const DoctorSchema = new Schema({
         type: String,
         enum: ['Review', 'Registered', 'Deactivated', 'Deleted'],
         default: 'Review'
+    },
+    biography: {
+        
+        personalStatement: {
+            type: String,
+            default: '' // A short personal statement or introductory text
+        },
+        education: [{
+            degree: String,
+            institution: String,
+            year: Number
+        }],
+        certifications: [{
+            certification: String,
+            issuingOrganization: String,
+            year: Number
+        }],
+        workExperience: [{
+            position: String,
+            organization: String,
+            startDate: Date,
+            endDate: Date,
+            description: String
+        }],
+        achievements: [String], 
+        researchInterests: [String] 
     }
 }, { timestamps: true });
 

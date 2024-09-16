@@ -41,6 +41,8 @@ const ImmunizationRoutes = require('./immunization/immunization_routes')
 ImmunizationRoutes(app);
 const NewsRoutes = require('./news/news_routes')
 NewsRoutes(app);
+const LaboratoryRoutes = require('./laboratory/laboratory_routes')
+LaboratoryRoutes(app)
 
 
 

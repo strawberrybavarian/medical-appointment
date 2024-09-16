@@ -2,7 +2,6 @@
     background: rgb(26, 32, 59)!important;
     color: rgb(255, 255, 255);
     height: 100%;
-    width: 290px ;
     min-width: 290px ;
     text-align: left;
     transition: width 0s ease 0s, left 0s ease 0s, right 0s ease 0s, all 0.3s ease 0s;

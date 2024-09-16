@@ -28,3 +28,53 @@ body{
 .margin-left{
   margin-left: 0.5rem;
 }
+
+
+.warning-color{
+  color: #ffc107;
+}
+
+.success-color{
+  color: #198754;
+}
+
+.danger-color{
+  color: #dc3545;
+}
+
+.primary-color{
+  color: #0d6efd;
+}
+
+.table {
+ vertical-align: middle !important;
+}
+
+.table>thead{
+  vertical-align: middle !important;
+}
+
+.table-light{
+  border-width: 0 var(--bs-border-width);
+  border-color: #e0e5ec !important;
+}
+
+thead{
+
+}
+
+
+
+
+.table>:not(caption)>*>*{
+  background-color: white !important;
+  border-top: 1px solid #dee2e6;
+ border-bottom: 2px solid #dee2e6;
+}
+
+.table-light {
+
+   --bs-table-striped-bg: #fcfbfbf3 !important; 
+
+  
+}

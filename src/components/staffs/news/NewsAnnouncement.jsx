@@ -86,7 +86,7 @@ function NewsAnnouncement({ user_image, user_name, user_id, role }) {
   };
 
   return (
-  <div style={{ display: "flex", flexDirection: "column", width: "100%" }}>
+  <div style={{ display: "flex", flexDirection: "column", width: "100%" }} className="mt-2">
     <div className="mb-2">
       <h2> Share News </h2>
       <hr/>

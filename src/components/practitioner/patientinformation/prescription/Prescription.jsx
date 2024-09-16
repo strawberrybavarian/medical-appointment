@@ -5,6 +5,8 @@ import { jsPDF } from "jspdf";
 import html2canvas from "html2canvas";
 import "./PrescriptionStyle.css";
 import { ip } from "../../../../ContentExport";
+import { Link } from "react-router-dom";
+import { PencilSquare, Trash } from 'react-bootstrap-icons'; // Import the icons
 
 function Prescription({ patientId, appointmentId, doctorId }) {
 
@@ -60,18 +62,27 @@ function Prescription({ patientId, appointmentId, doctorId }) {
 
   useEffect(() => {
     const fetchPrescription = async () => {
+      console.log("Fetching prescription for appointmentId:", appointmentId);  // Log the appointmentId
       try {
-        const medicationRes = await axios.get(`${ip.address}/getfindings/${appointmentId}`);
-        if (medicationRes.data.prescription) {
-          setMedications(medicationRes.data.prescription.medications); // Assuming response contains medication list
+        const response = await axios.get(`${ip.address}/getfindings/${appointmentId}`);
+        if (response.data && response.data.prescription) {
+          console.log("Prescription found:", response.data.prescription);
+          setMedications(response.data.prescription.medications);
+        } else {
+          console.log("No prescription found");
         }
       } catch (err) {
         console.log("Error fetching prescription:", err);
       }
     };
-
+  
     fetchPrescription();
   }, [appointmentId]);
+  
+  
+
+  
+  
 
   const handleMedicationChange = (field, value) => {
     setMedication({ ...medication, [field]: value });
@@ -127,7 +138,7 @@ function Prescription({ patientId, appointmentId, doctorId }) {
     if (rximage) {
       formData.append("image", rximage);
     }
-
+  
     try {
       const response = await axios.post(
         `${ip.address}/doctor/api/createPrescription/${patientId}/${appointmentId}`,
@@ -139,12 +150,19 @@ function Prescription({ patientId, appointmentId, doctorId }) {
         }
       );
       window.alert("Prescription saved successfully!");
+  
+      // Log response to ensure prescription is saved correctly
       console.log(response.data);
+  
+      // Optionally, fetch prescription again to ensure it is saved
+      // fetchPrescription(); 
+  
     } catch (err) {
       console.log(err);
       setError("Error saving prescription");
     }
   };
+  
 
   const generatePDF = () => {
     const doc = new jsPDF();
@@ -411,7 +429,7 @@ function Prescription({ patientId, appointmentId, doctorId }) {
             </Card.Header>
             <Card.Body>
               <div id="prescription-table">
-                <Table responsive striped bordered hover>
+                <Table responsive striped  variant="light" className="mt-3">
                   <thead>
                     <tr>
                       <th>Name of Drug</th>
@@ -432,20 +450,21 @@ function Prescription({ patientId, appointmentId, doctorId }) {
                         <td>{med.frequency}</td>
                         <td>{med.duration}</td>
                         <td>{med.instruction}</td>
-                        <td>
-                          <Button variant="warning" onClick={() => editMedication(index)}>
-                            Edit
-                          </Button>{" "}
-                          <Button
-                            variant="danger"
-                            onClick={() => removeMedication(index)}
-                          >
-                            Remove
-                          </Button>
-                        </td>
+                       
+                          <td>
+                            <div className="d-flex justify-content-around flex-wrap">
+                              <Link className="warning-color" onClick={() => editMedication(index)} title="Edit">
+                                <PencilSquare /> {/* Edit icon */}
+                              </Link>{" "}
+                              <Link className="danger-color" onClick={() => removeMedication(index)} title="Remove">
+                                <Trash /> {/* Remove icon */}
+                              </Link>
+                            </div>
+                          </td>
                       </tr>
                     ))}
                   </tbody>
+
                 </Table>
               </div>
 

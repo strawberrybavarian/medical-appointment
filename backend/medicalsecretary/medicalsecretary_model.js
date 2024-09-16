@@ -26,6 +26,10 @@ const MedicalSecretarySchema = new Schema({
         type: String,
   
     },
+    notifications: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Notification'
+    }],
     ms_appointments: [{
         type: Schema.Types.ObjectId,
         ref: 'Appointment'

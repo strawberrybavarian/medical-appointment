@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { Table, Button, Container, Modal, Form } from 'react-bootstrap';
 import axios from 'axios';
 import { ip } from '../../../../../ContentExport';
 import AdminNavbar from '../../navbar/AdminNavbar';
 import SidebarAdmin from '../../sidebar/SidebarAdmin';
-
 function DoctorManagement() {
   const [doctors, setDoctors] = useState([]);
   const [selectedDoctor, setSelectedDoctor] = useState(null);
@@ -69,9 +68,10 @@ function DoctorManagement() {
           onChange={(e) => setSearchTerm(e.target.value)}
         />
       </Form.Group>
-      <Table striped bordered hover variant="light" className="mt-3">
+      <Table responsive striped  variant="light" className="mt-3">
         <thead>
           <tr>
+            <th>#</th>
             <th>Doctor Name</th>
             <th>Email</th>
             <th>Specialty</th>
@@ -80,19 +80,23 @@ function DoctorManagement() {
           </tr>
         </thead>
         <tbody>
-          {filteredDoctors.map((doctor) => (
+          {filteredDoctors.map((doctor, index) => (
             <tr key={doctor._id}>
+              <td>{index+1}.</td>
               <td>{`${doctor.dr_firstName} ${doctor.dr_middleInitial}. ${doctor.dr_lastName}`}</td>
               <td>{doctor.dr_email}</td>
               <td>{doctor.dr_specialty}</td>
               <td>{doctor.accountStatus}</td>
               <td>
-                <Button variant="primary" onClick={() => handleShowModal(doctor, 'register')} disabled={doctor.accountStatus === 'Registered'}>
-                  Register
-                </Button>{' '}
-                <Button variant="danger" onClick={() => handleShowModal(doctor, 'deactivate')} disabled={doctor.accountStatus === 'Deactivated'}>
-                  Deactivate
-                </Button>
+                <div className='d-flex justify-content-around flex-wrap'>
+                  <Link className='primary-color' onClick={() => handleShowModal(doctor, 'register')} disabled={doctor.accountStatus === 'Registered'}>
+                    Register
+                  </Link>{' '}
+                  <Link className='danger-color' onClick={() => handleShowModal(doctor, 'deactivate')} disabled={doctor.accountStatus === 'Deactivated'}>
+                    Deactivate
+                  </Link>
+                </div>
+               
               </td>
             </tr>
           ))}

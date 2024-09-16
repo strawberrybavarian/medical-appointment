@@ -29,3 +29,25 @@ mongoose.connection.once('open', async () => {
     console.error('Error handling indexes:', error);
   }
 });
+
+//For Appointment_ID
+mongoose.connection.once('open', async () => {
+  try {
+    const collection = mongoose.connection.db.collection('appointments');
+
+    // Get the list of indexes
+    const indexes = await collection.indexes();
+    const indexExists = indexes.some(index => index.name === 'appointment_ID_1');
+
+    if (indexExists) {
+      console.log('Index "appointment_ID_1" found. Dropping the existing index...');
+      await collection.dropIndex('appointment_ID_1');
+      console.log('Index "appointment_ID_1" dropped.');
+    } else {
+      console.log('Index "appointment_ID_1" not found. Skipping drop index.');
+    }
+
+  } catch (error) {
+    console.error('Error handling indexes:', error);
+  }
+});
