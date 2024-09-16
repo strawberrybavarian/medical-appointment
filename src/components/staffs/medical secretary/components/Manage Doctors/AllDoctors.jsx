@@ -14,14 +14,22 @@ function AllDoctors() {
         <div style={{ paddingLeft: '5rem', paddingRight: '5rem' }} className='pt-5'>
           {/* Tabs for switching between sections */}
           <Row>
-            <Nav fill variant="tabs" className='navtabs-pxmanagement' activeKey={activeTab} onSelect={(tab) => setActiveTab(tab)}>
-              <Nav.Item>
-                <Nav.Link eventKey="doctorCards">Doctors</Nav.Link>
-              </Nav.Item>
-              <Nav.Item>
-                <Nav.Link eventKey="deactivationRequests">Appointment Deactivation Requests</Nav.Link>
-              </Nav.Item>
-            </Nav>
+            
+            <Container className='d-flex justify-content-center'>
+              <Nav fill variant="tabs" className='navtabs-pxmanagement' activeKey={activeTab} onSelect={(tab) => setActiveTab(tab)}>
+                <Nav.Item>
+                  <Nav.Link eventKey="doctorCards">Doctors</Nav.Link>
+                </Nav.Item>
+                <Nav.Item>
+                  <Nav.Link eventKey="deactivationRequests">Appointment Deactivation Requests</Nav.Link>
+                </Nav.Item>
+              </Nav>
+
+            </Container>
+            
+            
+         
+           
           </Row>
 
           {/* Conditional rendering based on the active tab */}
