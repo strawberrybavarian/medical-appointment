@@ -29,5 +29,7 @@ const upload = multer({ storage: storage, fileFilter: fileFilter });
 
 module.exports = app => {
     app.post('/patient/api/:uid/createappointment', upload.single('proofOfPayment'), AppointmentController.createAppointment);
+    app.put('/appointments/:id/status', AppointmentController.updateAppointmentStatus);
     // app.put('/appointments/:id/payment-status', AppointmentController.updatePaymentStatus);
+
 };

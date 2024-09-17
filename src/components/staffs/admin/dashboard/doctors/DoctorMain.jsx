@@ -6,7 +6,7 @@ import { Container } from 'react-bootstrap';
 import { useParams } from 'react-router-dom';
 import SidebarAdmin from '../../sidebar/SidebarAdmin';
 
-import PieSpecialization from '../charts/PieSpecialization';
+import PieSpecialization from '../Charts/PieSpecialization';
 import DoctorStatsCards from '../cards/DoctorStatsCards';
 import { ip } from '../../../../../ContentExport';
 import AdminNavbar from '../../navbar/AdminNavbar';

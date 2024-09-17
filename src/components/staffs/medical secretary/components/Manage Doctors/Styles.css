@@ -31,7 +31,7 @@
     }
 
 .dsm-card{
-    height: 1320px;
+  padding: 1.5rem;
 }
 
 .msdp-card{
@@ -125,11 +125,6 @@
 
 
 
-.msdc-container {
-  height: 90vh; 
-  overflow-y: auto; 
-  padding-bottom: 15px; 
-}
 
 .msdc-container::-webkit-scrollbar {
   width: 8px;
@@ -149,4 +144,37 @@
   margin-bottom: 10px;
   font-size: 1.5rem;
   color: #333;
+}
+
+.custom-link {
+  text-decoration: none; /* Remove underline */
+  transition: text-decoration 0.3s ease; /* Smooth transition for hover effect */
+  margin: 5px; /* Add some spacing between links */
+}
+
+.custom-link:hover {
+  text-decoration: underline; /* Show underline on hover */
+}
+
+
+
+.dt-column-order {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  margin-left: 5px; /* Space between the text and arrows */
+}
+
+.arrow {
+  font-size: 0.6rem;  /* Adjust arrow size */
+  color: lightgray;   /* Default gray color for inactive arrows */
+  cursor: pointer;
+}
+
+.arrow.active {
+  color: black; /* Darker color for active arrows */
+}
+
+.arrow.inactive {
+  color: lightgray;
 }

@@ -9,89 +9,53 @@ const createPrescription = async (req, res) => {
     const { gender, dateOfConsultation, doctorId, medications } = req.body;
     const imagePath = req.file ? `images/${req.file.filename}` : '';
 
-    // Ensure patientId, doctorId, and appointmentId are provided
+    console.log('Received data:', { patientId, appointmentId, doctorId, medications, imagePath }); // Add logging here
+
     if (!patientId || !doctorId || !appointmentId) {
-      return res.status(400).json({ message: 'Missing required fields: patientId, doctorId, or appointmentId' });
+      return res.status(400).json({ message: 'Missing required fields' });
     }
 
-    // Ensure that medications is parsed correctly
     let parsedMedications = [];
-
     if (medications) {
-      if (typeof medications === 'string') {
-        // If medications is a JSON string, parse it
-        try {
-          parsedMedications = JSON.parse(medications);
-        } catch (err) {
-          return res.status(400).json({ message: 'Invalid medications format' });
-        }
-      } else if (Array.isArray(medications)) {
-        parsedMedications = medications;
-      } else {
-        return res.status(400).json({ message: 'Medications should be an array or a valid JSON string' });
+      try {
+        parsedMedications = JSON.parse(medications);
+      } catch (err) {
+        console.error('Error parsing medications:', err);
+        return res.status(400).json({ message: 'Invalid medications format' });
       }
     }
 
-    // Ensure doctorId is provided
-    if (!doctorId) {
-      return res.status(400).json({ message: 'Doctor ID is required' });
-    }
-
-    // Check if a prescription already exists for the patient, doctor, and appointment
-    let prescription = await Prescription.findOne({
-      patient: patientId,
-      doctor: doctorId,
-      appointment: appointmentId || null,
-    });
+    // Create or update the prescription
+    let prescription = await Prescription.findOne({ patient: patientId, doctor: doctorId, appointment: appointmentId });
 
     if (prescription) {
       // Update existing prescription
-      prescription.gender = gender;
-      prescription.dateOfConsultation = dateOfConsultation;
       prescription.medications = parsedMedications;
-      if (imagePath) prescription.prescriptionImage = imagePath; // Update image if provided
+      if (imagePath) prescription.prescriptionImage = imagePath;
       await prescription.save();
     } else {
       // Create new prescription
       prescription = new Prescription({
         patient: patientId,
-        appointment: appointmentId || null,
-        gender,
-        dateOfConsultation,
+        appointment: appointmentId,
         doctor: doctorId,
         medications: parsedMedications,
         prescriptionImage: imagePath,
       });
       await prescription.save();
+    }
 
-      // Update the patient's record
-      const patient = await Patient.findById(patientId);
-      if (patient) {
-        patient.prescriptions.push(prescription._id);
-        await patient.save();
-      }
-
-      // Update the doctor's record
-      const doctorRecord = await Doctors.findById(doctorId);
-      if (doctorRecord) {
-        doctorRecord.dr_prescriptions.push(prescription._id);
-        await doctorRecord.save();
-      }
-
-      // Update the appointment
-      if (appointmentId) {
-        const appointment = await Appointment.findById(appointmentId);
-        if (appointment) {
-          appointment.prescription = prescription._id;
-          await appointment.save();
-        }
-      }
+    // Update the appointment with the prescription ID
+    const appointment = await Appointment.findById(appointmentId);
+    if (appointment) {
+      appointment.prescription = prescription._id;
+      await appointment.save();
     }
 
     res.status(201).json({ message: 'Prescription saved successfully', prescription });
   } catch (error) {
-    console.error('Error creating prescription:', error);
-    res.status(500).json({ message: 'Internal server error', error });
+    console.error('Error saving prescription:', error); // Log the error
+    res.status(500).json({ message: 'Internal Server Error', error: error.message });
   }
 };
 

@@ -7,7 +7,7 @@ import Prescription from '../prescription/Prescription';
 import PatientFindings from '../findings/PatientFindings';
 import './PractitionerNavBarStyles.css';
 import Immunization from '../immunization/Immunization';
-
+import LaboratoryResults from '../laboratory/LaboratoryResults'
 function PractitionerNavBar() {
     const navigate = useNavigate();
     const { pid, did, apid } = useParams();
@@ -50,6 +50,9 @@ function PractitionerNavBar() {
                         <Nav.Item>
                             <Nav.Link eventKey="immunization">Immunization</Nav.Link>
                         </Nav.Item>
+                        <Nav.Item>
+                            <Nav.Link eventKey="laboratory">Immunization</Nav.Link>
+                        </Nav.Item>
                         
                     </Nav>
                 </Container>
@@ -59,6 +62,9 @@ function PractitionerNavBar() {
                     {activeTab === 'findings' && <PatientFindings patientId={pid} doctorId={did} appointmentId={apid} />}
                     {activeTab === 'prescription' && <Prescription patientId={pid} doctorId={did} appointmentId={apid} />}
                     {activeTab === 'immunization' && <Immunization patientId={pid} doctorId={did} appointmentId={apid} />}
+                    {activeTab === 'laboratory' && <LaboratoryResults patientId={pid} doctorId={did} appointmentId={apid} />}
+                    
+                
                 </Container>
             </div>
         </>

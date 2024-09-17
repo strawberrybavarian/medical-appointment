@@ -7,6 +7,43 @@ const Notification = require('../notifications/notifications_model')
 const Admin = require('./admin_model')
 
 
+const confirmDeactivation = async (req, res) => {
+    try {
+        const { confirm } = req.body; // true for approval, false for rejection
+
+        // Find and update the doctor's deactivation request status
+        const doctor = await Doctors.findByIdAndUpdate(
+            req.params.doctorId,
+            { 
+                deactivationRequest: { 
+                    confirmed: confirm,
+                    requested: false
+                },
+                activeAppointmentStatus: !confirm // If confirmed, set activeAppointmentStatus to false
+            },
+            { new: true }
+        );
+
+        // Notify the doctor of the result (this can be through an email, notification, etc.)
+        console.log(`Deactivation ${confirm ? 'approved' : 'rejected'} for Doctor ${doctor.dr_firstName} ${doctor.dr_lastName}`);
+
+        res.status(200).json({ message: `Deactivation ${confirm ? 'approved' : 'rejected'}`, doctor });
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+};
+
+const getDeactivationRequests = async (req, res) => {
+    try {
+        const requests = await Doctors.find({ 'deactivationRequest.requested': true });
+        res.status(200).json(requests);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+};
+
+
+
 const NewAdminSignUp = (req, res) => {
     Admin.create(req.body)
         .then((newAdmin) => {
@@ -176,7 +213,9 @@ module.exports = {
     getDoctorSpecialtyStats,
     getCompletedAppointmentsByMonth,
     updateDoctorAccountStatus,
-    updatePatientAccountStatus
+    updatePatientAccountStatus,
+    confirmDeactivation,
+    getDeactivationRequests
 
 
 };

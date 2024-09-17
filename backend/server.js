@@ -8,12 +8,16 @@ require("./config/mongoose")
 require('dotenv').config();
 
 const cors = require("cors");
+app.use(cors());
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 //Images
 app.use('/images', express.static(path.join(__dirname, 'doctor', 'images')));
 app.use('/images', express.static(path.join(__dirname, 'prescription', 'images')));
 app.use('/images', express.static(path.join(__dirname, 'appointments', 'images')));
 app.use('/images', express.static(path.join(__dirname, 'payment', 'images')));
-
+app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 app.use(express.json(), express.urlencoded({ extended: true }),cors());
  
 //routes
@@ -41,6 +45,8 @@ const ImmunizationRoutes = require('./immunization/immunization_routes')
 ImmunizationRoutes(app);
 const NewsRoutes = require('./news/news_routes')
 NewsRoutes(app);
+const LaboratoryRoutes = require('./laboratory/laboratory_routes')
+LaboratoryRoutes(app)
 
 app.listen(port, () => console.log("\nThe server is all fired up on port 8000"));
 

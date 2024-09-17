@@ -7,10 +7,10 @@ import '../../AdminStyles.css'
 import AdminNavbar from '../../navbar/AdminNavbar';
 import PatientStatsCards from '../cards/PatientStatsCards';
 import { ip } from '../../../../../ContentExport';
-import BarAppointment from '../charts/BarAppointment';
+import BarAppointment from '../Charts/BarAppointment';
 
 import SidebarAdmin from '../../sidebar/SidebarAdmin';
-import LineCompletedAppointments from '../charts/LineCompletedAppointments';
+import LineCompletedAppointments from '../Charts/LineCompletedAppointments';
 
 function PatientMain() {
     const [totalPatients, setTotalPatients] = useState(0);

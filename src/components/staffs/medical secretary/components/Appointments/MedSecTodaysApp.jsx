@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Button, Container, Pagination, Form, Row, Col } from 'react-bootstrap';
 import axios from 'axios';
-
+import RescheduleModal from '../../../../practitioner/appointment/Reschedule Modal/RescheduleModal'
+import { Link } from 'react-router-dom';
 function MedSecTodaysApp({ allAppointments, setAllAppointments }) {
   const [currentPage, setCurrentPage] = useState(1);
   const [entriesPerPage, setEntriesPerPage] = useState(5);
@@ -9,6 +10,8 @@ function MedSecTodaysApp({ allAppointments, setAllAppointments }) {
   const [alldoctors, setalldoctors] = useState([]);
   const [selectedDoctor, setSelectedDoctor] = useState("");
   const [selectedAccountStatus, setSelectedAccountStatus] = useState("");
+  const [showRescheduleModal, setShowRescheduleModal] = useState(false);
+  const [selectedAppointment, setSelectedAppointment] = useState(null);
   useEffect(() => {
     axios.get(`http://localhost:8000/doctor/api/alldoctor`)
       .then((result) => {
@@ -18,6 +21,25 @@ function MedSecTodaysApp({ allAppointments, setAllAppointments }) {
         console.log(error);
       });
   }, []);
+
+  const handleConfirmReschedule = (rescheduledReason) => {
+    const newStatus = {
+      rescheduledReason: rescheduledReason,
+      status: 'Rescheduled'
+    };
+    axios.put(`http://localhost:8000/doctor/${selectedAppointment._id}/rescheduledstatus`, newStatus)
+      .then(() => {
+        setAllAppointments(prevAppointments =>
+          prevAppointments.map(appointment =>
+            appointment._id === selectedAppointment._id ? { ...appointment, status: 'Rescheduled', rescheduledReason: rescheduledReason } : appointment
+          )
+        );
+     
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  }
 
   const getTodayDate = () => {
     const today = new Date();
@@ -66,6 +88,16 @@ function MedSecTodaysApp({ allAppointments, setAllAppointments }) {
   for (let i = 1; i <= Math.ceil(filteredAppointments.length / entriesPerPage); i++) {
     pageNumbers.push(i);
   }
+  const handleReschedule = (appointment) => {
+    setSelectedAppointment(appointment);
+    setShowRescheduleModal(true);
+  };
+
+  const handleCloseRescheduleModal = () => {
+    setShowRescheduleModal(false);
+    setSelectedAppointment(null);
+  };
+
 
   return (
     <>
@@ -155,6 +187,8 @@ function MedSecTodaysApp({ allAppointments, setAllAppointments }) {
                     <td>{appointment.status}</td>
                     <td>
                       <Button variant="success" onClick={() => ongoingAppointment(appointment._id)}>Ongoing</Button>
+                      <Link variant="warning" onClick={() => handleReschedule(appointment)}>Reschedule</Link>
+
                     </td>
                   </tr>
                 );
@@ -187,6 +221,15 @@ function MedSecTodaysApp({ allAppointments, setAllAppointments }) {
           <Pagination.Next onClick={() => setCurrentPage(prev => Math.min(prev + 1, pageNumbers.length))} disabled={currentPage === pageNumbers.length} />
           <Pagination.Last onClick={() => setCurrentPage(pageNumbers.length)} disabled={currentPage === pageNumbers.length} />
         </Pagination>
+
+        {selectedAppointment && (
+        <RescheduleModal 
+          show={showRescheduleModal} 
+          handleClose={handleCloseRescheduleModal} 
+          appointment={selectedAppointment} 
+          handleConfirm={handleConfirmReschedule}
+        />
+      )}
 
         </Container>
         </div>

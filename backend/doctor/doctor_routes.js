@@ -77,11 +77,11 @@ module.exports = app => {
   app.put('/doctor/api/:appointmentID/completeappointment', DoctorController.completeAppointment)
   app.put('/doctor/:doctorId/availability', DoctorController.doctorAvailability)
   app.put('/doctor/:doctorId/appointmentstatus', DoctorController.updateAvailability);
- 
+  app.post('/doctor/:doctorId/request-deactivation', DoctorController.requestDeactivation);
 
   app.get('/doctor/:doctorId/available', DoctorController.getAvailability);
   app.put('/doctor/:uid/rescheduleappointment', DoctorController.rescheduleAppointment);
-
+  app.get('/doctor/:doctorId/appointments', DoctorController.specificAppointmentsforDoctor)
   app.put('/doctor/:uid/rescheduledstatus', DoctorController.rescheduledStatus);
   
   

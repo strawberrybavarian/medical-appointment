@@ -16,7 +16,8 @@ function NewsAnnouncement({ user_image, user_name, user_id, role }) {
   const [headline, setHeadline] = useState(""); // Add this line to define the headline state
 
   const defaultImage = "images/014ef2f860e8e56b27d4a3267e0a193a.jpg";
-
+  console.log(role);
+  
   // Fetch all news (Disregard API logic)
   useEffect(() => {
     axios
@@ -85,7 +86,7 @@ function NewsAnnouncement({ user_image, user_name, user_id, role }) {
   };
 
   return (
-  <div style={{ display: "flex", flexDirection: "column", width: "100%" }}>
+  <div style={{ display: "flex", flexDirection: "column", width: "100%" }} className="mt-2">
     <div className="mb-2">
       <h2> Share News </h2>
       <hr/>
@@ -114,7 +115,7 @@ function NewsAnnouncement({ user_image, user_name, user_id, role }) {
       <div key={index} className="posted-announcement-container shadow-sm d-flex flex-column align-items-start p-3 mb-3 w-100">
         {/* Profile image and user name */}
         <div className="d-flex w-100 align-items-center justify-content-between">
-          <div className="d-flex align-items-center">
+          <div className="d-flex align-items-center" style={{ width: "100%" }}>
             <img
               src={`http://localhost:8000/${defaultImage}`}
               alt="User"
@@ -124,17 +125,18 @@ function NewsAnnouncement({ user_image, user_name, user_id, role }) {
                 borderRadius: "9999px",
                 objectFit: "cover",
                 flexShrink: 0,
+                marginRight: "10px", // Space between image and text
               }}
             />
-            <div style={{ paddingLeft: "0.5rem" }}>
-              <div>
-              <span>{user_name}</span>
-              <p>{role}</p>
-
-              </div>
-           
+            <div className="w-100">
+              <span style={{ fontSize: "12px",margin: "5px 0", fontWeight: "bold", lineHeight: "1.2" }}>{user_name}</span>
+              <p style={{ fontSize: "12px", margin: "1.2px 0" , lineHeight: "1.2" }}>
+                <span>{role}</span>
+              </p>
             </div>
           </div>
+
+
 
           {/* Dropdown for Edit and Delete */}
           <Dropdown as={ButtonGroup}>

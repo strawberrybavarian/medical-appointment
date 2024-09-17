@@ -26,13 +26,17 @@ const MedicalSecretarySchema = new Schema({
         type: String,
   
     },
+    notifications: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Notification'
+    }],
     ms_appointments: [{
         type: Schema.Types.ObjectId,
         ref: 'Appointment'
     }],
     role:{
         type:String,
-        default: 'MedicalSecretary'
+        default: 'Medical Secretary'
     },
     news: [{
         type: Schema.Types.ObjectId,

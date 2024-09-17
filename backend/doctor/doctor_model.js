@@ -101,6 +101,11 @@ const DoctorSchema = new Schema({
         type: Boolean,
         default: false
     },
+    deactivationRequest: {
+        requested: { type: Boolean, default: false }, // Indicates if there's a pending request
+        reason: { type: String, default: '' },
+        confirmed: { type: Boolean, default: null }, // null means pending, true means approved, false means rejected
+    },
     availability: {
         monday: { type: dailyAvailabilitySchema, default: () => ({}) },
         tuesday: { type: dailyAvailabilitySchema, default: () => ({}) },
@@ -114,6 +119,32 @@ const DoctorSchema = new Schema({
         type: String,
         enum: ['Review', 'Registered', 'Deactivated', 'Deleted'],
         default: 'Review'
+    },
+    biography: {
+        
+        personalStatement: {
+            type: String,
+            default: '' // A short personal statement or introductory text
+        },
+        education: [{
+            degree: String,
+            institution: String,
+            year: Number
+        }],
+        certifications: [{
+            certification: String,
+            issuingOrganization: String,
+            year: Number
+        }],
+        workExperience: [{
+            position: String,
+            organization: String,
+            startDate: Date,
+            endDate: Date,
+            description: String
+        }],
+        achievements: [String], 
+        researchInterests: [String] 
     }
 }, { timestamps: true });
 

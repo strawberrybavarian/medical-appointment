@@ -1,7 +1,8 @@
 import React from 'react'
 import { useNavigate, useParams } from "react-router-dom";
 import { Container, Navbar, Nav, NavDropdown } from 'react-bootstrap';
-import { ChevronDown } from 'react-bootstrap-icons';
+
+import { ChevronDown, Bell } from 'react-bootstrap-icons';
 import {image} from '../../../../ContentExport'
 import  './Styles.css'
 
@@ -11,15 +12,13 @@ function MedSecNavbar({did}) {
     const {msid} = useParams();
 
     const onNavigateAppoinments = () => {
-        navigate(`/medsec/${msid}`)
+        navigate(`/medsec/appointments/${msid}`)
     }
     const onNavigateCreatePatient = () => {
         navigate(`/medsec/createpatient/${msid}`)
     }
 
-    const onNavigateCalendar = () => {
-        navigate(`/medsec/calendar/${msid}`)
-    }
+
 
     const onNavigateDoctors = () => {
         navigate(`/medsec/doctors/${msid}`)
@@ -54,18 +53,28 @@ function MedSecNavbar({did}) {
                             <Nav.Link className="pnb-nav-link" onClick={onNavigateDashboard}>Dashboard </Nav.Link>
 
                             <Nav.Link className="pnb-nav-link" onClick={onNavigateAppoinments}>Appointments </Nav.Link>
-                            <Nav.Link className="pnb-nav-link" onClick={onNavigateCalendar}>Calendar </Nav.Link>
+                    
                             <Nav.Link className="pnb-nav-link" onClick={onNavigateCreatePatient}>Create Appointment </Nav.Link>
                             <Nav.Link className="pnb-nav-link" onClick={onNavigateDoctors}>Manage Doctors </Nav.Link>
                             
                             
                         </Nav>
 
+
                         <Nav>
                             <NavDropdown title={<span>Account <ChevronDown /></span>} id="basic-nav-dropdown" className="pnb-nav-link1">
                                 
                                 <NavDropdown.Item className="pnb-nav-link" onClick={onButtonContainer1Click}>Logout</NavDropdown.Item>
                             </NavDropdown>
+                        </Nav>
+
+                        <Nav>
+                        <Nav>
+                            <Nav.Link  className="position-relative">
+                                <Bell size={20} />
+                                
+                            </Nav.Link>
+                        </Nav>
                         </Nav>
                         
                     </Navbar.Collapse>

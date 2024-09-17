@@ -7,9 +7,10 @@ import SidebarAdmin from '../../sidebar/SidebarAdmin';
 import DataTable from 'datatables.net-react';
 import DT from 'datatables.net-bs5'; // For Bootstrap 5 styling
 import $ from 'jquery';
-
+import './Styles.css'
 // Import Bootstrap 5 DataTable styles
 import 'datatables.net-bs5/css/dataTables.bootstrap5.min.css';
+
 
 DataTable.use(DT); // Initialize DataTables with Bootstrap 5 styling
 
@@ -73,7 +74,7 @@ function PatientManagement() {
           defaultContent: 'No Email'  // Fallback if email is missing or null
         },
         { data: 'patient_gender', title: 'Gender' },
-        { data: 'accountStatus', title: 'Account Status' },
+        { data: 'accountStatus', title: 'Account Status', className: 'mode' },
         {
           data: null,
           title: 'Actions',
@@ -84,9 +85,28 @@ function PatientManagement() {
             `;
           }
         }
-      ]
-      
-      
+      ],
+      createdRow: function (row, data, index) {
+        // Apply the custom class based on account status
+        const statusCell = $('td', row).eq(5);  // Assuming accountStatus is the 6th column
+        if (data.accountStatus === 'Active') {
+          statusCell.addClass('mode_on');
+        } else if (data.accountStatus === 'Inactive') {
+          statusCell.addClass('mode_off');
+        } else if (data.accountStatus === 'Processing') {
+          statusCell.addClass('mode_process');
+        } else if (data.accountStatus === 'Completed') {
+          statusCell.addClass('mode_done');
+        }
+      },
+      pagingType: "simple_numbers",
+      language: {
+        search: '<div class="searchInput"><label for="search">Search:</label><input type="search" id="filterbox" class="form-control" placeholder="Search..." /></div>',
+        paginate: {
+          next: '<i class="fa fa-chevron-right"></i>',  // Custom pagination icons
+          previous: '<i class="fa fa-chevron-left"></i>'
+        }
+      }
     });
 
     // Attach click handlers for dynamically created buttons

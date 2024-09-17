@@ -57,92 +57,38 @@ const createAppointment = async (req, res) => {
   }
 };
 
+const updateAppointmentStatus = async (req, res) => {
+  try {
+    const { status } = req.body;  // Extract status from the request body
+    const appointmentId = req.params.id;  // Get appointment ID from the request parameters
 
+    // Ensure status is valid (excluding 'Rescheduled')
+    const validStatuses = ['Pending', 'Scheduled', 'Completed', 'Cancelled', 'Ongoing', 'Missed'];
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({ message: 'Invalid status update' });
+    }
 
-const updatePaymentStatus = (req, res) => {
-  const appointmentId = req.params.id;
-  const { paymentStatus, inexactAmount } = req.body;
+    // Update the status of the appointment
+    const updatedAppointment = await Appointment.findByIdAndUpdate(
+      appointmentId,
+      { status },  // Only update the status field
+      { new: true }  // Return the updated document
+    );
 
-  console.log('Request body:', req.body);
+    if (!updatedAppointment) {
+      return res.status(404).json({ message: 'Appointment not found' });
+    }
 
-  if (!['Paid', 'Unpaid', 'Inexact', 'Refund'].includes(paymentStatus)) {
-    return res.status(400).json({ message: 'Invalid payment status' });
+    res.status(200).json(updatedAppointment);
+  } catch (error) {
+    console.error('Error updating appointment status:', error);
+    res.status(500).json({ message: `Failed to update appointment status: ${error.message}` });
   }
-
-  Appointment.findById(appointmentId)
-    .populate('payment')
-    .populate('patient')
-    .populate('doctor')
-    .then(appointment => {
-      if (!appointment) {
-        return res.status(404).json({ message: 'Appointment not found' });
-      }
-
-      const updateFields = { paymentStatus };
-
-      if (paymentStatus === 'Inexact') {
-        if (typeof inexactAmount === 'undefined' || inexactAmount === null) {
-          return res.status(400).json({ message: 'Inexact amount is required for inexact payment status' });
-        }
-        updateFields.inexactAmount = Number(inexactAmount);
-      } else {
-        updateFields.inexactAmount = null;
-      }
-
-      return Payment.findByIdAndUpdate(appointment.payment._id, updateFields, { new: true })
-        .then(updatedPayment => {
-          if (!updatedPayment) {
-            return res.status(404).json({ message: 'Payment not found' });
-          }
-
-          if (paymentStatus === 'Inexact') {
-            const patientName = `${appointment.patient.patient_firstName} ${appointment.patient.patient_lastName}`;
-            const doctorName = `${appointment.doctor.dr_firstName} ${appointment.doctor.dr_lastName}`;
-            const message = `Patient ${patientName} has an inexact payment of ₱${inexactAmount} for the appointment with Dr. ${doctorName} on ${new Date(appointment.date).toLocaleDateString()}.`;
-
-            const newNotification = new Notification({
-              message,
-              recipient: appointment.patient._id,
-              recipientType: 'Patient'
-            });
-
-            //Pushing the id into the notification of the patient
-            return newNotification.save().then(savedNotification => {
-              appointment.patient.notifications.push(savedNotification._id);
-
-              return appointment.patient.save().then(() => {
-                res.status(200).json({
-                  message: 'Payment status updated successfully, notification sent to patient',
-                  payment: updatedPayment
-                });
-              });
-            });
-          }
-          
-          // add another elif
-          
-          
-          else {
-            res.status(200).json({
-              message: 'Payment status updated successfully',
-              payment: updatedPayment
-            });
-          }
-        });
-    })
-    .catch(error => {
-      console.error('Error updating payment status:', error);
-      res.status(500).json({ message: `Failed to update payment status: ${error.message}` });
-    });
 };
-
-
-
-
-
   
 
 module.exports = {
   createAppointment,
-  updatePaymentStatus
+  updateAppointmentStatus,
+
 };

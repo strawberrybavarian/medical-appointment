@@ -3,15 +3,7 @@ const mongoose = require('mongoose');
 const { Schema, model } = mongoose;
 
 const AppointmentSchema = new Schema({
-    // appointment_ID:{
-    //     type: String,
-    //     unique: true,
-    // },
-    // appointment_type:{
-    //     type: String,
-    //     enum: ['Consultation', 'Follow-up', 'Emergency', 'Routine Check-up', 'Vaccination'],
-    //     default: 'Consultation'
-    // },
+
     patient: {
         type: Schema.Types.ObjectId,
         ref: 'Patient',
@@ -63,7 +55,13 @@ const AppointmentSchema = new Schema({
     payment: {
         type: Schema.Types.ObjectId,
         ref: 'Payment'
-    }
+    },
+    laboratoryResults: [
+        {
+          type: Schema.Types.ObjectId,
+          ref: 'Laboratory'
+        }
+      ],
 }, { timestamps: true });
 
 const Appointment = model('Appointment', AppointmentSchema);

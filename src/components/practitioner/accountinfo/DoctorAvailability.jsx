@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Form, Button, Row, Col } from 'react-bootstrap';
+import DeactivationModal from './modal/DeactivationModal';
+
 
 const initialTimeSlot = { startTime: '', endTime: '', interval: 30, available: false };
 
@@ -15,10 +17,9 @@ const initialAvailability = {
 };
 
 function DoctorAvailability({ doctorId }) {
-    
-    
     const [availability, setAvailability] = useState(initialAvailability);
     const [activeAppointmentStatus, setActiveAppointmentStatus] = useState(true);
+    const [showModal, setShowModal] = useState(false); // To control modal visibility
 
     useEffect(() => {
         axios.get(`http://localhost:8000/doctor/${doctorId}/available`)
@@ -65,125 +66,145 @@ function DoctorAvailability({ doctorId }) {
     };
 
     const handleStatusChange = () => {
+        if (activeAppointmentStatus) {
+            setShowModal(true); // Show modal for deactivation
+        } else {
+            axios
+                .put(`http://localhost:8000/doctor/${doctorId}/appointmentstatus`, {
+                    activeAppointmentStatus: !activeAppointmentStatus
+                })
+                .then((res) => {
+                    setActiveAppointmentStatus(res.data.activeAppointmentStatus); 
+                })
+                .catch((err) => console.log(err));
+        }
+    };
+
+    const handleModalConfirm = (reason) => {
         axios
-            .put(`http://localhost:8000/doctor/${doctorId}/appointmentstatus`, {
-                activeAppointmentStatus: !activeAppointmentStatus
-            })
+            .post(`http://localhost:8000/doctor/${doctorId}/request-deactivation`, { reason })
             .then((res) => {
-                setActiveAppointmentStatus(res.data.activeAppointmentStatus); // Ensure you're setting the updated status
+                setShowModal(false);
+                alert('Deactivation request sent. Awaiting confirmation.');
             })
             .catch((err) => console.log(err));
     };
-    
 
     return (
-        <div style={{display: "flex", flex: "1 0 auto", height: "100vh", overflowY: "hidden"}}>
-            <div style={{ padding: "20px", paddingBottom:"100px", overflowY: "auto", overflowX: "hidden" }} className="container1 container-fluid ">
-            <h3>Manage Availability</h3>
-            <Form>
-                {Object.keys(availability).map(day => (
-                    <div key={day}>
-                        <h4>{day.charAt(0).toUpperCase() + day.slice(1)}</h4>
-                        <Row>
-                            <Col>
-                                <Form.Group controlId={`${day}MorningAvailable`}>
-                                    <Form.Check 
-                                        type="checkbox"
-                                        label="Available in the morning"
-                                        checked={availability[day]?.morning?.available || false}
-                                        onChange={(e) => handleAvailabilityChange(day, 'morning', e.target.checked)}
-                                    />
-                                </Form.Group>
-                            </Col>
-                        </Row>
-                        {availability[day]?.morning?.available && (
+        <div style={{ display: "flex", flex: "1 0 auto", height: "100vh", overflowY: "hidden" }}>
+            <div style={{ padding: "20px", paddingBottom: "100px", overflowY: "auto", overflowX: "hidden" }} className="container1 container-fluid ">
+                <h3>Manage Availability</h3>
+                <Form>
+                    {Object.keys(availability).map(day => (
+                        <div key={day}>
+                            <h4>{day.charAt(0).toUpperCase() + day.slice(1)}</h4>
                             <Row>
                                 <Col>
-                                    <Form.Group controlId={`${day}MorningStartTime`}>
-                                        <Form.Label>Morning Start Time</Form.Label>
-                                        <Form.Control 
-                                            type="time" 
-                                            value={availability[day]?.morning?.startTime || ''} 
-                                            onChange={(e) => handleTimeChange(day, 'morning', 'startTime', e.target.value)} 
-                                        />
-                                    </Form.Group>
-                                </Col>
-                                <Col>
-                                    <Form.Group controlId={`${day}MorningEndTime`}>
-                                        <Form.Label>Morning End Time</Form.Label>
-                                        <Form.Control 
-                                            type="time" 
-                                            value={availability[day]?.morning?.endTime || ''} 
-                                            onChange={(e) => handleTimeChange(day, 'morning', 'endTime', e.target.value)} 
-                                        />
-                                    </Form.Group>
-                                </Col>
-                                <Col>
-                                    <Form.Group controlId={`${day}MorningInterval`}>
-                                        <Form.Label>Morning Interval (minutes)</Form.Label>
-                                        <Form.Control 
-                                            type="number" 
-                                            value={availability[day]?.morning?.interval || 30} 
-                                            onChange={(e) => handleTimeChange(day, 'morning', 'interval', e.target.value)} 
+                                    <Form.Group controlId={`${day}MorningAvailable`}>
+                                        <Form.Check
+                                            type="checkbox"
+                                            label="Available in the morning"
+                                            checked={availability[day]?.morning?.available || false}
+                                            onChange={(e) => handleAvailabilityChange(day, 'morning', e.target.checked)}
                                         />
                                     </Form.Group>
                                 </Col>
                             </Row>
-                        )}
-                        <Row>
-                            <Col>
-                                <Form.Group controlId={`${day}AfternoonAvailable`}>
-                                    <Form.Check 
-                                        type="checkbox"
-                                        label="Available in the afternoon"
-                                        checked={availability[day]?.afternoon?.available || false}
-                                        onChange={(e) => handleAvailabilityChange(day, 'afternoon', e.target.checked)}
-                                    />
-                                </Form.Group>
-                            </Col>
-                        </Row>
-                        {availability[day]?.afternoon?.available && (
+                            {availability[day]?.morning?.available && (
+                                <Row>
+                                    <Col>
+                                        <Form.Group controlId={`${day}MorningStartTime`}>
+                                            <Form.Label>Morning Start Time</Form.Label>
+                                            <Form.Control
+                                                type="time"
+                                                value={availability[day]?.morning?.startTime || ''}
+                                                onChange={(e) => handleTimeChange(day, 'morning', 'startTime', e.target.value)}
+                                            />
+                                        </Form.Group>
+                                    </Col>
+                                    <Col>
+                                        <Form.Group controlId={`${day}MorningEndTime`}>
+                                            <Form.Label>Morning End Time</Form.Label>
+                                            <Form.Control
+                                                type="time"
+                                                value={availability[day]?.morning?.endTime || ''}
+                                                onChange={(e) => handleTimeChange(day, 'morning', 'endTime', e.target.value)}
+                                            />
+                                        </Form.Group>
+                                    </Col>
+                                    <Col>
+                                        <Form.Group controlId={`${day}MorningInterval`}>
+                                            <Form.Label>Morning Interval (minutes)</Form.Label>
+                                            <Form.Control
+                                                type="number"
+                                                value={availability[day]?.morning?.interval || 30}
+                                                onChange={(e) => handleTimeChange(day, 'morning', 'interval', e.target.value)}
+                                            />
+                                        </Form.Group>
+                                    </Col>
+                                </Row>
+                            )}
                             <Row>
                                 <Col>
-                                    <Form.Group controlId={`${day}AfternoonStartTime`}>
-                                        <Form.Label>Afternoon Start Time</Form.Label>
-                                        <Form.Control 
-                                            type="time" 
-                                            value={availability[day]?.afternoon?.startTime || ''} 
-                                            onChange={(e) => handleTimeChange(day, 'afternoon', 'startTime', e.target.value)} 
-                                        />
-                                    </Form.Group>
-                                </Col>
-                                <Col>
-                                    <Form.Group controlId={`${day}AfternoonEndTime`}>
-                                        <Form.Label>Afternoon End Time</Form.Label>
-                                        <Form.Control 
-                                            type="time" 
-                                            value={availability[day]?.afternoon?.endTime || ''} 
-                                            onChange={(e) => handleTimeChange(day, 'afternoon', 'endTime', e.target.value)} 
-                                        />
-                                    </Form.Group>
-                                </Col>
-                                <Col>
-                                    <Form.Group controlId={`${day}AfternoonInterval`}>
-                                        <Form.Label>Afternoon Interval (minutes)</Form.Label>
-                                        <Form.Control 
-                                            type="number" 
-                                            value={availability[day]?.afternoon?.interval || 30} 
-                                            onChange={(e) => handleTimeChange(day, 'afternoon', 'interval', e.target.value)} 
+                                    <Form.Group controlId={`${day}AfternoonAvailable`}>
+                                        <Form.Check
+                                            type="checkbox"
+                                            label="Available in the afternoon"
+                                            checked={availability[day]?.afternoon?.available || false}
+                                            onChange={(e) => handleAvailabilityChange(day, 'afternoon', e.target.checked)}
                                         />
                                     </Form.Group>
                                 </Col>
                             </Row>
-                        )}
-                    </div>
-                ))}
-                <Button onClick={handleSubmit}>Save Availability</Button>
-            </Form>
-            <hr />
-            <Button onClick={handleStatusChange}>
-                {activeAppointmentStatus ? 'Deactivate Appointments' : 'Activate Appointments'}
-            </Button>
+                            {availability[day]?.afternoon?.available && (
+                                <Row>
+                                    <Col>
+                                        <Form.Group controlId={`${day}AfternoonStartTime`}>
+                                            <Form.Label>Afternoon Start Time</Form.Label>
+                                            <Form.Control
+                                                type="time"
+                                                value={availability[day]?.afternoon?.startTime || ''}
+                                                onChange={(e) => handleTimeChange(day, 'afternoon', 'startTime', e.target.value)}
+                                            />
+                                        </Form.Group>
+                                    </Col>
+                                    <Col>
+                                        <Form.Group controlId={`${day}AfternoonEndTime`}>
+                                            <Form.Label>Afternoon End Time</Form.Label>
+                                            <Form.Control
+                                                type="time"
+                                                value={availability[day]?.afternoon?.endTime || ''}
+                                                onChange={(e) => handleTimeChange(day, 'afternoon', 'endTime', e.target.value)}
+                                            />
+                                        </Form.Group>
+                                    </Col>
+                                    <Col>
+                                        <Form.Group controlId={`${day}AfternoonInterval`}>
+                                            <Form.Label>Afternoon Interval (minutes)</Form.Label>
+                                            <Form.Control
+                                                type="number"
+                                                value={availability[day]?.afternoon?.interval || 30}
+                                                onChange={(e) => handleTimeChange(day, 'afternoon', 'interval', e.target.value)}
+                                            />
+                                        </Form.Group>
+                                    </Col>
+                                </Row>
+                            )}
+                        </div>
+                    ))}
+                    <Button onClick={handleSubmit}>Save Availability</Button>
+                </Form>
+                <hr />
+                <Button onClick={handleStatusChange}>
+                    {activeAppointmentStatus ? 'Deactivate Appointments' : 'Activate Appointments'}
+                </Button>
+
+                {/* Render the modal for deactivation reason */}
+                <DeactivationModal
+                    show={showModal}
+                    handleClose={() => setShowModal(false)}
+                    handleConfirm={handleModalConfirm}
+                />
             </div>
         </div>
     );

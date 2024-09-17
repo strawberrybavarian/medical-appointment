@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Container, Row, Col, Card, Button, Form, Table } from 'react-bootstrap';
 import axios from 'axios';
+import { PencilSquare, Trash } from 'react-bootstrap-icons'; // Import the icons
+import { Link } from 'react-router-dom';
 
 function Immunization({ patientId, doctorId, appointmentId }) {
     const [immunizations, setImmunizations] = useState([]);
@@ -49,9 +51,7 @@ function Immunization({ patientId, doctorId, appointmentId }) {
     
         try {
             if (editingIndex !== null) {
-      
                 const immunizationId = immunizations[editingIndex]._id;
-    
                 const response = await axios.put(`http://localhost:8000/api/immunization/update/${immunizationId}`, {
                     ...formData,
                     patientId,
@@ -59,22 +59,18 @@ function Immunization({ patientId, doctorId, appointmentId }) {
                     appointments: [appointmentId]
                 });
     
-     
                 setImmunizations(immunizations.map((immunization, index) =>
                     index === editingIndex ? response.data : immunization
                 ));
             } else {
-      
                 const response = await axios.post('http://localhost:8000/api/immunization', {
                     ...formData,
                     patientId,
                     administeredBy: doctorId,
                     appointments: [appointmentId]
                 });
-    
                 setImmunizations([...immunizations, response.data]);
             }
-    
           
             setFormData({
                 vaccineName: '',
@@ -93,7 +89,6 @@ function Immunization({ patientId, doctorId, appointmentId }) {
             setError('Failed to save immunization');
         }
     };
-    
 
   
     const handleEdit = (index) => {
@@ -103,9 +98,7 @@ function Immunization({ patientId, doctorId, appointmentId }) {
 
   
     const handleDelete = async (id) => {
-        
         try {
-            
             await axios.delete(`http://localhost:8000/api/immunization/${id}`);
             setImmunizations(immunizations.filter(immunization => immunization._id !== id));
         } catch (err) {
@@ -214,7 +207,7 @@ function Immunization({ patientId, doctorId, appointmentId }) {
                     <Card className="mb-4">
                         <Card.Header>Immunization History</Card.Header>
                         <Card.Body>
-                            <Table striped bordered hover>
+                            <Table responsive striped bordered hover>
                                 <thead>
                                     <tr>
                                         <th>Vaccine</th>
@@ -234,13 +227,23 @@ function Immunization({ patientId, doctorId, appointmentId }) {
                                                 <td>{immunization.doseNumber || 'N/A'}</td>
                                                 <td>{immunization.totalDoses || 'N/A'}</td>
                                                 <td>{immunization.routeOfAdministration || 'N/A'}</td>
+
                                                 <td>
-                                                    <Button variant="warning" onClick={() => handleEdit(index)}>
-                                                        Edit
-                                                    </Button>{' '}
-                                                    <Button variant="danger" onClick={() => handleDelete(immunization._id)}>
-                                                        Delete
-                                                    </Button>
+                                                    <div className="d-flex justify-content-around flex-wrap">
+                                                        {/* Check if the current doctor is the one who administered the immunization */}
+                                                        {immunization.administeredBy === doctorId ? (
+                                                            <>
+                                                                <Link className="warning-color" onClick={() => handleEdit(index)} title="Edit">
+                                                                    <PencilSquare /> {/* Edit icon */}
+                                                                </Link>{" "}
+                                                                <Link className="danger-color" onClick={() => handleDelete(immunization._id)} title="Remove">
+                                                                    <Trash /> {/* Remove icon */}
+                                                                </Link>
+                                                            </>
+                                                        ) : (
+                                                            <span>Not Editable</span>
+                                                        )}
+                                                    </div>
                                                 </td>
                                             </tr>
                                         ))

@@ -1,0 +1,49 @@
+/* Styles for the Patient Management DataTable */
+.searchInput {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 20px;
+  }
+  
+  .mode_on {
+    background-color: #09922d;
+    color: #fff;
+    padding: 4px 10px;
+    border-radius: 10px;
+  }
+  
+  .mode_off {
+    background-color: #8b9096;
+    color: #fff;
+    padding: 4px 10px;
+    border-radius: 10px;
+  }
+  
+  .mode_process {
+    background-color: #ff8000;
+    color: #fff;
+    padding: 4px 10px;
+    border-radius: 10px;
+  }
+  
+  .mode_done {
+    background-color: #03a9f3;
+    color: #fff;
+    padding: 4px 10px;
+    border-radius: 10px;
+  }
+  
+  .dataTables_wrapper .dataTables_paginate .paginate_button {
+    padding: 8px 12px;
+  }
+  
+  .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+    background-color: #007bff;
+    color: white;
+  }
+  
+  .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+    background-color: #0056b3;
+    color: white;
+  }
+  
