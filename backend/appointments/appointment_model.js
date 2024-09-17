@@ -56,10 +56,12 @@ const AppointmentSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'Payment'
     },
-    laboratory: {
-        type: Schema.Types.ObjectId,
-        ref: 'Laboratory'
-    }
+    laboratoryResults: [
+        {
+          type: Schema.Types.ObjectId,
+          ref: 'Laboratory'
+        }
+      ],
 }, { timestamps: true });
 
 const Appointment = model('Appointment', AppointmentSchema);

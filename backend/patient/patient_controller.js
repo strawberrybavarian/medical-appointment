@@ -219,6 +219,12 @@ const findPatientById = (req, res) => {
           model: 'Doctor'
         },
         {
+          
+          path: 'laboratoryResults',
+          model: 'Laboratory'
+          
+        },
+        {
           path: 'prescription',
           model: 'Prescription',
           populate: 
@@ -245,6 +251,7 @@ const findPatientById = (req, res) => {
       path: 'immunizations',
       model: 'Immunization'
     })
+
 
     .then((thePatient) => {
       if (!thePatient) {

@@ -76,6 +76,12 @@ const PatientSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'Prescription'
     }],
+    laboratoryResults: [
+        {
+          type: Schema.Types.ObjectId,
+          ref: 'Laboratory'
+        }
+      ],
 
     immunizations: [{
         type: mongoose.Schema.Types.ObjectId,
