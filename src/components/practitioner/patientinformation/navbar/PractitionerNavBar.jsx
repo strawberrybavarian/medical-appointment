@@ -7,11 +7,11 @@ import Prescription from '../prescription/Prescription';
 import PatientFindings from '../findings/PatientFindings';
 import './PractitionerNavBarStyles.css';
 import Immunization from '../immunization/Immunization';
-import LaboratoryResults from '../laboratory/LaboratoryResults'
+import LaboratoryResults from '../laboratory/LaboratoryResults';
+
 function PractitionerNavBar() {
     const navigate = useNavigate();
     const { pid, did, apid } = useParams();
-
 
     // Default active tab
     const [activeTab, setActiveTab] = useState("findings");
@@ -20,8 +20,7 @@ function PractitionerNavBar() {
     useEffect(() => {
         const fetchPatientData = async () => {
             try {
-                const response = await axios.get(`http://localhost:8000/patient/api/onepatient/${pid}`);
-
+                await axios.get(`http://localhost:8000/patient/api/onepatient/${pid}`);
             } catch (error) {
                 console.error('Error fetching patient data', error);
             }
@@ -39,7 +38,7 @@ function PractitionerNavBar() {
         <>
             <div className='pnb-component'>
                 {/* Use Nav to create tab-like navigation */}
-                <Container>
+                <Container className='d-flex p-0'>
                     <Nav fill variant="tabs" className='navtabs-pxmanagement' activeKey={activeTab} onSelect={handleSelect}>
                         <Nav.Item>
                             <Nav.Link eventKey="findings">Patient Findings</Nav.Link>
@@ -51,20 +50,17 @@ function PractitionerNavBar() {
                             <Nav.Link eventKey="immunization">Immunization</Nav.Link>
                         </Nav.Item>
                         <Nav.Item>
-                            <Nav.Link eventKey="laboratory">Immunization</Nav.Link>
+                            <Nav.Link eventKey="laboratory">Laboratory Results</Nav.Link>
                         </Nav.Item>
-                        
                     </Nav>
                 </Container>
 
                 {/* Render components based on the active tab */}
-                <Container className="pnb-content">
+                <Container className={`pnb-content ${activeTab === 'findings' ? 'findings-tab' : 'other-tabs'}`}>
                     {activeTab === 'findings' && <PatientFindings patientId={pid} doctorId={did} appointmentId={apid} />}
                     {activeTab === 'prescription' && <Prescription patientId={pid} doctorId={did} appointmentId={apid} />}
                     {activeTab === 'immunization' && <Immunization patientId={pid} doctorId={did} appointmentId={apid} />}
                     {activeTab === 'laboratory' && <LaboratoryResults patientId={pid} doctorId={did} appointmentId={apid} />}
-                    
-                
                 </Container>
             </div>
         </>

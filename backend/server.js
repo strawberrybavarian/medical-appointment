@@ -47,6 +47,10 @@ const NewsRoutes = require('./news/news_routes')
 NewsRoutes(app);
 const LaboratoryRoutes = require('./laboratory/laboratory_routes')
 LaboratoryRoutes(app)
+const SpecialtyRoutes = require('./specialty/specialty_routes')
+SpecialtyRoutes(app)
+const ServiceRoutes = require('./services/service_routes')
+ServiceRoutes(app)
 
 
 

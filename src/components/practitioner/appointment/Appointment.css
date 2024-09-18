@@ -152,3 +152,8 @@
   text-decoration: underline; /* Underline on hover */
 }
 
+.completed-appointment{
+  background-color: rgb(54, 170, 54);
+  color: white;
+  border-radius: 12px;
+}

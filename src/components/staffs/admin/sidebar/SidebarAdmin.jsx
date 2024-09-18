@@ -90,8 +90,8 @@ const SidebarAdmin = (props) => {
                 </Link>
               </div>
 
-              <Link to={`/medicalrecord/${props.did}`}>
-                <CDBSidebarMenuItem icon="book" className="font-style-poppins"> Medical Records </CDBSidebarMenuItem>
+              <Link to={`/admin/sas/${props.aid}`}>
+                <CDBSidebarMenuItem icon="book" className="font-style-poppins"> Specialty and Services </CDBSidebarMenuItem>
               </Link>
 
               <Link to={`/account/${props.did}`}>

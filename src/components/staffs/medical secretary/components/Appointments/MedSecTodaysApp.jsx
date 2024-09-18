@@ -77,7 +77,7 @@ function MedSecTodaysApp({ allAppointments, setAllAppointments }) {
       .toLowerCase()
       .includes(searchTerm.toLowerCase())
     )
-    .filter(appointment => selectedDoctor === "" || appointment.doctor._id === selectedDoctor)
+    .filter(appointment => selectedDoctor === "" || appointment?.doctor._id === selectedDoctor)
     .filter(appointment => selectedAccountStatus === "" || appointment.patient.accountStatus === selectedAccountStatus);
 
   const indexOfLastAppointment = currentPage * entriesPerPage;
@@ -163,6 +163,7 @@ function MedSecTodaysApp({ allAppointments, setAllAppointments }) {
               <tr>
                 <th>Patient Name</th>
                 <th>Doctor Name</th>
+                <th>Service</th>
                 <th>Date</th>
                 <th>Time</th>
                 <th>Reason</th>
@@ -176,11 +177,14 @@ function MedSecTodaysApp({ allAppointments, setAllAppointments }) {
                 const patientName = `${patient.patient_firstName} ${patient.patient_middleInitial}. ${patient.patient_lastName}`;
 
                 const doctor = appointment.doctor;
-                const doctorName = `${doctor.dr_firstName} ${doctor.dr_middleInitial}. ${doctor.dr_lastName}`;
+                const doctorName = `${doctor?.dr_firstName} ${doctor?.dr_middleInitial}. ${doctor?.dr_lastName}`;
+                const appointmentTypes = appointment.appointment_type.join(', ');
+                
                 return (
                   <tr key={appointment._id}>
                     <td>{patientName}</td>
                     <td>{doctorName}</td>
+                    <td>{appointmentTypes}</td>
                     <td>{new Date(appointment.date).toLocaleDateString()}</td>
                     <td>{appointment.time}</td>
                     <td>{appointment.reason}</td>

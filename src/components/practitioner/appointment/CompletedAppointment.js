@@ -86,7 +86,7 @@ const CompletedAppointment = ({ allAppointments }) => {
           </Col>
         </Row>
 
-        <Table striped bordered hover variant="dark">
+        <Table responsive striped  variant="light" className="mt-3">
           <thead>
             <tr>
               <th>Patient Name</th>
@@ -108,7 +108,11 @@ const CompletedAppointment = ({ allAppointments }) => {
                     <td>{new Date(appointment.date).toLocaleDateString()}</td>
                     <td>{appointment.time}</td>
                     <td>{appointment.reason}</td>
-                    <td>{appointment.status}</td>
+                    <td>
+                      <div className="completed-appointment">
+                        {appointment.status}
+                      </div>
+                    </td>
                     <td>
                       {/* If you want to add any actions, do so here */}
                     </td>

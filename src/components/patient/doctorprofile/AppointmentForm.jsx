@@ -12,15 +12,27 @@ function AppointmentForm() {
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [reason, setReason] = useState("");
-  const [medium, setMedium] = useState("Online");
   const [availableTimes, setAvailableTimes] = useState([]);
   const [availability, setAvailability] = useState({});
   const [doctorName, setDoctorName] = useState("");
   const [activeAppointmentStatus, setActiveAppointmentStatus] = useState(true);
+  const [services, setServices] = useState([]); // For available services (appointment_type)
+  const [selectedServices, setSelectedServices] = useState([]); // For selected services
+
+  // Function to fetch available services (appointment_type)
+  useEffect(() => {
+    axios.get("http://localhost:8000/admin/get/services")
+      .then((response) => {
+        setServices(response.data); // Assuming response.data contains the services array
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  }, []);
 
   const createAppointment = () => {
-    if (!time) {
-      window.alert("Please select a valid time for the appointment.");
+    if (!time || !selectedServices.length) {
+      window.alert("Please select a valid time and service for the appointment.");
       return;
     }
 
@@ -29,14 +41,11 @@ function AppointmentForm() {
       date,
       time,
       reason,
-      medium,
+      appointment_type: selectedServices, // Send selected services
     };
 
     axios
-      .post(
-        `http://localhost:8000/patient/api/${pid}/createappointment`,
-        formData
-      )
+      .post(`http://localhost:8000/patient/api/${pid}/createappointment`, formData)
       .then((response) => {
         window.alert("Created an appointment!");
         navigate(`/myappointment/${pid}`);
@@ -52,7 +61,18 @@ function AppointmentForm() {
       });
   };
 
-  // Getting the information and status
+  // Handle checkbox changes for services
+  const handleServiceChange = (serviceId) => {
+    setSelectedServices((prevSelected) => {
+      if (prevSelected.includes(serviceId)) {
+        return prevSelected.filter((id) => id !== serviceId); // Remove if already selected
+      } else {
+        return [...prevSelected, serviceId]; // Add if not selected
+      }
+    });
+  };
+
+  // Fetch doctor's availability and name
   useEffect(() => {
     axios
       .get(`http://localhost:8000/doctor/${did}/available`)
@@ -159,11 +179,7 @@ function AppointmentForm() {
       <Container className="appointment-form-container">
         <h1>Book an Appointment with Dr. {doctorName}</h1>
         <div className="steps d-flex flex-wrap flex-sm-nowrap justify-content-between padding-top-2x padding-bottom-1x">
-          <div
-            className={`step ${step >= 1 ? "completed" : ""} ${
-              step === 1 ? "active" : ""
-            }`}
-          >
+          <div className={`step ${step >= 1 ? "completed" : ""} ${step === 1 ? "active" : ""}`}>
             <div className="step-icon-wrap">
               <div className="step-icon">
                 <PassFill size={20} />
@@ -171,11 +187,7 @@ function AppointmentForm() {
             </div>
             <h4 className="step-title">Fill Out the Form</h4>
           </div>
-          <div
-            className={`step ${step === 2 ? "completed" : ""} ${
-              step === 2 ? "active" : ""
-            }`}
-          >
+          <div className={`step ${step === 2 ? "completed" : ""} ${step === 2 ? "active" : ""}`}>
             <div className="step-icon-wrap">
               <div className="step-icon">
                 <CheckAll size={20} />
@@ -210,13 +222,9 @@ function AppointmentForm() {
                         {availableTimes.map((timeSlot, index) => (
                           <Button
                             key={index}
-                            variant={
-                              time === timeSlot.timeRange
-                                ? "secondary"
-                                : "outline-primary"
-                            } // Grayed out if selected
+                            variant={time === timeSlot.timeRange ? "secondary" : "outline-primary"}
                             onClick={() => setTime(timeSlot.timeRange)}
-                            disabled={time === timeSlot.timeRange} // Disable button if selected
+                            disabled={time === timeSlot.timeRange}
                             className="m-1"
                           >
                             {timeSlot.label}: {timeSlot.timeRange}
@@ -232,14 +240,31 @@ function AppointmentForm() {
                     <Form.Label>Time</Form.Label>
                     <center>
                       <div>
-                        <h5>
-                          The doctor has no available appointments for this day.
-                        </h5>
+                        <h5>The doctor has no available appointments for this day.</h5>
                       </div>
                     </center>
                   </Form.Group>
                 </Row>
               )}
+
+              {/* Add services as checkboxes */}
+              <Row>
+                <Form.Group as={Col} className="mb-3">
+                  <Form.Label>Select Services (Appointment Type)</Form.Label>
+                  <div>
+                    {services.map((service) => (
+                      <Form.Check
+                        key={service._id}
+                        type="checkbox"
+                        label={service.name}
+                        value={service.name}
+                        onChange={() => handleServiceChange(service.name)}
+                        checked={selectedServices.includes(service.name)}
+                      />
+                    ))}
+                  </div>
+                </Form.Group>
+              </Row>
 
               <Row>
                 <Form.Group as={Col} className="mb-3">
@@ -249,25 +274,6 @@ function AppointmentForm() {
                     placeholder="Enter Reason"
                     value={reason}
                     onChange={(e) => setReason(e.target.value)}
-                  />
-                </Form.Group>
-              </Row>
-              <Row>
-                <Form.Group as={Col} className="mb-3">
-                  <Form.Label>Medium</Form.Label>
-                  <Form.Check
-                    type="radio"
-                    label="Online"
-                    name="medium"
-                    checked={medium === "Online"}
-                    onChange={() => setMedium("Online")}
-                  />
-                  <Form.Check
-                    type="radio"
-                    label="Face to Face"
-                    name="medium"
-                    checked={medium === "Face to Face"}
-                    onChange={() => setMedium("Face to Face")}
                   />
                 </Form.Group>
               </Row>
@@ -282,7 +288,7 @@ function AppointmentForm() {
                 <p>Date: {date}</p>
                 <p>Time: {time}</p>
                 <p>Primary Concern: {reason}</p>
-                <p>Medium: {medium}</p>
+                <p>Services: {selectedServices.join(", ")}</p>
               </div>
             </div>
           </div>

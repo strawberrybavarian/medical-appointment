@@ -10,52 +10,73 @@ const Payment = require('../payments/payment_model');
 
 const createAppointment = async (req, res) => {
   try {
-      const { doctorId, date, time, reason, medium } = req.body;
-      const patientId = req.params.uid;
+    const { doctorId, date, time, reason, medium, appointment_type } = req.body; // Include appointment_type
+    const patientId = req.params.uid;
 
-      const newAppointment = new Appointment({
-          patient: new mongoose.Types.ObjectId(patientId),
-          doctor: new mongoose.Types.ObjectId(doctorId),
-          date,
-          time,
-          reason,
-          medium
-      });
+    // Create the new appointment object
+    const newAppointment = new Appointment({
+      patient: new mongoose.Types.ObjectId(patientId),
+      date,
+      time,
+      reason,
+      medium,
+      appointment_type // Add appointment_type to the appointment schema
+    });
 
-      const savedAppointment = await newAppointment.save();
+    // Only add the doctor if doctorId is provided
+    if (doctorId) {
+      newAppointment.doctor = new mongoose.Types.ObjectId(doctorId);
+    }
 
-      // Update related documents
+    // Save the new appointment
+    const savedAppointment = await newAppointment.save();
+
+    // If a doctorId is provided, update the doctor's appointments
+    if (doctorId) {
       await Doctors.findByIdAndUpdate(doctorId, { $push: { dr_appointments: savedAppointment._id } });
-      await Patient.findByIdAndUpdate(patientId, { $push: { patient_appointments: savedAppointment._id } });
+    }
 
-      // Create notifications
-      const notifications = [
-          { message: `You have a pending appointment scheduled on ${date} at ${time}.`, recipient: patientId, type: 'Patient' },
-          { message: `You have a new pending appointment scheduled with a patient on ${date} at ${time}.`, recipient: doctorId, type: 'Doctor' }
-      ];
+    // Update the patient's appointments
+    await Patient.findByIdAndUpdate(patientId, { $push: { patient_appointments: savedAppointment._id } });
 
-      for (const notification of notifications) {
-          const newNotification = new Notification({
-              message: notification.message,
-              recipient: new mongoose.Types.ObjectId(notification.recipient),
-              recipientType: notification.type
-          });
-          await newNotification.save();
+    // Create notifications
+    const notifications = [
+      { message: `You have a pending appointment scheduled on ${date} at ${time}.`, recipient: patientId, type: 'Patient' },
+    ];
 
-          // Update the corresponding patient's or doctor's notifications array
-          if (notification.type === 'Patient') {
-              await Patient.findByIdAndUpdate(notification.recipient, { $push: { notifications: newNotification._id } });
-          } else if (notification.type === 'Doctor') {
-              await Doctors.findByIdAndUpdate(notification.recipient, { $push: { notifications: newNotification._id } });
-          }
+    // If a doctorId is provided, create a notification for the doctor
+    if (doctorId) {
+      notifications.push({
+        message: `You have a new pending appointment scheduled with a patient on ${date} at ${time}.`,
+        recipient: doctorId,
+        type: 'Doctor'
+      });
+    }
+
+    // Save notifications and update respective records
+    for (const notification of notifications) {
+      const newNotification = new Notification({
+        message: notification.message,
+        recipient: new mongoose.Types.ObjectId(notification.recipient),
+        recipientType: notification.type
+      });
+      await newNotification.save();
+
+      if (notification.type === 'Patient') {
+        await Patient.findByIdAndUpdate(notification.recipient, { $push: { notifications: newNotification._id } });
+      } else if (notification.type === 'Doctor') {
+        await Doctors.findByIdAndUpdate(notification.recipient, { $push: { notifications: newNotification._id } });
       }
+    }
 
-      res.status(201).json(savedAppointment);
+    // Return the saved appointment as a response
+    res.status(201).json(savedAppointment);
   } catch (error) {
-      console.error('Error creating appointment:', error);
-      res.status(500).json({ message: `Failed to create appointment: ${error.message}` });
+    console.error('Error creating appointment:', error);
+    res.status(500).json({ message: `Failed to create appointment: ${error.message}` });
   }
 };
+
 
 const updateAppointmentStatus = async (req, res) => {
   try {

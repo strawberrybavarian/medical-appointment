@@ -59,26 +59,28 @@ function AppointmentFullCalendar({ msid }) {
   }, []);
 
   const parseTimeString = (timeString) => {
+    if (!timeString) return '00:00:00'; // Default to midnight if time is not provided
+  
     const [time, modifier] = timeString.split(' ');
     let [hours, minutes] = time.split(':');
-
+  
     if (hours === '12') {
       hours = '00';
     }
-
+  
     if (modifier === 'PM') {
       hours = parseInt(hours, 10) + 12;
     }
-
+  
     return `${hours}:${minutes}:00`;
   };
 
   const events = allAppointments.map((appointment) => {
     const datePart = appointment.date.split('T')[0];
-    const timePart = parseTimeString(appointment.time);
+    const timePart = appointment.time ? parseTimeString(appointment.time) : '00:00:00'; // Fallback to '00:00:00' if no time
     const dateTimeString = `${datePart}T${timePart}`;
     const startTime = new Date(dateTimeString);
-
+  
     return {
       id: appointment._id,
       title: `${appointment.patient.patient_firstName} ${appointment.patient.patient_lastName}`,
@@ -88,9 +90,10 @@ function AppointmentFullCalendar({ msid }) {
       status: appointment.status,
       doctorName: appointment.doctor
         ? `${appointment.doctor.dr_firstName} ${appointment.doctor.dr_lastName}`
-        : 'No doctor assigned', // Fallback if no doctor is assigned
+        : 'No doctor assigned',
     };
   });
+  
 
   const handleEventClick = (eventInfo) => {
     const status = eventInfo.event.extendedProps.status;

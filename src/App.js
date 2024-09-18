@@ -56,7 +56,7 @@ import DoctorManagement from './components/staffs/admin/management/account/Docto
 import PatientManagement from './components/staffs/admin/management/account/PatientManagement';
 import NewsDetailPage from './components/staffs/news/NewsDetailPage';
 import AdminAppointmentMain from './components/staffs/admin/appointment/AdminAppointmentMain';
-
+import SasMain from './components/staffs/admin/specialtyandservices/SasMain';
 
 
 
@@ -107,7 +107,8 @@ function App() {
           <Route path={"/admin/account/doctor/:aid"} element={<DoctorManagement />}/>
           <Route path={"/admin/account/patient/:aid"} element={<PatientManagement />}/>
           <Route path={"/admin/appointments/:aid"} element={<AdminAppointmentMain />}/>
-      
+          <Route path={"/admin/sas/:aid"} element={<SasMain />}/>
+
       </Routes>
     </BrowserRouter>
 

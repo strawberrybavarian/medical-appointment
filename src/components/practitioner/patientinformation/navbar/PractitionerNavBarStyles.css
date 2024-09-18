@@ -1,11 +1,4 @@
-.navtabs-pxmanagement {
-    border-width: 0px;
-    background-color: #f8f8f8;
-    border-radius: 10px;
-    justify-content: center; /* Center-align the nav tabs */
-    padding: 10px 0; /* Padding around the nav bar */
-  }
-  
+
   
   
   .app-image-doctor {
@@ -15,34 +8,65 @@
     border-radius: 100%;
   }
   
+
   .navtabs-pxmanagement .nav-item {
-   /* Light gray background */
-    width: auto;
-    border-radius: 100px; /* Rounded corners */
+    position: relative;
+    margin-right: 2px;
+    border: none;
+}
+
+.navtabs-pxmanagement .nav-link {
+
+    color: #000000;
+    border-radius: 20px 20px 0 0;
+    border: none;
+    padding: 10px 20px;
+    font-size: 1.1em;
+    transition: background-color 0.3s ease;
+
+    
+}
+
+.navtabs-pxmanagement .nav-link.active {
+    background-color: #ffffff;
+    color: #2c2b48;
+    border-bottom: none;
+    border: none;
+    /* box-shadow:  0 4px 4px  rgba(0, 0, 0, 0.03); Soft shadow */
+}
+
+.navtabs-pxmanagement .nav-link:hover {
+    background-color: #414168;
+    color: #ffffff;
+    border: none;
+}
+
+.navtabs-pxmanagement {
+   font-weight: 800;
+}
+
+.pnb-component {
+    margin-top: 20px;
+}
+
+.pnb-content {
+  background-color: #ffffff;
+  padding: 1.5rem;
+  border: none;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Soft shadow */
+}
+
+/* Border-radius for 'Patient Findings' tab */
+.pnb-content.findings-tab {
+  border-radius: 0px 10px 10px;
+}
+
+/* Border-radius for other tabs */
+.pnb-content.other-tabs {
+  border-radius: 10px 10px 10px;
+}
+
+
+
+
   
-    padding-left: 0.5rem;
-    padding-right: 0.5rem
-  }
-  
-  .navtabs-pxmanagement .nav-link {
-    color: #333; /* Text color */
-    font-weight: bold;
-    padding: 10px 20px; /* Padding inside tabs */
-    text-align: center;
-    transition: all 0.3s ease-out; /* Smooth transition for hover effect */
-    border: 0;
-  }
-  
-  .navtabs-pxmanagement .nav-link.active {
-    background-color: #007bff !important; /* White background for active tab */
-    color: #ffffff; /* Text color for active tab */
-    border-color : #ffffff !important;
-    border-radius: 10px;
-   
-  }
-  
-  .navtabs-pxmanagement .nav-link:hover {
-    background-color: #007bff; /* Background color on hover */
-    color: #ffffff; /* Text color on hover */
-    border-radius: 10px;
-  }

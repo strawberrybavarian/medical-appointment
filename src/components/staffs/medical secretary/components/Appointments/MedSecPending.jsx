@@ -2,9 +2,8 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Table, Button, Container, Pagination, Form, Row, Col } from 'react-bootstrap';
-import './Styles.css'
-// import './Appointment.css';
-import RescheduleModal from '../../../../practitioner/appointment/Reschedule Modal/RescheduleModal'
+import './Styles.css';
+import RescheduleModal from '../../../../practitioner/appointment/Reschedule Modal/RescheduleModal';
 
 const MedSecPending = ({allAppointments, setAllAppointments}) => {
   const { did } = useParams();
@@ -19,6 +18,7 @@ const MedSecPending = ({allAppointments, setAllAppointments}) => {
   const [alldoctors, setalldoctors] = useState([]);
   const [selectedDoctor, setSelectedDoctor] = useState("");
   const [selectedAccountStatus, setSelectedAccountStatus] = useState("");
+
   useEffect(() => {
     axios.get(`http://localhost:8000/doctor/api/alldoctor`)
       .then((result) => {
@@ -42,7 +42,7 @@ const MedSecPending = ({allAppointments, setAllAppointments}) => {
       .catch((err) => {
         console.log(err);
       });
-  }
+  };
 
   const handleConfirmReschedule = (rescheduledReason) => {
     const newStatus = {
@@ -56,14 +56,12 @@ const MedSecPending = ({allAppointments, setAllAppointments}) => {
             appointment._id === selectedAppointment._id ? { ...appointment, status: 'Rescheduled', rescheduledReason: rescheduledReason } : appointment
           )
         );
-     
       })
       .catch((err) => {
         console.log(err);
       });
-  }
+  };
 
-  //For Queries
   const handleSort = (key) => {
     let direction = 'ascending';
     if (sortConfig.key === key && sortConfig.direction === 'ascending') {
@@ -82,7 +80,6 @@ const MedSecPending = ({allAppointments, setAllAppointments}) => {
     return 0;
   });
 
-  //For Search (Add Filter Lang)
   const filteredAppointments = allAppointments
   .filter(appointment => appointment.status === 'Pending')
   .filter(appointment => 
@@ -113,18 +110,14 @@ const MedSecPending = ({allAppointments, setAllAppointments}) => {
     setSelectedAppointment(null);
   };
 
-
-
   return (
   <>
   <Container>
       <div style={{padding:'30px', width: '100%' }}>
         <h1>Pending Appointments</h1>
         
-        
       <Container className="p-0">
-        <Row> {/* Use gutter spacing to control the space between columns */}
-          
+        <Row> 
           <Col lg={4} md={6} sm={12}>
             <Form.Group controlId="formDoctorSearch" className="d-flex align-items-center">
               <Form.Label style={{ marginRight: '1vh' }}>Doctor:</Form.Label>
@@ -136,8 +129,8 @@ const MedSecPending = ({allAppointments, setAllAppointments}) => {
               >
                 <option value="">All Doctors</option>
                 {alldoctors.map((doctor) => (
-                  <option key={doctor._id} value={doctor._id}>
-                    {`${doctor.dr_firstName} ${doctor.dr_middleInitial}. ${doctor.dr_lastName}`}
+                  <option key={doctor?._id} value={doctor?._id}>
+                    {`${doctor?.dr_firstName} ${doctor?.dr_middleInitial}. ${doctor?.dr_lastName}`}
                   </option>
                 ))}
               </Form.Control>
@@ -172,35 +165,24 @@ const MedSecPending = ({allAppointments, setAllAppointments}) => {
               </Form.Control>
             </Form.Group>
           </Col>
-
         </Row>
       </Container>
 
-
-
-
-
-
-        
-        
-        
-        
         <Table responsive striped bordered hover variant="blue">
           <thead>
             <tr>
-         
-              <th style={{ border: "1px solid #00000018" }}>Patient Name</th>
-              <th style={{ border: "1px solid #00000018" }}>Doctor Name</th>
-              <th style={{ border: "1px solid #00000018", cursor: 'pointer' }} onClick={() => handleSort('date')}>
+              <th>Patient Name</th>
+              <th>Doctor Name</th>
+              <th>Service</th> {/* New column for appointment type */}
+              <th onClick={() => handleSort('date')}>
                 Date {sortConfig.key === 'date' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
               </th>
-              <th style={{ border: "1px solid #00000018", cursor: 'pointer' }} onClick={() => handleSort('time')}>
+              <th onClick={() => handleSort('time')}>
                 Time {sortConfig.key === 'time' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
               </th>
-              
-              <th style={{ border: "1px solid #00000018" }}>Account Status</th>
-              <th style={{ border: "1px solid #00000018" }}>Appointment Status</th>
-              <th style={{ border: "1px solid #00000018" }}>Actions</th>
+              <th>Account Status</th>
+              <th>Appointment Status</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -209,15 +191,17 @@ const MedSecPending = ({allAppointments, setAllAppointments}) => {
               const patientName = `${patient.patient_firstName} ${patient.patient_middleInitial}. ${patient.patient_lastName}`;
              
               const doctor = appointment.doctor;
-              const doctorName = `${doctor.dr_firstName} ${doctor.dr_middleInitial}. ${doctor.dr_lastName}`;
+              const doctorName = `${doctor?.dr_firstName} ${doctor?.dr_middleInitial}. ${doctor?.dr_lastName}`;
               
-              
+              // Join the appointment types into a string (comma-separated)
+              const appointmentTypes = appointment.appointment_type.join(', ');
+
               return (
                 <tr key={appointment._id}>
                   <td>{patientName}</td>
                   <td>{doctorName}</td>
+                  <td>{appointmentTypes}</td> {/* Display the appointment types */}
                   <td>{new Date(appointment.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</td>
-
                   <td>{appointment.time}</td>
                   <td>{appointment.patient.accountStatus}</td>
                   <td>{appointment.status}</td>
@@ -227,43 +211,40 @@ const MedSecPending = ({allAppointments, setAllAppointments}) => {
                       <Link variant="success" onClick={() => acceptAppointment(appointment._id)}>Accept</Link>
                       <Link variant="warning" onClick={() => handleReschedule(appointment)}>Reschedule</Link>
                     </div>
-                    
                   </td>
                 </tr>
               );
             })}
           </tbody>
         </Table>
+
         {error && <p>{error}</p>}
         
         <Container className="d-flex justify-content-between p-0">
-        <div style={{height: '40%', width: '40%' }} className="d-flex p-0 align-content-center">
+          <div style={{height: '40%', width: '40%' }} className="d-flex p-0 align-content-center">
             <div style={{height:'60%',width:'60%'}}>
               <label>Entries per page:</label>
             </div>
-              <select value={entriesPerPage} onChange={(e) => setEntriesPerPage(parseInt(e.target.value))}>
-                <option value={5}>5</option>
-                <option value={15}>15</option>
-                <option value={30}>30</option>
-                <option value={50}>50</option>
-              </select>
-        </div>
+            <select value={entriesPerPage} onChange={(e) => setEntriesPerPage(parseInt(e.target.value))}>
+              <option value={5}>5</option>
+              <option value={15}>15</option>
+              <option value={30}>30</option>
+              <option value={50}>50</option>
+            </select>
+          </div>
 
-
-        <Pagination>
-          <Pagination.First onClick={() => setCurrentPage(1)} disabled={currentPage === 1} />
-          <Pagination.Prev onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))} disabled={currentPage === 1} />
-          {pageNumbers.map(number => (
-            <Pagination.Item key={number} active={number === currentPage} onClick={() => setCurrentPage(number)}>
-              {number}
-            </Pagination.Item>
-          ))}
-          <Pagination.Next onClick={() => setCurrentPage(prev => Math.min(prev + 1, pageNumbers.length))} disabled={currentPage === pageNumbers.length} />
-          <Pagination.Last onClick={() => setCurrentPage(pageNumbers.length)} disabled={currentPage === pageNumbers.length} />
-        </Pagination>
-
+          <Pagination>
+            <Pagination.First onClick={() => setCurrentPage(1)} disabled={currentPage === 1} />
+            <Pagination.Prev onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))} disabled={currentPage === 1} />
+            {pageNumbers.map(number => (
+              <Pagination.Item key={number} active={number === currentPage} onClick={() => setCurrentPage(number)}>
+                {number}
+              </Pagination.Item>
+            ))}
+            <Pagination.Next onClick={() => setCurrentPage(prev => Math.min(prev + 1, pageNumbers.length))} disabled={currentPage === pageNumbers.length} />
+            <Pagination.Last onClick={() => setCurrentPage(pageNumbers.length)} disabled={currentPage === pageNumbers.length} />
+          </Pagination>
         </Container>
-        
       </div>
 
       {selectedAppointment && (
@@ -275,9 +256,7 @@ const MedSecPending = ({allAppointments, setAllAppointments}) => {
         />
       )}
 
-<div style={{paddingBottom:'50px'}}>
-   
-   </div>
+      <div style={{paddingBottom:'50px'}} />
    </Container>
   </>
   );
