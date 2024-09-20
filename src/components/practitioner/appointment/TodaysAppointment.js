@@ -4,6 +4,7 @@ import { useParams, Link } from "react-router-dom";
 import Table from 'react-bootstrap/Table';
 import { Container, Row, Col, Button, Pagination, Form } from 'react-bootstrap';
 import './Appointment.css';
+
 const TodaysAppointment = ({ allAppointments }) => {
   const [error, setError] = useState("");
   const [currentPage, setCurrentPage] = useState(1); // Current page state
