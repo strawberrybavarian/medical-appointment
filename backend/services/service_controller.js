@@ -10,27 +10,32 @@ const Specialty = require('../specialty/specialty_model')
 
 // Create a new service
 const createService = async (req, res) => {
-    try {
-      const { name, description, category, availability, requirements, doctors } = req.body;
-  
-      // Create a new service
-      const newService = new Service({
-        name,
-        description,
-        category,
-        availability,
-        requirements,
-        doctors,
-      });
-  
-      // Save the service to the database
-      await newService.save();
-  
-      res.status(201).json({ message: 'Service created successfully', service: newService });
-    } catch (error) {
-      res.status(500).json({ message: 'Server error', error: error.message });
-    }
-  };
+  try {
+    const { name, description, category, availability, requirements, doctors } = req.body;
+
+    // Log to verify the incoming request
+    console.log("Request body:", req.body);
+
+    // Create a new service
+    const newService = new Service({
+      name,
+      description,
+      category,
+      availability,
+      requirements,
+      doctors,
+    });
+
+    // Save the service to the database
+    await newService.save();
+
+    res.status(201).json({ message: 'Service created successfully', service: newService });
+  } catch (error) {
+    console.error("Error saving service:", error); // Log more details
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
   
   // Get all services
   const getAllServices = async (req, res) => {

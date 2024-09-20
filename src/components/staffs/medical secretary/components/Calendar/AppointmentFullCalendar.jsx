@@ -7,12 +7,14 @@ import Tippy from '@tippyjs/react';
 import 'tippy.js/dist/tippy.css'; // Required for styling
 import axios from 'axios';
 import { Container, Card } from 'react-bootstrap';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate
+import { useNavigate, useParams } from 'react-router-dom'; // Import useNavigate
 
-function AppointmentFullCalendar({ msid }) {
+function AppointmentFullCalendar() {
   const [allAppointments, setAllappointments] = useState([]);
   const calendarRef = useRef(null); // Reference to FullCalendar
   const navigate = useNavigate(); // Replace useHistory with useNavigate
+  const {msid} = useParams();
+  console.log(msid);
 
   // State variable for headerToolbar
   const [headerToolbar, setHeaderToolbar] = useState({
@@ -96,8 +98,9 @@ function AppointmentFullCalendar({ msid }) {
   
 
   const handleEventClick = (eventInfo) => {
-    const status = eventInfo.event.extendedProps.status;
-
+    const { status } = eventInfo.event.extendedProps; // Get status from extendedProps
+  
+    // Determine the correct tab based on the appointment status
     let tab;
     if (status === 'Scheduled') {
       tab = 'todays';
@@ -106,11 +109,13 @@ function AppointmentFullCalendar({ msid }) {
     } else if (status === 'Pending') {
       tab = 'pending';
     }
-
+  
+    // If a valid tab is found, navigate to the respective URL
     if (tab) {
-      navigate(`/medsec/${msid}?tab=${tab}`); // Use navigate instead of history.push
+      navigate(`/medsec/appointments/${msid}?tab=${tab}`); // Programmatic navigation using useNavigate
     }
   };
+  
 
   const renderEventContent = (eventInfo) => {
     const tooltipContent = `

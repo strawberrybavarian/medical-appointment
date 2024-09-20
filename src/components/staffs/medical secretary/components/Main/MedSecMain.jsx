@@ -48,7 +48,7 @@ function MedSecMain() {
 
   return (
     <>
-      <MedSecNavbar /> {/* Fixed navbar at the top */}
+      <MedSecNavbar /> 
       <div style={{ overflowY: 'auto', height: 'calc(100vh - 56px)', width: '100%', paddingBottom: '1.5rem' }}>
         
       

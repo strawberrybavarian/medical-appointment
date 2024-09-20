@@ -11,7 +11,7 @@ const ServiceSchema = new Schema({
     category: {
         type: String,
      
-        enum: ['Laboratory', '2D-Echo', 'ECG' ,'Ultrasound', 'X-Ray', 'Consultation', 'Pre-employment',],  // Define your categories based on your services
+
     },
 
     availability: {

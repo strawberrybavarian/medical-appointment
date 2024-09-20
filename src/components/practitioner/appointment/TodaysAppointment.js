@@ -4,7 +4,6 @@ import { useParams, Link } from "react-router-dom";
 import Table from 'react-bootstrap/Table';
 import { Container, Row, Col, Button, Pagination, Form } from 'react-bootstrap';
 import './Appointment.css';
-
 const TodaysAppointment = ({ allAppointments }) => {
   const [error, setError] = useState("");
   const [currentPage, setCurrentPage] = useState(1); // Current page state
@@ -102,15 +101,15 @@ const TodaysAppointment = ({ allAppointments }) => {
           </Col>
         </Row>
 
-        <Table striped bordered hover variant="blue">
+        <Table responsive striped  variant="light" className="mt-3">
           <thead>
             <tr>
-              <th style={{ border: "1px solid #00000018" }}>Patient Name</th>
-              <th style={{ border: "1px solid #00000018" }}>Date</th>
-              <th style={{ border: "1px solid #00000018" }}>Time</th>
-              <th style={{ border: "1px solid #00000018" }}>Reason</th>
-              <th style={{ border: "1px solid #00000018" }}>Status</th>
-              <th style={{ border: "1px solid #00000018" }}>Actions</th>
+              <th >Patient Name</th>
+              <th>Date</th>
+              <th>Time</th>
+              <th >Reason</th>
+              <th >Status</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -128,15 +127,22 @@ const TodaysAppointment = ({ allAppointments }) => {
         <td>{new Date(appointment.date).toLocaleDateString()}</td>
         <td>{appointment.time}</td>
         <td>{appointment.reason}</td>
-        <td>{appointment.status}</td>
+        <td style={{textAlign:"center"}}>
+          <div className="d-flex justify-content-center">
+            <div className="scheduled-appointment">
+              {appointment.status}
+            </div>
+          </div>
+           
+        </td>
         <td>
           {/* Ongoing Button */}
-          <Button
-            variant="success"
+          <Link
+            style={{color: 'green'}}
             onClick={() => updateAppointmentStatus(appointment._id, 'Ongoing')}
           >
             Ongoing
-          </Button>
+          </Link>
         </td>
       </tr>
     );

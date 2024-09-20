@@ -157,3 +157,29 @@
   color: white;
   border-radius: 12px;
 }
+
+.ongoing-appointment{
+  background-color: #fd7e14;
+  color: white;
+  border-radius: 12px;
+
+
+}
+
+.pending-appointment{
+  background-color: #ffc107;
+  color: white;
+  border-radius: 12px;
+}
+
+
+.scheduled-appointment{
+  background-color: #007bff;
+  color: white;
+  border-radius: 12px;
+  width: 100px;
+
+}
+
+
+

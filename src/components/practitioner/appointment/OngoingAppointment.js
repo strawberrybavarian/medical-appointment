@@ -111,16 +111,16 @@ const OngoingAppointment = ({ allAppointments }) => {
           </Col>
         </Row>
 
-        <Table striped bordered hover variant="blue">
+        <Table responsive striped  variant="light" className="mt-3">
           <thead>
             <tr>
               {/* <th style={{border: "1px solid #00000018"}}>Appointment ID</th> */}
-              <th style={{border: "1px solid #00000018"}}>Patient Name</th>
-              <th style={{border: "1px solid #00000018"}}>Date</th>
-              <th style={{border: "1px solid #00000018"}}>Time</th>
-              <th style={{border: "1px solid #00000018"}}>Reason</th>
-              <th style={{border: "1px solid #00000018"}}>Status</th>
-              <th style={{border: "1px solid #00000018"}}>Actions</th>
+              <th>Patient Name</th>
+              <th >Date</th>
+              <th>Time</th>
+              <th>Reason</th>
+              <th>Status</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -134,13 +134,20 @@ const OngoingAppointment = ({ allAppointments }) => {
                   <td>{new Date(appointment.date).toLocaleDateString()}</td>
                   <td>{appointment.time}</td>
                   <td>{appointment.reason}</td>
-                  <td>{appointment.status}</td>
+                  <td>                      
+                      <div className="ongoing-appointment">
+                        {appointment.status}
+                      </div>
+                  </td>
                   <td>
                     <div>
+
+
                       <Link to={`/information/${appointment.patient._id}/${did}/${appointment._id}`}>
-                        <Button variant="primary">Px Management</Button>
+                       Px Management
                       </Link>
-                      <Button variant="success" onClick={() => completeAppointment(appointment._id)}>Complete</Button>
+                      {'  '}
+                      <Link style={{color: 'green'}} variant="success" onClick={() => completeAppointment(appointment._id)}>Complete</Link>
                     </div>
                   </td>
                 </tr>
