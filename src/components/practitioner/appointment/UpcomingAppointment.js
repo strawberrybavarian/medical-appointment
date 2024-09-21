@@ -122,15 +122,15 @@ const UpcomingAppointment = ({ allAppointments, setAllAppointments }) => {
           </Col>
         </Row>
 
-        <Table striped bordered hover variant="light">
+        <Table responsive striped  variant="light" className="mt-3">
           <thead>
             <tr>
-              <th style={{ border: "1px solid #00000018" }}>Patient Name</th>
-              <th style={{ border: "1px solid #00000018" }}>Date</th>
-              <th style={{ border: "1px solid #00000018" }}>Time</th>
-              <th style={{ border: "1px solid #00000018" }}>Reason</th>
-              <th style={{ border: "1px solid #00000018" }}>Status</th>
-              <th style={{ border: "1px solid #00000018" }}>Actions</th>
+              <th>Patient Name</th>
+              <th>Date</th>
+              <th>Time</th>
+              <th>Reason</th>
+              <th>Status</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -144,7 +144,15 @@ const UpcomingAppointment = ({ allAppointments, setAllAppointments }) => {
                   <td>{new Date(appointment.date).toLocaleDateString()}</td>
                   <td>{appointment.time}</td>
                   <td>{appointment.reason}</td>
-                  <td>{appointment.status}</td>
+                  <td>
+                    <div className="d-flex justify-content-center">
+                      <div className="scheduled-appointment">
+                        {appointment.status}
+                      </div>
+                    </div>
+
+
+                  </td>
                   <td>
                     <span 
                       onClick={() => handleReschedule(appointment)} 

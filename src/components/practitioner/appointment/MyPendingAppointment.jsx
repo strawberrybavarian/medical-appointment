@@ -148,19 +148,19 @@ const TodaysAppointment = () => {
           </Row>
         </div>
         
-        <Table responsive striped bordered hover variant="blue" className="table-border-radius">
+        <Table responsive striped  variant="light" className="mt-3">
           <thead>
             <tr>
-              <th style={{ border: "1px solid #00000018" }}>Patient Name</th>
-              <th style={{ border: "1px solid #00000018", cursor: 'pointer' }} onClick={() => handleSort('date')}>
+              <th>Patient Name</th>
+              <th style={{ cursor: 'pointer' }} onClick={() => handleSort('date')}>
                 Date {sortConfig.key === 'date' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
               </th>
-              <th style={{ border: "1px solid #00000018", cursor: 'pointer' }} onClick={() => handleSort('time')}>
+              <th style={{  cursor: 'pointer' }} onClick={() => handleSort('time')}>
                 Time {sortConfig.key === 'time' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
               </th>
-              <th style={{ border: "1px solid #00000018" }}>Reason</th>
-              <th style={{ border: "1px solid #00000018" }}>Status</th>
-              <th style={{ border: "1px solid #00000018" }}>Actions</th>
+              <th >Reason</th>
+              <th >Status</th>
+              <th >Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -174,7 +174,11 @@ const TodaysAppointment = () => {
                 <td>{new Date(appointment.date).toLocaleDateString()}</td>
                 <td>{appointment.time}</td>
                 <td>{appointment.reason}</td>
-                <td>{appointment.status}</td>
+                <td>
+                    <div className="pending-appointment">
+                          {appointment.status}
+                    </div>
+                </td>
                 <td>
                   <div className="d-flex justify-content-center">
                     <Nav onSelect={(selectedKey) => alert(`selected ${selectedKey}`)}>

@@ -1,46 +1,50 @@
 const mongoose = require('mongoose');
-const {Schema, model} = mongoose
+const {Schema, model} = mongoose;
 
 const AdminSchema = new mongoose.Schema({
     firstName: {
         type: String,
-
     },
     lastName: {
         type: String,
-
     },
-    username:{
+    username: {
         type: String,
     },
     email: {
         type: String,
-
     },
     password: {
         type: String, 
     },
     lastLogin: {
-        type: Date
+        type: Date,
     },
     isActive: {
         type: Boolean,
-        default: true
+        default: true,
     },
-    role:{
-        type:String,
-        default: 'Admin'
+    role: {
+        type: String,
+        default: 'Admin',
     },
     notifications: [{
         type: Schema.Types.ObjectId,
-        ref: 'Notification'
+        ref: 'Notification',
     }],
     news: [{
         type: Schema.Types.ObjectId,
-        ref: 'News'  // Refers to the 'News' model
-      }]
+        ref: 'News',
+    }],
+    specialties: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Specialty',
+    }],
+    services: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Service',
+    }],
 }, { timestamps: true });
-
 
 const Admin = mongoose.model('Admin', AdminSchema);
 module.exports = Admin;

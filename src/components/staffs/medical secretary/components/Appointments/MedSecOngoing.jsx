@@ -1,6 +1,6 @@
 import axios from 'axios';
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Container, Pagination, Form, Row, Col } from 'react-bootstrap';
+import { Table, Container, Pagination, Form, Row, Col } from 'react-bootstrap';
 import './Styles.css';
 
 function MedSecOngoing({ allAppointments, setAllAppointments }) {
@@ -10,7 +10,7 @@ function MedSecOngoing({ allAppointments, setAllAppointments }) {
   const [alldoctors, setalldoctors] = useState([]);
   const [selectedDoctor, setSelectedDoctor] = useState("");
   const [selectedAccountStatus, setSelectedAccountStatus] = useState("");
-  
+
   useEffect(() => {
     axios.get(`http://localhost:8000/doctor/api/alldoctor`)
       .then((result) => {
@@ -43,7 +43,7 @@ function MedSecOngoing({ allAppointments, setAllAppointments }) {
       .toLowerCase()
       .includes(searchTerm.toLowerCase())
     )
-    .filter(appointment => selectedDoctor === "" || appointment.doctor._id === selectedDoctor)
+    .filter(appointment => selectedDoctor === "" || appointment.doctor?._id === selectedDoctor)
     .filter(appointment => selectedAccountStatus === "" || appointment.patient.accountStatus === selectedAccountStatus);
 
   const indexOfLastAppointment = currentPage * entriesPerPage;
@@ -60,9 +60,8 @@ function MedSecOngoing({ allAppointments, setAllAppointments }) {
       <Container>
         <div style={{ padding: '30px', width: '100%' }}>
           <h1>Ongoing Appointments</h1>
-              <Container className="p-0">
+          <Container className="p-0">
             <Row className="g-3"> {/* Use gutter spacing to control the space between columns */}
-              
               <Col lg={4} md={6} sm={12}>
                 <Form.Group controlId="formDoctorSearch" className="d-flex align-items-center">
                   <Form.Label style={{ marginRight: '1vh' }}>Doctor:</Form.Label>
@@ -75,13 +74,13 @@ function MedSecOngoing({ allAppointments, setAllAppointments }) {
                     <option value="">All Doctors</option>
                     {alldoctors.map((doctor) => (
                       <option key={doctor._id} value={doctor._id}>
-                        {`${doctor.dr_firstName} ${doctor.dr_middleInitial}. ${doctor.dr_lastName}`}
+                        {`${doctor?.dr_firstName} ${doctor?.dr_middleInitial}. ${doctor?.dr_lastName}`}
                       </option>
                     ))}
                   </Form.Control>
                 </Form.Group>
               </Col>
-              
+
               <Col lg={4} md={6} sm={12} className="p-0">
                 <Form.Group controlId="formSearch" className="d-flex align-items-center">
                   <Form.Label style={{ marginLeft: '1vh', marginRight: '1vh' }}>Patient:</Form.Label>
@@ -110,21 +109,20 @@ function MedSecOngoing({ allAppointments, setAllAppointments }) {
                   </Form.Control>
                 </Form.Group>
               </Col>
-
             </Row>
           </Container>
-
 
           <Table striped bordered hover variant="light">
             <thead>
               <tr>
-                <th style={{ border: "1px solid #00000018" }}>Patient Name</th>
-                <th style={{ border: "1px solid #00000018" }}>Doctor Name</th>
-                <th style={{ border: "1px solid #00000018" }}>Date</th>
-                <th style={{ border: "1px solid #00000018" }}>Time</th>
-                <th style={{ border: "1px solid #00000018" }}>Reason</th>
-                <th style={{ border: "1px solid #00000018" }}>Status</th>
-                <th style={{ border: "1px solid #00000018" }}>Actions</th>
+                <th>Patient Name</th>
+                <th>Doctor Name</th>
+                <th>Service</th> 
+                <th>Date</th>
+                <th>Time</th>
+                <th>Reason</th>
+                <th>Status</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -132,18 +130,24 @@ function MedSecOngoing({ allAppointments, setAllAppointments }) {
                 const patient = appointment.patient;
                 const patientName = `${patient.patient_firstName} ${patient.patient_middleInitial}. ${patient.patient_lastName}`;
 
+                // Check if doctor exists before rendering
                 const doctor = appointment.doctor;
-                const doctorName = `${doctor.dr_firstName} ${doctor.dr_middleInitial}. ${doctor.dr_lastName}`;
+                const doctorName = doctor 
+                  ? `${doctor.dr_firstName} ${doctor.dr_middleInitial}. ${doctor.dr_lastName}` 
+                  : 'No Doctor Assigned';
+
+                const appointmentTypes = appointment.appointment_type.join(', ');
                 return (
                   <tr key={appointment._id}>
                     <td>{patientName}</td>
-                    <td>{doctorName}</td>
+                    <td>{doctorName}</td> {/* Handle missing doctor */}
+                    <td>{appointmentTypes}</td>
                     <td>{new Date(appointment.date).toLocaleDateString()}</td>
                     <td>{appointment.time}</td>
                     <td>{appointment.reason}</td>
                     <td>{appointment.status}</td>
                     <td>
-                      {/* <Button variant="success" onClick={() => ongoingAppointment(appointment._id)}>Ongoing</Button> */}
+                      {/* Actions can be added here */}
                     </td>
                   </tr>
                 );
@@ -152,18 +156,17 @@ function MedSecOngoing({ allAppointments, setAllAppointments }) {
           </Table>
 
           <Container className="d-flex justify-content-between p-0">
-            <div style={{height: '40%', width: '40%' }} className="d-flex p-0 align-content-center">
-                <div style={{height:'60%',width:'60%'}}>
-                  <label>Entries per page:</label>
-                </div>
-                  <select value={entriesPerPage} onChange={(e) => setEntriesPerPage(parseInt(e.target.value))}>
-                    <option value={5}>5</option>
-                    <option value={15}>15</option>
-                    <option value={30}>30</option>
-                    <option value={50}>50</option>
-                  </select>
+            <div style={{ height: '40%', width: '40%' }} className="d-flex p-0 align-content-center">
+              <div style={{ height: '60%', width: '60%' }}>
+                <label>Entries per page:</label>
+              </div>
+              <select value={entriesPerPage} onChange={(e) => setEntriesPerPage(parseInt(e.target.value))}>
+                <option value={5}>5</option>
+                <option value={15}>15</option>
+                <option value={30}>30</option>
+                <option value={50}>50</option>
+              </select>
             </div>
-
 
             <Pagination>
               <Pagination.First onClick={() => setCurrentPage(1)} disabled={currentPage === 1} />
@@ -180,7 +183,7 @@ function MedSecOngoing({ allAppointments, setAllAppointments }) {
         </div>
       </Container>
     </>
-  )
+  );
 }
 
 export default MedSecOngoing;

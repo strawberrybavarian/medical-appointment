@@ -5,6 +5,8 @@ const Doctors = require('../doctor/doctor_model');
 const Patient = require('../patient/patient_model');
 const Notification = require('../notifications/notifications_model')
 const Admin = require('./admin_model')
+const Services = require('../services/service_model')
+const Specialty = require('../specialty/specialty_model')
 
 
 const confirmDeactivation = async (req, res) => {

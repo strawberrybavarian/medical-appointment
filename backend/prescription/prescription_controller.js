@@ -6,35 +6,39 @@ const Doctors = require('../doctor/doctor_model')
 const createPrescription = async (req, res) => {
   try {
     const { patientId, appointmentId } = req.params;
-    const { gender, dateOfConsultation, doctorId, medications } = req.body;
+    const { doctorId, medications } = req.body; // Medications are passed as stringified JSON
     const imagePath = req.file ? `images/${req.file.filename}` : '';
 
-    console.log('Received data:', { patientId, appointmentId, doctorId, medications, imagePath }); // Add logging here
+    // Log received data for debugging
+    console.log('Received data:', { patientId, appointmentId, doctorId, medications, imagePath });
 
+    // Validate input
     if (!patientId || !doctorId || !appointmentId) {
       return res.status(400).json({ message: 'Missing required fields' });
     }
 
+    // Parse the medications if passed as JSON string
     let parsedMedications = [];
     if (medications) {
       try {
         parsedMedications = JSON.parse(medications);
+        console.log('Parsed Medications:', parsedMedications); // Log the parsed medications
       } catch (err) {
         console.error('Error parsing medications:', err);
         return res.status(400).json({ message: 'Invalid medications format' });
       }
     }
 
-    // Create or update the prescription
+    // Check if the prescription already exists
     let prescription = await Prescription.findOne({ patient: patientId, doctor: doctorId, appointment: appointmentId });
 
     if (prescription) {
-      // Update existing prescription
+      // Update the existing prescription
       prescription.medications = parsedMedications;
-      if (imagePath) prescription.prescriptionImage = imagePath;
+      if (imagePath) prescription.prescriptionImage = imagePath; // Update image if present
       await prescription.save();
     } else {
-      // Create new prescription
+      // Create a new prescription
       prescription = new Prescription({
         patient: patientId,
         appointment: appointmentId,
@@ -58,7 +62,6 @@ const createPrescription = async (req, res) => {
     res.status(500).json({ message: 'Internal Server Error', error: error.message });
   }
 };
-
 
 
 

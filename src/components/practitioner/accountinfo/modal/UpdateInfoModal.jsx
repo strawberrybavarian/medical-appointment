@@ -1,13 +1,31 @@
 import React, { useState, useEffect } from "react";
 import { Modal, Button, Form, Row, Col } from "react-bootstrap";
-import './UploadImageModal.css'
-import { specialties } from "../../../../ContentExport";
+import axios from "axios";  // Use axios to fetch specialties from the backend
+import { ip } from "../../../../ContentExport";
+
 const UpdateInfoModal = ({ show, handleClose, doctorData, handleUpdate }) => {
   const [formData, setFormData] = useState({});
+  const [specialties, setSpecialties] = useState([]); // State for storing specialties from the backend
 
   useEffect(() => {
     setFormData(doctorData);
   }, [doctorData]);
+
+  // Fetch specialties from the backend when the modal is opened
+  useEffect(() => {
+    if (show) {
+      fetchSpecialties();
+    }
+  }, [show]);
+
+  const fetchSpecialties = async () => {
+    try {
+      const response = await axios.get(`${ip.address}/admin/specialties`); // Replace with your actual backend URL
+      setSpecialties(response.data);  // Assuming the data is an array of specialties
+    } catch (error) {
+      console.error("Error fetching specialties:", error);
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -23,7 +41,7 @@ const UpdateInfoModal = ({ show, handleClose, doctorData, handleUpdate }) => {
   };
 
   return (
-    <Modal show={show} onHide={handleClose}  overlayClassName="modal-overlay" backdrop="static" keyboard={false} ariaHideApp={false}  >
+    <Modal show={show} onHide={handleClose} overlayClassName="modal-overlay" backdrop="static" keyboard={false} ariaHideApp={false}>
       <Modal.Header className="uim-header" closeButton>
         <Modal.Title>Update Information</Modal.Title>
       </Modal.Header>
@@ -64,15 +82,15 @@ const UpdateInfoModal = ({ show, handleClose, doctorData, handleUpdate }) => {
             />
           </Form.Group>
           <Row>
-          <Form.Group as={Col} controlId="dob">
-            <Form.Label>Birthdate:</Form.Label>
-            <Form.Control
-              type='date'
-              name="dr_dob"
-              value={formData.dr_dob ? new Date(formData.dr_dob).toISOString().split('T')[0] : ""}
-              onChange={handleChange}
-            />
-          </Form.Group>
+            <Form.Group as={Col} controlId="dob">
+              <Form.Label>Birthdate:</Form.Label>
+              <Form.Control
+                type="date"
+                name="dr_dob"
+                value={formData.dr_dob ? new Date(formData.dr_dob).toISOString().split('T')[0] : ""}
+                onChange={handleChange}
+              />
+            </Form.Group>
             <Form.Group as={Col} controlId="contactNumber">
               <Form.Label>Contact Number:</Form.Label>
               <Form.Control
@@ -90,11 +108,8 @@ const UpdateInfoModal = ({ show, handleClose, doctorData, handleUpdate }) => {
               value={formData.dr_password || ""}
               onChange={handleChange}
             />
-
-
           </Form.Group>
-
-          <Form.Group controlId="password">
+          <Form.Group controlId="specialty">
             <Form.Label>Specialty:</Form.Label>
             <Form.Select
               name="dr_specialty"
@@ -103,13 +118,13 @@ const UpdateInfoModal = ({ show, handleClose, doctorData, handleUpdate }) => {
             >
               <option value="">Select a specialty</option>
               {specialties.map((specialty, index) => (
-                <option key={index} value={specialty}>
-                  {specialty}
+                <option key={index} value={specialty.name}>
+                  {specialty.name}
                 </option>
               ))}
             </Form.Select>
           </Form.Group>
-          <div style={{ textAlign: "center", marginTop: '20px' }}>
+          <div style={{ textAlign: "center", marginTop: "20px" }}>
             <Button variant="primary" type="submit">
               Update
             </Button>

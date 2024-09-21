@@ -4,11 +4,8 @@ import { useParams, Link } from "react-router-dom";
 import Table from 'react-bootstrap/Table';
 import { Container, Row, Col, Button, Pagination, Form } from 'react-bootstrap';
 import './Appointment.css';
-import MainInformation from "../patientinformation/MainInformation";
 
 const TodaysAppointment = ({ allAppointments }) => {
-  
-
   const [error, setError] = useState("");
   const [currentPage, setCurrentPage] = useState(1); // Current page state
   const [entriesPerPage, setEntriesPerPage] = useState(5); // Entries per page state
@@ -23,6 +20,20 @@ const TodaysAppointment = ({ allAppointments }) => {
   };
 
   const todayDate = getTodayDate();
+
+  // Function to update the appointment status
+  const updateAppointmentStatus = (appointmentID, newStatus) => {
+    axios.put(`http://localhost:8000/appointments/${appointmentID}/status`, { status: newStatus })
+      .then(() => {
+        // Handle the success response
+        window.alert('Appointment status updated to Ongoing');
+        window.location.reload(); // Reload the page after updating the status
+      })
+      .catch(err => {
+        console.log(err);
+        setError('Failed to update the appointment status.');
+      });
+  };
 
   // Filter today's appointments based on today's date
   const todaysAppointments = allAppointments.filter(appointment => {
@@ -91,40 +102,53 @@ const TodaysAppointment = ({ allAppointments }) => {
           </Col>
         </Row>
 
-        <Table striped bordered hover variant="blue">
+        <Table responsive striped  variant="light" className="mt-3">
           <thead>
             <tr>
-              {/* <th style={{ border: "1px solid #00000018" }}>Appointment ID</th> */}
-              <th style={{ border: "1px solid #00000018" }}>Patient Name</th>
-              <th style={{ border: "1px solid #00000018" }}>Date</th>
-              <th style={{ border: "1px solid #00000018" }}>Time</th>
-              <th style={{ border: "1px solid #00000018" }}>Reason</th>
-              <th style={{ border: "1px solid #00000018" }}>Status</th>
-              <th style={{ border: "1px solid #00000018" }}>Actions</th>
+              <th >Patient Name</th>
+              <th>Date</th>
+              <th>Time</th>
+              <th >Reason</th>
+              <th >Status</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
-            {currentAppointments.map(appointment => {
-              const patient = appointment.patient;
-              const patientName = `${patient.patient_firstName} ${patient.patient_middleInitial}. ${patient.patient_lastName}`;
-              return (
-                <tr key={appointment._id}>
-                  {/* <td>{appointment._id}</td> */}
-                  <td>{patientName}</td>
-                  <td>{new Date(appointment.date).toLocaleDateString()}</td>
-                  <td>{appointment.time}</td>
-                  <td>{appointment.reason}</td>
-                  <td>{appointment.status}</td>
-                  <td>
-                    {/* Actions like buttons or links go here */}
-                    {/* <Link to={`/information/${appointment.patient._id}/${did}/${appointment._id}`}>
-                      <Button variant="primary">Create Prescription</Button>
-                    </Link> */}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
+  {currentAppointments.map(appointment => {
+    const patient = appointment.patient;
+
+    // Ensure patient object exists before accessing its properties
+    const patientName = patient
+      ? `${patient.patient_firstName} ${patient.patient_middleInitial ? patient.patient_middleInitial + "." : ""} ${patient.patient_lastName}`
+      : "No Patient Info";  // Fallback if patient is undefined or null
+
+    return (
+      <tr key={appointment._id}>
+        <td>{patientName}</td>
+        <td>{new Date(appointment.date).toLocaleDateString()}</td>
+        <td>{appointment.time}</td>
+        <td>{appointment.reason}</td>
+        <td style={{textAlign:"center"}}>
+          <div className="d-flex justify-content-center">
+            <div className="scheduled-appointment">
+              {appointment.status}
+            </div>
+          </div>
+           
+        </td>
+        <td>
+          {/* Ongoing Button */}
+          <Link
+            style={{color: 'green'}}
+            onClick={() => updateAppointmentStatus(appointment._id, 'Ongoing')}
+          >
+            Ongoing
+          </Link>
+        </td>
+      </tr>
+    );
+  })}
+</tbody>
         </Table>
 
         {/* Display error if any */}

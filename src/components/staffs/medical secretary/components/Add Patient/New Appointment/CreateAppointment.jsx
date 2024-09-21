@@ -4,9 +4,8 @@ import axios from "axios";
 import Select from "react-select";
 import { useNavigate } from "react-router-dom";
 import CreateAppointmentModal from "./CreateAppointmentModal";
-import './Styles.css'
+import './Styles.css';
 import AppointmentModal from "../../../../../patient/doctorprofile/AppointmentModal";
-
 
 const CreateAppointment = () => {
   const navigate = useNavigate();
@@ -29,7 +28,6 @@ const CreateAppointment = () => {
       .get("http://localhost:8000/patient/api/allpatient")
       .then((res) => {
         console.log(res.data);
-        
         setPatients(res.data.thePatient);
       })
       .catch((err) => {
@@ -56,7 +54,7 @@ const CreateAppointment = () => {
           const filteredDoctors = response.data.theDoctor.filter(
             (doctor) =>
               doctor.dr_specialty &&
-              doctor.dr_specialty === selectedSpecialty.value
+              doctor.dr_specialty === selectedSpecialty?.value
           );
           setDoctors(filteredDoctors);
         })
@@ -85,7 +83,7 @@ const CreateAppointment = () => {
       value: patient._id,
       label: `${patient.patient_firstName} ${patient.patient_lastName}`,
     }));
-};
+  };
 
   const getDoctorOptions = () => {
     return doctors.map((doctor) => ({
@@ -105,67 +103,64 @@ const CreateAppointment = () => {
 
   return (
     <>
-
-      <Card className="app-box" >
+      <Card className="app-box">
         <Card.Header className="app-boxtitle">Create Appointment</Card.Header>
         <Card.Body>
-        <Form>
-              <Row className="mb-3">
-                <Form.Group as={Col} controlId="formPatient">
-                  <Form.Label>Select Patient</Form.Label>
-                  <Select
-                    options={getPatientOptions()}
-                    value={selectedPatient}
-                    onChange={setSelectedPatient}
-                    isClearable
-                    placeholder="Search for a patient..."
-                  />
-                </Form.Group>
-              </Row>
+          <Form>
+            <Row className="mb-3">
+              <Form.Group as={Col} controlId="formPatient">
+                <Form.Label>Select Patient</Form.Label>
+                <Select
+                  options={getPatientOptions()}
+                  value={selectedPatient}
+                  onChange={setSelectedPatient}
+                  isClearable
+                  placeholder="Search for a patient..."
+                />
+              </Form.Group>
+            </Row>
 
-              <Row className="mb-3">
-                <Form.Group as={Col} controlId="formSpecialty">
-                  <Form.Label>Filter by Specialty</Form.Label>
-                  <Select
-                    options={getSpecialtyOptions()}
-                    value={selectedSpecialty}
-                    onChange={(option) => setSelectedSpecialty(option)}
-                    isClearable
-                    placeholder="Select specialty..."
-                  />
-                </Form.Group>
-              </Row>
+            <Row className="mb-3">
+              <Form.Group as={Col} controlId="formSpecialty">
+                <Form.Label>Filter by Specialty</Form.Label>
+                <Select
+                  options={getSpecialtyOptions()}
+                  value={selectedSpecialty}
+                  onChange={(option) => setSelectedSpecialty(option)}
+                  isClearable
+                  placeholder="Select specialty..."
+                />
+              </Form.Group>
+            </Row>
 
-              <Row className="mb-3">
-                <Form.Group as={Col} controlId="formDoctor">
-                  <Form.Label>Select Doctor</Form.Label>
-                  <Select
-                    options={getDoctorOptions()}
-                    value={selectedDoctor}
-                    onChange={setSelectedDoctor}
-                    isClearable
-                    placeholder="Search for a doctor..."
-                  />
-                </Form.Group>
-              </Row>
+            <Row className="mb-3">
+              <Form.Group as={Col} controlId="formDoctor">
+                <Form.Label>Select Doctor</Form.Label>
+                <Select
+                  options={getDoctorOptions()}
+                  value={selectedDoctor}
+                  onChange={setSelectedDoctor}
+                  isClearable
+                  placeholder="Search for a doctor..."
+                />
+              </Form.Group>
+            </Row>
 
-              {selectedPatient && selectedDoctor && (
-                <Row className="mb-3">
-                  <Col>
-                    <Button
-                      variant="primary"
-                      onClick={() => setShowModal(true)}
-                    >
-                      Book Now
-                    </Button>
-                  </Col>
-                </Row>
-              )}
-            </Form>
+            {/* Show the button if a patient is selected, doctor is optional */}
+            {selectedPatient && (
+              <Row className="mb-3">
+                <Col>
+                  <Button variant="primary" onClick={() => setShowModal(true)}>
+                    Book Now
+                  </Button>
+                </Col>
+              </Row>
+            )}
+          </Form>
         </Card.Body>
       </Card>
-      
 
+      {/* Appointment Modal */}
       <AppointmentModal
         show={showModal}
         handleClose={() => setShowModal(false)}
@@ -173,9 +168,7 @@ const CreateAppointment = () => {
         did={selectedDoctor?.value}
         doctorName={selectedDoctor?.label}
       />
-
     </>
-    
   );
 };
 
