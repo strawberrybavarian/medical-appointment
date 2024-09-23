@@ -182,13 +182,13 @@ const TodaysAppointment = () => {
                 <td>
                   <div className="d-flex justify-content-center">
                     <Nav onSelect={(selectedKey) => alert(`selected ${selectedKey}`)}>
-                      <Nav.Item>
+                      {/* <Nav.Item>
                         <Nav.Link 
                           className="accept-link" 
                           onClick={() => updateAppointmentStatus(appointment._id, 'Scheduled')}>
                           Accept
                         </Nav.Link>
-                      </Nav.Item>
+                      </Nav.Item> */}
 
                       <Nav.Item>
                         <Nav.Link 

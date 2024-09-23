@@ -7,6 +7,54 @@ const Notification = require('../notifications/notifications_model')
 
 
 
+const assignAppointment = async (req, res) => {
+    try {
+      const { id } = req.params; // Appointment ID
+      const { doctor, date, time } = req.body;
+  
+      // Validate input
+      if (!doctor || !date || !time) {
+        return res.status(400).json({ message: 'Doctor, date, and time are required.' });
+      }
+  
+      // Find the appointment
+      const appointment = await Appointment.findById(id);
+      if (!appointment) {
+        return res.status(404).json({ message: 'Appointment not found.' });
+      }
+  
+      // Find the doctor and validate
+      const foundDoctor = await Doctors.findById(doctor);
+      if (!foundDoctor) {
+        return res.status(404).json({ message: 'Doctor not found.' });
+      }
+  
+      // Update the appointment details
+      appointment.doctor = doctor;
+      appointment.date = date;
+      appointment.time = time;
+      appointment.status = 'Pending';
+  
+      // Save the updated appointment
+      await appointment.save();
+  
+      // Add the appointment to the doctor's dr_appointments array if it's not already there
+      if (!foundDoctor.dr_appointments.includes(id)) {
+        foundDoctor.dr_appointments.push(id);
+        await foundDoctor.save(); // Save the updated doctor
+      }
+  
+      // Respond with success
+      return res.status(200).json({ message: 'Appointment details assigned successfully.', appointment });
+    } catch (error) {
+      console.error('Server error:', error);
+      return res.status(500).json({ message: 'Server error', error: error.message });
+    }
+  };
+
+
+
+
 const NewMedicalSecretaryignUp = (req, res) => {
     MedicalSecretary.create(req.body)
         .then((newMedicalSecretary) => {
@@ -151,7 +199,8 @@ module.exports = {
     getAllAppointments,
     ongoingAppointment,
     getPatientStats,
-    findMedSecById
+    findMedSecById,
+    assignAppointment
 
 
 };

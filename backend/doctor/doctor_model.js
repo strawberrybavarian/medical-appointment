@@ -145,7 +145,11 @@ const DoctorSchema = new Schema({
         }],
         achievements: [String], 
         researchInterests: [String] 
-    }
+    },
+    dr_services: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Service' // Reference to the services the doctor offers
+    }],
 }, { timestamps: true });
 
 // Define a method on DoctorSchema to generate QR code for two-factor authentication

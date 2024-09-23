@@ -21,4 +21,60 @@
   .carousel-caption h5, .carousel-caption p {
     color: white;
   }
+
+  .doctor-carousel-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  
+  .doctor-carousel {
+    display: flex;
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+    width: 80%;
+    padding: 20px 0;
+  }
+  
+  .cd-card {
+    flex: 0 0 auto; /* Ensure cards don't shrink */
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+  
+  .cd-card:hover {
+    transform: scale(1.05);
+  }
+  
+  .scroll-button {
+    min-width: 50px;
+  }
+
+  .scroll-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 50px;
+    min-height: 50px;
+    border-radius: 50%; /* Make the button circular */
+    padding: 0;
+
+  }
+  
+  .circle-button {
+    background-color: #f8f9fa; /* Optional: Change the background color */
+    border: 1px solid #ccc;
+    background-color: rgb(141, 140, 140);
+    box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2); /* Add some shadow */
+    transition: background-color 0.3s ease;
+  }
+  
+  .circle-button:hover {
+    transition: transform 0.2s;
+  }
+  
+  .bi-chevron-left, .bi-chevron-right {
+    font-size: 24px; /* Adjust the icon size */
+  }
+  
   

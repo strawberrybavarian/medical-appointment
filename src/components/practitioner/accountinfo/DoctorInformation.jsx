@@ -1,14 +1,15 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { useParams, useLocation } from "react-router-dom";
-import {Nav, Container} from 'react-bootstrap';
+import { Nav, Container } from 'react-bootstrap';
 
 import SidebarMenu from "../sidebar/SidebarMenu";
 import AccountInfo from "./AccountInfo";
 import DrTwoFactorAuth from "./DrTwoFactorAuth";
-import DoctorAvailability from "./DoctorAvailability"; // Import the new component
+import DoctorAvailability from "./DoctorAvailability"; 
 import DoctorNavbar from "../navbar/DoctorNavbar";
-// DoctorNavbar
+import DoctorManageServices from "./DoctorManageServices";  // Import the new component
+
 function DoctorInformation() {
     const location = useLocation();
     const { did } = location.state || {};
@@ -57,20 +58,17 @@ function DoctorInformation() {
                             <Nav.Item>
                                 <Nav.Link onClick={() => setActiveTab("DrTwoFactorAuth")}>Two Factor Authentication</Nav.Link>
                             </Nav.Item>
+                            <Nav.Item>
+                                <Nav.Link onClick={() => setActiveTab("services")}>Manage Services</Nav.Link> {/* Add the new tab */}
+                            </Nav.Item>
                         </Nav>
                     
                         {activeTab === 'info' && <AccountInfo did={did} />}
                         {activeTab === 'DrTwoFactorAuth' && <DrTwoFactorAuth setId={did} />}
                         {activeTab === 'availability' && <DoctorAvailability doctorId={did} />} 
+                        {activeTab === 'services' && <DoctorManageServices doctorId={did} />}  {/* Render the new component */}
                     
                     </Container>
-                    
-
-
-              
-                    
-              
-                
             </div>
         </div>
     );

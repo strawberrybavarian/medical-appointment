@@ -88,6 +88,12 @@ const SidebarAdmin = (props) => {
                     <div style={{ marginTop: '0.1rem', marginLeft: '30px' }}>Doctor</div>
                   </CDBSidebarMenuItem>
                 </Link>
+
+                <Link to={`/admin/account/staffs/${props.aid}`}>
+                  <CDBSidebarMenuItem className="font-style-poppins">
+                    <div style={{ marginTop: '0.1rem', marginLeft: '30px' }}>Staffs</div>
+                  </CDBSidebarMenuItem>
+                </Link>
               </div>
 
               <Link to={`/admin/sas/${props.aid}`}>

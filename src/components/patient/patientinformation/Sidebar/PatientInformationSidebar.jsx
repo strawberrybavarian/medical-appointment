@@ -6,7 +6,7 @@ import PatientInformation from "../PatientInformation/PatientInformation";
 import PatientPrescriptions from '../PatientPrescriptions/PatientPrescriptions';
 import TwoFactorAuth from '../TwoFactorAuth/TwoFactorAuth';
 import { Container } from "react-bootstrap";
-
+import PatientMedicalRecord from '../Medical Record/PatientMedicalRecord';
 function PatientInformationSidebar() {
     const navigate = useNavigate();
     const { pid } = useParams();
@@ -60,7 +60,7 @@ function PatientInformationSidebar() {
             
             <div className=" pis-container maincolor-container overflow-y-scroll" style={{paddingBottom: '95vh'}}>
                 {activeTab === 'profile' && <PatientInformation />}
-                {activeTab === 'records' && <div>My Medical Record Component</div>}
+                {activeTab === 'records' && <PatientMedicalRecord />}
                 {activeTab === 'prescriptions' && <PatientPrescriptions />}
                 {activeTab === 'twofactor' && <TwoFactorAuth />}
                 

@@ -3,6 +3,10 @@ const AdminCountControllerDoctor = require('./counting/admin_countcontroller')
 console.log('Admin Routes Connected')
 
 module.exports = app => {
+
+    app.get('/admin/api/staff/all', AdminController.getAllStaff);
+    app.put('/admin/api/staff/account-status/:id', AdminController.updateStaffAccountStatus);
+    
     app.post('/admin/api/signup', AdminController.NewAdminSignUp)
     app.get('/admin/api/alladmin', AdminController.findAllAdmin)
 

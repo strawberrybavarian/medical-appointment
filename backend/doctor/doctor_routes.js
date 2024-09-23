@@ -40,7 +40,7 @@ module.exports = app => {
 
   // Uploading Image
   app.post('/doctor/api/:id/updateimage', upload.single('image'), DoctorController.updateDoctorImage);
-
+  app.get('/doctor/:id', DoctorController.findOneDoctor);
   //Activity Status
   app.put('/doctor/api/:id/logout', DoctorController.offlineActivityStatus);
   app.put('/doctor/:id/status', DoctorController.updateDoctorStatus);
@@ -61,12 +61,7 @@ module.exports = app => {
   app.post('/doctor/verify-otp', DoctorController.verifyOTP);
   //Update Information Details
   app.put('/doctor/api/:id/updateDetails', DoctorController.updateDoctorDetails);
-  // For Post
-  // app.post('/doctor/api/addpost/:id', DoctorController.addNewPostById);
-  // app.get('/doctor/api/finduser/:id', DoctorController.findDoctorById);
-  // app.get('/doctor/api/post/getallpost/:id', DoctorController.getAllPostbyId);
-  // app.delete('/doctor/api/post/deletepost/:id/:index', DoctorController.findPostByIdDelete);
-  // app.put('/doctor/api/post/updatepost/:id/:index', DoctorController.updatePostAtIndex);
+
 
   // For Appointments
   app.put('/doctor/api/:uid/acceptpatient', DoctorController.acceptPatient)

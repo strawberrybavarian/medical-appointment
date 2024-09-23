@@ -1,4 +1,4 @@
-import { Carousel } from 'react-bootstrap';
+import { Carousel, Container } from 'react-bootstrap';
 import PatientNavBar from "../PatientNavBar/PatientNavBar";
 import Image1 from './images/Jeno.jpg';
 import Image2 from './images/Mark.jpg';
@@ -6,56 +6,53 @@ import Image3 from './images/Sohee.jpg';
 import './HomePagePatient.css';
 import DoctorSpecialty from './DoctorSpecialty';
 import { useParams } from 'react-router-dom';
+import DoctorCarousel from './DoctorCarousel';
+import { useEffect, useState } from 'react';
+import axios from 'axios';
+import { ip } from '../../../ContentExport';
+
 
 function HomePagePatient() {
 
  const { pid } = useParams();
  console.log(pid);
 
- return (
-   <>
-     <PatientNavBar />
+const [patient, setPatient] = useState(null);
+const [fullName, setFullName] = useState('');
 
-     <div className='hp-container'>
-       <Carousel data-bs-theme="dark" className='hp-carouselsize'>
-         <Carousel.Item>
-           <img
-             className="d-block w-100"
-             src={Image1}
-             alt="First slide"
-           />
-           <Carousel.Caption>
-             <h5>Miss Jade So - DRPH - Season 2</h5>
-             <p>You Better Work. Hun.</p>
-           </Carousel.Caption>
-         </Carousel.Item>
-         <Carousel.Item>
-           <img
-             className="d-block w-100"
-             src={Image2}
-             alt="Second slide"
-           />
-           <Carousel.Caption>
-             <h5>Nymphia Wind</h5>
-             <p>I love Bananas!.</p>
-           </Carousel.Caption>
-         </Carousel.Item>
-         <Carousel.Item>
-           <img
-             className="d-block w-100"
-             src={Image3}
-             alt="Third slide"
-           />
-           <Carousel.Caption>
-             <h5>Third slide label</h5>
-             <p>Praesent commodo cursus magna, vel scelerisque nisl consectetur.</p>
-           </Carousel.Caption>
-         </Carousel.Item>
-       </Carousel>
-     </div>
-     <DoctorSpecialty pid={pid} />
-   </>
- );
+useEffect(() => {
+  const fetchPatient = async () => {
+    try {
+      const response = await axios.get(`${ip.address}/patient/api/onepatient/${pid}`);
+      setPatient(response.data.thePatient);
+      const fullName = `${response.data.thePatient.patient_firstName} ${response.data.thePatient.patient_lastName}`;
+      setFullName(fullName);
+  
+    } catch (error) {
+      console.error('Error fetching patient data:', error);
+    }
+  };
+
+  fetchPatient();
+}, [pid]);
+
+ return (
+  <>
+    <PatientNavBar pid={pid} />
+    <Container fluid className='maincolor-container' style={{ overflowY: 'scroll', height: '100vh', paddingBottom: '80px', paddingTop: '1.5rem' }}>
+      
+      <Container className='d-flex mb-3'>
+        {/* <div>
+          <h1 style={{ lineHeight: '0.5' }}>Hello, {fullName}</h1>
+          <p style={{ lineHeight: '0' }}>Welcome to the homepage</p>
+        </div> */}
+       
+      </Container>
+      <DoctorCarousel pid={pid} />
+      <DoctorSpecialty pid={pid} />
+    </Container>
+  </>
+);
 }
 
 export default HomePagePatient;

@@ -84,7 +84,7 @@ function PendingAppointments({ appointments, setAppointments }) {
 
     return (
         <>
-            <div className='d-flex justify-content-center mainContainer'>
+            <div className='d-flex justify-content-center mainContainer maincolor-container'>
                 <Container>
                     {Object.keys(groupedAppointments).map((groupKey, index) => (
                         <React.Fragment key={index}>
@@ -92,7 +92,7 @@ function PendingAppointments({ appointments, setAppointments }) {
                                 <h4 className='font-gray'>{groupedAppointments[groupKey].month} {groupedAppointments[groupKey].year}</h4>
                             </div>
                             {groupedAppointments[groupKey].appointments.map((appointment, i) => {
-                                const { day, month, dayOfWeek, fullDate } = formatDate(appointment.date); // Format date
+                                const { day, month, dayOfWeek, fullDate } = formatDate(appointment.date); 
                                 const isAppointmentToday = isToday(fullDate);
                                 const dayStyle = {
                                     display: 'block',

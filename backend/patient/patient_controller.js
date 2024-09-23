@@ -180,6 +180,84 @@ const NewPatientSignUp = (req, res) => {
     });
 } 
 
+const updatePatientStatus = async (req, res) => {
+  try {
+      const { pid } = req.params;
+      const updatedStatus = req.body.accountStatus;
+
+      const patient = await Patient.findById(pid);
+      if (!patient) {
+          return res.status(404).json({ message: 'Patient not found' });
+      }
+
+      patient.accountStatus = updatedStatus;
+      await patient.save(); // Save triggers the pre-save hook for validation
+
+      res.json({ status: 'success', message: 'Account status updated successfully' });
+  } catch (error) {
+      res.status(400).json({ status: 'error', message: error.message });
+  }
+};
+
+
+
+
+const changePatientPassword = async (req, res) => {
+  const { pid } = req.params;
+  const { newPassword } = req.body;
+
+  try {
+    const patient = await Patient.findById(pid);
+
+    if (!patient) {
+      return res.status(404).json({ message: 'Patient not found' });
+    }
+
+    // Directly storing the new password without hashing
+    patient.patient_password = newPassword;
+    await patient.save();
+
+    res.json({ message: 'Password updated successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error updating password', error });
+  }
+};
+
+
+
+const updatePatientInfo = async (req, res) => {
+  try {
+      const { pid } = req.params;
+      const updatedInfo = req.body;
+
+      const patient = await Patient.findById(pid);
+      if (!patient) {
+          return res.status(404).json({ message: 'Patient not found' });
+      }
+
+      // Check if the last update was less than 30 days ago
+      const lastUpdate = new Date(patient.updatedAt);
+      const now = new Date();
+      const daysSinceLastUpdate = Math.floor((now - lastUpdate) / (1000 * 60 * 60 * 24));
+      if (daysSinceLastUpdate < 30) {
+          return res.status(400).json({ message: 'You can only update your information every 30 days.' });
+      }
+
+      // Update the patient information
+      patient.patient_firstName = updatedInfo.patient_firstName || patient.patient_firstName;
+      patient.patient_lastName = updatedInfo.patient_lastName || patient.patient_lastName;
+      patient.patient_middleInitial = updatedInfo.patient_middleInitial || patient.patient_middleInitial;
+      patient.patient_contactNumber = updatedInfo.patient_contactNumber || patient.patient_contactNumber;
+
+      await patient.save();
+      res.json({ success: true, message: 'Information updated successfully' });
+  } catch (error) {
+      res.status(500).json({ message: 'Error updating patient information', error });
+  }
+};
+
+
+
 const createUnregisteredPatient = async (req, res) => {
   const { patient_email, accountStatus, ...rest } = req.body;
 
@@ -251,6 +329,7 @@ const findPatientById = (req, res) => {
       path: 'immunizations',
       model: 'Immunization'
     })
+    .populate('patient_findings')
 
 
     .then((thePatient) => {
@@ -277,81 +356,9 @@ const findPatientByEmail = (req, res) => {
       });
 }
 
-// Array New Post
-const addNewPostById = (req, res) => {
-    Patient.findById({_id:req.params.id})
-      .then((Patient) => {
-        if (!Patient) {
-          res.json({ message: 'Patient not found' });
-        }
-        Patient.post.unshift(req.body.post);
-        return Patient.save();
-      })
-      .then((updatedPatient) => {
-        res.json({ updatedPatient, message: 'New post added successfully' });
-      })
-      .catch((error) => {
-        res.json({ message: 'Error adding post', error });
-      });
-  };
-  
-
-//find posts by id Array 
-const getAllPostbyId = (req, res) => {
-    Patient.findOne({ _id: req.params.id })
-      .then((Patient) => {
-        if (!Patient) {
-          res.json({ message: 'Patient not found' });
-        }
-          res.json({ posts: Patient.post }); 
-      })
-      .catch((err) => {
-        res.json({ message: 'Error retrieving posts', error: err });
-      });
-};
-
-//Deleting by Id Array Post
-const findPostByIdDelete = (req, res) => {
-  Patient.findById(req.params.uid)
-    .then((Patient) => {
-      if (!Patient) {
-        return res.json({ message: 'Patient not found' });
-      }
-        Patient.post.splice(req.params.index, 1); 
-        return Patient.save()
-          .then((updatedPatient) => {
-            res.json({ updatedPatient, message: 'Post deleted successfully' });
-          })
-          .catch((error) => {
-            res.json({ message: 'Error deleting post', error });
-          });
-
-    })
-    .catch((error) => {
-      res.json({ message: 'Error finding Patient', error });
-    });
-};
 
 
-const updatePostAtIndex = (req, res) => {
-  Patient.findById(req.params.id)
-    .then((Patient) => {
-      if (!Patient) {
-        return res.json({ message: 'Patient not found' });
-      }
-            Patient.post[req.params.index] = req.body.post; 
-            return Patient.save()
-          .then((updatedPatient) => {
-            res.json({ updatedPatient, message: 'Post updated successfully' });
-          })
-          .catch((error) => {
-            res.json({ message: 'Error updating post', error });
-          });
-    })
-    .catch((error) => {
-      res.json({ message: 'Error finding Patient', error });
-    });
-};
+
 
 
 
@@ -408,11 +415,10 @@ module.exports = {
     NewPatientSignUp,
     findAllPatient,
     findPatientByEmail,
-    addNewPostById,
-    getAllPostbyId,
-    findPostByIdDelete,
+    updatePatientInfo,
     findPatientById,
-    updatePostAtIndex,
+    updatePatientStatus,
+    changePatientPassword,
     cancelAppointment,
     setupTwoFactor,
     verifyTwoFactor,

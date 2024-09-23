@@ -13,7 +13,11 @@ module.exports = app => {
     //
     app.post(`/patient/api/unregistered`, PatientController.createUnregisteredPatient);
     
-    
+    app.put('/patient/api/update/:pid', PatientController.updatePatientStatus);
+    app.post('/patient/api/change-password/:pid', PatientController.changePatientPassword);
+    app.put('/patient/api/updateinfo/:pid', PatientController.updatePatientInfo);
+
+
     app.post('/patient/api/setup-2fa/:id', PatientController.setupTwoFactor);
     app.post('/patient/api/verify-2fa', PatientController.verifyTwoFactor);
 

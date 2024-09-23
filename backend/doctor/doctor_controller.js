@@ -234,18 +234,12 @@ const findOneDoctor = (req, res) => {
     const doctorId = req.params.id;
 
     Doctors.findById(doctorId)
+        .populate('dr_services')
+        .populate('dr_appointments') // Populate services offered by the doctor
         .then(doctor => {
             if (!doctor) {
                 return res.status(404).json({ message: 'Doctor not found' });
             }
-
-            // Optionally, update status here based on specific conditions, such as an explicit login action
-            // For example:
-            // if (req.query.updateStatus === 'true') {
-            //     doctor.activityStatus = 'Online';
-            //     doctor.lastActive = Date.now();
-            // }
-
             res.json({ doctor });
         })
         .catch(err => {
@@ -281,6 +275,7 @@ const updateDoctorImage = async (req, res) => {
 const findDoctorById = (req, res) => {
     Doctors.findOne({ _id: req.params.id })
         .populate('dr_posts')
+        .populate('dr_appointments')
         .then((theDoctor) => {
             res.json({ theDoctor });
         })

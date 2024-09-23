@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import './DoctorSpecialty.css';
 import OBGYNE from './images/ObstetricsAndGynecology.png';
 import PEDIATRICS from './images/Pedia.png';
-
+import { Container } from "react-bootstrap";
 function DoctorSpecialty({ pid, did }) {
     const [specialties, setSpecialties] = useState([]);
     const navigate = useNavigate();
@@ -25,8 +25,11 @@ function DoctorSpecialty({ pid, did }) {
     };
 
     const specialtyImages = {
+        "Family Medicine": OBGYNE,
+        "Pediatrics": PEDIATRICS,
         "Obstetrics and Gynecology": OBGYNE,
-        "Pediatrics": PEDIATRICS
+        "Hematology": PEDIATRICS,
+        "Urology": OBGYNE,
     };
 
     const getImage = (specialty) => {
@@ -34,8 +37,14 @@ function DoctorSpecialty({ pid, did }) {
     };
 
     return (
-      <div className="ds-main">
-        <div className="ds-container">
+        <>
+          
+ 
+        <Container>
+            <h4 style={{ marginLeft: '15px', marginTop: '2rem' }}>List of Specialties</h4>
+        </Container>
+        <Container className="ds-container">
+            
             {specialties.map((specialty, index) => (
                 <div
                     key={index}
@@ -43,15 +52,16 @@ function DoctorSpecialty({ pid, did }) {
                     onClick={() => handleSpecialtyClick(specialty)}
                 >
                     <div className="ds-imgcontainer">
-                        <img src={getImage(specialty)} alt={specialty} style={{ width: '50%', height: '50%' }} />
+                        <img src={getImage(specialty)} alt={specialty} style={{ width: '100%', height: '100%', objectFit:'cover' }} />
                     </div>
                     <div>
-                        <p>{specialty}</p>
+                        <p style={{fontWeight:'600', textAlign:'center'}}>{specialty}</p>
                     </div>
                 </div>
             ))}
-        </div>
-      </div>
+        </Container>
+ 
+      </>
     );
 }
 

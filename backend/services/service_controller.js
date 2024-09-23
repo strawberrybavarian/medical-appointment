@@ -101,6 +101,81 @@ const createService = async (req, res) => {
       res.status(500).json({ message: 'Server error', error: error.message });
     }
   };
+
+
+// doctor_controller.js
+
+const addServiceToDoctor = async (req, res) => {
+  try {
+      const { doctorId, serviceId } = req.params;
+
+      const doctor = await Doctors.findById(doctorId);
+      const service = await Service.findById(serviceId);
+
+      if (!doctor || !service) {
+          return res.status(404).json({ message: 'Doctor or Service not found' });
+      }
+
+      if (!doctor.dr_services.includes(serviceId)) {
+          doctor.dr_services.push(serviceId);
+          await doctor.save();
+      }
+
+      // Return the updated list of services
+      await doctor.populate('dr_services');
+
+      res.status(200).json({ dr_services: doctor.dr_services });
+  } catch (error) {
+      console.error('Error adding service to doctor:', error);
+      res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+
+  // Allow a doctor to stop offering a service
+  const removeServiceFromDoctor = async (req, res) => {
+    try {
+        const { doctorId, serviceId } = req.params;
+
+        const doctor = await Doctors.findById(doctorId);
+
+        if (!doctor) {
+            return res.status(404).json({ message: 'Doctor not found' });
+        }
+
+        doctor.dr_services = doctor.dr_services.filter(id => id.toString() !== serviceId);
+        await doctor.save();
+
+        // Return the updated list of services
+        await doctor.populate('dr_services');
+
+        res.status(200).json({ dr_services: doctor.dr_services });
+    } catch (error) {
+        console.error('Error removing service from doctor:', error);
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
+};
+
+
+const fetchDoctorServiceStatus = async (req, res) => {
+  const doctorId = req.params.doctorId;
+
+  try {
+      const doctor = await Doctors.findById(doctorId).populate('dr_services');
+      if (!doctor) {
+          return res.status(404).json({ message: 'Doctor not found' });
+      }
+
+      res.status(200).json({ dr_services: doctor.dr_services });
+  } catch (error) {
+      console.error('Error fetching services:', error);
+      res.status(500).json({ message: 'Error fetching services', error: error.message });
+  }
+};
+
+
+
+  
   
   // Export all the functions
   module.exports = {
@@ -109,4 +184,7 @@ const createService = async (req, res) => {
     getServiceById,
     updateService,
     deleteService,
+    removeServiceFromDoctor,
+    addServiceToDoctor,
+    fetchDoctorServiceStatus
   };

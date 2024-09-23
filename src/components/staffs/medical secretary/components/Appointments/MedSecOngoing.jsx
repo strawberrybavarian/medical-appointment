@@ -112,7 +112,7 @@ function MedSecOngoing({ allAppointments, setAllAppointments }) {
             </Row>
           </Container>
 
-          <Table striped bordered hover variant="light">
+          <Table responsive striped variant="light" className="mt-3">
             <thead>
               <tr>
                 <th>Patient Name</th>

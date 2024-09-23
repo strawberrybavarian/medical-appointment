@@ -1,14 +1,30 @@
 .dp-main {
-  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-top: 20px;
 
 }
 
 .dp-containermain {
   padding: 30px;
-  border-radius: 30px;
+  border-radius: 10px;
   margin-bottom: 10px;
   margin-top: 10px;
-  box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.26);
+ 
+}
+
+.announcement-container{
+  background-color: #ffffff;
+  border-radius: 10px;
+  padding: 1rem;
+}
+
+.link-collapse{
+  color: black;
+  text-decoration: none;
+  font-weight: 800;
 }
 
 .am-header {
@@ -25,13 +41,24 @@
 
 .dp-container1 {
   display: flex;
+  
   align-items: center;
+  border-radius: 10px;
+  padding: 1.5rem
+}
+
+.dp-container11 {
+
+  
+  border-radius: 10px;
+  padding: 1.5rem
 }
 
 .dp-container2 {
-  margin-left: 10px;
-  line-height: 0.2;
-  width: 100%;
+  display: flex;
+  flex-direction: column;
+  line-height: 0.5;
+  margin-left: 20px;
 }
 
 .dp-container3 {
@@ -41,10 +68,10 @@
 }
 
 .dp-image {
-  width: 120px;
-  height: 120px;
+  width: 70px;
+  height: 70px;
   border-radius: 100px;
-  border: 4px solid rgb(112, 209, 226);
+  
   object-fit: cover;
 
 }
@@ -213,3 +240,131 @@
   color: #fff;
 }
 
+/* DoctorProfile.css */
+
+/* Animation for the form sliding in */
+/* DoctorProfile.css */
+
+/* Hidden by default */
+/* DoctorProfile.css */
+
+/* Hidden state for the form */
+.appointment-form-container {
+ 
+
+
+}
+
+/* When the form is shown, set the width and opacity */
+.animate-form {
+  width: 100%; /* Adjust the width of the column */
+  opacity: 1;
+  padding: 20px;
+}
+
+.form-appointment{
+  border-radius: 10px;
+  border: solid rgb(207, 207, 207) 1px;
+
+}
+.ticket-container {
+  max-width: 800px;
+  margin: 0 auto;
+  background-color: #e9e7e7;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+ 
+}
+
+.ticket-header {
+  font-size: 24px;
+  text-align: center;
+  margin-bottom: 20px;
+  text-transform: uppercase;
+}
+
+.ticket-item {
+  display: flex;
+  border: 1px solid #fcfafa;
+
+  position: relative;
+}
+
+.ticket-left {
+  width: 25%;
+  text-align: center;
+  position: relative;
+  padding: 40px 10px;
+  background-color: #f7f7f7;
+  border-right: 2px dotted #999;
+}
+
+.ticket-right {
+  width: 75%;
+  padding: 20px;
+  background-color: #f7f7f7;
+}
+
+.ticket-num {
+  font-size: 48px;
+  font-weight: bold;
+  color: #333;
+}
+
+.ticket-day {
+  font-size: 24px;
+  color: #777;
+}
+
+.ticket-up-border, .ticket-down-border {
+  width: 20px;
+  height: 20px;
+  background-color: #e9e7e7;
+  border-radius: 50%;
+  position: absolute;
+  
+}
+
+.ticket-up-border {
+  top: -10px;
+  right: -10px;
+}
+
+.ticket-down-border {
+  bottom: -10px;
+  right: -10px;
+}
+
+.ticket-title {
+  font-size: 28px;
+  margin-bottom: 10px;
+  color: #111;
+}
+
+.ticket-event {
+  font-size: 18px;
+  color: #555;
+}
+
+.ticket-sce, .ticket-loc {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.ticket-icon {
+  font-size: 20px;
+  color: #888;
+  margin-right: 10px;
+}
+
+.fix {
+  clear: both;
+}
+
+.profile-image{
+  width: 50px;
+  height: 50px;
+  border-radius: 100px;
+}

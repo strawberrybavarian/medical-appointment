@@ -169,6 +169,7 @@
 .pending-appointment{
   background-color: #ffc107;
   color: white;
+  width: 100px;
   border-radius: 12px;
 }
 

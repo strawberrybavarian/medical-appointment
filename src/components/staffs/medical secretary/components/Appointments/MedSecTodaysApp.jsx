@@ -158,7 +158,7 @@ function MedSecTodaysApp({ allAppointments, setAllAppointments }) {
         </Row>
       </Container>
 
-          <Table striped bordered hover variant="light">
+          <Table responsive striped variant="light" className="mt-3">
             <thead>
               <tr>
                 <th>Patient Name</th>
@@ -188,7 +188,14 @@ function MedSecTodaysApp({ allAppointments, setAllAppointments }) {
                     <td>{new Date(appointment.date).toLocaleDateString()}</td>
                     <td>{appointment.time}</td>
                     <td>{appointment.reason}</td>
-                    <td>{appointment.status}</td>
+                    <td>
+                    <div className="d-flex justify-content-center">
+                      <div className="scheduled-appointment">
+                            {appointment.status}
+                      </div>
+                      </div>
+
+                    </td>
                     <td>
                       <Button variant="success" onClick={() => ongoingAppointment(appointment._id)}>Ongoing</Button>
                       <Link variant="warning" onClick={() => handleReschedule(appointment)}>Reschedule</Link>

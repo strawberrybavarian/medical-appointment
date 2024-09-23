@@ -57,7 +57,7 @@ import PatientManagement from './components/staffs/admin/management/account/Pati
 import NewsDetailPage from './components/staffs/news/NewsDetailPage';
 import AdminAppointmentMain from './components/staffs/admin/appointment/AdminAppointmentMain';
 import SasMain from './components/staffs/admin/specialtyandservices/SasMain';
-
+import StaffsManagement from './components/staffs/admin/management/account/StaffsManagement';
 
 
 function App() {
@@ -86,7 +86,7 @@ function App() {
           <Route path={"/doctorprofile/:pid/:did"} element={<DoctorProfile />}/>
           <Route path={"/myappointment/:pid"} element={<MyAppointment />}/>
           <Route path={"/accinfo/:pid"} element={<MainPatientInformation />}/>
-          <Route path={"/appointment/:pid/:did"} element={<AppointmentForm />} />
+          {/* <Route path={"/appointment/:pid/:did"} element={<AppointmentForm />} /> */}
         {/* Staff Login */}
           <Route path={"/staffs"} element={<StaffLogIn />}/>
 
@@ -105,6 +105,7 @@ function App() {
           <Route path={"/admin/dashboard/patient/:aid"} element={<PatientMain />}/>
           <Route path={"/admin/dashboard/doctor/:aid"} element={<DoctorMain />}/>
           <Route path={"/admin/account/doctor/:aid"} element={<DoctorManagement />}/>
+          <Route path={"/admin/account/staffs/:aid"} element={<StaffsManagement />}/>
           <Route path={"/admin/account/patient/:aid"} element={<PatientManagement />}/>
           <Route path={"/admin/appointments/:aid"} element={<AdminAppointmentMain />}/>
           <Route path={"/admin/sas/:aid"} element={<SasMain />}/>

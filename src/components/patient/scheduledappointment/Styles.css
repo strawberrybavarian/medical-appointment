@@ -1,0 +1,103 @@
+.horizontal-doctor-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .horizontal-doctor-list {
+    display: flex;
+    overflow-x: auto; /* Horizontal scrolling */
+    scroll-behavior: smooth;
+    width: 80%; /* Adjust width based on your layout */
+    padding: 20px 0;
+  }
+  
+  .cd-card {
+    flex: 0 0 auto; /* Prevent cards from shrinking */
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+  
+  .cd-card:hover {
+    transform: scale(1.05);
+  }
+  
+  .scroll-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 50px;
+    min-height: 50px;
+    border-radius: 50%; /* Circular button */
+    padding: 0;
+  }
+  
+  .circle-button {
+    background-color: #f8f9fa; /* Optional: Adjust background */
+    border: 1px solid #ccc;
+    box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2); /* Add shadow */
+    transition: background-color 0.3s ease;
+  }
+  
+  .circle-button:hover {
+    background-color: #e2e6ea; /* Darker on hover */
+  }
+  
+  .bi-chevron-left, .bi-chevron-right {
+    font-size: 24px; /* Adjust icon size */
+  }
+
+
+  .maincolor-container {
+    background-color: #f8f9fa;
+}
+
+.scrollable-doctor-list {
+    max-height: 500px; /* Set a max height */
+    overflow-y: auto;  /* Enable vertical scrolling */
+}
+
+.scrollable-appointments {
+    max-height: 500px; /* Set a max height */
+    overflow-y: auto;  /* Enable vertical scrolling */
+    padding: 20px 0;   /* Add padding to make it look neat */
+}
+
+.app-navtabs {
+    margin-bottom: 15px; /* Adjust spacing below the tabs */
+}
+
+.cd-card {
+    margin-bottom: 15px;
+}
+
+/* Custom scrollbar styling */
+.vertical-doctor-list {
+  scrollbar-width: thin; /* For Firefox */
+  scrollbar-color: transparent transparent; /* Default hidden scrollbar */
+}
+
+.vertical-doctor-list::-webkit-scrollbar {
+  width: 0px; /* For Chrome, Safari, and Opera, hidden by default */
+  background-color: transparent;
+}
+
+/* Show scrollbar when hovering */
+.vertical-doctor-list:hover {
+  scrollbar-width: thin; /* Firefox */
+  scrollbar-color: rgba(0, 0, 0, 0.2) rgba(0, 0, 0, 0.1);
+}
+
+.vertical-doctor-list:hover::-webkit-scrollbar {
+  width: 8px; /* Show scrollbar on hover */
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.vertical-doctor-list:hover::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.4); /* Thumb color */
+  border-radius: 4px;
+}
+
+.vertical-doctor-list:hover::-webkit-scrollbar-track {
+  background-color: rgba(0, 0, 0, 0.1); /* Track color */
+}
