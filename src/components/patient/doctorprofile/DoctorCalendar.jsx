@@ -6,11 +6,12 @@ import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import { Card } from 'react-bootstrap';
 import { ip } from '../../../ContentExport';
-
-const DoctorCalendar = ({ did }) => {
+import { useLocation } from 'react-router-dom';
+const DoctorCalendar = ({did}) => {
   const [doctorAppointments, setDoctorAppointments] = useState([]);
   const calendarRef = useRef(null);
-
+  // const location = useLocation();
+  // const { pid, did } = location.state || {}; // Destructure pid and did from state
   useEffect(() => {
     // Fetch the doctor's appointments
     axios

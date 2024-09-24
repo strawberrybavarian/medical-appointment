@@ -6,12 +6,19 @@ import './ChooseDoctor.css';
 import PatientNavBar from "../PatientNavBar/PatientNavBar";
 import { usePatient } from "../PatientContext";
 const defaultImage = "images/014ef2f860e8e56b27d4a3267e0a193a.jpg";
-
 function ChooseDoctor() {
     const [doctors, setDoctors] = useState([]);
     const { patient } = usePatient(); // Get patient from context
-    const navigate = useNavigate();
 
+    const { setDoctorId } = usePatient(); // Get the function to set doctorId in context
+    const navigate = useNavigate();
+    
+    console.log('choose doctor',setDoctorId);
+
+    const handleDoctorClick = (did) => {
+      setDoctorId(did); // Store the selected doctor ID in context
+      navigate('/doctorprofile'); // Navigate without exposing doctor ID in URL
+    };
     // Fetch all the doctors when the component loads
     useEffect(() => {
         axios.get(`http://localhost:8000/doctor/api/alldoctor`)
@@ -23,10 +30,7 @@ function ChooseDoctor() {
             });
     }, []);
 
-    const handleDoctorClick = (did) => {
-
-        navigate('/doctorprofile', { state: { pid: patient._id, did } });
-    };
+  
 
     const timeSinceLastActive = (lastActive) => {
         const now = new Date();

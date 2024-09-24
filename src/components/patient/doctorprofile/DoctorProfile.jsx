@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link, useLocation, useParams } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Container, Row, Col, Collapse } from 'react-bootstrap';
 import axios from "axios";
 import PatientNavBar from "../PatientNavBar/PatientNavBar";
@@ -9,24 +9,24 @@ import AppointmentForm from './AppointmentForm';
 import './DoctorProfile.css';
 import DoctorAnnouncements from "./DoctorAnnouncements";
 import DoctorCalendar from "./DoctorCalendar";
+import { usePatient } from "../PatientContext";
+
 function DoctorProfile() {
-        const [theDoctor, setTheDoctor] = useState({});
-        const [theImage, setTheImage] = useState("");
-        const [FullName, setFullName] = useState("");
-        const [thePost, setThePost] = useState([]);
+    const [theDoctor, setTheDoctor] = useState(null); // Initialize as null
+    const [theImage, setTheImage] = useState("");
+    const [FullName, setFullName] = useState("");
+    const [thePost, setThePost] = useState([]);
 
-        // Separate states for each collapsible section
-        const [openProfile, setOpenProfile] = useState(false); 
-        const [openAnnouncements, setOpenAnnouncements] = useState(false);
-        const [openCalendar, setOpenCalendar] = useState(false);
+    const [openProfile, setOpenProfile] = useState(false); 
+    const [openAnnouncements, setOpenAnnouncements] = useState(false);
+    const [openCalendar, setOpenCalendar] = useState(false);
 
-        const location = useLocation();
-        const { pid, did } = location.state || {}; // Destructure pid and did from state
-        const defaultImage = "images/014ef2f860e8e56b27d4a3267e0a193a.jpg";
+    const { doctorId, patient } = usePatient(); // Get doctorId and patient from context
 
-        useEffect(() => {
-            axios
-                .get(`${ip.address}/doctor/api/finduser/${did}`)
+    // Ensure we only attempt to fetch data if doctorId is present
+    useEffect(() => {
+        if (doctorId) {
+            axios.get(`${ip.address}/doctor/api/finduser/${doctorId}`)
                 .then((res) => {
                     const doctor = res.data.theDoctor;
                     setTheDoctor(doctor);
@@ -34,29 +34,34 @@ function DoctorProfile() {
                     const formattedName = `${doctor.dr_firstName} ${doctor.dr_middleInitial ? doctor.dr_middleInitial + '.' : ''} ${doctor.dr_lastName}`;
                     setFullName(formattedName);
 
-                    setTheImage(doctor.dr_image || defaultImage);
+                    setTheImage(doctor.dr_image || "images/014ef2f860e8e56b27d4a3267e0a193a.jpg");
                 })
                 .catch((err) => {
                     console.log(err);
                 });
-        }, [did]);
+        }
+    }, [doctorId]); // Call useEffect unconditionally, logic inside only executes if doctorId is present
 
-        useEffect(() => {
-            axios
-                .get(`${ip.address}/doctor/api/post/getallpost/${did}`)
+    // Fetch doctor posts if doctorId is present
+    useEffect(() => {
+        if (doctorId) {
+            axios.get(`${ip.address}/doctor/api/post/getallpost/${doctorId}`)
                 .then((res) => {
                     setThePost(res.data.posts);
                 })
                 .catch((err) => {
                     console.log(err);
                 });
-        }, [did]);
+        }
+    }, [doctorId]);
 
-        // if (!theDoctor || Object.keys(theDoctor).length === 0) {
-        //     return <p>Loading...</p>; 
-        // }
+    // If doctorId is not available, return null or redirect
+    if (!doctorId) {
+        return <p>Please select a doctor.</p>;
+    }
 
-    return (
+    // Only render the component when theDoctor has been fetched
+    return theDoctor ? (
         <>
             <PatientNavBar />
             <Container fluid className="dp-containermain maincolor-container p-5" style={{ overflowY: 'auto', maxHeight: 'calc(100vh - 96px)' }}>
@@ -71,7 +76,7 @@ function DoctorProfile() {
                         </Container>
 
                         <Container className="p-3 shadow-sm white-background dp-container11 mt-3">
-                            <DoctorWeeklySchedule did={did} />
+                            <DoctorWeeklySchedule did={doctorId} />
                         </Container>
 
                         {/* Doctor Profile Section */}
@@ -151,7 +156,7 @@ function DoctorProfile() {
 
                             <Collapse in={openCalendar}>
                                 <div id="calendar-collapse">
-                                    <DoctorCalendar did={did} />
+                                    <DoctorCalendar did={doctorId} />
                                 </div>
                             </Collapse>
                         </Container>
@@ -159,13 +164,13 @@ function DoctorProfile() {
 
                     <Col md={6}>
                         <Container className="shadow-sm white-background dp-container1">
-                            <AppointmentForm did={did} pid={pid}/>
+                            <AppointmentForm did={doctorId} pid={patient._id}/>
                         </Container>
                     </Col>
                 </Row>
             </Container>
         </>
-    );
+    ) : null; // Don't render anything until `theDoctor` is fetched
 }
 
 export default DoctorProfile;
