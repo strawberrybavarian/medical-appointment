@@ -83,7 +83,7 @@ const LogInUser = () => {
                 // Validate patient password
                 if (user.patient_password === password) {
                     window.alert("Successfully logged in");
-                    navigate(`/homepage/${userId}`,  { state: { pid: userId } }); // Navigate to patient's homepage
+                    navigate(`/homepage`,  { state: { pid: userId } }); // Navigate to patient's homepage
                 } else {
                     window.alert("Invalid email or password. Please try again.");
                 }

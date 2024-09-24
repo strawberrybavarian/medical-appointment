@@ -80,7 +80,7 @@ function App() {
           <Route path={"/account"} element={<DoctorInformation />}/>
         
         {/* Patient Routes */}
-          <Route path={"/homepage/:pid"} element={<HomePagePatient />}/>
+          <Route path={"/homepage"} element={<HomePagePatient />}/>
           <Route path={"/choosedoctor/:pid"} element={<ChooseDoctor />}/>
           <Route path={"/:specialty/choosedoctor/:pid"} element={<ChooseDoctorSpecialization />} />
           <Route path={"/doctorprofile/:pid/:did"} element={<DoctorProfile />}/>

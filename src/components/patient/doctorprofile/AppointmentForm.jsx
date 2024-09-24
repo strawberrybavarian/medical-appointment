@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Container, Row, Col, Button, Form } from "react-bootstrap";
+import { Container, Row, Col, Button, Form, Alert } from "react-bootstrap";
 import axios from "axios";
 import { PassFill, CheckAll } from "react-bootstrap-icons";
 import { Helmet } from "react-helmet";
-
 function AppointmentForm() {
   const navigate = useNavigate();
   const { pid, did } = useParams();
@@ -224,7 +223,7 @@ function AppointmentForm() {
               <Row>
                 <Col>
                 <Form.Group as={Col} className="mb-3">
-                  <Form.Label>Date</Form.Label>
+                  <Form.Label style={{fontWeight:'600'}} >Date</Form.Label>
                   <Form.Control
                     type="date"
                     placeholder="Enter Date"
@@ -241,8 +240,8 @@ function AppointmentForm() {
 
               {availableTimes.length > 0 ? (
                 <Row>
-                  <Form.Group as={Col} className="mb-3">
-                    <Form.Label>Time</Form.Label>
+                  <Form.Group as={Col} className="mb-5 ">
+                    <Form.Label style={{fontWeight:'600'}} className="m-0 ">Time</Form.Label>
                     <center>
                       {availableTimes.map((timeSlot, index) => (
                         <Button
@@ -264,10 +263,15 @@ function AppointmentForm() {
               ) : (
                 <Row>
                   <Form.Group as={Col} className="mb-3">
-                    <Form.Label>Time</Form.Label>
-                    <center>
-                      <h5>The doctor has no available appointments for this day.</h5>
-                    </center>
+                    <Form.Label style={{fontWeight:'600'}}>Time</Form.Label>
+                    <Alert>
+                   
+                        <h6 className="m-0">The doctor has no available appointments for this day.</h6>
+                      
+                    </Alert>
+                      
+              
+                  
                   </Form.Group>
                 </Row>
               )}
@@ -277,7 +281,7 @@ function AppointmentForm() {
               {/* Add doctor's services as checkboxes */}
               <Row>
                 <Form.Group as={Col} className="mb-3">
-                  <Form.Label>Select Services: </Form.Label>
+                  <Form.Label style={{fontWeight:'600'}}>Select Services: </Form.Label>
                   <div>
                     {doctorServices.map((service) => (
                       <Form.Check
@@ -294,7 +298,7 @@ function AppointmentForm() {
 
                
                 <Form.Group as={Col} className="mb-3">
-                  <Form.Label>Primary Concern</Form.Label>
+                  <Form.Label style={{fontWeight:'600'}}>Primary Concern</Form.Label>
                   <Form.Control
                     as="textarea"
                     placeholder="Enter Reason"
@@ -375,9 +379,12 @@ function AppointmentForm() {
             </Button>
           )}
           {step < 2 && (
-            <Button variant="primary" onClick={handleNextStep}>
-              Next
-            </Button>
+            <div className="d-flex w-100 justify-content-end">
+          <Button variant="primary" onClick={handleNextStep}>
+                        Next
+                      </Button>
+            </div>
+           
           )}
           {step === 2 && (
             <Button variant="success" onClick={createAppointment}>

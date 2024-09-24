@@ -1,13 +1,27 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { useNavigate, useParams } from "react-router-dom";
 import { Container, Navbar, Nav, NavDropdown } from 'react-bootstrap';
 import {  ChevronDown } from 'react-bootstrap-icons';
-import { image } from '../../../ContentExport';
+import { image, ip } from '../../../ContentExport';
 import './Styles.css'
-function DoctorNavbar({doctor_image}) {
+import axios from 'axios';
+function DoctorNavbar({doctor_image, did}) {
+    console.log(did);
     const defaultImage = "images/014ef2f860e8e56b27d4a3267e0a193a.jpg";
+    const [fullName, setFullName] = useState("");   
     const navigate = useNavigate();
     const {msid} = useParams();
+
+    useEffect(()=> {
+        axios.get(`${ip.address}/doctor/one/${did}`)
+        .then((res) => {
+            const name = res.data.doctor.dr_firstName + " " + res.data.doctor.dr_middleInitial + ". " + res.data.doctor.dr_lastName;
+            setFullName(name);
+        }).catch((err) => {
+            console.log(err);
+        })
+    }, [])
+
 
     const onNavigateAppoinments = () => {
         navigate(`/medsec/${msid}`)
@@ -43,23 +57,35 @@ function DoctorNavbar({doctor_image}) {
                             
                         </Nav>
 
-                        <Nav>
-                            <NavDropdown title={<span>
-                                <img
-                                src={doctor_image ? `http://localhost:8000/${doctor_image}` : defaultImage}
-                                alt="Doctor"
-                                style={{
-                                    width: "35px",
-                                    height: "35px",
-                                    borderRadius: "9999px",
-                                    objectFit: "cover",
-                                    marginRight: '1rem',
-                                    flexShrink: 0,
-                                }}
-                                />
-                                Account <ChevronDown /></span>} id="basic-nav-dropdown" className="pnb-nav-link1">
-                                
-                                <NavDropdown.Item className="pnb-nav-link" onClick={onButtonContainer1Click}>Logout</NavDropdown.Item>
+
+
+                        <Nav className="align-items-center">
+                            {/* Profile section with image and two-paragraph text */}
+                            <NavDropdown
+                                title={
+                                    <div className="d-flex align-items-center justify-content-end ">
+                                        
+                                        <div className="ms-2 ">
+                                      
+                                                <p className="m-0" style={{ fontSize: '14px', fontWeight: 'bold' }}>{fullName}</p>
+                                                <p  className="m-0" style={{ fontSize: '12px', color: 'gray', textAlign: 'end' }}>Doctor</p>
+                                           
+                                            
+                                        </div>
+                                        <img
+                                            src={ doctor_image ? `http://localhost:8000/${doctor_image}` : defaultImage}
+                                            alt="Profile"
+                                            className="profile-image ms-3"
+                                            style={{objectFit: 'cover'}}
+                                        />
+                                    </div>
+                                }
+                                id="basic-nav-dropdown"
+                                className="pnb-nav-link1"
+                            >   <NavDropdown.Item className="pnb-nav-link" onClick={onButtonContainer1Click}>Logout</NavDropdown.Item>
+                                {/* <NavDropdown.Item as={Link} to={`/accinfo/${pid}`}>Account Information</NavDropdown.Item>
+                                <NavDropdown.Divider />
+                                <NavDropdown.Item className="pnb-nav-link" onClick={onButtonContainer1Click}>Logout</NavDropdown.Item> */}
                             </NavDropdown>
                         </Nav>
                         

@@ -6,9 +6,9 @@ import axios from 'axios';
 import './PatientNavBar.css';
 
 import { image, ip } from '../../../ContentExport';
-function PatientNavBar() {
+function PatientNavBar({pid}) {
     const navigate = useNavigate();
-    const { pid } = useParams();
+
     const [showNotifications, setShowNotifications] = useState(false);
     const [notifications, setNotifications] = useState([]);
     const [itemsToShow, setItemsToShow] = useState(3);
@@ -49,7 +49,7 @@ function PatientNavBar() {
     }, [pid]);
 
     const onClickHomepage = () => {
-        navigate(`/homepage/${pid}`);
+        navigate(`/homepage`);
     };
 
     const onButtonContainerClick = () => {
@@ -80,7 +80,7 @@ function PatientNavBar() {
         <>
             <Navbar expand="md" className="pnb-navbar">
                 <Container>
-                    <Link to={`/homepage/${pid}`}>
+                    <Link to={`/homepage}`}>
                         <img className="molino-logo" src={image.logo} alt="Logo" />
                     </Link>
                     <div className='msn-container'>
@@ -135,6 +135,7 @@ function PatientNavBar() {
                                             src={patientInfo && patientInfo.image ? `http://localhost:8000/${patientInfo.image}` : defaultImage}
                                             alt="Profile"
                                             className="profile-image ms-3"
+                                            s
                                         />
                                     </div>
                                 }

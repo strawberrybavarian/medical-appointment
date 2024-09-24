@@ -5,7 +5,7 @@ import Image2 from './images/Mark.jpg';
 import Image3 from './images/Sohee.jpg';
 import './HomePagePatient.css';
 import DoctorSpecialty from './DoctorSpecialty';
-import { useParams } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 import DoctorCarousel from './DoctorCarousel';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
@@ -13,8 +13,9 @@ import { ip } from '../../../ContentExport';
 
 
 function HomePagePatient() {
-
- const { pid } = useParams();
+  const location = useLocation();
+  const {pid} = location.state || {};
+//  const { pid } = useParams();
  console.log(pid);
 
 const [patient, setPatient] = useState(null);
