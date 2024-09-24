@@ -77,6 +77,24 @@ const createAppointment = async (req, res) => {
   }
 };
 
+const getAppointmentById = async (req, res) => {
+  try {
+    const appointmentId = req.params.id;
+
+    const appointment = await Appointment.findById(appointmentId)
+      .populate('patient')
+      .populate('doctor');
+
+    if (!appointment) {
+      return res.status(404).json({ message: 'Appointment not found' });
+    }
+
+    res.status(200).json(appointment);
+  } catch (error) {
+    console.error('Error fetching appointment:', error);
+    res.status(500).json({ message: `Failed to fetch appointment: ${error.message}` });
+  }
+};
 
 const updateAppointmentStatus = async (req, res) => {
   try {
@@ -111,5 +129,6 @@ const updateAppointmentStatus = async (req, res) => {
 module.exports = {
   createAppointment,
   updateAppointmentStatus,
+  getAppointmentById
 
 };

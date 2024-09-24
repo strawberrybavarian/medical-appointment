@@ -5,6 +5,7 @@ import { Row, Form, Col, Button, Container } from 'react-bootstrap';
 import './LogIn.css';
 import NavigationalBar from '../landpage/navbar';
 import { ip } from '../../ContentExport';
+import { usePatient } from '../patient/PatientContext'; // Import the context hook
 
 const LogInUser = () => {
     const navigate = useNavigate();
@@ -13,15 +14,15 @@ const LogInUser = () => {
     const [users, setUsers] = useState([]);
     const [userRole, setUserRole] = useState("Patient");
 
+    const { setPatient } = usePatient(); // Use the context
+
     useEffect(() => {
         const fetchData = async () => {
             try {
                 let response;
                 if (userRole === "Patient") {
-                    // Fetch all patient data
                     response = await axios.get(`${ip.address}/patient/api/allpatient`);
                 } else if (userRole === "Practitioner") {
-                    // Fetch all doctor data
                     response = await axios.get(`${ip.address}/doctor/api/alldoctor`);
                 }
 
@@ -40,7 +41,6 @@ const LogInUser = () => {
     const loginuser = async (e) => {
         e.preventDefault();
 
-        // Find user based on email, depending on the selected role
         const user = users.find(user => {
             if (userRole === "Patient") {
                 return user.patient_email === email;
@@ -51,39 +51,32 @@ const LogInUser = () => {
         });
 
         if (user) {
-            // Practitioner login flow
             if (userRole === "Practitioner") {
-                // Check if account is still under review
                 if (user.accountStatus === "Review") {
                     window.alert("Your account is under review and you cannot log in at this time.");
                     return;
                 }
 
-                // Validate practitioner password
                 if (user.dr_password !== password) {
                     window.alert("Invalid email or password. Please try again.");
                     return;
                 }
 
-                // Update practitioner status to 'Online'
                 const userId = user._id;
                 try {
                     await axios.put(`${ip.address}/doctor/${userId}/status`, { status: 'Online' });
-                    console.log('Doctor status updated to Online.');
                 } catch (err) {
                     console.error('Error updating doctor status:', err);
                 }
 
                 window.alert("Successfully logged in");
                 navigate("/dashboard", { state: { did: userId } });
-
-            // Patient login flow
             } else if (userRole === "Patient") {
                 const userId = user._id;
-                // Validate patient password
                 if (user.patient_password === password) {
+                    setPatient(user); // Store patient data in context
                     window.alert("Successfully logged in");
-                    navigate(`/homepage`,  { state: { pid: userId } }); // Navigate to patient's homepage
+                    navigate(`/homepage`);
                 } else {
                     window.alert("Invalid email or password. Please try again.");
                 }

@@ -9,12 +9,14 @@ import CompleteAppointment from "./CompleteAppointment";
 import PendingAppointments from "./PendingAppointment";
 import RescheduledAppointment from "./RescheduledAppointments";
 import VerticalDoctorList from "./VerticalDoctorList";
-import { useParams } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 function MyAppointment() {
     const [activeTab, setActiveTab] = useState("pending");
     const [appointments, setAppointments] = useState([]);
-    const { pid } = useParams();
-
+    const location = useLocation();
+    const { pid } = location.state || {};
+    console.log('MyAPpointment',pid);
+    
     useEffect(() => {
         axios.get(`http://localhost:8000/patient/api/onepatient/${pid}`)
             .then((res) => {
@@ -27,7 +29,7 @@ function MyAppointment() {
 
     return (
         <>
-            <PatientNavBar />
+            <PatientNavBar pid={pid} />
             <Container fluid className='maincolor-container' style={{ overflowY: 'scroll', height: '100vh', paddingBottom: '80px', paddingTop: '1.5rem' }}>
 
                 <Container className="pt-5">

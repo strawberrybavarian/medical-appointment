@@ -21,7 +21,7 @@ function DoctorSpecialty({ pid, did }) {
     }, []);
 
     const handleSpecialtyClick = (specialty) => {
-        navigate(`/${specialty.toLowerCase()}/choosedoctor/${pid}`);
+        navigate(`/choosedoctor/${specialty.toLowerCase()}`);
     };
 
     const specialtyImages = {

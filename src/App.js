@@ -58,12 +58,14 @@ import NewsDetailPage from './components/staffs/news/NewsDetailPage';
 import AdminAppointmentMain from './components/staffs/admin/appointment/AdminAppointmentMain';
 import SasMain from './components/staffs/admin/specialtyandservices/SasMain';
 import StaffsManagement from './components/staffs/admin/management/account/StaffsManagement';
+import { PatientProvider } from './components/patient/PatientContext';
 
 
 function App() {
 
   return (
     <>
+     <PatientProvider>
     <BrowserRouter>
       <Routes>
 
@@ -80,12 +82,14 @@ function App() {
           <Route path={"/account"} element={<DoctorInformation />}/>
         
         {/* Patient Routes */}
+       
           <Route path={"/homepage"} element={<HomePagePatient />}/>
-          <Route path={"/choosedoctor/:pid"} element={<ChooseDoctor />}/>
-          <Route path={"/:specialty/choosedoctor/:pid"} element={<ChooseDoctorSpecialization />} />
-          <Route path={"/doctorprofile/:pid/:did"} element={<DoctorProfile />}/>
-          <Route path={"/myappointment/:pid"} element={<MyAppointment />}/>
-          <Route path={"/accinfo/:pid"} element={<MainPatientInformation />}/>
+               
+          <Route path={"/choosedoctor"} element={<ChooseDoctor />}/>
+          <Route path={"/choosedoctor/:specialty"} element={<ChooseDoctorSpecialization />} />
+          <Route path={"/doctorprofile"} element={<DoctorProfile />}/>
+          <Route path={"/myappointment"} element={<MyAppointment />}/>
+          <Route path={"/accinfo"} element={<MainPatientInformation />}/>
           {/* <Route path={"/appointment/:pid/:did"} element={<AppointmentForm />} /> */}
         {/* Staff Login */}
           <Route path={"/staffs"} element={<StaffLogIn />}/>
@@ -119,7 +123,7 @@ function App() {
   
 
 
-
+    </PatientProvider> 
     </>
   );
 }

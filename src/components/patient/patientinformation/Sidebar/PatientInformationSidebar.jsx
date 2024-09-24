@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, useParams, Link } from 'react-router-dom';
+import { useNavigate, useParams, Link, useLocation } from 'react-router-dom';
 import { CDBSidebar, CDBSidebarContent, CDBSidebarHeader, CDBSidebarMenu, CDBSidebarMenuItem, CDBSidebarFooter } from 'cdbreact';
 import './PatientInformationSidebar.css';
 import PatientInformation from "../PatientInformation/PatientInformation";
@@ -7,9 +7,14 @@ import PatientPrescriptions from '../PatientPrescriptions/PatientPrescriptions';
 import TwoFactorAuth from '../TwoFactorAuth/TwoFactorAuth';
 import { Container } from "react-bootstrap";
 import PatientMedicalRecord from '../Medical Record/PatientMedicalRecord';
-function PatientInformationSidebar() {
+function PatientInformationSidebar({pid}) {
     const navigate = useNavigate();
-    const { pid } = useParams();
+       
+
+
+
+
+    
     const [activeTab, setActiveTab] = useState('profile');
 
     const handleTabClick = (tabName) => {
@@ -37,12 +42,6 @@ function PatientInformationSidebar() {
                             </CDBSidebarMenuItem>
                         </Link>
 
-                        <Link onClick={() => handleTabClick('prescriptions')}>
-                            <CDBSidebarMenuItem icon="prescription" className="pisb-name">
-                                My Prescription
-                            </CDBSidebarMenuItem>
-                        </Link>
-
                         <Link onClick={() => handleTabClick('twofactor')}>
                             <CDBSidebarMenuItem icon="lock" className="pisb-name">
                                 Two Factor
@@ -59,10 +58,9 @@ function PatientInformationSidebar() {
             </CDBSidebar>
             
             <div className=" pis-container maincolor-container overflow-y-scroll" style={{paddingBottom: '95vh'}}>
-                {activeTab === 'profile' && <PatientInformation />}
-                {activeTab === 'records' && <PatientMedicalRecord />}
-                {activeTab === 'prescriptions' && <PatientPrescriptions />}
-                {activeTab === 'twofactor' && <TwoFactorAuth />}
+                {activeTab === 'profile' && <PatientInformation pid={pid} />}
+                {activeTab === 'records' && <PatientMedicalRecord pid={pid} />}
+                {activeTab === 'twofactor' && <TwoFactorAuth pid={pid} />}
                 
                <div style={{marginBottom: '150px'
                }}>

@@ -13,7 +13,7 @@ import DoctorNavbar from '../navbar/DoctorNavbar';
 function MainInformation() {
 
   const { did,pid } = useParams();
-
+  console.log(did)
     const [allAppointments, setAllAppointments] = useState([]);
     const [theId, setTheId] = useState("");
     const [theName, setTheName] = useState("");
@@ -51,9 +51,9 @@ function MainInformation() {
             
             <SidebarMenu doctor_image={theImage} doctor_name={theName} did={did} />
               <div style={{ width: '100%' }}>
-                <DoctorNavbar doctor_image={theImage}/> 
+                <DoctorNavbar doctor_image={theImage} did={did}/> 
                 <Container fluid className="ad-container" style={{ maxHeight: 'calc(100vh - 80px)', overflowY: 'auto', padding: '20px', paddingBottom:'50px' }}>
-                  <PractitionerNavBar/>
+                  <PractitionerNavBar />
                 </Container>
                 
               

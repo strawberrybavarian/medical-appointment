@@ -4,9 +4,9 @@ import { Container, Row, Col, Button, Form, Alert } from "react-bootstrap";
 import axios from "axios";
 import { PassFill, CheckAll } from "react-bootstrap-icons";
 import { Helmet } from "react-helmet";
-function AppointmentForm() {
+function AppointmentForm({pid , did}) {
   const navigate = useNavigate();
-  const { pid, did } = useParams();
+
   const [step, setStep] = useState(1);
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
@@ -134,7 +134,7 @@ function AppointmentForm() {
       .post(`http://localhost:8000/patient/api/${pid}/createappointment`, formData)
       .then(() => {
         window.alert("Created an appointment!");
-        navigate(`/myappointment/${pid}`);
+        navigate(`/myappointment`, { state: { pid } });
       })
       .catch((err) => {
         if (err.response) {

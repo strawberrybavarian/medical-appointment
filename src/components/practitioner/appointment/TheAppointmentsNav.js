@@ -10,6 +10,7 @@ import DoctorNavbar from '../navbar/DoctorNavbar';
 
 const TheAppointmentsNav = () => {
   const location = useLocation();
+  const { did } = location.state || {};
   const navigate = useNavigate();
   
   // Use hooks without conditions
@@ -19,7 +20,7 @@ const TheAppointmentsNav = () => {
   const [theImage, setTheImage] = useState("");
   const defaultImage = "images/014ef2f860e8e56b27d4a3267e0a193a.jpg";
 
-  const { did } = location.state || {};
+  
 
   // Extract the outerTab from the URL query params
   const outerTabFromUrl = new URLSearchParams(location.search).get("outerTab") || "pending";

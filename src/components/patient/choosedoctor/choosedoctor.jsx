@@ -1,15 +1,15 @@
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Card } from 'react-bootstrap';
 import axios from "axios";
 import { useEffect, useState } from "react";
 import './ChooseDoctor.css';
 import PatientNavBar from "../PatientNavBar/PatientNavBar";
-
+import { usePatient } from "../PatientContext";
 const defaultImage = "images/014ef2f860e8e56b27d4a3267e0a193a.jpg";
 
 function ChooseDoctor() {
     const [doctors, setDoctors] = useState([]);
-    const { pid } = useParams(); 
+    const { patient } = usePatient(); // Get patient from context
     const navigate = useNavigate();
 
     // Fetch all the doctors when the component loads
@@ -24,7 +24,8 @@ function ChooseDoctor() {
     }, []);
 
     const handleDoctorClick = (did) => {
-        navigate(`/doctorprofile/${pid}/${did}`); // Navigate to doctor profile with the patient ID
+
+        navigate('/doctorprofile', { state: { pid: patient._id, did } });
     };
 
     const timeSinceLastActive = (lastActive) => {
@@ -45,7 +46,7 @@ function ChooseDoctor() {
 
     return (
         <>
-            <PatientNavBar />
+            <PatientNavBar pid={patient._id} /> {/* No need to pass pid in location.state anymore */}
             <div style={{ paddingTop: '40px' }}></div>
             <div className="cd-main">
                 <div className="cd-containergrid">

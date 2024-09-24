@@ -1,13 +1,12 @@
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { Row, Col, Form, Container, Button } from 'react-bootstrap';
 import axios from "axios";
 import { useEffect, useState } from "react";
 import ChangePasswordModal from './ChangePasswordModal';  // Import the Change Password Modal
 import UpdatePatientInfoModal from './UpdatePatientInfoModal';  // Import the Update Information Modal
 import './PatientInformation.css';
+function PatientInformation({pid}) {
 
-function PatientInformation() {
-    const { pid } = useParams();
     const navigate = useNavigate();
 
     const [thePatient, setThePatient] = useState();

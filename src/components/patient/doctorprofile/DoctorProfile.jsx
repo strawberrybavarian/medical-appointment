@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useLocation, useParams } from "react-router-dom";
 import { Container, Row, Col, Collapse } from 'react-bootstrap';
 import axios from "axios";
 import PatientNavBar from "../PatientNavBar/PatientNavBar";
@@ -9,48 +9,52 @@ import AppointmentForm from './AppointmentForm';
 import './DoctorProfile.css';
 import DoctorAnnouncements from "./DoctorAnnouncements";
 import DoctorCalendar from "./DoctorCalendar";
-
 function DoctorProfile() {
-    const [theDoctor, setTheDoctor] = useState([]);
-    const [theImage, setTheImage] = useState("");
-    const [FullName, setFullName] = useState("");
-    const [thePost, setThePost] = useState([]);
-    
-    // Separate states for each collapsible section
-    const [openProfile, setOpenProfile] = useState(false); 
-    const [openAnnouncements, setOpenAnnouncements] = useState(false);
-    const [openCalendar, setOpenCalendar] = useState(false);
-    
-    const { pid, did } = useParams();
-    const defaultImage = "images/014ef2f860e8e56b27d4a3267e0a193a.jpg";
+        const [theDoctor, setTheDoctor] = useState({});
+        const [theImage, setTheImage] = useState("");
+        const [FullName, setFullName] = useState("");
+        const [thePost, setThePost] = useState([]);
 
-    useEffect(() => {
-        axios
-            .get(`${ip.address}/doctor/api/finduser/${did}`)
-            .then((res) => {
-                const doctor = res.data.theDoctor;
-                setTheDoctor(doctor);
+        // Separate states for each collapsible section
+        const [openProfile, setOpenProfile] = useState(false); 
+        const [openAnnouncements, setOpenAnnouncements] = useState(false);
+        const [openCalendar, setOpenCalendar] = useState(false);
 
-                const formattedName = `${doctor.dr_firstName} ${doctor.dr_middleInitial ? doctor.dr_middleInitial + '.' : ''} ${doctor.dr_lastName}`;
-                setFullName(formattedName);
+        const location = useLocation();
+        const { pid, did } = location.state || {}; // Destructure pid and did from state
+        const defaultImage = "images/014ef2f860e8e56b27d4a3267e0a193a.jpg";
 
-                setTheImage(res.data.theDoctor.dr_image || defaultImage);
-            })
-            .catch((err) => {
-                console.log(err);
-            });
-    }, [did]);
+        useEffect(() => {
+            axios
+                .get(`${ip.address}/doctor/api/finduser/${did}`)
+                .then((res) => {
+                    const doctor = res.data.theDoctor;
+                    setTheDoctor(doctor);
 
-    useEffect(() => {
-        axios
-            .get(`${ip.address}/doctor/api/post/getallpost/${did}`)
-            .then((res) => {
-                setThePost(res.data.posts);
-            })
-            .catch((err) => {
-                console.log(err);
-            });
-    }, [did]);
+                    const formattedName = `${doctor.dr_firstName} ${doctor.dr_middleInitial ? doctor.dr_middleInitial + '.' : ''} ${doctor.dr_lastName}`;
+                    setFullName(formattedName);
+
+                    setTheImage(doctor.dr_image || defaultImage);
+                })
+                .catch((err) => {
+                    console.log(err);
+                });
+        }, [did]);
+
+        useEffect(() => {
+            axios
+                .get(`${ip.address}/doctor/api/post/getallpost/${did}`)
+                .then((res) => {
+                    setThePost(res.data.posts);
+                })
+                .catch((err) => {
+                    console.log(err);
+                });
+        }, [did]);
+
+        // if (!theDoctor || Object.keys(theDoctor).length === 0) {
+        //     return <p>Loading...</p>; 
+        // }
 
     return (
         <>
@@ -155,7 +159,7 @@ function DoctorProfile() {
 
                     <Col md={6}>
                         <Container className="shadow-sm white-background dp-container1">
-                            <AppointmentForm />
+                            <AppointmentForm did={did} pid={pid}/>
                         </Container>
                     </Col>
                 </Row>

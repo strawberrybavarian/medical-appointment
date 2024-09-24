@@ -1,12 +1,13 @@
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import { Nav, Container } from 'react-bootstrap';
-import { useParams } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 import PatientHistory from '../Patient History/PatientHistory';
 import Prescription from '../Prescription/Prescription'; // Import the new Prescription component
 import Immunization from '../Immunization/Immunization';
-const PatientMedicalRecord = () => {
-    const { pid } = useParams();
+const PatientMedicalRecord = ({pid}) => {
+    console.log('PatientMedicalRecord',pid);
+    
     const [thePrescriptions, setPrescriptions] = useState([]);
     const [theHistory, setHistory] = useState([]);
     const [theImmunization, setImmunization] = useState([]);
@@ -60,9 +61,9 @@ const PatientMedicalRecord = () => {
 
                 {/* Render components based on the active tab */}
                 <Container className={`pnb-content ${activeTab === 'findings' ? 'findings-tab' : 'other-tabs'}`}>
-                    {activeTab === 'findings' && <PatientHistory patientHistory={theHistory} />}
-                    {activeTab === 'prescription' && <Prescription prescriptions={thePrescriptions} />} 
-                    {activeTab === 'immunization' && <Immunization immunizations={theImmunization} />}
+                    {activeTab === 'findings' && <PatientHistory patientHistory={theHistory} pid={pid}/>}
+                    {activeTab === 'prescription' && <Prescription prescriptions={thePrescriptions} pid={pid} />} 
+                    {activeTab === 'immunization' && <Immunization immunizations={theImmunization} pid={pid}/>}
                 </Container>
             </div>
         </div>

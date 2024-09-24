@@ -18,7 +18,7 @@ const FindingsSchema = new Schema({
         required: true
     },
 
-    // Vitals
+
     bloodPressure: {
         systole: {
             type: Number,
@@ -71,16 +71,16 @@ const FindingsSchema = new Schema({
     // Lifestyle factors (optional)
     lifestyle: {
         smoking: {
-            type: Boolean,              // Whether the patient smokes or not
+            type: Boolean,            
             default: false
         },
         alcoholConsumption: {
-            type: Boolean,              // Whether the patient consumes alcohol
+            type: Boolean,              
             default: false
         },
         physicalActivity: {
-            type: String,               // Description of the patient's physical activity (e.g., sedentary, moderate, active)
-        }
+            type: String, 
+        }              
     },
 
     // Family history of relevant medical conditions
