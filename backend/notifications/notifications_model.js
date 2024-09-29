@@ -14,7 +14,7 @@ const NotificationSchema = new Schema({
     recipientType: {
         type: String,
         required: true,
-        enum: ['Patient', 'Doctor', 'Cashier', 'Medical Secretary']
+        enum: ['Patient', 'Doctor', 'Cashier', 'Medical Secretary', 'Admin', 'Super Admin']
     },
     date: {
         type: Date,

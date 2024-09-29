@@ -92,7 +92,6 @@ const CompletedAppointment = ({ allAppointments }) => {
               <th>Patient Name</th>
               <th>Date</th>
               <th>Time</th>
-              <th>Reason</th>
               <th>Status</th>
               <th>Actions</th>
             </tr>
@@ -107,11 +106,13 @@ const CompletedAppointment = ({ allAppointments }) => {
                     <td>{patientName}</td>
                     <td>{new Date(appointment.date).toLocaleDateString()}</td>
                     <td>{appointment.time}</td>
-                    <td>{appointment.reason}</td>
+                  
                     <td>
+                      <div className="d-flex justify-content-center">
                       <div className="completed-appointment">
                         {appointment.status}
                       </div>
+                    </div>
                     </td>
                     <td>
                       {/* If you want to add any actions, do so here */}

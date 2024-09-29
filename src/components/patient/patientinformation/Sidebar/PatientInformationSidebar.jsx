@@ -7,6 +7,8 @@ import PatientPrescriptions from '../PatientPrescriptions/PatientPrescriptions';
 import TwoFactorAuth from '../TwoFactorAuth/TwoFactorAuth';
 import { Container } from "react-bootstrap";
 import PatientMedicalRecord from '../Medical Record/PatientMedicalRecord';
+import Footer from '../../../Footer';
+
 function PatientInformationSidebar({pid}) {
     const navigate = useNavigate();
        
@@ -25,7 +27,6 @@ function PatientInformationSidebar({pid}) {
         <div className='pisb-sidebarcontainer'>
             <CDBSidebar textColor="#fff" backgroundColor="#333" minWidth="250px">
                 <CDBSidebarHeader className="pisb-newheader head-div">
-                 
                 </CDBSidebarHeader>
 
                 <CDBSidebarContent>
@@ -56,19 +57,22 @@ function PatientInformationSidebar({pid}) {
                     </div>
                 </CDBSidebarFooter>
             </CDBSidebar>
+
             
-            <div className=" pis-container maincolor-container overflow-y-scroll" style={{paddingBottom: '95vh'}}>
-                {activeTab === 'profile' && <PatientInformation pid={pid} />}
-                {activeTab === 'records' && <PatientMedicalRecord pid={pid} />}
-                {activeTab === 'twofactor' && <TwoFactorAuth pid={pid} />}
-                
-               <div style={{marginBottom: '150px'
-               }}>
+            <Container fluid className='cont-fluid-no-gutter' style={{overflowY: 'scroll', height: '100vh', paddingBottom: '100px', paddingTop: '1.5rem'}}>
+                <div>
+                    <div className="content-area mb-5">
+                        {activeTab === 'profile' && <PatientInformation pid={pid} />}
+                        {activeTab === 'records' && <PatientMedicalRecord pid={pid} />}
+                        {activeTab === 'twofactor' && <TwoFactorAuth pid={pid} />}
+                    </div>
 
-               </div>
-             
+                    <Container fluid className="footer-container cont-fluid-no-gutter w-100">
+                        <Footer />
+                </Container>
+                </div>
+            </Container>
 
-            </div>
         </div>
     );
 }

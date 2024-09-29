@@ -7,7 +7,7 @@ import MainAppointment from "./MainAppointment";
 import MyPendingAppointment from "./MyPendingAppointment";
 import './Appointment.css';
 import DoctorNavbar from '../navbar/DoctorNavbar';
-
+import Footer from "../../Footer";
 const TheAppointmentsNav = () => {
   const location = useLocation();
   const { did } = location.state || {};
@@ -23,15 +23,11 @@ const TheAppointmentsNav = () => {
   
 
   // Extract the outerTab from the URL query params
-  const outerTabFromUrl = new URLSearchParams(location.search).get("outerTab") || "pending";
+  const outerTabFromUrl = new URLSearchParams(location.search).get("outerTab") || "mypatients";
 
   // Always call useEffect
   useEffect(() => {
-    if (!did) {
-      // Move the conditional logic into the useEffect
-      navigate('/'); // If `did` is missing, redirect to home or login
-      return;
-    }
+  
 
     axios
       .get(`http://localhost:8000/doctor/api/finduser/${did}`)
@@ -69,28 +65,44 @@ const TheAppointmentsNav = () => {
   }
 
   return (
-    <div className="maincolor-container" style={{ display: "flex" }}>
+    <div className="d-flex justify-content-center">
       <SidebarMenu doctor_image={theImage} doctor_name={theName} did={did} outerTab={outerTabFromUrl} />
       <div style={{ width: '100%' }}>
-        <DoctorNavbar doctor_image={theImage} />
 
-        <Container>
-          <Nav fill variant="tabs" className="app-navtabs-doctor" activeKey={outerTabFromUrl} onSelect={handleSelect}>
-            <Nav.Item>
-              <Nav.Link eventKey="pending">Pending Appointments</Nav.Link>
-            </Nav.Item>
-            <Nav.Item>
-              <Nav.Link eventKey="mypatients">My Patients</Nav.Link>
-            </Nav.Item>
-          </Nav>
+        <DoctorNavbar doctor_image={theImage} did={did} />
+        <Container fluid className='cont-fluid-no-gutter' style={{overflowY: 'scroll', height: '100vh', paddingBottom: '100px', paddingTop: '1.5rem'}}>
+    
+            <div className="maincolor-container">
+                <div className="content-area">
+                  {/* <Container>
+                      <Nav fill variant="tabs" className="app-navtabs-doctor" activeKey={outerTabFromUrl} onSelect={handleSelect}>
+                        {/* <Nav.Item>
+                          <Nav.Link eventKey="pending">Pending Appointments</Nav.Link>
+                        </Nav.Item> */}
+                        {/* <Nav.Item>
+                          <Nav.Link eventKey="mypatients">My Patients</Nav.Link>
+                        </Nav.Item>
+                      </Nav>
+                    </Container> */} 
+
+                  <Container className=" white-container">
+                    {/* {outerTabFromUrl === 'pending' && (
+                      <MyPendingAppointment appointments={allAppointments} onUpdate={handleUpdateAppointments} />
+                    )} */}
+                    {/* {outerTabFromUrl === 'mypatients' && <MainAppointment />} */}
+                    <MainAppointment />
+                  </Container>
+                </div>
+
+                
+              <Container fluid className="footer-container cont-fluid-no-gutter w-100">
+                <Footer />
+              </Container>
+            </div>
+       
+        
         </Container>
 
-        <Container className="pt-5 white-container">
-          {outerTabFromUrl === 'pending' && (
-            <MyPendingAppointment appointments={allAppointments} onUpdate={handleUpdateAppointments} />
-          )}
-          {outerTabFromUrl === 'mypatients' && <MainAppointment />}
-        </Container>
       </div>
     </div>
   );

@@ -89,8 +89,8 @@ const AccountInfo = () => {
 
   return (
     <>
-      <div  style={{display: "flex", flex: "1 0 auto"}}>
-        <div  style={{  paddingBottom: '100px', overflowX: "hidden",  }} className="container1 p-5 container-fluid ">
+      
+ 
           <h1 className="removegutter dashboard-title">Account Information</h1>
           <hr className=" divider d-lg" />
           <div className="ai-container">
@@ -152,8 +152,7 @@ const AccountInfo = () => {
               </div>
             </Form>
           </div>
-        </div>
-      </div>
+
 
       <ImageUploadModal 
         isOpen={isModalOpen}

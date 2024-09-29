@@ -4,19 +4,30 @@ import { Container, Navbar, Nav, NavDropdown } from 'react-bootstrap';
 import { Bell } from 'react-bootstrap-icons';
 import './PatientNavBar.css';
 import { usePatient } from '../PatientContext';
-import { image } from '../../../ContentExport';
-function PatientNavBar() {
+import { image, ip } from '../../../ContentExport';
+import axios from 'axios';
+function PatientNavBar({pid}) {
     const navigate = useNavigate();
     const { patient, setPatient } = usePatient(); // Get patient data from the context
     const [showNotifications, setShowNotifications] = useState(false);
     const [itemsToShow, setItemsToShow] = useState(3);
-
+    const [theImage, setImage] = useState(null);
     const inactivityLimit = 1000000; // 10 seconds
     let timeoutId = null; // To store the timeout ID
 
     const defaultImage = "http://localhost:8000/images/014ef2f860e8e56b27d4a3267e0a193a.jpg";
+    useEffect(() => {
+        axios.get(`http://localhost:8000/patient/api/onepatient/${pid}`)
+          .then((res) => {
+            const patientData = res.data.thePatient;
 
-
+            setImage(patientData.patient_image || defaultImage);  // Set patient image
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+      }, [pid]);
+    console.log('patient', patient.patient_image);
     const logoutUser = () => {
         setPatient(null);  // Clear the patient context (session)
         localStorage.removeItem('patient');  // Clear the localStorage to remove persistent session data
@@ -78,8 +89,8 @@ function PatientNavBar() {
     };
 
     return (
-        <Navbar expand="md" className="pnb-navbar">
-            <Container>
+        <Navbar fluid expand="md" className="pnb-navbar">
+            <Container fluid>
                 <Link to={{ pathname: `/homepage`, state: { pid: patient._id } }}>
                     <img className="molino-logo" src={image.logo} alt="Logo" />
                 </Link>
@@ -125,8 +136,9 @@ function PatientNavBar() {
                                         <p className="m-0" style={{ fontSize: '12px', color: 'gray', textAlign: 'end' }}>Patient</p>
                                     </div>
                                     <img
-                                        src={patient.image || defaultImage}
+                                        src={`${ip.address}/${theImage}` || defaultImage}
                                         alt="Profile"
+                                        style={{ objectFit: 'cover' }}
                                         className="profile-image ms-3"
                                     />
                                 </div>

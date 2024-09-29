@@ -78,7 +78,7 @@ function App() {
           <Route path="/dashboard" element={<DashboardMain />} />
           <Route path={'/mainappointment'} element={<TheAppointments/>}></Route>
           <Route path={'/medicalrecord'} element={<MainMedicalRecord/>}/>
-          <Route path={"/information/:pid/:did/:apid"} element={<MainInformation />}/>
+          <Route path={"/information"} element={<MainInformation />}/>
           <Route path={"/account"} element={<DoctorInformation />}/>
         
         {/* Patient Routes */}

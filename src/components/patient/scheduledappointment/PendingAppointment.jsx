@@ -84,7 +84,7 @@ function PendingAppointments({ appointments, setAppointments }) {
 
     return (
         <>
-            <div className='d-flex justify-content-center mainContainer maincolor-container'>
+            <div className='d-flex justify-content-center mainContainer'>
                 <Container>
                     {Object.keys(groupedAppointments).map((groupKey, index) => (
                         <React.Fragment key={index}>

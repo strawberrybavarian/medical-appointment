@@ -405,6 +405,19 @@ const cancelAppointment = async (req, res) => {
   }
 };
 
+const updatePatientImage = async (req, res) => {
+  try {
+    const patientId = req.params.id;
+    const imagePath = `images/${req.file.filename}`;  // Assuming the images are stored in an 'images' directory
+
+    const updatedPatient = await Patient.findByIdAndUpdate(patientId, { patient_image: imagePath }, { new: true });
+
+    res.json({ updatedPatient, message: 'Patient image updated successfully' });
+  } catch (error) {
+    console.error('Error updating patient image:', error);
+    res.status(500).json({ message: 'Error updating patient image', error });
+  }
+};
 
 
 
@@ -425,5 +438,6 @@ module.exports = {
     verifyOTP,
     sendOTP,
     bookedSlots,
-    createUnregisteredPatient
+    createUnregisteredPatient,
+    updatePatientImage
 }

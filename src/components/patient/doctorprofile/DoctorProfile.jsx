@@ -10,7 +10,7 @@ import './DoctorProfile.css';
 import DoctorAnnouncements from "./DoctorAnnouncements";
 import DoctorCalendar from "./DoctorCalendar";
 import { usePatient } from "../PatientContext";
-
+import Footer from "../../Footer";
 function DoctorProfile() {
     const [theDoctor, setTheDoctor] = useState(null); // Initialize as null
     const [theImage, setTheImage] = useState("");
@@ -63,112 +63,122 @@ function DoctorProfile() {
     // Only render the component when theDoctor has been fetched
     return theDoctor ? (
         <>
-            <PatientNavBar />
-            <Container fluid className="dp-containermain maincolor-container p-5" style={{ overflowY: 'auto', maxHeight: 'calc(100vh - 96px)' }}>
-                <Row>
-                    <Col md={6}>
-                        <Container className="dp-container1 white-background shadow-sm">
-                            <img src={`${ip.address}/${theImage}`} alt="Doctor" className='dp-image' />
-                            <div className="dp-container2">
-                                <h4>{FullName}</h4>
-                                <p style={{ fontStyle: 'italic', fontSize: '14px' }}>{theDoctor.dr_specialty}</p>
-                            </div>
-                        </Container>
+            <PatientNavBar pid={patient._id} />
+            <Container className='cont-fluid-no-gutter' fluid style={{overflowY: 'scroll', height: '100vh', paddingBottom: '100px', paddingTop: '1.5rem'}}>
+                <Container className='maincolor-container'>
+                    <div className="content-area">
+                        <Row>
+                        <Col md={6}>
+                            <Container className="dp-container1 white-background shadow-sm">
+                                <img src={`${ip.address}/${theImage}`} alt="Doctor" className='dp-image' />
+                                <div className="dp-container2">
+                                    <h4>{FullName}</h4>
+                                    <p style={{ fontStyle: 'italic', fontSize: '14px' }}>{theDoctor.dr_specialty}</p>
+                                </div>
+                            </Container>
 
-                        <Container className="p-3 shadow-sm white-background dp-container11 mt-3">
-                            <DoctorWeeklySchedule did={doctorId} />
-                        </Container>
+                            <Container className="p-3 shadow-sm white-background dp-container11 mt-3">
+                                <DoctorWeeklySchedule did={doctorId} />
+                            </Container>
 
-                        {/* Doctor Profile Section */}
-                        <Container className="announcement-container white-background align-items-center mt-3 mb-3 shadow-sm">
-                            <div className="d-flex align-items-center">
-                                <div className="w-100 d-flex align-items-center">
-                                    <span className="m-0" style={{ fontWeight: 'bold' }}>Doctor Profile</span>
+                            {/* Doctor Profile Section */}
+                            <Container className="announcement-container white-background align-items-center mt-3 mb-3 shadow-sm">
+                                <div className="d-flex align-items-center">
+                                    <div className="w-100 d-flex align-items-center">
+                                        <span className="m-0" style={{ fontWeight: 'bold' }}>Doctor Profile</span>
+                                    </div>
+
+                                    <div className="w-100 d-flex justify-content-end align-items-center">
+                                        <Link
+                                            onClick={() => setOpenProfile(!openProfile)}
+                                            aria-controls="profile-collapse"
+                                            aria-expanded={openProfile}
+                                            className="link-collapse"
+                                            style={{ transition: 'transform 0.3s ease' }}
+                                        >
+                                            {openProfile ? <span>&#8722;</span> : <span>&#43;</span>}
+                                        </Link>
+                                    </div>
                                 </div>
 
-                                <div className="w-100 d-flex justify-content-end align-items-center">
-                                    <Link
-                                        onClick={() => setOpenProfile(!openProfile)}
-                                        aria-controls="profile-collapse"
-                                        aria-expanded={openProfile}
-                                        className="link-collapse"
-                                        style={{ transition: 'transform 0.3s ease' }}
-                                    >
-                                        {openProfile ? <span>&#8722;</span> : <span>&#43;</span>}
-                                    </Link>
-                                </div>
-                            </div>
+                                <Collapse in={openProfile}>
+                                    <div id="profile-collapse">
+                                        {/* Content for Doctor Profile goes here */}
+                                        <DoctorAnnouncements posts={thePost} />
+                                    </div>
+                                </Collapse>
+                            </Container>
 
-                            <Collapse in={openProfile}>
-                                <div id="profile-collapse">
-                                    {/* Content for Doctor Profile goes here */}
-                                    <DoctorAnnouncements posts={thePost} />
-                                </div>
-                            </Collapse>
-                        </Container>
+                            {/* Announcements Section */}
+                            <Container className="announcement-container white-background align-items-center mt-3 mb-3 shadow-sm">
+                                <div className="d-flex align-items-center">
+                                    <div className="w-100 d-flex align-items-center">
+                                        <p className="m-0" style={{ fontWeight: 'bold' }}>Announcements</p>
+                                    </div>
 
-                        {/* Announcements Section */}
-                        <Container className="announcement-container white-background align-items-center mt-3 mb-3 shadow-sm">
-                            <div className="d-flex align-items-center">
-                                <div className="w-100 d-flex align-items-center">
-                                    <p className="m-0" style={{ fontWeight: 'bold' }}>Announcements</p>
-                                </div>
-
-                                <div className="w-100 d-flex justify-content-end align-items-center">
-                                    <Link
-                                        onClick={() => setOpenAnnouncements(!openAnnouncements)}
-                                        aria-controls="announcements-collapse"
-                                        aria-expanded={openAnnouncements}
-                                        className="link-collapse"
-                                        style={{ transition: 'transform 0.3s ease' }}
-                                    >
-                                        {openAnnouncements ? <span>&#8722;</span> : <span>&#43;</span>}
-                                    </Link>
-                                </div>
-                            </div>
-
-                            <Collapse in={openAnnouncements}>
-                                <div id="announcements-collapse">
-                                    <DoctorAnnouncements posts={thePost} />
-                                </div>
-                            </Collapse>
-                        </Container>
-
-                        {/* Doctor Calendar Section */}
-                        <Container className="announcement-container white-background align-items-center mt-3 mb-3 shadow-sm">
-                            <div className="d-flex align-items-center">
-                                <div className="w-100 d-flex align-items-center">
-                                    <p className="m-0" style={{ fontWeight: 'bold' }}>Doctor Calendar</p>
+                                    <div className="w-100 d-flex justify-content-end align-items-center">
+                                        <Link
+                                            onClick={() => setOpenAnnouncements(!openAnnouncements)}
+                                            aria-controls="announcements-collapse"
+                                            aria-expanded={openAnnouncements}
+                                            className="link-collapse"
+                                            style={{ transition: 'transform 0.3s ease' }}
+                                        >
+                                            {openAnnouncements ? <span>&#8722;</span> : <span>&#43;</span>}
+                                        </Link>
+                                    </div>
                                 </div>
 
-                                <div className="w-100 d-flex justify-content-end align-items-center">
-                                    <Link
-                                        onClick={() => setOpenCalendar(!openCalendar)}
-                                        aria-controls="calendar-collapse"
-                                        aria-expanded={openCalendar}
-                                        className="link-collapse"
-                                        style={{ transition: 'transform 0.3s ease' }}
-                                    >
-                                        {openCalendar ? <span>&#8722;</span> : <span>&#43;</span>}
-                                    </Link>
-                                </div>
-                            </div>
+                                <Collapse in={openAnnouncements}>
+                                    <div id="announcements-collapse">
+                                        <DoctorAnnouncements posts={thePost} />
+                                    </div>
+                                </Collapse>
+                            </Container>
 
-                            <Collapse in={openCalendar}>
-                                <div id="calendar-collapse">
-                                    <DoctorCalendar did={doctorId} />
-                                </div>
-                            </Collapse>
-                        </Container>
-                    </Col>
+                            {/* Doctor Calendar Section */}
+                            <Container className="announcement-container white-background align-items-center mt-3 mb-3 shadow-sm">
+                                <div className="d-flex align-items-center">
+                                    <div className="w-100 d-flex align-items-center">
+                                        <p className="m-0" style={{ fontWeight: 'bold' }}>Doctor Calendar</p>
+                                    </div>
 
-                    <Col md={6}>
-                        <Container className="shadow-sm white-background dp-container1">
-                            <AppointmentForm did={doctorId} pid={patient._id}/>
-                        </Container>
-                    </Col>
-                </Row>
+                                    <div className="w-100 d-flex justify-content-end align-items-center">
+                                        <Link
+                                            onClick={() => setOpenCalendar(!openCalendar)}
+                                            aria-controls="calendar-collapse"
+                                            aria-expanded={openCalendar}
+                                            className="link-collapse"
+                                            style={{ transition: 'transform 0.3s ease' }}
+                                        >
+                                            {openCalendar ? <span>&#8722;</span> : <span>&#43;</span>}
+                                        </Link>
+                                    </div>
+                                </div>
+
+                                <Collapse in={openCalendar}>
+                                    <div id="calendar-collapse">
+                                        <DoctorCalendar did={doctorId} />
+                                    </div>
+                                </Collapse>
+                            </Container>
+                        </Col>
+
+                        <Col md={6}>
+                            <Container className="shadow-sm white-background dp-container1">
+                                <AppointmentForm did={doctorId} pid={patient._id}/>
+                            </Container>
+                        </Col>
+                    </Row>
+                    </div>
+
+                </Container>
+
+                <Container fluid className='cont-fluid-no-gutter' style={{marginTop: '10rem'}}>
+                <Footer />
             </Container>
+            </Container>
+        
         </>
     ) : null; // Don't render anything until `theDoctor` is fetched
 }

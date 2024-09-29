@@ -45,7 +45,7 @@ const SidebarMenu = (props) => {
 
     // Navigate to appointments and preserve the outerTab
     const navigateToAppointment = () => {
-        const outerTab = props.outerTab || 'pending'; // Default to 'pending' if outerTab is missing
+        const outerTab = props.outerTab || 'mypatients'; // Default to 'pending' if outerTab is missing
         navigate(`/mainappointment?outerTab=${outerTab}`, { state: { did: props.did } });
     };
 
@@ -79,7 +79,7 @@ const SidebarMenu = (props) => {
                                 className="font-style-poppins" 
                                 onClick={navigateToAppointment}
                                 icon="calendar-alt"> 
-                                Appointment 
+                                My Patient 
                             </CDBSidebarMenuItem>
 
                             <CDBSidebarMenuItem className="font-style-poppins" icon="bell"> Notification </CDBSidebarMenuItem>

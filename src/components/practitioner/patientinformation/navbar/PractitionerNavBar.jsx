@@ -9,9 +9,10 @@ import './PractitionerNavBarStyles.css';
 import Immunization from '../immunization/Immunization';
 import LaboratoryResults from '../laboratory/LaboratoryResults';
 
-function PractitionerNavBar() {
+function PractitionerNavBar({ pid, did, apid }) {
     const navigate = useNavigate();
-    const { pid, did, apid } = useParams();
+    console.log('PractitionerNavBar', pid, did, apid);
+    
 
     // Default active tab
     const [activeTab, setActiveTab] = useState("findings");

@@ -10,7 +10,7 @@ function CancelledAppointments({ appointments, setAppointments }) {
     const [selectedAppointment, setSelectedAppointment] = useState(null);
     
     const defaultImage = "images/014ef2f860e8e56b27d4a3267e0a193a.jpg";
-    console.log(appointments);
+
 
     const handleCancelClick = (appointment) => {
         setSelectedAppointment(appointment);

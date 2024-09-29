@@ -8,6 +8,9 @@ const PatientSchema = new Schema({
         type: String,
         unique: true
     },
+    patient_image: {   
+        type: String,
+    },
     patient_firstName: {
         type: String,
     },
@@ -57,6 +60,30 @@ const PatientSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'Findings'
     }],
+    patient_address: {  // Added patient_address field
+        street: {
+            type: String,
+        },
+        city: {
+            type: String,
+        },
+        state: {
+            type: String,
+        },
+        zipCode: {
+            type: String,
+        },
+        country: {
+            type: String,
+        }
+    },
+    patient_nationality:{
+        type: String,
+    },
+    patient_civilstatus:{
+        type: String,
+    },
+    
     medicalHistory: {
         type: Schema.Types.ObjectId,
         ref: 'MedicalHistory'
@@ -77,6 +104,7 @@ const PatientSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'Notification'
     }],
+    
     twoFactorSecret: { type: String },
     twoFactorEnabled: { type: Boolean, default: false },
     otp: {

@@ -3,7 +3,7 @@ import { Container, Row, Col, Button, Card, Form, Table, } from 'react-bootstrap
 import axios from "axios";
 import { useEffect, useState } from "react";
 import './PatientFindings.css'; 
-
+import PatientHistory from "./PatientHistory";
 function PatientFindings({ patientId, appointmentId, doctorId }) {
     const [fname, setFname] = useState('');
     const [lname, setLname] = useState('');
@@ -223,6 +223,11 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
                             </Card.Text>
                         </Card.Body>
                     </Card>
+
+                    <PatientHistory pid={patientId}/>
+
+
+                    
                 </Col>
 
                 <Col md={8}>

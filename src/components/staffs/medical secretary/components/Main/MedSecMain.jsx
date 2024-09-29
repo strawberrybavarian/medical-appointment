@@ -3,6 +3,7 @@ import MedSecNavbar from '../../navbar/MedSecNavbar';
 import MedSecTodaysApp from '../Appointments/MedSecTodaysApp';
 import MedSecPending from '../Appointments/MedSecPending';
 import MedSecOngoing from '../Appointments/MedSecOngoing';
+
 import MedSecDashboard from '../Dashboard/MedSecDashboard'; // Fixed typo in component name
 import { Container, Nav, Row, Col } from 'react-bootstrap';
 import axios from 'axios';
@@ -10,6 +11,7 @@ import React, { useEffect, useState } from 'react';
 import './MedSecMain.css';
 import MSDoctorProfile from '../Manage Doctors/MSDoctorProfile';
 import AppointmentFullCalendar from '../Calendar/AppointmentFullCalendar';
+import MedSecForPayment from '../Appointments/MedSecForPayment';
 function MedSecMain() {
   const { msid } = useParams();
   const location = useLocation(); 
@@ -67,6 +69,9 @@ function MedSecMain() {
               <Nav.Item>
                 <Nav.Link eventKey="ongoing">Ongoing Appointments</Nav.Link>
               </Nav.Item>
+              <Nav.Item>
+                <Nav.Link eventKey="forpayment">For Payment</Nav.Link>
+              </Nav.Item>
             </Nav>
           </Row>
         </Container>
@@ -90,6 +95,13 @@ function MedSecMain() {
               )}
               {activeTab === "ongoing" && (
                 <MedSecOngoing
+                  allAppointments={allappointments}
+                  setAllAppointments={setallappointments}
+                  selectedDoctor={selectedDoctor}
+                />
+              )}
+                {activeTab === "forpayment" && (
+                <MedSecForPayment
                   allAppointments={allappointments}
                   setAllAppointments={setallappointments}
                   selectedDoctor={selectedDoctor}

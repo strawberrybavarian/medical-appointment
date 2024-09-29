@@ -1,15 +1,17 @@
 import axios from "axios";
-import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import React, { useState } from "react";
 import Table from 'react-bootstrap/Table';
-import { Container, Row, Col, Button, Pagination, Form } from 'react-bootstrap';
+import { Row, Col, Pagination, Form, Collapse } from 'react-bootstrap';
 import './Appointment.css';
+import { ip } from "../../../ContentExport";
 
-const TodaysAppointment = ({ allAppointments }) => {
+const TodaysAppointment = ({ allAppointments, setAllAppointments }) => {
   const [error, setError] = useState("");
   const [currentPage, setCurrentPage] = useState(1); // Current page state
   const [entriesPerPage, setEntriesPerPage] = useState(5); // Entries per page state
   const [searchTerm, setSearchTerm] = useState(""); // Search state
+  const [expandedRow, setExpandedRow] = useState(null); // State to track the expanded row
+  const defaultImage = "images/014ef2f860e8e56b27d4a3267e0a193a.jpg";
 
   const getTodayDate = () => {
     const today = new Date();
@@ -25,12 +27,16 @@ const TodaysAppointment = ({ allAppointments }) => {
   const updateAppointmentStatus = (appointmentID, newStatus) => {
     axios.put(`http://localhost:8000/appointments/${appointmentID}/status`, { status: newStatus })
       .then(() => {
-        // Handle the success response
-        window.alert('Appointment status updated to Ongoing');
-        window.location.reload(); // Reload the page after updating the status
+        // Update the appointment status locally in the state
+        setAllAppointments(prevAppointments =>
+          prevAppointments.map(appointment =>
+            appointment._id === appointmentID ? { ...appointment, status: newStatus } : appointment
+          )
+        );
+        setError(""); // Clear error if successful
       })
       .catch(err => {
-        console.log(err);
+        console.error(err); // Log detailed error
         setError('Failed to update the appointment status.');
       });
   };
@@ -42,7 +48,7 @@ const TodaysAppointment = ({ allAppointments }) => {
   });
 
   // Filter appointments based on search term
-  const filteredAppointments = todaysAppointments.filter(appointment => 
+  const filteredAppointments = todaysAppointments.filter(appointment =>
     `${appointment.patient.patient_firstName} ${appointment.patient.patient_middleInitial}. ${appointment.patient.patient_lastName}`
       .toLowerCase()
       .includes(searchTerm.toLowerCase())
@@ -57,6 +63,11 @@ const TodaysAppointment = ({ allAppointments }) => {
   for (let i = 1; i <= Math.ceil(filteredAppointments.length / entriesPerPage); i++) {
     pageNumbers.push(i);
   }
+
+  // Function to toggle expanded row
+  const toggleRow = (appointmentId) => {
+    setExpandedRow(expandedRow === appointmentId ? null : appointmentId); // Toggle the expanded row
+  };
 
   return (
     <>
@@ -102,53 +113,70 @@ const TodaysAppointment = ({ allAppointments }) => {
           </Col>
         </Row>
 
-        <Table responsive striped  variant="light" className="mt-3">
+        <Table responsive striped variant="light" className="mt-3">
           <thead>
             <tr>
-              <th >Patient Name</th>
+              <th>Patient Name</th>
+              <th>Service</th>
               <th>Date</th>
               <th>Time</th>
-              <th >Reason</th>
-              <th >Status</th>
+              <th>Status</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
-  {currentAppointments.map(appointment => {
-    const patient = appointment.patient;
+            {currentAppointments.map(appointment => {
+              const patient = appointment.patient;
 
-    // Ensure patient object exists before accessing its properties
-    const patientName = patient
-      ? `${patient.patient_firstName} ${patient.patient_middleInitial ? patient.patient_middleInitial + "." : ""} ${patient.patient_lastName}`
-      : "No Patient Info";  // Fallback if patient is undefined or null
+              // Ensure patient object exists before accessing its properties
+              const patientName = patient
+                ? `${patient.patient_firstName} ${patient.patient_middleInitial ? patient.patient_middleInitial + "." : ""} ${patient.patient_lastName}`
+                : "No Patient Info";  // Fallback if patient is undefined or null
+              const appointmentTypes = appointment.appointment_type.join(', ');
+              const patientImage = `${ip.address}/${patient.patient_image}` || `${ip.address}/${defaultImage}`;
 
-    return (
-      <tr key={appointment._id}>
-        <td>{patientName}</td>
-        <td>{new Date(appointment.date).toLocaleDateString()}</td>
-        <td>{appointment.time}</td>
-        <td>{appointment.reason}</td>
-        <td style={{textAlign:"center"}}>
-          <div className="d-flex justify-content-center">
-            <div className="scheduled-appointment">
-              {appointment.status}
-            </div>
-          </div>
-           
-        </td>
-        <td>
-          {/* Ongoing Button */}
-          <Link
-            style={{color: 'green'}}
-            onClick={() => updateAppointmentStatus(appointment._id, 'Ongoing')}
-          >
-            Ongoing
-          </Link>
-        </td>
-      </tr>
-    );
-  })}
-</tbody>
+              return (
+                <React.Fragment key={appointment._id}>
+                  <tr
+                    onClick={() => toggleRow(appointment._id)} // Click to toggle collapse
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <td><img alt='Patient Image' src={patientImage} style={{marginRight:'10px', width: '30px', height:'30px', borderRadius:'100px'}}/> {patientName}</td>
+                    <td>{appointmentTypes}</td>
+                    <td>{new Date(appointment.date).toLocaleDateString()}</td>
+                    <td>{appointment.time}</td>
+                    <td style={{ textAlign: "center" }}>
+                      <div className="d-flex justify-content-center">
+                        <div className="scheduled-appointment">
+                          {appointment.status}
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      {/* Ongoing Button */}
+                      <button
+                        style={{ color: 'green', background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+                        onClick={() => updateAppointmentStatus(appointment._id, 'Ongoing')}
+                      >
+                        Ongoing
+                      </button>
+                    </td>
+                  </tr>
+
+                  {/* Collapsible row for "Reason" */}
+                  <tr>
+                    <td colSpan="6" style={{ padding: 0 }}>
+                      <Collapse in={expandedRow === appointment._id}>
+                        <div style={{ padding: '10px', backgroundColor: '#f8f9fa', transition: 'height 0.35s ease'}}>
+                          <strong>Reason:</strong> {appointment.reason}
+                        </div>
+                      </Collapse>
+                    </td>
+                  </tr>
+                </React.Fragment>
+              );
+            })}
+          </tbody>
         </Table>
 
         {/* Display error if any */}

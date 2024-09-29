@@ -7,7 +7,7 @@ import PostAnnouncement from "./PostAnnouncement";
 import Dashboard from "./Dashboard";
 import "./Dashboard.css";
 import DoctorNavbar from "../navbar/DoctorNavbar";
-
+import Footer from "../../Footer";
 function DashboardMain() {
   const location = useLocation();
   const { did } = location.state || {};  // Get 'did' from the state passed via navigation
@@ -37,17 +37,29 @@ function DashboardMain() {
   }, [did]);
 
   return (
-    <div className="maincolor-container d-flex justify-content-center">
+    <div className="d-flex justify-content-center">
       <SidebarMenu doctor_image={doctorData.image} doctor_name={doctorData.name} did={did} />
       <div style={{ width: '100%' }}>
          <DoctorNavbar doctor_image={doctorData.image} did={did}/>
-          <Container fluid className="ad-container" style={{ height: 'calc(100vh - 80px)', overflowY: 'auto', padding: '20px' }}>
-            <Dashboard 
-              doctor_image={doctorData.image} 
-              doctor_name={doctorData.name} 
-              did={did}
-            />
-            <PostAnnouncement doctor_image={doctorData.image} doctor_name={doctorData.name} did={did} />
+         <Container fluid className='cont-fluid-no-gutter' style={{overflowY: 'scroll', height: '100vh', paddingBottom: '100px', paddingTop: '1.5rem'}}>
+            
+            <div className="maincolor-container">
+              <div className="content-area">
+                <Dashboard 
+                  doctor_image={doctorData.image} 
+                  doctor_name={doctorData.name} 
+                  did={did}
+                />
+                <PostAnnouncement doctor_image={doctorData.image} doctor_name={doctorData.name} did={did} />
+              </div>
+
+              <Container fluid className="footer-container cont-fluid-no-gutter w-100">
+                <Footer />
+              </Container>
+            </div>
+           
+           
+            
           </Container> 
       </div>
     </div>

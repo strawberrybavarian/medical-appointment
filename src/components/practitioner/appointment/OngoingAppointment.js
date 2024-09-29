@@ -1,36 +1,72 @@
+// OngoingAppointment.jsx
 import axios from "axios";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams, Link, useLocation } from "react-router-dom";
 import Table from 'react-bootstrap/Table';
-import { Button, Pagination, Form, Row, Col } from 'react-bootstrap';
-
+import { Button, Pagination, Form, Row, Col, Collapse } from 'react-bootstrap';
 import './Appointment.css';
+import { ip } from "../../../ContentExport";
+import RescheduleModal from "./Reschedule Modal/RescheduleModal";
 
-const OngoingAppointment = ({ allAppointments }) => {
-    const location = useLocation();
+const OngoingAppointment = ({ allAppointments, setAllAppointments }) => {
+  const location = useLocation();
   const { did } = location.state || {}; 
+  const defaultImage = "images/014ef2f860e8e56b27d4a3267e0a193a.jpg";
 
   const [appointments, setAppointments] = useState([]);
   const [error, setError] = useState("");
   const [currentPage, setCurrentPage] = useState(1); // Pagination state
   const [entriesPerPage, setEntriesPerPage] = useState(5); // Entries per page state
   const [searchTerm, setSearchTerm] = useState(""); // Search state
+  const [expandedRow, setExpandedRow] = useState(null); // State to track expanded row
+
+  // State for rescheduling
+  const [showRescheduleModal, setShowRescheduleModal] = useState(false);
+  const [selectedAppointment, setSelectedAppointment] = useState(null);
+
+  // Handle reschedule click
+  const handleReschedule = (appointment) => {
+    setSelectedAppointment(appointment);
+    setShowRescheduleModal(true);
+  };
+
+  // Handle confirm reschedule
+  const handleConfirmReschedule = (rescheduledReason) => {
+    const newStatus = {
+      rescheduledReason: rescheduledReason,
+      status: 'Rescheduled'
+    };
+    axios.put(`http://localhost:8000/doctor/${selectedAppointment._id}/rescheduledstatus`, newStatus)
+      .then(() => {
+        setAllAppointments(prevAppointments =>
+          prevAppointments.map(appointment =>
+            appointment._id === selectedAppointment._id ? { ...appointment, status: 'Rescheduled', rescheduledReason: rescheduledReason } : appointment
+          )
+        );
+        setCurrentPage(1); 
+        setShowRescheduleModal(false);  // Close modal after reschedule
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
 
   useEffect(() => {
     setAppointments(allAppointments);
   }, [allAppointments]);
 
-  const completeAppointment = (appointmentID) => {
-    axios.put(`http://localhost:8000/doctor/api/${appointmentID}/completeappointment`)
+  const handleUpdateStatus = (appointmentId, newStatus) => {
+    axios.put(`http://localhost:8000/appointments/${appointmentId}/status`, { status: newStatus })
       .then((response) => {
-        setAppointments(prevAppointments =>
+        setAllAppointments(prevAppointments =>
           prevAppointments.map(appointment =>
-            appointment._id === appointmentID ? { ...appointment, status: 'Completed' } : appointment
+            appointment._id === appointmentId ? { ...appointment, status: newStatus } : appointment
           )
         );
       })
       .catch((err) => {
-        console.log(err);
+        console.error("Error updating status:", err);
+        setError("Failed to update the appointment status.");
       });
   };
 
@@ -66,6 +102,11 @@ const OngoingAppointment = ({ allAppointments }) => {
   for (let i = 1; i <= Math.ceil(filteredAppointments.length / entriesPerPage); i++) {
     pageNumbers.push(i);
   }
+
+  // Function to toggle expanded row
+  const toggleRow = (appointmentId) => {
+    setExpandedRow(expandedRow === appointmentId ? null : appointmentId); // Toggle the expanded row
+  };
 
   return (
     <>
@@ -111,46 +152,78 @@ const OngoingAppointment = ({ allAppointments }) => {
           </Col>
         </Row>
 
-        <Table responsive striped  variant="light" className="mt-3">
+        <Table responsive striped variant="light" className="mt-3">
           <thead>
             <tr>
-              {/* <th style={{border: "1px solid #00000018"}}>Appointment ID</th> */}
               <th>Patient Name</th>
-              <th >Date</th>
+              <th>Service</th>
+              <th>Date</th>
               <th>Time</th>
-              <th>Reason</th>
               <th>Status</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
-            {currentAppointments.map((appointment, index) => {
+            {currentAppointments.map((appointment) => {
               const patient = appointment.patient;
               const patientName = `${patient.patient_firstName} ${patient.patient_middleInitial}. ${patient.patient_lastName}`;
+              const appointmentTypes = appointment.appointment_type.join(', ');
+              const patientImage = `${ip.address}/${patient.patient_image}` || `${ip.address}/${defaultImage}`;
+
               return (
-                <tr key={appointment._id}>
-                  {/* <td>{appointment._id}</td> */}
-                  <td>{patientName}</td>
-                  <td>{new Date(appointment.date).toLocaleDateString()}</td>
-                  <td>{appointment.time}</td>
-                  <td>{appointment.reason}</td>
-                  <td>                      
-                      <div className="ongoing-appointment">
-                        {appointment.status}
+                <React.Fragment key={appointment._id}>
+                  <tr
+                    onClick={() => toggleRow(appointment._id)} // Click to toggle collapse
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <td><img alt='Patient' src={patientImage} style={{ marginRight:'10px', width: '30px', height:'30px', borderRadius:'100px' }}/>{patientName}</td>
+                    <td>{appointmentTypes}</td>
+                    <td>{new Date(appointment.date).toLocaleDateString()}</td>
+                    <td>{appointment.time}</td>
+                    <td>
+                      <div className="d-flex justify-content-center">
+                        <div className="ongoing-appointment">
+                          {appointment.status}
+                        </div>
                       </div>
-                  </td>
-                  <td>
-                    <div>
+                    </td>
+                    <td>
+                      <div>
+                        <Link
+                          to="/information"
+                          state={{ pid: appointment.patient._id, did: did, apid: appointment._id }}
+                        >
+                          Px Management
+                        </Link>
+                        {' | '}
+                        {/* <span 
+                          onClick={(e) => { e.stopPropagation(); handleReschedule(appointment); }} 
+                          style={{ cursor: 'pointer', color: 'orange', textDecoration: 'underline', marginLeft: '5px' }}
+                        >
+                          Reschedule
+                        </span>
+                        {' | '} */}
+                        <span 
+                          style={{ color: 'green', cursor: 'pointer', textDecoration: 'underline', marginLeft: '5px' }} 
+                          onClick={(e) => { e.stopPropagation(); handleUpdateStatus(appointment._id, 'For Payment'); }}
+                        >
+                          For Payment
+                        </span>
+                      </div>
+                    </td>
+                  </tr>
 
-
-                      <Link to={`/information/${appointment.patient._id}/${did}/${appointment._id}`}>
-                       Px Management
-                      </Link>
-                      {'  '}
-                      <Link style={{color: 'green'}} variant="success" onClick={() => completeAppointment(appointment._id)}>Complete</Link>
-                    </div>
-                  </td>
-                </tr>
+                  {/* Collapsible row for "Reason" */}
+                  <tr>
+                    <td colSpan="6" style={{ padding: 0 }}>
+                      <Collapse in={expandedRow === appointment._id}>
+                        <div style={{ padding: '10px', backgroundColor: '#f8f9fa', transition: 'height 0.35s ease'}}>
+                          <strong>Reason:</strong> {appointment.reason}
+                        </div>
+                      </Collapse>
+                    </td>
+                  </tr>
+                </React.Fragment>
               );
             })}
           </tbody>
@@ -172,6 +245,16 @@ const OngoingAppointment = ({ allAppointments }) => {
           <Pagination.Last onClick={() => setCurrentPage(pageNumbers.length)} disabled={currentPage === pageNumbers.length} />
         </Pagination>
       </div>
+
+      {/* Reschedule Modal */}
+      {selectedAppointment && (
+        <RescheduleModal
+          show={showRescheduleModal}
+          handleClose={() => setShowRescheduleModal(false)}
+          handleConfirm={handleConfirmReschedule}
+          appointment={selectedAppointment}
+        />
+      )}
     </>
   );
 };

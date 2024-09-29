@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { Container, Navbar, Nav, NavDropdown } from 'react-bootstrap';
 import {  ChevronDown } from 'react-bootstrap-icons';
 import { image, ip } from '../../../ContentExport';
@@ -39,7 +39,7 @@ function DoctorNavbar({doctor_image, did}) {
         <div className="landing-page">
             <div >
                 <Navbar bg="" expand="lg" className="dn-navbar">
-                <Container>
+                <Container fluid>
                            
                             <img className="molino-logo" src={image.logo} alt="Logo" />
                             <div className='msn-container'>    
@@ -82,10 +82,14 @@ function DoctorNavbar({doctor_image, did}) {
                                 }
                                 id="basic-nav-dropdown"
                                 className="pnb-nav-link1"
-                            >   <NavDropdown.Item className="pnb-nav-link" onClick={onButtonContainer1Click}>Logout</NavDropdown.Item>
-                                {/* <NavDropdown.Item as={Link} to={`/accinfo/${pid}`}>Account Information</NavDropdown.Item>
-                                <NavDropdown.Divider />
-                                <NavDropdown.Item className="pnb-nav-link" onClick={onButtonContainer1Click}>Logout</NavDropdown.Item> */}
+                            >   
+                            
+                            <NavDropdown.Item as={Link} to="/account" state={{did: did}}>Account</NavDropdown.Item>
+                            <NavDropdown.Divider />
+                            <NavDropdown.Item className="pnb-nav-link" onClick={onButtonContainer1Click}>Logout</NavDropdown.Item>
+                                
+                                   
+                                
                             </NavDropdown>
                         </Nav>
                         

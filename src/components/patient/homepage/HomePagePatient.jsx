@@ -1,9 +1,10 @@
-import { Carousel, Container } from 'react-bootstrap';
+import { Container } from 'react-bootstrap';
 import PatientNavBar from "../PatientNavBar/PatientNavBar";
 import './HomePagePatient.css';
 import DoctorSpecialty from './DoctorSpecialty';
 import DoctorCarousel from './DoctorCarousel';
 import { usePatient } from '../PatientContext';
+import Footer from '../../Footer';
 
 function HomePagePatient() {
   const { patient } = usePatient(); // Get patient data from context
@@ -17,15 +18,21 @@ function HomePagePatient() {
   return (
     <>
       <PatientNavBar pid={patient._id} />
-      <Container fluid className='maincolor-container' style={{ overflowY: 'scroll', height: '100vh', paddingBottom: '80px', paddingTop: '1.5rem' }}>
-        <Container className='d-flex mb-3'>
-          <div>
-            <h1>Hello, {fullName}</h1>
-            <p>Welcome to the homepage</p>
+      <Container className='cont-fluid-no-gutter' fluid style={{overflowY: 'scroll', height: '100vh', paddingBottom: '100px', paddingTop: '1.5rem'}}>
+
+     
+        <div className="maincolor-container">
+          {/* Main Content Area */}
+          <div className="content-area">
+            <DoctorCarousel fluid className='w-100' pid={patient._id} />
+            <DoctorSpecialty fluid className='w-100' pid={patient._id} />
           </div>
-        </Container>
-        <DoctorCarousel pid={patient._id} />
-        <DoctorSpecialty pid={patient._id} />
+
+          {/* Footer at the bottom */}
+          <Container fluid className="footer-container cont-fluid-no-gutter">
+            <Footer />
+          </Container>
+        </div>
       </Container>
     </>
   );

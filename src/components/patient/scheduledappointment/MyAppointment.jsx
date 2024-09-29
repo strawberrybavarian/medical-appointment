@@ -10,6 +10,8 @@ import PendingAppointments from "./PendingAppointment";
 import RescheduledAppointment from "./RescheduledAppointments";
 import VerticalDoctorList from "./VerticalDoctorList";
 import { useLocation, useParams } from 'react-router-dom';
+import { Helmet } from 'react-helmet';
+import Footer from '../../Footer';
 function MyAppointment() {
     const [activeTab, setActiveTab] = useState("pending");
     const [appointments, setAppointments] = useState([]);
@@ -29,14 +31,18 @@ function MyAppointment() {
 
     return (
         <>
+            <Helmet>
+                <title>Molino Care | Patient</title>
+            </Helmet>
             <PatientNavBar pid={pid} />
-            <Container fluid className='maincolor-container' style={{ overflowY: 'scroll', height: '100vh', paddingBottom: '80px', paddingTop: '1.5rem' }}>
+            <Container className='cont-fluid-no-gutter' fluid style={{overflowY: 'scroll', height: '100vh', paddingBottom: '90px', paddingTop: '1.5rem'}}>
+            <div className='maincolor-container' >
 
-                <Container className="pt-5">
+            <div className='content-area'>
+            <Container>
                     <h2>My Appointments</h2>
                     <p className="text-muted">See your appointment details.</p>
                 </Container>
-
                 <Container>
                     <Row>
 
@@ -47,7 +53,7 @@ function MyAppointment() {
 
                         {/* Scrollable Appointments Section */}
                         <Col md={8}>
-                            <Container className="d-flex pt-4 maincolor-container">
+                            <Container className="d-flex content-area">
                                 <Nav fill variant="tabs" className="app-navtabs" activeKey={activeTab}>
                                     <Nav.Item>
                                         <Nav.Link eventKey="pending" onClick={() => setActiveTab("pending")}>Pending</Nav.Link>
@@ -67,17 +73,27 @@ function MyAppointment() {
                                 </Nav>
                             </Container>
 
-                            <div className="scrollable-appointments">
+                            <div className='content-area mb-5'>
                                 {activeTab === "pending" && <PendingAppointments appointments={appointments} setAppointments={setAppointments} />}
                                 {activeTab === "active" && <ActiveAppointment appointments={appointments} setAppointments={setAppointments} />}
                                 {activeTab === "cancel" && <CancelledAppointments appointments={appointments} setAppointments={setAppointments} />}
                                 {activeTab === "completed" && <CompleteAppointment appointments={appointments} setAppointments={setAppointments} />}
-                                {activeTab === "rescheduled" && <RescheduledAppointment />}
+                                {activeTab === "rescheduled" && <RescheduledAppointment appointments={appointments} setAppointments={setAppointments} />}
                             </div>
                         </Col>
-
+                     
                     </Row>
+                    
                 </Container>
+
+            </div>
+
+                            <div className="footer-container w-120 p-0 m-0 ">
+                                <Footer />
+                            </div>
+            </div>
+                
+                
             </Container>
         </>
     );

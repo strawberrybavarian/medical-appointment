@@ -106,7 +106,7 @@ const TodaysAppointment = () => {
   };
 
   return (
-    <Container className="white-background shadow-sm">
+    <Container className="white-background shadow-lg">
       <div style={{ padding: '30px', width: '100%' }}>
         <div style={{ marginTop: '20px', width: '100%' }}>
           <Row className="d-flex align-items-center">
