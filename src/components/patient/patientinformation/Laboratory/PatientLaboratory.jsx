@@ -19,17 +19,21 @@ const PatientLaboratory = ({ laboratoryResults }) => {
         }));
     };
     const handleViewPDF = (filePath) => {
-        const fullUrl = `http://192.168.1.6:8000${filePath}`;
+        const fullUrl = `http://localhost:8000${filePath}`;
         window.open(fullUrl, '_blank');  // Open PDF in new tab
     };
     
+    
+    
+    // Handle file download
     const handleDownload = async (filePath, fileName) => {
         try {
-            const fullUrl = `http://192.168.1.6:8000${filePath}`;
+            const fullUrl = `http://localhost:8000${filePath}`;
             console.log(`Attempting to download from URL: ${fullUrl}`);
     
             const response = await axios.get(fullUrl, {
                 responseType: 'blob', // Important for downloading binary files
+                withCredentials: true // Include this line
             });
     
             // Create a new Blob object using the response data
@@ -44,7 +48,6 @@ const PatientLaboratory = ({ laboratoryResults }) => {
             console.error('Error downloading the file:', error);
         }
     };
-    
     
     
 

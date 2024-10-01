@@ -11,7 +11,10 @@ require('dotenv').config();
 // CORS Configuration
 const cors = require('cors');
 app.use(cors({
-    
+    origin: 'http://localhost:3000',
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+    // Remove credentials: true
 }));
 
 app.use(express.json());
@@ -25,7 +28,12 @@ app.use('/images', express.static(path.join(__dirname, 'appointments', 'images')
 app.use('/images', express.static(path.join(__dirname, 'payment', 'images')));
 
 // Static file serving for uploaded PDFs
-app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
+app.use('/uploads', cors({
+    origin: 'http://localhost:3000',  // Replace with your frontend URL
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true
+}), express.static(path.join(__dirname, 'public/uploads')));
 
 // Generic route for serving files from /uploads, including PDFs
 app.get('/uploads/:filename', (req, res) => {
