@@ -84,8 +84,8 @@ const SidebarMenu = (props) => {
 
                             <CDBSidebarMenuItem className="font-style-poppins" icon="bell"> Notification </CDBSidebarMenuItem>
                             <CDBSidebarMenuItem className="font-style-poppins" icon="book" iconType="solid" onClick={() => navigate(`/medicalrecord`, { state: { did: props.did } })}> Medical Records </CDBSidebarMenuItem>
-                            <CDBSidebarMenuItem className="font-style-poppins" icon="user" iconType="solid" onClick={() => navigate(`/account`, { state: { did: props.did } })}> Account Information </CDBSidebarMenuItem>
-                            <CDBSidebarMenuItem className="font-style-poppins" icon="arrow-left" iconType="solid" onClick={handleLogout}> Log Out </CDBSidebarMenuItem>
+                            {/* <CDBSidebarMenuItem className="font-style-poppins" icon="user" iconType="solid" onClick={() => navigate(`/account`, { state: { did: props.did } })}> Account Information </CDBSidebarMenuItem>
+                            <CDBSidebarMenuItem className="font-style-poppins" icon="arrow-left" iconType="solid" onClick={handleLogout}> Log Out </CDBSidebarMenuItem> */}
                         </CDBSidebarMenu>
                     </CDBSidebarContent>
 

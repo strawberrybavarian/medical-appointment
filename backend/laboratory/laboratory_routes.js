@@ -1,44 +1,35 @@
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
-const LaboratoryController = require('./laboratory_controller')
-console.log("Laboratory routes connected");
-
-
+const LaboratoryController = require('./laboratory_controller');
+// Define where the files will be stored
 const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        // Save files in the public/uploads folder
-        const dir = path.join(__dirname, '../public/uploads');
-        if (!fs.existsSync(dir)) {
-            fs.mkdirSync(dir, { recursive: true });
-        }
-        cb(null, dir);
-    },
-    filename: function (req, file, cb) {
-        // Use timestamp and original filename for saving
-        cb(null, Date.now() + '-' + file.originalname);
-    }
+  destination: function (req, file, cb) {
+      const dir = path.join(__dirname, '../public/uploads');
+      if (!fs.existsSync(dir)) {
+          fs.mkdirSync(dir, { recursive: true });
+      }
+      cb(null, dir);
+  },
+  filename: function (req, file, cb) {
+      cb(null, Date.now() + '-' + file.originalname);
+  }
 });
-  
-  const fileFilter = (req, file, cb) => {
-    if (
-      file.mimetype === 'image/jpeg' || 
-      file.mimetype === 'image/png' ||
-      file.mimetype === 'application/pdf' || 
-      file.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' // DOCX MIME type
-    ) {
+
+// Set up file filtering (only allow PDF files)
+const fileFilter = (req, file, cb) => {
+  if (file.mimetype === 'application/pdf') {
       cb(null, true);
-    } else {
-      cb(new Error('File type not supported'), false);
-    }
-  };
-  
+  } else {
+      cb(new Error('Only PDF files are allowed'), false);
+  }
+};
 
-
+// Initialize multer middleware
 const upload = multer({ storage: storage, fileFilter: fileFilter });
 
+// Export routes for file upload
 module.exports = app => {
-    app.post('/doctor/api/createLaboratoryResult/:patientId/:appointmentId', upload.single('file'), LaboratoryController.createLaboratoryResult);
-    app.get('/doctor/api/laboratoryResult/download/:resultId', LaboratoryController.downloadLaboratoryFile);
-
+  app.post('/doctor/api/createLaboratoryResult/:patientId/:appointmentId', upload.single('file'), LaboratoryController.createLaboratoryResult);
+  app.get('/doctor/api/laboratoryResult/download/:resultId', LaboratoryController.downloadLaboratoryFile);
 };

@@ -5,9 +5,10 @@ const Doctors = require('../doctor/doctor_model')
 const Laboratory = require('./laboratory_model')
 const path = require('path');
 const fs = require('fs');
+
 const createLaboratoryResult = async (req, res) => {
     const { patientId, appointmentId } = req.params;
-    const { interpretation, recommendations, testResults } = req.body;
+    const { interpretation, recommendations, testResults = '[]' } = req.body;
 
     // Check if a file was uploaded
     if (!req.file) {
@@ -15,7 +16,7 @@ const createLaboratoryResult = async (req, res) => {
     }
 
     try {
-        // Safely parse testResults
+        // Safely parse testResults, default to an empty array if not provided
         let parsedTestResults;
         try {
             parsedTestResults = JSON.parse(testResults);
@@ -31,7 +32,7 @@ const createLaboratoryResult = async (req, res) => {
             patient: patientId,
             appointment: appointmentId,
             doctor: req.body.doctorId,
-            testResults: parsedTestResults,
+            testResults: parsedTestResults, // Will be an empty array if not passed
             interpretation: interpretation,
             recommendations: recommendations,
             file: {
@@ -73,6 +74,7 @@ const createLaboratoryResult = async (req, res) => {
         });
     }
 };
+
 
   
    

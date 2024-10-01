@@ -5,15 +5,18 @@ import { useLocation, useParams } from 'react-router-dom';
 import PatientHistory from '../Patient History/PatientHistory';
 import Prescription from '../Prescription/Prescription'; // Import the new Prescription component
 import Immunization from '../Immunization/Immunization';
+import PatientLaboratory from '../Laboratory/PatientLaboratory';
 const PatientMedicalRecord = ({pid}) => {
     console.log('PatientMedicalRecord',pid);
     
     const [thePrescriptions, setPrescriptions] = useState([]);
     const [theHistory, setHistory] = useState([]);
     const [theImmunization, setImmunization] = useState([]);
+    const [theLaboratory, setLaboratory] = useState([]);
     const [error, setError] = useState(null);
     const [activeTab, setActiveTab] = useState('findings');
-    
+
+ 
     const handleSelect = (selectedKey) => {
         // Update the active tab based on the selected event key
         setActiveTab(selectedKey);
@@ -27,9 +30,12 @@ const PatientMedicalRecord = ({pid}) => {
                     setPrescriptions(res.data.thePatient.patient_appointments);
                     setHistory(res.data.thePatient.patient_findings);
                     setImmunization(res.data.thePatient.immunizations);
+                    setLaboratory(res.data.thePatient.laboratoryResults);
+  
                 } else {
                     setPrescriptions([]);
-                    setHistory([]);  // If data is not as expected, set to empty array
+                    setHistory([]); 
+                    setLaboratory([]) // If data is not as expected, set to empty array
                 }
             })
             .catch((err) => {
@@ -39,6 +45,8 @@ const PatientMedicalRecord = ({pid}) => {
             });
     }, [pid]);
 
+ 
+    
     return (
         <div>
             <div className='pnb-component'>
@@ -64,6 +72,7 @@ const PatientMedicalRecord = ({pid}) => {
                     {activeTab === 'findings' && <PatientHistory patientHistory={theHistory} pid={pid}/>}
                     {activeTab === 'prescription' && <Prescription prescriptions={thePrescriptions} pid={pid} />} 
                     {activeTab === 'immunization' && <Immunization immunizations={theImmunization} pid={pid}/>}
+                    {activeTab === 'laboratory' && <PatientLaboratory laboratoryResults={theLaboratory} pid={pid}/>}
                 </Container>
             </div>
         </div>

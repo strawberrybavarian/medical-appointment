@@ -330,6 +330,7 @@ const findPatientById = (req, res) => {
       model: 'Immunization'
     })
     .populate('patient_findings')
+    .populate('laboratoryResults')
 
 
     .then((thePatient) => {

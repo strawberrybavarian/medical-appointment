@@ -1,6 +1,6 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { useParams, useLocation } from "react-router-dom";
+import { useParams, useLocation, Link } from "react-router-dom";
 import { Nav, Container } from 'react-bootstrap';
 import SidebarMenu from "../sidebar/SidebarMenu";
 import AccountInfo from "./AccountInfo";
@@ -9,7 +9,8 @@ import DoctorAvailability from "./DoctorAvailability";
 import DoctorNavbar from "../navbar/DoctorNavbar";
 import DoctorManageServices from "./DoctorManageServices";  // Import the new component
 import Footer from "../../Footer";
-
+import { ChevronLeft } from "react-bootstrap-icons";
+import './AccountInfo.css';
 function DoctorInformation() {
     const location = useLocation();
     const { did } = location.state || {};
@@ -44,43 +45,50 @@ function DoctorInformation() {
 
     return (
         <div className="d-flex justify-content-center">
-            <SidebarMenu doctor_image={theImage} doctor_name={theName} did={theId} />
+            {/* <SidebarMenu doctor_image={theImage} doctor_name={theName} did={theId} /> */}
             <div style={{ width: '100%' }}> 
-                <DoctorNavbar doctor_image={theImage}/>
+                <DoctorNavbar doctor_image={theImage} did={did}/>
                 <Container fluid className='cont-fluid-no-gutter' style={{overflowY: 'scroll', height: '100vh', paddingBottom: '100px', paddingTop: '1.5rem'}}>
                         
                     <div className="maincolor-container">
                         <div className="content-area">
+                            
                             <Container>
-                                <Nav fill variant="tabs" className="app-navtabs" defaultActiveKey="/home">
-                                    <Nav.Item>
-                                        <Nav.Link onClick={() => setActiveTab("info")}>My Personal Information</Nav.Link>
-                                    </Nav.Item>
-                                    <Nav.Item>
-                                        <Nav.Link onClick={() => setActiveTab("availability")}>Manage Availability</Nav.Link>
-                                    </Nav.Item>
-                                    <Nav.Item>
-                                        <Nav.Link onClick={() => setActiveTab("DrTwoFactorAuth")}>Two Factor Authentication</Nav.Link>
-                                    </Nav.Item>
-                                    <Nav.Item>
-                                        <Nav.Link onClick={() => setActiveTab("services")}>Manage Services</Nav.Link> {/* Add the new tab */}
-                                    </Nav.Item>
-                                </Nav>
+                      
+
+                            <Link
+                                to="/dashboard"
+                                state={{ did }}
+                                className="mb-3 no-decoration"
+                                style={{ marginTop: '8px' }}
+                            >
+                                <ChevronLeft size={20} className="ml-5" /> Back
+                            </Link>
+
+                            <div className="horizontal-tabs">
+                                    <a onClick={() => setActiveTab("info")}>My details</a>
+                                    <a onClick={() => setActiveTab("availability")}>Availability</a>
+                                    <a onClick={() => setActiveTab("DrTwoFactorAuth")}>Authentication</a>
+                                    <a onClick={() => setActiveTab("services")}>Services</a> 
+		                    </div> 
 
                             </Container>
                        
-                            <Container>
-                                {activeTab === 'info' && <AccountInfo did={did} />}
-                                {activeTab === 'DrTwoFactorAuth' && <DrTwoFactorAuth setId={did} />}
-                                {activeTab === 'availability' && <DoctorAvailability doctorId={did} />} 
-                                {activeTab === 'services' && <DoctorManageServices doctorId={did} />}  {/* Render the new component */}
+                            <Container className="border-top  ">
+                              
+                                    {activeTab === 'info' && <AccountInfo did={did} />}
+                                    {activeTab === 'DrTwoFactorAuth' && <DrTwoFactorAuth setId={did} />}
+                                    {activeTab === 'availability' && <DoctorAvailability doctorId={did} />} 
+                                    {activeTab === 'services' && <DoctorManageServices doctorId={did} />}  {/* Render the new component */}
+                               
+                               
                             </Container>
                        
                         </div>
 
-                        {/* <Container fluid className="footer-container cont-fluid-no-gutter w-100">
+                        <Container fluid className="footer-container cont-fluid-no-gutter w-100 mt-5">
                             <Footer />
-                        </Container> */}
+                        </Container>
                     </div>
                         
                        
