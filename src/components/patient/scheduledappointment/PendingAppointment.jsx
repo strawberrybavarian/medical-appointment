@@ -27,15 +27,12 @@ function PendingAppointments({ appointments, setAppointments }) {
 
         axios.put(`http://localhost:8000/patient/api/${selectedAppointment._id}/updateappointment`, { cancelReason: cancelReason })
             .then((response) => {
-                
                 console.log(response.data);
-
                 setAppointments(prevAppointments => 
                     prevAppointments.map(appointment => 
                         appointment._id === selectedAppointment._id ? { ...appointment, status: 'Cancelled', cancelReason: cancelReason } : appointment
                     )
                 );
-
                 handleCloseModal();
             })
             .catch((err) => {
@@ -64,10 +61,10 @@ function PendingAppointments({ appointments, setAppointments }) {
                date.getFullYear() === today.getFullYear();
     };
 
-    // Group and sort appointments by month
+    // Group and sort appointments by month, latest first
     const groupedAppointments = appointments
         .filter(appointment => appointment.status === 'Pending')
-        .sort((a, b) => new Date(a.date) - new Date(b.date))
+        .sort((a, b) => new Date(b.date) - new Date(a.date))  // Sort by date in descending order
         .reduce((groups, appointment) => {
             const { monthIndex, month, year } = formatDate(appointment.date);
             const groupKey = `${month}-${year}`; // Use month and year as a group key
@@ -120,17 +117,13 @@ function PendingAppointments({ appointments, setAppointments }) {
                                             <div className='pa-cont2'>
                                                 <p style={{ fontSize: '1rem'}}> <PeopleFill className='font-gray' size={20} style={{marginRight: '0.7rem'}}/> {appointment.medium}</p>
                                                 <p><PencilFill className='font-gray' size={20} style={{marginRight: '0.7rem'}}/> Primary Concern : {appointment.reason} </p>    
-
                                             </div>
-                                            {/* <div className='pa-cont3'> 
-
-                                            </div> */}
                                         </Container>
                                         <div className="bContainer">
                                             <Button onClick={() => handleCancelClick(appointment)}>Cancel</Button>
                                         </div>
                                     </Container>
-                                )
+                                );
                             })}
                         </React.Fragment>
                     ))}

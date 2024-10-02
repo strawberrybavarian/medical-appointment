@@ -3,7 +3,18 @@ const app = express();
 const port = 8000;  
 const path = require('path');
 const fs = require('fs');
+const session = require('express-session');
+const { ensurePatientSession, ensureDoctorSession } = require('./SessionMiddleware');
 
+
+app.use(session({
+    secret: 'your_secret_key', // Replace with a strong secret key
+    resave: false,
+    saveUninitialized: true,
+    cookie: {
+        maxAge: 24 * 60 * 60 * 1000 // 1 day
+    }
+}));
 // Database and environment setup
 require("./config/mongoose");
 require('dotenv').config();

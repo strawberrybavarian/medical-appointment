@@ -8,6 +8,10 @@ const PatientSchema = new Schema({
         type: String,
         unique: true
     },
+    role:{
+        type: String,
+        default: 'Patient'
+    },
     patient_image: {   
         type: String,
     },

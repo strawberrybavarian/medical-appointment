@@ -420,6 +420,23 @@ const updatePatientImage = async (req, res) => {
   }
 };
 
+// PatientController.js
+const createPatientSession = (req, res) => {
+  const { userId, role } = req.body;
+
+  if (role === "Patient") {
+      req.session.userId = userId;  // Store the user ID in the session
+      req.session.role = role;      // Store the role to restrict session to patients
+      
+      // Log the session data in the backend console
+      console.log('Session Data:', req.session);
+
+      res.json({ message: "Session created successfully" });
+  } else {
+      res.status(403).json({ message: "Unauthorized role" });
+  }
+};
+
 
 
 
@@ -440,5 +457,6 @@ module.exports = {
     sendOTP,
     bookedSlots,
     createUnregisteredPatient,
-    updatePatientImage
+    updatePatientImage,
+    createPatientSession
 }

@@ -32,7 +32,7 @@ function ChooseDoctorSpecialization({ did }) {
 
     return (
         <>
-             <PatientNavBar/>
+             <PatientNavBar pid={patient._id}/>
 
            
 <div style={{paddingTop: '40px'}}>

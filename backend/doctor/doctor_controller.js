@@ -222,6 +222,7 @@ const updateDoctorDetails = (req, res) => {
 const findAllDoctors = (req, res) => {
     Doctors.find()
         .populate('dr_posts')
+        .populate('dr_services')
         .then(allDataDoctors => {
             res.json({ theDoctor: allDataDoctors });
         })
@@ -260,9 +261,9 @@ const findUniqueSpecialties = (req, res) => {
 const updateDoctorImage = async (req, res) => {
     try {
       const doctorId = req.params.id;
-      const imagePath = `images/${req.file.filename}`; 
+      const imagePath = `images/${req.file.filename}`; // Path to saved image
   
-
+      // Update doctor's image in the database
       const updatedDoctor = await Doctors.findByIdAndUpdate(doctorId, { dr_image: imagePath }, { new: true });
   
       res.json({ updatedDoctor, message: 'Doctor image updated successfully' });
@@ -270,7 +271,7 @@ const updateDoctorImage = async (req, res) => {
       console.error('Error updating doctor image:', error);
       res.status(500).json({ message: 'Error updating doctor image', error });
     }
-};
+  };
 // Get Doctor by ID
 const findDoctorById = (req, res) => {
     Doctors.findOne({ _id: req.params.id })

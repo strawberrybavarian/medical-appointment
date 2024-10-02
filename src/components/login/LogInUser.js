@@ -71,12 +71,21 @@ const LogInUser = () => {
 
                 window.alert("Successfully logged in");
                 navigate("/dashboard", { state: { did: userId } });
+
+
+
             } else if (userRole === "Patient") {
                 const userId = user._id;
                 if (user.patient_password === password) {
                     setPatient(user); // Store patient data in context
-                    window.alert("Successfully logged in");
-                    navigate(`/homepage`);
+                    try {
+                        await axios.post(`${ip.address}/api/patient/session`, { userId: user._id, role: userRole });
+                        window.alert("Successfully logged in");
+                        navigate(`/homepage`); // Redirect to patient homepage
+                    } catch (err) {
+                        console.error('Error creating session:', err);
+                        window.alert("An error occurred while logging in.");
+                    }
                 } else {
                     window.alert("Invalid email or password. Please try again.");
                 }

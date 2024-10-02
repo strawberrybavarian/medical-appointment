@@ -25,7 +25,6 @@ import AppointmentForm from './components/patient/doctorprofile/AppointmentForm'
 //Patient
 import HomePagePatient from './components/patient/homepage/HomePagePatient';
 import ChooseDoctor from './components/patient/choosedoctor/choosedoctor';
-
 import MyAppointment from './components/patient/scheduledappointment/MyAppointment';
 import MainPatientInformation from './components/patient/patientinformation/MainPatientInformation';
 import DoctorInformation from './components/practitioner/accountinfo/DoctorInformation';
@@ -59,6 +58,7 @@ import AdminAppointmentMain from './components/staffs/admin/appointment/AdminApp
 import SasMain from './components/staffs/admin/specialtyandservices/SasMain';
 import StaffsManagement from './components/staffs/admin/management/account/StaffsManagement';
 import { PatientProvider } from './components/patient/PatientContext';
+import ChooseDoctorServices from './components/patient/homepage/ChooseDoctorServices';
 
 
 function App() {
@@ -87,6 +87,7 @@ function App() {
                
           <Route path={"/choosedoctor"} element={<ChooseDoctor />}/>
           <Route path={"/choosedoctor/:specialty"} element={<ChooseDoctorSpecialization />} />
+          <Route path={"/choosedoctor/service/:services"} element={<ChooseDoctorServices />} />
           <Route path={"/doctorprofile"} element={<DoctorProfile />}/>
           <Route path={"/myappointment"} element={<MyAppointment />}/>
           <Route path={"/accinfo"} element={<MainPatientInformation />}/>

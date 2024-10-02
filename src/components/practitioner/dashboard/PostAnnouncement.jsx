@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { Container, Row, Col, Dropdown, ButtonGroup } from "react-bootstrap";
+import { Container, Row, Col, Dropdown, ButtonGroup, Button } from "react-bootstrap";
 import axios from "axios";
-import Slider from "react-slick";  // Importing react-slick for the slider
 import CreatePostModal from "./CreatePostModal";
 import EditPostModal from "./EditPostModal";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEllipsisH, faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons';
-// import { textAlign } from "html2canvas/dist/types/css/property-descriptors/text-align";
 
 function PostAnnouncement({ doctor_image, doctor_name, did }) {
   const [thePost, setThePost] = useState(""); 
@@ -16,13 +14,26 @@ function PostAnnouncement({ doctor_image, doctor_name, did }) {
   const [showCreatePostModal, setShowCreatePostModal] = useState(false); 
   const [showEditPostModal, setShowEditPostModal] = useState(false); 
   const [editPostId, setEditPostId] = useState(null); 
+  const [currentImageIndexes, setCurrentImageIndexes] = useState({}); // Store individual image indexes for each post
 
   const defaultImage = "images/014ef2f860e8e56b27d4a3267e0a193a.jpg";
 
   useEffect(() => {
     axios
       .get(`http://localhost:8000/doctor/api/post/getallpost/${did}`)
-      .then((res) => setThePosts(res.data.posts.reverse()))
+      .then((res) => {
+        const posts = res.data.posts.reverse();
+        setThePosts(posts);
+
+        // Initialize image indexes for each post
+        const initialIndexes = {};
+        posts.forEach((post) => {
+          if (post.images && post.images.length > 0) {
+            initialIndexes[post._id] = 0; // Initialize to the first image
+          }
+        });
+        setCurrentImageIndexes(initialIndexes);
+      })
       .catch((err) => console.log(err));
   }, [did]);
 
@@ -73,30 +84,27 @@ function PostAnnouncement({ doctor_image, doctor_name, did }) {
       });
   };
 
-  // Slider settings for react-slick
-  const sliderSettings = {
-    dots: true,  // Show dots for navigation like Instagram
-    infinite: false,  // Do not loop around
-    speed: 500,
-    slidesToShow: 1,
-    slidesToScroll: 1,
-    prevArrow: <FontAwesomeIcon icon={faChevronLeft} className="slick-prev" />,
-    nextArrow: <FontAwesomeIcon icon={faChevronRight} className="slick-next" />,
-    swipeToSlide: true,  // Allow swiping to slide images like Instagram
+  // Handler for navigating to the previous image for a specific post
+  const handlePreviousImage = (postId, images) => {
+    setCurrentImageIndexes((prevIndexes) => ({
+      ...prevIndexes,
+      [postId]: prevIndexes[postId] === 0 ? images.length - 1 : prevIndexes[postId] - 1,
+    }));
   };
-  
-  // CSS changes
-  const sliderContainerStyle = {
-    width: '100%',  // Ensure the slider takes the full width
-    maxWidth: '400px',  // Limit the max width for better control
-    margin: '0 auto', 
+
+  // Handler for navigating to the next image for a specific post
+  const handleNextImage = (postId, images) => {
+    setCurrentImageIndexes((prevIndexes) => ({
+      ...prevIndexes,
+      [postId]: prevIndexes[postId] === images.length - 1 ? 0 : prevIndexes[postId] + 1,
+    }));
   };
 
   return (
-    <Container className="pt-5">
+    <Container fluid className="pt-5 w-100">
       <Row className="justify-content-center mb-3">
-        <Col xs={12} md={8}>
-          <div className="post-container shadow-sm d-flex align-items-center p-3 w-100 ">
+        <Col>
+          <div className="post-container shadow-sm d-flex align-items-center p-3 w-100">
             <img
               src={doctor_image ? `http://localhost:8000/${doctor_image}` : defaultImage}
               alt={doctor_name}
@@ -143,13 +151,13 @@ function PostAnnouncement({ doctor_image, doctor_name, did }) {
       />
 
       {/* Posts List */}
-      <Row className="justify-content-center">
-        <Col xs={12} md={8} className="d-flex justify-content-center">
+      <Row className="justify-content-center p-0">
+        <Col className="d-flex justify-content-center ">
           <div className="w-100">
             {thePosts.map((post, index) => 
               post && post.content ? (  // Check if post and content exist
-                <div key={index} className="posted-announcement-container shadow-sm d-flex flex-column align-items-start p-4 mb-3 w-100">
-                  <div className="d-flex w-100 align-items-center justify-content-between">
+                <div key={index} className="posted-announcement-container shadow-sm d-flex flex-column align-items-start mb-3 w-100">
+                  <div className="d-flex w-100 align-items-center justify-content-between p-3">
                     <div className="d-flex align-items-center">
                       <img
                         src={doctor_image ? `http://localhost:8000/${doctor_image}` : defaultImage}
@@ -177,23 +185,39 @@ function PostAnnouncement({ doctor_image, doctor_name, did }) {
                   </div>
 
                   <div className="mt-2 w-100">
-                    <div dangerouslySetInnerHTML={{ __html: post.content }} />
-                    <div className="d-flex justify-content-center w-100" style={{width:'100%'}}>
+                    <div className="px-4">
+                      <div dangerouslySetInnerHTML={{ __html: post.content }} />
+                    </div>
+                   
+                    <div className=" w-100 p-0 m-0 no-gutters" style={{ position: 'relative', margin: '0 auto' }}>
                       {post.images && post.images.length > 0 && (
-                        <Container style={sliderContainerStyle}>  {/* Apply the container styling */}
-                          <Slider {...sliderSettings}>
-                            {post.images.map((img, i) => (
-                              <div key={i}>
-                                <img
-                                  src={img}
-                                  alt="Post"
-                                  className="d-block mx-auto"  // Ensure image is centered
-                                  style={{ width: "100%", height: "400px", objectFit: "cover" }} // Ensure image fits correctly
-                                />
-                              </div>
-                            ))}
-                          </Slider>
-                        </Container>
+                        <>
+                          <img
+                            src={post.images[currentImageIndexes[post._id]]}
+                            alt="Post"
+                            className="d-block mx-auto"
+                            style={{ width: "100%", height: "600px", objectFit: "cover" }}
+                          />
+                          {/* Left chevron button */}
+                          <Button
+                            className="position-absolute top-50 start-0 mx-3 translate-middle-y"
+                            variant="light"
+                            onClick={() => handlePreviousImage(post._id, post.images)}
+                            style={{ zIndex: 1,  borderRadius: '9999px' }}
+                          >
+                            <FontAwesomeIcon icon={faChevronLeft} />
+                          </Button>
+                          {/* Right chevron button */}
+                          <Button
+                            className="position-absolute top-50 end-0 translate-middle-y"
+                            
+                            variant="light"
+                            onClick={() => handleNextImage(post._id, post.images)}
+                            style={{ zIndex: 1, borderRadius: '9999px' }}
+                          >
+                            <FontAwesomeIcon icon={faChevronRight} />
+                          </Button>
+                        </>
                       )}
                     </div>
                   </div>

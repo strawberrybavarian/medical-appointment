@@ -34,7 +34,7 @@ const storage = multer.diskStorage({
 module.exports = app => { 
     app.post('/patient/api/:id/updateimage', upload.single('image'), PatientController.updatePatientImage);
     app.get('/patient/api/test',(req,res)=>{res.json({message:"the api is working"})});
-    
+    app.post('/api/patient/session', PatientController.createPatientSession);
     //New Patient Sign Up
     app.post('/patient/api/signup', PatientController.NewPatientSignUp);
     //

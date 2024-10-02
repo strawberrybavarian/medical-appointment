@@ -9,9 +9,11 @@ const CropResizeTiltModal = ({ isOpen, onRequestClose, imageSrc, onSave }) => {
   const [zoom, setZoom] = useState(1);
   const [rotation, setRotation] = useState(0);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
+  const [loading, setLoading] = useState(false); // Track if save operation is in progress
 
   const onCropComplete = useCallback((croppedArea, croppedAreaPixels) => {
     setCroppedAreaPixels(croppedAreaPixels);
+    console.log('Cropped Area Pixels:', croppedAreaPixels);  // Debugging to check if crop area is calculated
   }, []);
 
   const createImage = (url) =>
@@ -24,76 +26,65 @@ const CropResizeTiltModal = ({ isOpen, onRequestClose, imageSrc, onSave }) => {
     });
 
   const getCroppedImg = async (imageSrc, croppedAreaPixels, rotation = 0) => {
-    const image = await createImage(imageSrc);
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
+    try {
+      const image = await createImage(imageSrc);
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
 
-    const maxSize = Math.max(image.width, image.height);
-    const safeArea = 2 * ((maxSize / 2) * Math.sqrt(2));
-    
-    canvas.width = safeArea;
-    canvas.height = safeArea;
+      canvas.width = croppedAreaPixels.width;
+      canvas.height = croppedAreaPixels.height;
 
-    ctx.translate(safeArea / 2, safeArea / 2);
-    ctx.rotate((rotation * Math.PI) / 180);
-    ctx.translate(-safeArea / 2, -safeArea / 2);
+      ctx.translate(canvas.width / 2, canvas.height / 2);
+      ctx.rotate((rotation * Math.PI) / 180);
+      ctx.translate(-canvas.width / 2, -canvas.height / 2);
+      ctx.drawImage(
+        image,
+        croppedAreaPixels.x,
+        croppedAreaPixels.y,
+        croppedAreaPixels.width,
+        croppedAreaPixels.height,
+        0,
+        0,
+        canvas.width,
+        canvas.height
+      );
 
-    ctx.drawImage(
-      image,
-      safeArea / 2 - image.width * 0.5,
-      safeArea / 2 - image.height * 0.5
-    );
-    
-    const data = ctx.getImageData(0, 0, safeArea, safeArea);
-    canvas.width = croppedAreaPixels.width;
-    canvas.height = croppedAreaPixels.height;
-
-    ctx.putImageData(
-      data,
-      Math.round(0 - safeArea / 2 + image.width * 0.5 - croppedAreaPixels.x),
-      Math.round(0 - safeArea / 2 + image.height * 0.5 - croppedAreaPixels.y)
-    );
-
-    // Draw a circle
-    const diameter = Math.min(croppedAreaPixels.width, croppedAreaPixels.height);
-    const circleCanvas = document.createElement('canvas');
-    const circleCtx = circleCanvas.getContext('2d');
-    circleCanvas.width = diameter;
-    circleCanvas.height = diameter;
-
-    circleCtx.beginPath();
-    circleCtx.arc(diameter / 2, diameter / 2, diameter / 2, 0, Math.PI * 2);
-    circleCtx.closePath();
-    circleCtx.clip();
-
-    circleCtx.drawImage(
-      canvas,
-      (croppedAreaPixels.width - diameter) / 2,
-      (croppedAreaPixels.height - diameter) / 2,
-      diameter,
-      diameter,
-      0,
-      0,
-      diameter,
-      diameter
-    );
-
-    return new Promise((resolve) => {
-      circleCanvas.toBlob((blob) => {
-        const finalCroppedFile = new File([blob], 'cropped-image.png', { type: 'image/png' });
-        const reader = new FileReader();
-        reader.onload = () => {
-          resolve(reader.result);
-        };
-        reader.readAsDataURL(finalCroppedFile);
+      return new Promise((resolve) => {
+        canvas.toBlob((blob) => {
+          const fileReader = new FileReader();
+          fileReader.readAsDataURL(blob);
+          fileReader.onloadend = () => {
+            console.log('Cropped Image Base64:', fileReader.result);  // Debugging: Ensure the image is created
+            resolve(fileReader.result);  // Pass base64 image string
+          };
+        });
       });
-    });
+    } catch (error) {
+      console.error('Error cropping image:', error);
+      throw new Error('Failed to crop image');
+    }
   };
 
   const handleSave = async () => {
-    const croppedImageSrc = await getCroppedImg(imageSrc, croppedAreaPixels, rotation);
-    onSave(croppedImageSrc);
-    onRequestClose();
+    if (!croppedAreaPixels) {
+      console.error('No cropped area detected!');  // Debugging: Ensure cropping area is defined
+      return;
+    }
+
+    setLoading(true); // Indicate saving is in progress
+    try {
+      console.log('Starting image crop...');  // Debugging: Ensure we are in the save flow
+      const croppedImageSrc = await getCroppedImg(imageSrc, croppedAreaPixels, rotation);
+      console.log('Image cropped successfully, now saving...');  // Debugging: Ensure cropping is successful
+
+      onSave(croppedImageSrc);  // Pass the cropped image back to parent
+      onRequestClose();  // Close the modal
+      console.log('Modal closed');  // Debugging: Check if modal closing is triggered
+    } catch (error) {
+      console.error('Failed to save cropped image:', error);  // Handle error in cropping or saving
+    } finally {
+      setLoading(false);  // Stop loading state
+    }
   };
 
   return (
@@ -119,7 +110,7 @@ const CropResizeTiltModal = ({ isOpen, onRequestClose, imageSrc, onSave }) => {
             onCropChange={setCrop}
             onZoomChange={setZoom}
             onRotationChange={setRotation}
-            onCropComplete={onCropComplete}
+            onCropComplete={onCropComplete}  // Make sure cropping is completed
           />
         </div>
 
@@ -146,7 +137,13 @@ const CropResizeTiltModal = ({ isOpen, onRequestClose, imageSrc, onSave }) => {
           />
         </div>
 
-        <Button style={{ marginTop: "15px" }} onClick={handleSave}>Save</Button>
+        <Button
+          style={{ marginTop: "15px" }}
+          onClick={handleSave}
+          disabled={loading}  // Disable the button while saving
+        >
+          {loading ? 'Saving...' : 'Save'}
+        </Button>
       </div>
     </Modal>
   );

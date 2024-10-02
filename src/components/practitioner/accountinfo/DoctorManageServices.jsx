@@ -13,7 +13,7 @@ function DoctorManageServices({ doctorId }) {
     // Fetch all services and the doctor's current services
     useEffect(() => {
         // Fetch all services
-        axios.get('http://localhost:8000/admin/get/services')
+        axios.get('http://localhost:8000/admin/getall/services')
             .then((res) => {
                 setAvailableServices(res.data);
             })

@@ -8,7 +8,7 @@ module.exports = app => {
     app.post('/admin/add/services', ServicesController.createService);
 
 
-    app.get('/admin/get/services', ServicesController.getAllServices);
+    app.get('/admin/getall/services', ServicesController.getAllServices);
     
 
     app.get('/admin/services/:id', ServicesController.getServiceById);
