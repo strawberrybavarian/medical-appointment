@@ -1,16 +1,18 @@
 import { useNavigate } from "react-router-dom";
-import { Card, Container, Button } from "react-bootstrap";
-import axios from "axios";
+import { Card, Button, Container } from "react-bootstrap";
 import { useEffect, useState, useRef } from "react";
 import { ChevronLeft, ChevronRight } from "react-bootstrap-icons";
+import axios from "axios";
 import { usePatient } from "../PatientContext";
 
 const defaultImage = "images/014ef2f860e8e56b27d4a3267e0a193a.jpg";
+
 function DoctorCarousel({ pid }) {
   const [doctors, setDoctors] = useState([]);
   const navigate = useNavigate();
   const scrollRef = useRef(null);
   const { patient } = usePatient();
+  const { setDoctorId } = usePatient();
   // Fetch all the doctors when the component loads
   useEffect(() => {
     axios
@@ -24,7 +26,8 @@ function DoctorCarousel({ pid }) {
   }, []);
 
   const handleDoctorClick = (did) => {
-    navigate(`/doctorprofile`, { state: { pid: patient._id, did } }); // Navigate to doctor profile with the patient ID
+    setDoctorId(did);
+    navigate(`/doctorprofile`); // Navigate to doctor profile with the patient ID
   };
 
   const timeSinceLastActive = (lastActive) => {

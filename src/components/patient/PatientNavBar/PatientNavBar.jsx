@@ -27,7 +27,7 @@ function PatientNavBar({pid}) {
             console.log(err);
           });
       }, [pid]);
-    console.log('patient', patient.patient_image);
+    
     const logoutUser = () => {
         setPatient(null);  // Clear the patient context (session)
         localStorage.removeItem('patient');  // Clear the localStorage to remove persistent session data

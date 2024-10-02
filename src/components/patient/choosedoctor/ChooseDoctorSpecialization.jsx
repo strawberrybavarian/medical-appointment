@@ -11,6 +11,7 @@ function ChooseDoctorSpecialization({ did }) {
     const navigate = useNavigate();
     const defaultImage = "images/014ef2f860e8e56b27d4a3267e0a193a.jpg";
     const { patient } = usePatient();
+    const { setDoctorId } = usePatient();
     useEffect(() => {
         axios.get(`${ip.address}/doctor/api/alldoctor`)
             .then((res) => {
@@ -25,7 +26,8 @@ function ChooseDoctorSpecialization({ did }) {
     }, [specialty]);
 
     const handleDoctorClick = (did) => {
-        navigate(`/doctorprofile`, { state: { pid, did } });
+        setDoctorId(did);
+        navigate(`/doctorprofile`);
     };
 
     return (
