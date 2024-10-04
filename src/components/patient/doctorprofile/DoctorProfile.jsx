@@ -11,19 +11,18 @@ import DoctorAnnouncements from "./DoctorAnnouncements";
 import DoctorCalendar from "./DoctorCalendar";
 import { usePatient } from "../PatientContext";
 import Footer from "../../Footer";
+import DoctorBiography from "./DoctorBiography";
+
 function DoctorProfile() {
-    const [theDoctor, setTheDoctor] = useState(null); // Initialize as null
+    const [theDoctor, setTheDoctor] = useState(null); 
     const [theImage, setTheImage] = useState("");
     const [FullName, setFullName] = useState("");
-    const [thePost, setThePost] = useState([]);
-
+    const [biography, setBiography] = useState({});
     const [openProfile, setOpenProfile] = useState(false); 
     const [openAnnouncements, setOpenAnnouncements] = useState(false);
     const [openCalendar, setOpenCalendar] = useState(false);
+    const { doctorId, patient } = usePatient();
 
-    const { doctorId, patient } = usePatient(); // Get doctorId and patient from context
-
-    // Ensure we only attempt to fetch data if doctorId is present
     useEffect(() => {
         if (doctorId) {
             axios.get(`${ip.address}/doctor/api/finduser/${doctorId}`)
@@ -40,31 +39,29 @@ function DoctorProfile() {
                     console.log(err);
                 });
         }
-    }, [doctorId]); // Call useEffect unconditionally, logic inside only executes if doctorId is present
-
-    // Fetch doctor posts if doctorId is present
-    useEffect(() => {
-        if (doctorId) {
-            axios.get(`${ip.address}/doctor/api/post/getallpost/${doctorId}`)
-                .then((res) => {
-                    setThePost(res.data.posts);
-                })
-                .catch((err) => {
-                    console.log(err);
-                });
-        }
     }, [doctorId]);
 
-    // If doctorId is not available, return null or redirect
+    useEffect(() => {
+        const fetchBiography = async () => {
+          try {
+            const response = await axios.get(`${ip.address}/doctor/${doctorId}/getbiography`);
+            setBiography(response.data.biography || {});
+          } catch (error) {
+            console.error('Error fetching biography:', error);
+          }
+        };
+    
+        fetchBiography();
+      }, [doctorId]);
+
     if (!doctorId) {
         return <p>Please select a doctor.</p>;
     }
 
-    // Only render the component when theDoctor has been fetched
     return theDoctor ? (
         <>
             <PatientNavBar pid={patient._id} />
-            <Container className='cont-fluid-no-gutter' fluid style={{overflowY: 'scroll', height: '100vh', paddingBottom: '100px', paddingTop: '1.5rem'}}>
+            <Container fluid style={{ overflowY: 'scroll', height: '100vh', paddingBottom: '100px', paddingTop: '1.5rem' }}>
                 <Container className='maincolor-container'>
                     <div className="content-area">
                         <Row>
@@ -81,7 +78,6 @@ function DoctorProfile() {
                                 <DoctorWeeklySchedule did={doctorId} />
                             </Container>
 
-                            {/* Doctor Profile Section */}
                             <Container className="announcement-container white-background align-items-center mt-3 mb-3 shadow-sm">
                                 <div className="d-flex align-items-center">
                                     <div className="w-100 d-flex align-items-center">
@@ -103,13 +99,11 @@ function DoctorProfile() {
 
                                 <Collapse in={openProfile}>
                                     <div id="profile-collapse">
-                                        {/* Content for Doctor Profile goes here */}
-                                        <DoctorAnnouncements posts={thePost} />
+                                        <DoctorBiography biography={biography} doctor_image={theImage} doctor_name={FullName} />
                                     </div>
                                 </Collapse>
                             </Container>
 
-                            {/* Announcements Section */}
                             <Container className="announcement-container white-background align-items-center mt-3 mb-3 shadow-sm">
                                 <div className="d-flex align-items-center">
                                     <div className="w-100 d-flex align-items-center">
@@ -131,12 +125,11 @@ function DoctorProfile() {
 
                                 <Collapse in={openAnnouncements}>
                                     <div id="announcements-collapse">
-                                        <DoctorAnnouncements posts={thePost} />
+                                        <DoctorAnnouncements doctorId={doctorId} theImage={theImage} />
                                     </div>
                                 </Collapse>
                             </Container>
 
-                            {/* Doctor Calendar Section */}
                             <Container className="announcement-container white-background align-items-center mt-3 mb-3 shadow-sm">
                                 <div className="d-flex align-items-center">
                                     <div className="w-100 d-flex align-items-center">
@@ -174,13 +167,12 @@ function DoctorProfile() {
 
                 </Container>
 
-                <Container fluid className='cont-fluid-no-gutter' style={{marginTop: '10rem'}}>
-                <Footer />
+                <Container fluid style={{ marginTop: '10rem' }}>
+                    <Footer />
+                </Container>
             </Container>
-            </Container>
-        
         </>
-    ) : null; // Don't render anything until `theDoctor` is fetched
+    ) : null;
 }
 
 export default DoctorProfile;

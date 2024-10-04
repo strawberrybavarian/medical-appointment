@@ -14,6 +14,14 @@ const CreatePatientForms = () => {
     const [uGender, setGender] = useState("Male");
     const [uAge, setAge] = useState(0);
     const [accountStatus, setAccountStatus] = useState('Unregistered');
+    
+    // Address state fields
+    const [street, setStreet] = useState("");
+    const [city, setCity] = useState("");
+    const [state, setState] = useState("");
+    const [zipCode, setZipCode] = useState("");
+    const [country, setCountry] = useState("");
+    
     const [errors, setErrors] = useState({});
     const [formSubmitted, setFormSubmitted] = useState(false);
 
@@ -30,6 +38,11 @@ const CreatePatientForms = () => {
         if (initial.length > 1) return "Middle initial must be 1 character";
         return "";
     };
+    const validateZipCode = (zip) => !zip ? "Zip code is required" : "";
+    const validateStreet = (street) => !street ? "Street is required" : "";
+    const validateCity = (city) => !city ? "City is required" : "";
+    const validateState = (state) => !state ? "State is required" : "";
+    const validateCountry = (country) => !country ? "Country is required" : "";
 
     // Handle blur to validate fields
     const handleBlur = (field, value) => {
@@ -49,6 +62,21 @@ const CreatePatientForms = () => {
                 break;
             case "number":
                 error = validateNumber(value);
+                break;
+            case "street":
+                error = validateStreet(value);
+                break;
+            case "city":
+                error = validateCity(value);
+                break;
+            case "state":
+                error = validateState(value);
+                break;
+            case "zipCode":
+                error = validateZipCode(value);
+                break;
+            case "country":
+                error = validateCountry(value);
                 break;
             default:
                 break;
@@ -74,6 +102,11 @@ const CreatePatientForms = () => {
             middleInitial: validateMiddleInitial(uMiddleInitial),
             birth: validateBirth(uBirth),
             number: validateNumber(uNumber),
+            street: validateStreet(street),
+            city: validateCity(city),
+            state: validateState(state),
+            zipCode: validateZipCode(zipCode),
+            country: validateCountry(country),
         };
 
         setErrors(currentErrors);
@@ -89,7 +122,14 @@ const CreatePatientForms = () => {
                 patient_age: uAge,
                 patient_contactNumber: uNumber,
                 patient_gender: uGender,
-                accountStatus: accountStatus
+                accountStatus: accountStatus,
+                patient_address: {
+                    street,
+                    city,
+                    state,
+                    zipCode,
+                    country
+                }
             };
 
             axios.post('http://localhost:8000/patient/api/unregistered', patientUser)
@@ -196,6 +236,75 @@ const CreatePatientForms = () => {
                                     isInvalid={formSubmitted && errors.number !== ""}
                                 />
                                 <Form.Control.Feedback type="invalid">{errors.number}</Form.Control.Feedback>
+                            </Form.Group>
+                        </Row>
+                        {/* Address Section */}
+                        <Row>
+                            <Form.Group as={Col} controlId="formStreet">
+                                <Form.Label>Street</Form.Label>
+                                <Form.Control
+                                    type="text"
+                                    placeholder="Enter Street"
+                                    onBlur={(e) => handleBlur("street", e.target.value)}
+                                    onChange={(e) => setStreet(e.target.value)}
+                                    isValid={formSubmitted && errors.street === "" && street !== ""}
+                                    isInvalid={formSubmitted && errors.street !== ""}
+                                />
+                                <Form.Control.Feedback type="invalid">{errors.street}</Form.Control.Feedback>
+                            </Form.Group>
+                        </Row>
+                        <Row>
+                            <Form.Group as={Col} controlId="formCity">
+                                <Form.Label>City</Form.Label>
+                                <Form.Control
+                                    type="text"
+                                    placeholder="Enter City"
+                                    onBlur={(e) => handleBlur("city", e.target.value)}
+                                    onChange={(e) => setCity(e.target.value)}
+                                    isValid={formSubmitted && errors.city === "" && city !== ""}
+                                    isInvalid={formSubmitted && errors.city !== ""}
+                                />
+                                <Form.Control.Feedback type="invalid">{errors.city}</Form.Control.Feedback>
+                            </Form.Group>
+
+                            <Form.Group as={Col} controlId="formState">
+                                <Form.Label>State</Form.Label>
+                                <Form.Control
+                                    type="text"
+                                    placeholder="Enter State"
+                                    onBlur={(e) => handleBlur("state", e.target.value)}
+                                    onChange={(e) => setState(e.target.value)}
+                                    isValid={formSubmitted && errors.state === "" && state !== ""}
+                                    isInvalid={formSubmitted && errors.state !== ""}
+                                />
+                                <Form.Control.Feedback type="invalid">{errors.state}</Form.Control.Feedback>
+                            </Form.Group>
+
+                            <Form.Group as={Col} controlId="formZipCode">
+                                <Form.Label>Zip Code</Form.Label>
+                                <Form.Control
+                                    type="text"
+                                    placeholder="Enter Zip Code"
+                                    onBlur={(e) => handleBlur("zipCode", e.target.value)}
+                                    onChange={(e) => setZipCode(e.target.value)}
+                                    isValid={formSubmitted && errors.zipCode === "" && zipCode !== ""}
+                                    isInvalid={formSubmitted && errors.zipCode !== ""}
+                                />
+                                <Form.Control.Feedback type="invalid">{errors.zipCode}</Form.Control.Feedback>
+                            </Form.Group>
+                        </Row>
+                        <Row>
+                            <Form.Group as={Col} controlId="formCountry">
+                                <Form.Label>Country</Form.Label>
+                                <Form.Control
+                                    type="text"
+                                    placeholder="Enter Country"
+                                    onBlur={(e) => handleBlur("country", e.target.value)}
+                                    onChange={(e) => setCountry(e.target.value)}
+                                    isValid={formSubmitted && errors.country === "" && country !== ""}
+                                    isInvalid={formSubmitted && errors.country !== ""}
+                                />
+                                <Form.Control.Feedback type="invalid">{errors.country}</Form.Control.Feedback>
                             </Form.Group>
                         </Row>
                         <Row>

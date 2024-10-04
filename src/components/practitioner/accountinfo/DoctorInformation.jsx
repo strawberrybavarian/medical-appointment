@@ -11,6 +11,7 @@ import DoctorManageServices from "./DoctorManageServices";  // Import the new co
 import Footer from "../../Footer";
 import { ChevronLeft } from "react-bootstrap-icons";
 import './AccountInfo.css';
+
 function DoctorInformation() {
     const location = useLocation();
     const { did } = location.state || {};
@@ -54,46 +55,57 @@ function DoctorInformation() {
                         <div className="content-area">
                             
                             <Container>
-                      
+                                <Link
+                                    to="/dashboard"
+                                    state={{ did }}
+                                    className="mb-3 no-decoration"
+                                    style={{ marginTop: '8px' }}
+                                >
+                                    <ChevronLeft size={20} className="ml-5" /> Back
+                                </Link>
 
-                            <Link
-                                to="/dashboard"
-                                state={{ did }}
-                                className="mb-3 no-decoration"
-                                style={{ marginTop: '8px' }}
-                            >
-                                <ChevronLeft size={20} className="ml-5" /> Back
-                            </Link>
-
-                            <div className="horizontal-tabs">
-                                    <a onClick={() => setActiveTab("info")}>My details</a>
-                                    <a onClick={() => setActiveTab("availability")}>Availability</a>
-                                    <a onClick={() => setActiveTab("DrTwoFactorAuth")}>Authentication</a>
-                                    <a onClick={() => setActiveTab("services")}>Services</a> 
-		                    </div> 
-
+                                {/* Horizontal Tabs */}
+                                <div className="horizontal-tabs">
+                                    <a
+                                        onClick={() => setActiveTab("info")}
+                                        className={activeTab === "info" ? "active" : ""}
+                                    >
+                                        My details
+                                    </a>
+                                    <a
+                                        onClick={() => setActiveTab("availability")}
+                                        className={activeTab === "availability" ? "active" : ""}
+                                    >
+                                        Availability
+                                    </a>
+                                    <a
+                                        onClick={() => setActiveTab("DrTwoFactorAuth")}
+                                        className={activeTab === "DrTwoFactorAuth" ? "active" : ""}
+                                    >
+                                        Authentication
+                                    </a>
+                                    <a
+                                        onClick={() => setActiveTab("services")}
+                                        className={activeTab === "services" ? "active" : ""}
+                                    >
+                                        Services
+                                    </a>
+                                </div> 
                             </Container>
                        
-                            <Container className="border-top  ">
-                              
-                                    {activeTab === 'info' && <AccountInfo did={did} />}
-                                    {activeTab === 'DrTwoFactorAuth' && <DrTwoFactorAuth setId={did} />}
-                                    {activeTab === 'availability' && <DoctorAvailability doctorId={did} />} 
-                                    {activeTab === 'services' && <DoctorManageServices doctorId={did} />}  {/* Render the new component */}
-                               
-                               
+                            <Container className="border-top">
+                                {activeTab === 'info' && <AccountInfo did={did} />}
+                                {activeTab === 'DrTwoFactorAuth' && <DrTwoFactorAuth setId={did} />}
+                                {activeTab === 'availability' && <DoctorAvailability doctorId={did} />} 
+                                {activeTab === 'services' && <DoctorManageServices doctorId={did} />}
                             </Container>
-                       
                         </div>
 
                         <Container fluid className="footer-container cont-fluid-no-gutter w-100 mt-5">
                             <Footer />
                         </Container>
                     </div>
-                        
-                       
-                    
-                    </Container>
+                </Container>
             </div>
         </div>
     );

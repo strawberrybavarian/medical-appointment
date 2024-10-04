@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Form, Button, Table, Container } from 'react-bootstrap';
+import { Form, Button, Table, Container, Row, Col } from 'react-bootstrap';
 import axios from 'axios';
-
+import LaboratoryHistory from './LaboratoryHistory';
 function LaboratoryResults({ patientId, appointmentId }) {
     const [formData, setFormData] = useState({
         file: null
@@ -10,12 +10,13 @@ function LaboratoryResults({ patientId, appointmentId }) {
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(null); // To show success message
 
-    // Fetch laboratory results for the patient
+   
     useEffect(() => {
         const fetchLabResults = async () => {
             try {
                 const response = await axios.get(`http://localhost:8000/patient/${patientId}/appointments/${appointmentId}/labResults`);
                 setLabResults(response.data);
+                console.log(response.data);
             } catch (err) {
                 setError('Failed to fetch laboratory results');
             }
@@ -94,49 +95,40 @@ function LaboratoryResults({ patientId, appointmentId }) {
     };
 
     return (
-        <Container>
-            <h3>Upload Laboratory Results for Appointment #{appointmentId}</h3>
-            {error && <p className="text-danger">{error}</p>}
-            {success && <p className="text-success">{success}</p>}
+        <Container fluid>
+          
+            {/* {error && <p className="text-danger">{error}</p>}
+            {success && <p className="text-success">{success}</p>} */}
 
             {/* Form for uploading lab results */}
-            <Form onSubmit={handleSubmit}>
-                <Form.Group controlId="file">
-                    <Form.Label>Upload Laboratory Result (PDF Only)</Form.Label>
-                    <Form.Control
-                        type="file"
-                        accept="application/pdf"
-                        onChange={handleFileChange} 
-                    />
-                </Form.Group>
+             
+            <Row>
+                <Col md={6}>
+                    <h4 className="m-0 font-weight-bold text-gray">Past Laboratories</h4>
+                    <hr/>
+                     <LaboratoryHistory pid={patientId}/> 
+                
+                </Col>
+                <Col>
+                    <Form onSubmit={handleSubmit}>
+                        <Form.Group controlId="file">
+                            <Form.Label>Upload Laboratory Result (PDF Only)</Form.Label>
+                            <Form.Control
+                                type="file"
+                                accept="application/pdf"
+                                onChange={handleFileChange} 
+                            />
+                        </Form.Group>
 
-                <Button type="submit" variant="primary" className="mt-3">
-                    Upload Laboratory Result
-                </Button>
-            </Form>
-
+                        <Button type="submit" variant="primary" className="mt-3">
+                            Upload Laboratory Result
+                        </Button>
+                    </Form>
+                </Col>
+            </Row>
+            
             {/* List of laboratory results with download option */}
-            <h4 className="mt-4">Download Laboratory Results</h4>
-            <Table striped bordered hover>
-                <thead>
-                    <tr>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {labResults.map((result) => (
-                        <tr key={result._id}>
-                            <td>
-                                {result.file && (
-                                    <Button variant="secondary" onClick={() => downloadFile(result._id)}>
-                                        Download Laboratory Result
-                                    </Button>
-                                )}
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </Table>
+           
         </Container>
     );
 }

@@ -1,14 +1,13 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { useParams, useLocation } from "react-router-dom";
-import SidebarMenu from "../sidebar/SidebarMenu";
-import { Button, Form, Row, Col, Container } from "react-bootstrap";
+import { Link, useLocation } from "react-router-dom";
+import { Button, Form, Row, Col, Collapse } from "react-bootstrap"; // Add Collapse
 import * as Icon from "react-bootstrap-icons";
 import ImageUploadModal from "./modal/ImageUploadModal";
 import UpdateInfoModal from "./modal/UpdateInfoModal";
 import './AccountInfo.css';
 import { PencilFill } from "react-bootstrap-icons";
-
+import DoctorBiography from "./DoctorBiography";
 const AccountInfo = () => {
   const location = useLocation();
   const { did } = location.state || {};
@@ -27,6 +26,9 @@ const AccountInfo = () => {
   const [fullname, setFullname] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
+
+  // State to manage biography collapse
+  const [biographyCollapseOpen, setBiographyCollapseOpen] = useState(false);
 
   useEffect(() => {
     axios.get(`http://localhost:8000/doctor/api/finduser/${did}`)
@@ -69,7 +71,6 @@ const AccountInfo = () => {
   const handleUpdate = (updatedData) => {
     axios.put(`http://localhost:8000/doctor/api/${did}/updateDetails`, updatedData)
       .then((response) => {
-        console.log('Information updated successfully:', response.data);
         const data = response.data.updatedDoctor;
         setDoctorData({
           theId: data._id,
@@ -92,40 +93,65 @@ const AccountInfo = () => {
 
   return (
     <>
-      
-          <div className="w-100">
-  
-          <div fluid className="d-flex justify-content-center ">
-            <div className="ai-container d-flex align-items-center shadow-sm">
-                <img src={`http://localhost:8000/${doctorData.theImage}`} alt="Doctor" className="ai-image" />
-                  <div style={{marginLeft: '1rem'}} className="d-flex align-items-center justify-content-between w-100">
-                    <div>
-                     
-                    <h4  className="m-0">{fullname}</h4>
-                    <p style={{fontSize: '15px'}}>{doctorData.specialty}</p>
-                    </div>
+      <div className="w-100">
+        <div fluid className="d-flex justify-content-center ">
+          <div className="ai-container d-flex align-items-center shadow-sm">
+            <img src={`http://localhost:8000/${doctorData.theImage}`} alt="Doctor" className="ai-image" />
+            <div style={{marginLeft: '1rem'}} className="d-flex align-items-center justify-content-between w-100">
+              <div>
+                <h4 className="m-0">{fullname}</h4>
+                <p style={{fontSize: '15px'}}>{doctorData.specialty}</p>
+              </div>
 
-                    <div>
-                    <Button  onClick={openImageModal}>Upload Image<Icon.Upload style={{marginLeft:'0.4rem'}}/></Button>  
-                    </div>
-                  </div>
+              <div>
+                <Button onClick={openImageModal}>Upload Image<Icon.Upload style={{marginLeft:'0.4rem'}}/></Button>
+              </div>
             </div>
           </div>
+        </div>
 
-          <div  className="d-flex justify-content-center">
-
+        {/* Biography Section */}
+        <div className="d-flex justify-content-center">
           <div fluid className="ai-container2 shadow-sm">
+            <div className=" m-0 p-0 d-flex justify-content-end align-items-center">
+            <div className="w-100 d-flex align-items-center">
+                                        <span className="m-0" style={{ fontWeight: 'bold' }}>Doctor Profile</span>
+                                    </div>
+              <Link
+                onClick={() => setBiographyCollapseOpen(!biographyCollapseOpen)}
+                aria-controls="biography-collapse"
+                aria-expanded={biographyCollapseOpen}
+                className="link-collapse"
+              >
+                {biographyCollapseOpen ? <span>&#8722;</span> : <span>&#43;</span>}
+              </Link>
+            </div>
 
-          <div style={{textAlign: "end", marginTop: '20px'}}>
+
+            {/* Collapsible Biography Section */}
+            <Collapse in={biographyCollapseOpen}>
+              <div id="biography-collapse">
+                <DoctorBiography
+                  biography={doctorData.biography}
+                  did={doctorData.theId}
+                />
+              </div>
+            </Collapse>
+          </div>
+        </div>
+
+        <div className="d-flex justify-content-center">
+          <div fluid className="ai-container2 shadow-sm">
+            <div style={{textAlign: "end", marginTop: '20px'}}>
               <Button variant="primary" onClick={() => setIsUpdateModalOpen(true)}>
                 <PencilFill size={14} style={{marginRight: '0.5rem'}}/> Update your Information
               </Button>
-          </div>
-          <Form>
-            <Form.Group controlId="exampleForm.ControlInput1">
-              <Form.Label>First Name:</Form.Label>
-              <Form.Control value={doctorData.theName} disabled />
-            </Form.Group>
+            </div>
+            <Form>
+              <Form.Group controlId="exampleForm.ControlInput1">
+                <Form.Label>First Name:</Form.Label>
+                <Form.Control value={doctorData.theName} disabled />
+              </Form.Group>
 
               <Row>
                 <Form.Group as={Col} controlId="exampleForm.ControlInput1">
@@ -165,20 +191,12 @@ const AccountInfo = () => {
                   <Form.Control value={doctorData.specialty} disabled /> 
                 </Form.Group>
               </Row>
-
-            
-          </Form>
+            </Form>
           </div>
-
-</div>
-  
-          
-   
-
-
         </div>
+      </div>
 
-      <ImageUploadModal 
+      <ImageUploadModal
         isOpen={isModalOpen}
         onRequestClose={closeImageModal}
         did={did}

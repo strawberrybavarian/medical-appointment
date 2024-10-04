@@ -60,6 +60,7 @@ function DashboardMain() {
               <button className="btn btn-primary" onClick={navigateToAppointment}>View your Appointments</button>
            </div>
           </div>
+          
         </div>
 
 
@@ -68,8 +69,8 @@ function DashboardMain() {
             <div className="maincolor-container">
               
               <div className="content-area d-flex justify-content-center px-5">
-                <Row className=" d-flex justify-content-center px-5">
-                  <Col md={6}>
+                <Row className=" d-flex justify-content-center px-5 mt-3">
+                  <Col md={5} className=" mb-3">
                   <h4 className="mb-3">Status</h4>
                   <hr/>
                     <Dashboard 
@@ -78,7 +79,7 @@ function DashboardMain() {
                     did={did}
                   />
                   </Col>
-                  <Col  md={6}>
+                  <Col  md={7}>
                  
                     <h4 className="mb-3">Annoucements</h4>
                     <hr/>

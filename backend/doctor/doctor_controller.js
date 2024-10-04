@@ -764,6 +764,73 @@ const getPatientsByDoctor = async (req, res) => {
     }
 };
 
+const updateDoctorBiography = async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { biography } = req.body;
+  
+      // Find and update the doctor's biography
+      const updatedDoctor = await Doctors.findByIdAndUpdate(
+        id,
+        { biography },
+        { new: true, runValidators: true }
+      );
+  
+      if (!updatedDoctor) {
+        return res.status(404).json({ message: 'Doctor not found' });
+      }
+  
+      res.status(200).json({ message: 'Biography updated successfully', biography: updatedDoctor.biography });
+    } catch (error) {
+      console.error('Error updating biography:', error);
+      res.status(500).json({ message: 'Internal server error', error });
+    }
+  };
+  
+  // Read (Get) Biography
+// doctor_controller.js
+
+// Get Doctor Biography
+const getDoctorBiography = async (req, res) => {
+    try {
+      const { id } = req.params;
+  
+      const doctor = await Doctors.findById(id).select('biography');
+      if (!doctor) {
+        return res.status(404).json({ message: 'Doctor not found' });
+      }
+  
+      res.status(200).json({ biography: doctor.biography });
+    } catch (error) {
+      res.status(500).json({ message: 'Error fetching biography', error });
+    }
+  };
+  
+  
+  // Delete Biography
+// doctor_controller.js
+
+// Delete Doctor Biography
+const deleteDoctorBiography = async (req, res) => {
+    try {
+      const { id } = req.params;
+  
+      const updatedDoctor = await Doctors.findByIdAndUpdate(
+        id,
+        { biography: {} },
+        { new: true }
+      );
+  
+      if (!updatedDoctor) {
+        return res.status(404).json({ message: 'Doctor not found' });
+      }
+  
+      res.status(200).json({ message: 'Biography deleted successfully', biography: updatedDoctor.biography });
+    } catch (error) {
+      res.status(500).json({ message: 'Error deleting biography', error });
+    }
+  };
+  
 
 
 
@@ -799,6 +866,9 @@ module.exports = {
     offlineActivityStatus,
     updateDoctorStatus,
     requestDeactivation,
-    specificAppointmentsforDoctor
+    specificAppointmentsforDoctor,
+    updateDoctorBiography,
+    getDoctorBiography,
+    deleteDoctorBiography,
 
 };

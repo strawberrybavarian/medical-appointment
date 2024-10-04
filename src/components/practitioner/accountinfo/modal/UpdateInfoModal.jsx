@@ -7,7 +7,7 @@ const UpdateInfoModal = ({ show, handleClose, doctorData, handleUpdate }) => {
   const [formData, setFormData] = useState({});
   const [specialties, setSpecialties] = useState([]); // State for storing specialties from the backend
 
-  console.log(doctorData);
+
   
   // Update formData when doctorData is received
   useEffect(() => {

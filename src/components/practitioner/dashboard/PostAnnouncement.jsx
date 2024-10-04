@@ -101,7 +101,7 @@ function PostAnnouncement({ doctor_image, doctor_name, did }) {
   };
 
   return (
-    <Container fluid className="pt-5 w-100">
+    <Container fluid className=" w-100">
       <Row className="justify-content-center mb-3">
         <Col>
           <div className="post-container shadow-sm d-flex align-items-center p-3 w-100">
@@ -196,7 +196,7 @@ function PostAnnouncement({ doctor_image, doctor_name, did }) {
                             src={post.images[currentImageIndexes[post._id]]}
                             alt="Post"
                             className="d-block mx-auto"
-                            style={{ width: "100%", height: "600px", objectFit: "cover" }}
+                            style={{ width: "100%", height: "500px", objectFit: "cover" }}
                           />
                           {/* Left chevron button */}
                           <Button

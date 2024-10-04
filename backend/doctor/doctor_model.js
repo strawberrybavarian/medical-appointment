@@ -121,30 +121,28 @@ const DoctorSchema = new Schema({
         default: 'Review'
     },
     biography: {
-        
-        personalStatement: {
-            type: String,
-            default: '' // A short personal statement or introductory text
+        medicalSchool: {
+          institution: { type: String },
+          yearGraduated: { type: Number }
         },
-        education: [{
-            degree: String,
-            institution: String,
-            year: Number
-        }],
-        certifications: [{
-            certification: String,
-            issuingOrganization: String,
-            year: Number
-        }],
-        workExperience: [{
-            position: String,
-            organization: String,
-            startDate: Date,
-            endDate: Date,
-            description: String
-        }],
-        achievements: [String], 
-        researchInterests: [String] 
+        residency: {
+          institution: { type: String },
+          yearCompleted: { type: Number }
+        },
+        fellowship: {
+          institution: { type: String },
+          yearCompleted: { type: Number }
+        },
+        localSpecialtyBoard: {
+          certification: { type: String },
+          issuingOrganization: { type: String },
+          year: { type: Number }
+        },
+        localSubSpecialtyBoard: {
+          certification: { type: String },
+          issuingOrganization: { type: String },
+          year: { type: Number }
+        }
     },
     dr_services: [{
         type: Schema.Types.ObjectId,

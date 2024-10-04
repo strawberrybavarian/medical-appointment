@@ -39,7 +39,10 @@ const upload = multer({
 
 
 module.exports = app => {
-
+  //Biography
+  app.put('/doctor/:id/updatebiography', DoctorController.updateDoctorBiography);  // Update Biography
+  app.get('/doctor/:id/getbiography', DoctorController.getDoctorBiography);      // Get Biography
+  app.delete('/doctor/:id/deletebiography', DoctorController.deleteDoctorBiography); // Delete Biography
   // Uploading Image
   app.post('/doctor/api/:id/updateimage', upload.single('image'), DoctorController.updateDoctorImage);
   app.get('/doctor/:id', DoctorController.findOneDoctor);
