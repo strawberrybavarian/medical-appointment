@@ -34,8 +34,9 @@ function MedSecOngoing({ allAppointments, setAllAppointments }) {
       .catch((err) => {
         console.log(err);
       });
-  }
+  };
 
+  // Filter appointments based on criteria
   const filteredAppointments = allAppointments
     .filter(appointment => appointment.status === 'Ongoing')
     .filter(appointment => 
@@ -46,6 +47,7 @@ function MedSecOngoing({ allAppointments, setAllAppointments }) {
     .filter(appointment => selectedDoctor === "" || appointment.doctor?._id === selectedDoctor)
     .filter(appointment => selectedAccountStatus === "" || appointment.patient.accountStatus === selectedAccountStatus);
 
+  // Pagination logic
   const indexOfLastAppointment = currentPage * entriesPerPage;
   const indexOfFirstAppointment = indexOfLastAppointment - entriesPerPage;
   const currentAppointments = filteredAppointments.slice(indexOfFirstAppointment, indexOfLastAppointment);
@@ -62,6 +64,7 @@ function MedSecOngoing({ allAppointments, setAllAppointments }) {
           <h1>Ongoing Appointments</h1>
           <Container className="p-0">
             <Row className="g-3"> {/* Use gutter spacing to control the space between columns */}
+              {/* Doctor Filter */}
               <Col lg={4} md={6} sm={12}>
                 <Form.Group controlId="formDoctorSearch" className="d-flex align-items-center">
                   <Form.Label style={{ marginRight: '1vh' }}>Doctor:</Form.Label>
@@ -81,6 +84,7 @@ function MedSecOngoing({ allAppointments, setAllAppointments }) {
                 </Form.Group>
               </Col>
 
+              {/* Patient Search Input */}
               <Col lg={4} md={6} sm={12} className="p-0">
                 <Form.Group controlId="formSearch" className="d-flex align-items-center">
                   <Form.Label style={{ marginLeft: '1vh', marginRight: '1vh' }}>Patient:</Form.Label>
@@ -94,6 +98,7 @@ function MedSecOngoing({ allAppointments, setAllAppointments }) {
                 </Form.Group>
               </Col>
 
+              {/* Account Status Filter */}
               <Col lg={3} md={5} sm={12} className="p-0">
                 <Form.Group controlId="formAccountStatus" className="d-flex align-items-center">
                   <Form.Label style={{ marginLeft: '1vh', marginRight: '1vh' }}>Status:</Form.Label>
@@ -112,6 +117,7 @@ function MedSecOngoing({ allAppointments, setAllAppointments }) {
             </Row>
           </Container>
 
+          {/* Appointment Table */}
           <Table responsive striped variant="light" className="mt-3">
             <thead>
               <tr>
@@ -130,17 +136,21 @@ function MedSecOngoing({ allAppointments, setAllAppointments }) {
                 const patient = appointment.patient;
                 const patientName = `${patient.patient_firstName} ${patient.patient_middleInitial}. ${patient.patient_lastName}`;
 
-                // Check if doctor exists before rendering
+                // Handle missing doctor gracefully
                 const doctor = appointment.doctor;
                 const doctorName = doctor 
                   ? `${doctor.dr_firstName} ${doctor.dr_middleInitial}. ${doctor.dr_lastName}` 
                   : 'No Doctor Assigned';
 
-                const appointmentTypes = appointment.appointment_type.join(', ');
+                // If appointment_type is an array of objects, extract the type names
+                const appointmentTypes = appointment.appointment_type
+                  .map(typeObj => typeObj.appointment_type) // Extract the service type name
+                  .join(', ');
+
                 return (
                   <tr key={appointment._id}>
                     <td>{patientName}</td>
-                    <td>{doctorName}</td> {/* Handle missing doctor */}
+                    <td>{doctorName}</td>
                     <td>{appointmentTypes}</td>
                     <td>{new Date(appointment.date).toLocaleDateString()}</td>
                     <td>{appointment.time}</td>
@@ -155,6 +165,7 @@ function MedSecOngoing({ allAppointments, setAllAppointments }) {
             </tbody>
           </Table>
 
+          {/* Pagination */}
           <Container className="d-flex justify-content-between p-0">
             <div style={{ height: '40%', width: '40%' }} className="d-flex p-0 align-content-center">
               <div style={{ height: '60%', width: '60%' }}>

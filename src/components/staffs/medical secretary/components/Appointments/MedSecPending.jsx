@@ -2,7 +2,7 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Table, Container, Pagination, Form, Row, Col, Button } from 'react-bootstrap';
-import AssignAppointmentModal from './AssignAppointmentModal'; // Import the new modal component
+import AssignAppointmentModal from './AssignAppointmentModal'; 
 import './Styles.css';
 
 const MedSecPending = ({ allAppointments, setAllAppointments }) => {
@@ -19,6 +19,16 @@ const MedSecPending = ({ allAppointments, setAllAppointments }) => {
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedTime, setSelectedTime] = useState("");
   const [selectedAccountStatus, setSelectedAccountStatus] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("");
+
+  // Convert 24-hour format to 12-hour format (for display)
+  const convertTo12HourFormat = (time24h) => {
+    if (!time24h) return ''; // Return empty string if no time
+    const [hours, minutes] = time24h.split(':');
+    const period = hours >= 12 ? 'PM' : 'AM';
+    const hour12 = hours % 12 || 12; // Convert to 12-hour format
+    return `${hour12}:${minutes} ${period}`;
+  };
 
   useEffect(() => {
     axios.get(`http://localhost:8000/doctor/api/alldoctor`)
@@ -29,6 +39,15 @@ const MedSecPending = ({ allAppointments, setAllAppointments }) => {
         console.log(error);
       });
   }, []);
+
+  const getUniqueCategories = () => {
+    const categories = allAppointments.flatMap(appointment => 
+      appointment.appointment_type.map(typeObj => typeObj.category)
+    );
+    return [...new Set(categories)];
+  };
+
+  const uniqueCategories = getUniqueCategories();
 
   const handleSort = (key) => {
     let direction = 'ascending';
@@ -57,7 +76,11 @@ const MedSecPending = ({ allAppointments, setAllAppointments }) => {
       .includes(searchTerm.toLowerCase())
     )
     .filter(appointment => selectedDoctor === "" || appointment.doctor?._id === selectedDoctor)
-    .filter(appointment => selectedAccountStatus === "" || appointment.patient.accountStatus === selectedAccountStatus);
+    .filter(appointment => selectedAccountStatus === "" || appointment.patient.accountStatus === selectedAccountStatus)
+    .filter(appointment => 
+      categoryFilter === "" || 
+      appointment.appointment_type.some(typeObj => typeObj.category === categoryFilter)
+    );
 
   const indexOfLastAppointment = currentPage * entriesPerPage;
   const indexOfFirstAppointment = indexOfLastAppointment - entriesPerPage;
@@ -101,7 +124,6 @@ const MedSecPending = ({ allAppointments, setAllAppointments }) => {
       });
   };
 
-  // Function to update the appointment status to 'Scheduled'
   const handleUpdateStatus = (appointmentId) => {
     axios.put(`http://localhost:8000/appointments/${appointmentId}/status`, { status: 'Scheduled' })
       .then((response) => {
@@ -122,7 +144,6 @@ const MedSecPending = ({ allAppointments, setAllAppointments }) => {
       <Container>
         <div style={{ padding: '30px', width: '100%' }}>
           <h1>Pending Appointments</h1>
-
           <Container className="p-0">
             <Row>
               <Col lg={4} md={6} sm={12}>
@@ -144,7 +165,7 @@ const MedSecPending = ({ allAppointments, setAllAppointments }) => {
                 </Form.Group>
               </Col>
 
-              <Col lg={4} md={6} sm={12} className="p-0">
+              <Col lg={4} md={6} sm={12}>
                 <Form.Group controlId="formSearch" className="d-flex align-items-center">
                   <Form.Label style={{ marginLeft: '1vh', marginRight: '1vh' }}>Patient:</Form.Label>
                   <Form.Control
@@ -154,6 +175,25 @@ const MedSecPending = ({ allAppointments, setAllAppointments }) => {
                     onChange={(e) => setSearchTerm(e.target.value)}
                     style={{ width: '100%' }}
                   />
+                </Form.Group>
+              </Col>
+
+              <Col lg={4} md={6} sm={12}>
+                <Form.Group controlId="formCategoryFilter" className="d-flex align-items-center">
+                  <Form.Label style={{ marginRight: '1vh' }}>Category:</Form.Label>
+                  <Form.Control
+                    as="select"
+                    value={categoryFilter}
+                    onChange={(e) => setCategoryFilter(e.target.value)}
+                    style={{ width: '100%' }}
+                  >
+                    <option value="">All Categories</option>
+                    {uniqueCategories.map((category) => (
+                      <option key={category} value={category}>
+                        {category}
+                      </option>
+                    ))}
+                  </Form.Control>
                 </Form.Group>
               </Col>
 
@@ -180,6 +220,7 @@ const MedSecPending = ({ allAppointments, setAllAppointments }) => {
               <tr>
                 <th>Patient Name</th>
                 <th>Doctor Name</th>
+                <th>Category</th>
                 <th>Service</th>
                 <th onClick={() => handleSort('date')}>
                   Date {sortConfig.key === 'date' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
@@ -200,15 +241,22 @@ const MedSecPending = ({ allAppointments, setAllAppointments }) => {
                 const doctorName = doctor
                   ? `${doctor?.dr_firstName} ${doctor?.dr_middleInitial}. ${doctor?.dr_lastName}`
                   : "Not Assigned";
-                const appointmentTypes = appointment.appointment_type.join(', ');
+                  const appointmentTypes = appointment.appointment_type
+                  .map(typeObj => typeObj.appointment_type)
+                  .join(', ');
+
+                  const categoryTypes = appointment.appointment_type
+                  .map(typeObj => typeObj.category)
+                  .join(', ');
 
                 return (
                   <tr key={appointment._id}>
                     <td>{patientName}</td>
                     <td>{doctorName}</td>
+                    <td>{categoryTypes}</td>
                     <td>{appointmentTypes}</td>
                     <td>{appointment.date ? new Date(appointment.date).toLocaleDateString() : "Not Assigned"}</td>
-                    <td>{appointment.time || "Not Assigned"}</td>
+                    <td>{convertTo12HourFormat(appointment.time) || "Not Assigned"}</td>
                     <td>{appointment.patient.accountStatus}</td>
                     <td>
                       <div className="d-flex justify-content-center">
@@ -216,8 +264,6 @@ const MedSecPending = ({ allAppointments, setAllAppointments }) => {
                             {appointment.status}
                       </div>
                       </div>
-                      
-
                     </td>
                     <td>
                       <div className="d-flex justify-content-around flex-wrap">
@@ -225,9 +271,9 @@ const MedSecPending = ({ allAppointments, setAllAppointments }) => {
                           <Link variant="warning" onClick={() => handleAssignDetails(appointment)}>Assign Details</Link>
                         )}
                         {(appointment.doctor && appointment.date && appointment.time && appointment.status !== "Scheduled") && (
-                          <Button variant="success" onClick={() => handleUpdateStatus(appointment._id)}>
+                          <Link variant="success" onClick={() => handleUpdateStatus(appointment._id)}>
                             Scheduled
-                          </Button>
+                          </Link>
                         )}
                       </div>
                     </td>
@@ -276,6 +322,8 @@ const MedSecPending = ({ allAppointments, setAllAppointments }) => {
             selectedTime={selectedTime}
             setSelectedTime={setSelectedTime}
             handleSaveDetails={handleSaveDetails}
+            appointmentId={selectedAppointment?._id}
+            pid={selectedAppointment?.patient?._id} 
             error={error}
           />
         )}

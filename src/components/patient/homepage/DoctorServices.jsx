@@ -4,11 +4,13 @@ import { useEffect, useState } from "react";
 import './DoctorSpecialty.css';
 import OBGYNE from './images/ObstetricsAndGynecology.png';
 import PEDIATRICS from './images/Pedia.png';
-import { Container } from "react-bootstrap";
+import { Container, Button } from "react-bootstrap";
+import AppointmentModal from './AppointmentModal'; // Import the new component
 
 function DoctorServices({ pid, did }) {
     const [services, setServices] = useState([]);
-    const navigate = useNavigate();
+    const [showModal, setShowModal] = useState(false); // State for modal visibility
+    const [selectedService, setSelectedService] = useState(null); // State for the selected service
 
     useEffect(() => {
         // Fetch the list of services from the backend
@@ -21,21 +23,22 @@ function DoctorServices({ pid, did }) {
             });
     }, []);
 
-    const handleServiceClick = (service) => {
-        navigate(`/choosedoctor/service/${service.name.toLowerCase()}`);
-    };
-
-    // Mapping service names to their respective images (optional)
     const serviceImages = {
         "Obstetrics": OBGYNE,
         "Pediatrics": PEDIATRICS,
         "Gynecology": OBGYNE,
-        // Add other mappings here as needed
     };
 
     const getImage = (serviceName) => {
         return serviceImages[serviceName] || null;
     };
+
+    const handleShowModal = (service) => {
+        setSelectedService(service); // Store the selected service
+        setShowModal(true); // Show the modal
+    };
+
+    const handleCloseModal = () => setShowModal(false);
 
     return (
         <>
@@ -48,15 +51,13 @@ function DoctorServices({ pid, did }) {
                         <div
                             key={index}
                             className="specialtyButtonStyle"
-                            onClick={() => handleServiceClick(service)}
+                            onClick={() => handleShowModal(service)} // Open modal on service click
                         >
                             <div className="ds-imgcontainer">
                                 <img src={getImage(service.name)} alt={service.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                             </div>
                             <div>
                                 <p style={{ fontWeight: '600', textAlign: 'center' }}>{service.name}</p>
-                               
-                               
                             </div>
                         </div>
                     ))
@@ -64,6 +65,16 @@ function DoctorServices({ pid, did }) {
                     <div>No services available</div>
                 )}
             </Container>
+
+            {/* Appointment Modal */}
+            {selectedService && (
+                <AppointmentModal
+                    show={showModal}
+                    handleClose={handleCloseModal}
+                    serviceId={selectedService._id || selectedService.id} // Pass the service ID to the modal
+                    pid={pid} // Pass patient ID if needed
+                />
+            )}
         </>
     );
 }

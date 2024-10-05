@@ -10,7 +10,7 @@ import React, { useEffect, useState } from 'react';
 import './MedSecMain.css';
 import CreatePatientForms from '../Add Patient/Forms/CreatePatientForms';
 import CreateAppointment from '../Add Patient/New Appointment/CreateAppointment';
-
+import MedSecLaboratoryApp from '../Appointments/MedSecLaboratoryApp';
 function MedSecMain() {
   const { msid } = useParams();
   const location = useLocation(); 
@@ -55,6 +55,10 @@ function MedSecMain() {
             <Container className="d-flex justify-content-center ">
               <Row>
                 <Nav fill variant="tabs" className="app-navtabs" activeKey={activeTab} onSelect={setActiveTab}>
+                  {/* <Nav.Item>
+                    <Nav.Link eventKey="laboratory">Laboratory</Nav.Link>
+                  </Nav.Item> */}
+                  
                   <Nav.Item>
                     <Nav.Link eventKey="pending">Pending Appointments</Nav.Link>
                   </Nav.Item>
@@ -67,7 +71,13 @@ function MedSecMain() {
                   <Nav.Item>
                     <Nav.Link eventKey="forpayment">For Payment</Nav.Link>
                   </Nav.Item>
+             
+               
+                 
                 </Nav>
+           
+                
+                 
               </Row>
             </Container>
 
@@ -77,45 +87,94 @@ function MedSecMain() {
                   {/* Button to open Create Appointment modal */}
                  
                   <Container className="ai-container2 shadow-sm">
-                    <Container className='m-0 p-0 d-flex justify-content-end'>
-                      <Button variant="primary" onClick={handleShowAppointmentModal} className="mb-3">
-                        Create Appointment
-                      </Button>
-                      {/* Button to open Add Patient modal */}
-                      <Button variant="secondary" onClick={handleShowPatientModal} className="mb-3 ml-3">
-                        Add Patient
-                      </Button>
-                    </Container>
+                   
                   
                     
                     {activeTab === "todays" && (
-                      <MedSecTodaysApp
+                      <>
+                       <Container className='m-0 p-0 d-flex justify-content-end'>
+                          <Button variant="primary" onClick={handleShowAppointmentModal} className="mb-3">
+                            Create Appointment
+                          </Button>
+                          {/* Button to open Add Patient modal */}
+                          <Button variant="secondary" onClick={handleShowPatientModal} className="mb-3 ml-3">
+                            Add Patient
+                          </Button>
+                        </Container>
+                    <MedSecTodaysApp
                         allAppointments={allappointments}
                         setAllAppointments={setallappointments}
                         selectedDoctor={selectedDoctor}
                       />
+                      </>
+                    
                     )}
                     {activeTab === "pending" && (
-                      <MedSecPending
+                      <>
+                        <Container className='m-0 p-0 d-flex justify-content-end'>
+                          <Button variant="primary" onClick={handleShowAppointmentModal} className="mb-3">
+                            Create Appointment
+                          </Button>
+                          {/* Button to open Add Patient modal */}
+                          <Button variant="secondary" onClick={handleShowPatientModal} className="mb-3 ml-3">
+                            Add Patient
+                          </Button>
+                        </Container>
+                        <MedSecPending
                         allAppointments={allappointments}
                         setAllAppointments={setallappointments}
                         selectedDoctor={selectedDoctor}
                       />
+                      </>
+                     
                     )}
                     {activeTab === "ongoing" && (
+                      <>
+                        <Container className='m-0 p-0 d-flex justify-content-end'>
+                        <Button variant="primary" onClick={handleShowAppointmentModal} className="mb-3">
+                          Create Appointment
+                        </Button>
+                        {/* Button to open Add Patient modal */}
+                        <Button variant="secondary" onClick={handleShowPatientModal} className="mb-3 ml-3">
+                          Add Patient
+                        </Button>
+                      </Container>
                       <MedSecOngoing
                         allAppointments={allappointments}
                         setAllAppointments={setallappointments}
                         selectedDoctor={selectedDoctor}
                       />
+                      </>
                     )}
                     {activeTab === "forpayment" && (
+                      <>
+                        <Container className='m-0 p-0 d-flex justify-content-end'>
+                        <Button variant="primary" onClick={handleShowAppointmentModal} className="mb-3">
+                          Create Appointment
+                        </Button>
+                        {/* Button to open Add Patient modal */}
+                        <Button variant="secondary" onClick={handleShowPatientModal} className="mb-3 ml-3">
+                          Add Patient
+                        </Button>
+                      </Container>
                       <MedSecForPayment
                         allAppointments={allappointments}
                         setAllAppointments={setallappointments}
                         selectedDoctor={selectedDoctor}
                       />
+                      </>
                     )}
+
+                      {activeTab === "laboratory" && (
+                      <>
+                        <MedSecLaboratoryApp
+                          allAppointments={allappointments}
+                          setAllAppointments={setallappointments}
+                          selectedDoctor={selectedDoctor}
+                        />
+                      </>
+                    )}  
+                    
                   </Container>
                 </Col>
               </Row>

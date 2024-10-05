@@ -31,6 +31,7 @@ module.exports = app => {
     app.post('/patient/api/:uid/createappointment', upload.single('proofOfPayment'), AppointmentController.createAppointment);
     app.put('/appointments/:id/status', AppointmentController.updateAppointmentStatus);
     app.get('/appointments/:id', AppointmentController.getAppointmentById);
+    app.put('/appointments/:appointmentId/assign', AppointmentController.updateAppointmentDetails);
     // app.put('/appointments/:id/payment-status', AppointmentController.updatePaymentStatus);
 
 };

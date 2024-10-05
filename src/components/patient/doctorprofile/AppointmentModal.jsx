@@ -59,7 +59,7 @@ function AppointmentModal({ show, handleClose, pid, did, doctorName }) {
 
         // Create the appointment data
         const formData = {
-            doctorId: did || null, // doctorId can be null if optional
+            doctor: did || null, // doctorId can be null if optional
             date,
             time: time || null,
             reason,

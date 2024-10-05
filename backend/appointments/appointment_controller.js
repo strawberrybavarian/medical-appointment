@@ -124,11 +124,35 @@ const updateAppointmentStatus = async (req, res) => {
     res.status(500).json({ message: `Failed to update appointment status: ${error.message}` });
   }
 };
-  
+
+// Your updated controller for updating appointment with time in "AM/PM" format
+const updateAppointmentDetails = async (req, res) => {
+  try {
+      const { doctor, date, time } = req.body; // time should be in "01:00 PM" format
+      const appointmentId = req.params.appointmentId;
+
+      // Find the appointment by its ID and update the fields
+      const updatedAppointment = await Appointment.findByIdAndUpdate(
+          appointmentId,
+          { 
+              doctor: new mongoose.Types.ObjectId(doctor), 
+              date, 
+              time  // Save time as a string, e.g., "01:00 PM"
+          },
+          { new: true }
+      );
+
+      res.status(200).json(updatedAppointment);
+  } catch (error) {
+      res.status(500).json({ message: `Failed to update appointment: ${error.message}` });
+  }
+};
+
 
 module.exports = {
   createAppointment,
   updateAppointmentStatus,
-  getAppointmentById
+  getAppointmentById,
+  updateAppointmentDetails,
 
 };

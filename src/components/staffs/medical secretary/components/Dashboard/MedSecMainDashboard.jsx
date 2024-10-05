@@ -39,44 +39,64 @@ function MedSecMainDashboard() {
             <div className="d-flex justify-content-center m-0 p-0">
                 <div style={{ width: '100%' }}>
                     <MedSecNavbar />
-                    <Container fluid className='cont-fluid-no-gutter  m-0 p-0' style={{overflowY: 'scroll', height: '100vh', paddingBottom: '100px', paddingTop: '1.5rem'}}>
-                        <div className="w-100 d-flex justify-content-center mt-5 position-relative">
-                            <div className="position-relative">
-                                <img className="img-fluid dm-photo shadow-lg" src={`${ip.address}/images/Dashboard-Photo.png`} alt="Dashboard" />         
-                                    <div className="overlay-content position-absolute top-50 start-0 translate-middle-y text-start p-4">
-                                    <p className="fs-3 fs-md-4 fs-sm-5 text-white">Welcome!</p>
-                                    <p className="fs-2 fs-md-3 fs-sm-4 text-white">Mahra Amil</p>
-                                    <p className="fs-6 fs-md-6 fs-sm-7 text-white mb-4">Here you can manage your appointments, view your patients, and post announcements.</p>
-                                    <button className="btn btn-primary" >View your Appointments</button>
-                                    </div>
+
+
+                    <Container className='cont-fluid-no-gutter' fluid style={{overflowY: 'scroll', height: '100vh', paddingBottom: '100px', paddingTop: '1.5rem'}}>
+                        
+                        
+                    <div className="maincolor-container">
+                        <div className="content-area">
+                        
+                            <div className="w-100 d-flex justify-content-center mt-5 position-relative">
+                                <div className="position-relative">
+                                    <img className="img-fluid dm-photo shadow-lg" src={`${ip.address}/images/Dashboard-Photo.png`} alt="Dashboard" />         
+                                        <div className="overlay-content position-absolute top-50 start-0 translate-middle-y text-start p-4">
+                                            <p className="fs-3 fs-md-4 fs-sm-5 text-white">Welcome!</p>
+                                            <p className="fs-2 fs-md-3 fs-sm-4 text-white">Mahra Amil</p>
+                                            <p className="fs-6 fs-md-6 fs-sm-7 text-white mb-4">Here you can manage your appointments, view your patients, and post announcements.</p>
+                                            <button className="btn btn-primary" >View your Appointments</button>
+                                        </div>
+                                </div>
                             </div>
+                            <Container>
+                                <MedSecDashboard />
+
+                                <Row className="mt-4">
+                                    <Col md={6} className="mb-3">
+                                        <AppointmentFullCalendar/>
+                                        <BarAppointment /> {/* Appointment bar chart */}
+                                        <LineCompletedAppointments/>
+                                    
+                                    </Col>
+
+                                    <Col md={6} className="mb-3">
+                                        <NewsAnnouncement role={role} user_id={msid} user_name={name} /> {/* News announcements */}
+                                    </Col>
+                                </Row>
+                            </Container>
+                            
+                        
                         </div>
+                    </div>
+                        
+
+
+
                     </Container>
                     
                 </div> 
             </div>
-            {/* Fixed navbar at the top */}
-            <div className="maincolor-container">
+         
+           
                 
                 
 
 
-                    <MedSecDashboard />
+                   
                     
-                    <Row className="mt-4">
-                        <Col md={6} className="mb-3">
-                            <AppointmentFullCalendar/>
-                            <BarAppointment /> {/* Appointment bar chart */}
-                            <LineCompletedAppointments/>
-                        
-                        </Col>
-
-                        <Col md={6} className="mb-3">
-                            <NewsAnnouncement role={role} user_id={msid} user_name={name} /> {/* News announcements */}
-                        </Col>
-                    </Row>
+                    
        
-            </div>
+        
         </>
     );
 }

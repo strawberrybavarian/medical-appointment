@@ -1,12 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { Table, Button, Modal, Form } from 'react-bootstrap';
 import { ip } from '../../../../ContentExport';
 
-function ManageSpecialty({aid}) {
+function ManageSpecialty({ aid }) {
   const [specialties, setSpecialties] = useState([]);
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
+  const [newSpecialty, setNewSpecialty] = useState({
+    name: '',
+    description: '',
+  });
   const [editSpecialtyId, setEditSpecialtyId] = useState(null);
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     // Fetch all specialties on component mount
@@ -23,38 +27,36 @@ function ManageSpecialty({aid}) {
     }
   };
 
-  // Handle adding a new specialty
-  const addSpecialty = async () => {
-    try {
-      const res = await axios.post(`${ip.address}/admin/specialty/add`, { 
-        name, 
-        description, 
-        adminId: aid 
-      });
-      setSpecialties([...specialties, res.data.specialty]);
-      setName('');
-      setDescription('');
-    } catch (err) {
-      console.error('Error adding specialty:', err);
-    }
+  // Handle form input changes
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setNewSpecialty({
+      ...newSpecialty,
+      [name]: value,
+    });
   };
 
-  // Handle editing a specialty
-  const editSpecialty = async () => {
+  // Handle form submission for adding or updating a specialty
+  const handleSaveSpecialty = async (e) => {
+    e.preventDefault();
     try {
-      const res = await axios.put(`${ip.address}/admin/specialty/update`, { specialtyId: editSpecialtyId, name, description });
-      const updatedSpecialties = specialties.map(specialty => (specialty._id === editSpecialtyId ? res.data.specialty : specialty));
-      setSpecialties(updatedSpecialties);
-      setName('');
-      setDescription('');
+      if (editSpecialtyId) {
+        await axios.put(`${ip.address}/admin/specialty/update`, { specialtyId: editSpecialtyId, ...newSpecialty });
+        setSpecialties(specialties.map(specialty => (specialty._id === editSpecialtyId ? { ...specialty, ...newSpecialty } : specialty)));
+      } else {
+        const res = await axios.post(`${ip.address}/admin/specialty/add`, { ...newSpecialty, adminId: aid });
+        setSpecialties([...specialties, res.data.specialty]);
+      }
+      setNewSpecialty({ name: '', description: '' });
       setEditSpecialtyId(null);
+      setShowModal(false);
     } catch (err) {
-      console.error('Error updating specialty:', err);
+      console.error('Error saving specialty:', err);
     }
   };
 
-  // Handle deleting a specialty
-  const deleteSpecialty = async (id) => {
+  // Handle delete specialty
+  const handleDeleteSpecialty = async (id) => {
     try {
       await axios.delete(`${ip.address}/admin/specialty/delete/${id}`);
       setSpecialties(specialties.filter(specialty => specialty._id !== id));
@@ -63,54 +65,85 @@ function ManageSpecialty({aid}) {
     }
   };
 
-  // Handle form submission (either add or edit)
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (editSpecialtyId) {
-      editSpecialty();
-    } else {
-      addSpecialty();
-    }
+  // Edit button clicked
+  const handleEditClick = (specialty) => {
+    setEditSpecialtyId(specialty._id);
+    setNewSpecialty({ name: specialty.name, description: specialty.description });
+    setShowModal(true);
+  };
+
+  // Handle modal close
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setEditSpecialtyId(null);
+    setNewSpecialty({ name: '', description: '' });
   };
 
   return (
     <div>
-      <h1>Manage Specialties</h1>
-      
-      <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          placeholder="Specialty Name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          required
-        />
-        <input
-          type="text"
-          placeholder="Description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          required
-        />
-        <button type="submit">{editSpecialtyId ? 'Update Specialty' : 'Add Specialty'}</button>
-      </form>
+      <h2>Manage Specialties</h2>
 
-      <h2>Specialty List</h2>
-      <ul>
-        {specialties.map((specialty) => (
-          <li key={specialty._id}>
-            <strong>{specialty.name}:</strong> {specialty.description}
-            <button onClick={() => {
-              setEditSpecialtyId(specialty._id);
-              setName(specialty.name);
-              setDescription(specialty.description);
-            }}>
-              Edit
-            </button>
-            <button onClick={() => deleteSpecialty(specialty._id)}>Delete</button>
-          </li>
-        ))}
-      </ul>
+      {/* Display list of specialties in a table */}
+      <Table striped bordered hover>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {specialties.map((specialty) => (
+            <tr key={specialty._id}>
+              <td>{specialty.name}</td>
+              <td>{specialty.description}</td>
+              <td>
+                <Button variant="warning" onClick={() => handleEditClick(specialty)} style={{ marginRight: '10px' }}>Edit</Button>
+                <Button variant="danger" onClick={() => handleDeleteSpecialty(specialty._id)}>Delete</Button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </Table>
+
+      {/* Button to open modal for adding a new specialty */}
+      <Button variant="primary" onClick={() => setShowModal(true)}>Add New Specialty</Button>
+
+      {/* Modal for adding/editing a specialty */}
+      <Modal show={showModal} onHide={handleCloseModal}>
+        <Modal.Header closeButton>
+          <Modal.Title>{editSpecialtyId ? 'Edit Specialty' : 'Add New Specialty'}</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form onSubmit={handleSaveSpecialty}>
+            <Form.Group controlId="specialtyName">
+              <Form.Label>Specialty Name</Form.Label>
+              <Form.Control
+                type="text"
+                name="name"
+                value={newSpecialty.name}
+                onChange={handleInputChange}
+                placeholder="Specialty Name"
+                required
+              />
+            </Form.Group>
+            <Form.Group controlId="specialtyDescription">
+              <Form.Label>Description</Form.Label>
+              <Form.Control
+                type="text"
+                name="description"
+                value={newSpecialty.description}
+                onChange={handleInputChange}
+                placeholder="Description"
+                required
+              />
+            </Form.Group>
+            <Button variant="primary" type="submit">
+              {editSpecialtyId ? 'Update' : 'Add'}
+            </Button>
+          </Form>
+        </Modal.Body>
+      </Modal>
     </div>
   );
 }

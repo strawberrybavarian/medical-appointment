@@ -101,7 +101,7 @@ const MedSecForPayment = ({ allAppointments, setAllAppointments }) => {
       });
   };
 
-  // Function to update the appointment status to 'Scheduled'
+  // Function to update the appointment status to 'Completed'
   const handleUpdateStatus = (appointmentId) => {
     axios.put(`http://localhost:8000/appointments/${appointmentId}/status`, { status: 'Completed' })
       .then((response) => {
@@ -200,7 +200,10 @@ const MedSecForPayment = ({ allAppointments, setAllAppointments }) => {
                 const doctorName = doctor
                   ? `${doctor?.dr_firstName} ${doctor?.dr_middleInitial}. ${doctor?.dr_lastName}`
                   : "Not Assigned";
-                const appointmentTypes = appointment.appointment_type.join(', ');
+                  const appointmentTypes = appointment.appointment_type
+                  .map(typeObj => typeObj.appointment_type) // Extract the `appointment_type` field
+                  .join(', ');
+                
 
                 return (
                   <tr key={appointment._id}>
@@ -212,12 +215,10 @@ const MedSecForPayment = ({ allAppointments, setAllAppointments }) => {
                     <td>{appointment.patient.accountStatus}</td>
                     <td>
                       <div className="d-flex justify-content-center">
-                      <div className="pending-appointment">
-                            {appointment.status}
+                        <div className="pending-appointment">
+                          {appointment.status}
+                        </div>
                       </div>
-                      </div>
-                      
-
                     </td>
                     <td>
                       <div className="d-flex justify-content-around flex-wrap">

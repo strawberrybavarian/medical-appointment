@@ -45,20 +45,22 @@ function DoctorCards() {
 
   return (
     <>
-      <div className="msdc-container">
-        <Container fluid className="py-3 d-flex justify-content-center">
-          <Row className="g-3">
+      <div className="cd-main d-flex justify-content-center ">
+        <Container  className=" d-flex justify-content-center">
+          <Row className="d-flex justify-content-center">
 
             {/* In Session Doctors */}
             {inSessionDoctors.length > 0 && (
               <React.Fragment>
                 <h2 className="section-title">In Session</h2>
+                <div className="cd-containergrid p-0">
+                 
                 {inSessionDoctors.map(doctor => (
-                  <Col key={doctor._id} xs={12} sm={6} md={4} lg={3}>
-                    <Card className="doctor-card" onClick={() => handleDoctorClick(doctor._id)}>
+               
+                    <Card className="cd-card" onClick={() => handleDoctorClick(doctor._id)}>
                       <Card.Img variant="top" src={`http://localhost:8000/${doctor.dr_image || defaultImage}`} />
                       <Card.Body>
-                        <Card.Title className="text-center">
+                        <Card.Title style={{ textAlign: "center" }}>
                           {doctor.dr_firstName} {doctor.dr_middleInitial}. {doctor.dr_lastName}
                         </Card.Title>
                         <p className="text-center text-muted">{doctor.dr_specialty}</p>
@@ -67,40 +69,48 @@ function DoctorCards() {
                         </p>
                       </Card.Body>
                     </Card>
-                  </Col>
+              
                 ))}
+                 </div>
               </React.Fragment>
             )}
 
             {/* Online Doctors */}
             {onlineDoctors.length > 0 && (
               <React.Fragment>
-                <h2 className="section-title">Online</h2>
-                {onlineDoctors.map(doctor => (
-                  <Col key={doctor._id} xs={12} sm={6} md={4} lg={3}>
-                    <Card className="doctor-card" onClick={() => handleDoctorClick(doctor._id)}>
-                      <Card.Img variant="top" src={`http://localhost:8000/${doctor.dr_image || defaultImage}`} />
-                      <Card.Body>
-                        <Card.Title className="text-center">
-                          {doctor.dr_firstName} {doctor.dr_middleInitial}. {doctor.dr_lastName}
-                        </Card.Title>
-                        <p className="text-center text-muted">{doctor.dr_specialty}</p>
-                        <p className="text-center text-muted" style={{ fontSize: '12px' }}>
-                          <span className="status-indicator online"></span> Online
-                        </p>
-                      </Card.Body>
-                    </Card>
-                  </Col>
-                ))}
+                 <h2 className="section-title">Online</h2>
+                 <div className="cd-containergrid p-0">
+                 
+                  {onlineDoctors.map(doctor => (
+                    <Col key={doctor._id} >
+                      <Card className="doctor-card" onClick={() => handleDoctorClick(doctor._id)}>
+                        <Card.Img variant="top" src={`http://localhost:8000/${doctor.dr_image || defaultImage}`} />
+                        <Card.Body>
+                          <Card.Title className="text-center">
+                            {doctor.dr_firstName} {doctor.dr_middleInitial}. {doctor.dr_lastName}
+                          </Card.Title>
+                          <p className="text-center text-muted">{doctor.dr_specialty}</p>
+                          <p className="text-center text-muted" style={{ fontSize: '12px' }}>
+                            <span className="status-indicator online"></span> Online
+                          </p>
+                        </Card.Body>
+                      </Card>
+                    </Col>
+                  ))}
+
+                 </div>
+                
               </React.Fragment>
             )}
 
             {/* Offline Doctors */}
             {offlineDoctors.length > 0 && (
               <React.Fragment>
-                <h2 className="section-title">Offline</h2>
+                 <h2 className="section-title">Offline</h2>
+                <div className="cd-containergrid p-0">
+               
                 {offlineDoctors.map(doctor => (
-                  <Col key={doctor._id} xs={12} sm={6} md={4} lg={3}>
+                  <Col key={doctor._id} >
                     <Card className="doctor-card" onClick={() => handleDoctorClick(doctor._id)}>
                       <Card.Img variant="top" src={`http://localhost:8000/${doctor.dr_image || defaultImage}`} />
                       <Card.Body>
@@ -115,6 +125,7 @@ function DoctorCards() {
                     </Card>
                   </Col>
                 ))}
+                </div>
               </React.Fragment>
             )}
 

@@ -1,48 +1,56 @@
 import React, { useState } from 'react';
 import MedSecNavbar from '../../navbar/MedSecNavbar';
-import { Container, Nav, Row } from 'react-bootstrap';
+import { Container, Row } from 'react-bootstrap';
 import DoctorCards from './DoctorCards';
 import DeactivationRequests from '../../../admin/appointment/doctors/DeactivationRequests';
+import Nav from 'react-bootstrap/Nav';
 
 function AllDoctors() {
   const [activeTab, setActiveTab] = useState('doctorCards'); // Default to 'doctorCards'
 
   return (
-    <div>
-      <MedSecNavbar />
-      <Container fluid style={{ overflowY: 'auto', height: 'calc(100vh - 100px)', width: '100%', paddingBottom: '1.5rem' }}>
-        <div style={{ paddingLeft: '5rem', paddingRight: '5rem' }} className='pt-5'>
-          {/* Tabs for switching between sections */}
-          <Row>
-            
-            <Container className='d-flex justify-content-center'>
-              <Nav fill variant="tabs" className='navtabs-pxmanagement' activeKey={activeTab} onSelect={(tab) => setActiveTab(tab)}>
-                <Nav.Item>
-                  <Nav.Link eventKey="doctorCards">Doctors</Nav.Link>
-                </Nav.Item>
-                <Nav.Item>
-                  <Nav.Link eventKey="deactivationRequests">Appointment Deactivation Requests</Nav.Link>
-                </Nav.Item>
-              </Nav>
+    <div style={{ display: 'flex', flexDirection: 'row', height: '100vh' }}>
 
-            </Container>
-            
-            
+
+      <div style={{ flex: 1 }}>
+        <MedSecNavbar />
+        <Container fluid style={{ overflowY: 'auto', height: 'calc(100vh - 100px)', width: '100%', paddingBottom: '1.5rem' }}>
+          <Container className='p-0'>
+            <div className="horizontal-tabs" style={{ display: 'flex', gap: '1rem' }}>
+                <a
+                  onClick={() => setActiveTab('doctorCards')}
+                  className={activeTab === 'doctorCards' ? 'active' : ''}
+                  style={{ fontWeight: activeTab === 'doctorCards' ? 'bold' : 'normal', cursor: 'pointer', textDecoration: 'none', color: '#000' }}
+                >
+                  List of Doctors
+                </a>
+                <a
+                  onClick={() => setActiveTab('deactivationRequests')}
+                  className={activeTab === 'deactivationRequests' ? 'active' : ''}
+                  style={{ fontWeight: activeTab === 'deactivationRequests' ? 'bold' : 'normal', cursor: 'pointer', textDecoration: 'none', color: '#000' }}
+                >
+                  Appointment Deactivation Requests
+                </a>
+              </div>
+          </Container>
          
-           
-          </Row>
+            {/* Horizontal Tabs for switching between sections */}
+            
 
-          {/* Conditional rendering based on the active tab */}
-          <Row style={{ marginTop: '20px', marginBottom: '20px' }}>
-            {activeTab === 'doctorCards' && (
-              <DoctorCards />
-            )}
-            {activeTab === 'deactivationRequests' && (
-              <DeactivationRequests />
-            )}
-          </Row>
-        </div>
-      </Container>
+            {/* Conditional rendering based on the active tab */}
+            <Container  className='border-top d-flex justify-content-center'>
+              <Row style={{ marginTop: '20px', marginBottom: '20px' }}>
+                {activeTab === 'doctorCards' && (
+                  <DoctorCards />
+                )}
+                {activeTab === 'deactivationRequests' && (
+                  <DeactivationRequests />
+                )}
+              </Row>
+            </Container>
+       
+        </Container>
+      </div>
     </div>
   );
 }

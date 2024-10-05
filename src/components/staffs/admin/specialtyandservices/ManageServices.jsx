@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { Table, Button, Modal, Form } from 'react-bootstrap';
 
 function ManageServices() {
   const [services, setServices] = useState([]);
@@ -11,8 +12,8 @@ function ManageServices() {
     requirements: '',
     doctors: [],
   });
-  
   const [editingService, setEditingService] = useState(null);
+  const [showModal, setShowModal] = useState(false);
 
   // Fetch services when the component loads
   useEffect(() => {
@@ -21,7 +22,7 @@ function ManageServices() {
 
   const fetchServices = async () => {
     try {
-      const response = await axios.get('http://localhost:8000/admin/get/services');
+      const response = await axios.get('http://localhost:8000/admin/getall/services');
       setServices(response.data);
     } catch (error) {
       console.error('Error fetching services:', error);
@@ -37,15 +38,21 @@ function ManageServices() {
     });
   };
 
-  // Handle form submission for adding a new service
-  const handleAddService = async (e) => {
+  // Handle form submission for adding or updating a service
+  const handleSaveService = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('http://localhost:8000/admin/add/services', newService);
+      if (editingService) {
+        await axios.put(`http://localhost:8000/admin/update/services/${editingService._id}`, newService);
+      } else {
+        await axios.post('http://localhost:8000/admin/add/services', newService);
+      }
       setNewService({ name: '', description: '', category: '', availability: 'Available', requirements: '', doctors: [] });
+      setEditingService(null);
+      setShowModal(false);
       fetchServices(); // Refresh the list
     } catch (error) {
-      console.error('Error adding service:', error);
+      console.error('Error saving service:', error);
     }
   };
 
@@ -59,81 +66,122 @@ function ManageServices() {
     }
   };
 
-  // Handle updating service
-  const handleUpdateService = async (e) => {
-    e.preventDefault();
-    try {
-      await axios.put(`http://localhost:8000/admin/update/services/${editingService._id}`, editingService);
-      setEditingService(null);
-      fetchServices(); // Refresh the list
-    } catch (error) {
-      console.error('Error updating service:', error);
-    }
-  };
-
   // Edit button clicked
   const handleEditClick = (service) => {
     setEditingService(service);
+    setNewService(service);
+    setShowModal(true);
+  };
+
+  // Handle modal close
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setEditingService(null);
+    setNewService({ name: '', description: '', category: '', availability: 'Available', requirements: '', doctors: [] });
   };
 
   return (
     <div>
       <h2>Manage Services</h2>
 
-      {/* Display list of services */}
-      <ul>
-        {services.map((service) => (
-          <li key={service._id}>
-            <strong>{service.name}</strong> - {service.description} - {service.category} - {service.availability}
-            <button onClick={() => handleEditClick(service)}>Edit</button>
-            <button onClick={() => handleDeleteService(service._id)}>Delete</button>
-          </li>
-        ))}
-      </ul>
+      {/* Display list of services in a table */}
+      <Table striped bordered hover>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Category</th>
+            <th>Availability</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {services.map((service) => (
+            <tr key={service._id}>
+              <td>{service.name}</td>
+              <td>{service.description}</td>
+              <td>{service.category}</td>
+              <td>{service.availability}</td>
+              <td>
+                <Button variant="warning" onClick={() => handleEditClick(service)} style={{ marginRight: '10px' }}>Edit</Button>
+                <Button variant="danger" onClick={() => handleDeleteService(service._id)}>Delete</Button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </Table>
 
-      {/* Add new service form */}
-      <h3>{editingService ? 'Edit Service' : 'Add New Service'}</h3>
-      <form onSubmit={editingService ? handleUpdateService : handleAddService}>
-        <input
-          type="text"
-          name="name"
-          value={editingService ? editingService.name : newService.name}
-          onChange={editingService ? (e) => setEditingService({ ...editingService, name: e.target.value }) : handleInputChange}
-          placeholder="Service Name"
-          required
-        />
-        <input
-          type="text"
-          name="description"
-          value={editingService ? editingService.description : newService.description}
-          onChange={editingService ? (e) => setEditingService({ ...editingService, description: e.target.value }) : handleInputChange}
-          placeholder="Description"
-        />
-        <input
-          type="text"
-          name="category"
-          value={editingService ? editingService.category : newService.category}
-          onChange={editingService ? (e) => setEditingService({ ...editingService, category: e.target.value }) : handleInputChange}
-          placeholder="Category"
-          required
-        />
-        <select
-          name="availability"
-          value={editingService ? editingService.availability : newService.availability}
-          onChange={editingService ? (e) => setEditingService({ ...editingService, availability: e.target.value }) : handleInputChange}
-        >
-          <option value="Available">Available</option>
-          <option value="Not Available">Not Available</option>
-          <option value="Coming Soon">Coming Soon</option>
-        </select>
-        <textarea
-          name="requirements"
-          value={editingService ? editingService.requirements : newService.requirements}
-          onChange={editingService ? (e) => setEditingService({ ...editingService, requirements: e.target.value }) : handleInputChange}
-          placeholder="Requirements"
-        />
-        <button type="submit">{editingService ? 'Update' : 'Add'}</button>
-      </form>
+      {/* Button to open modal for adding a new service */}
+      <Button variant="primary" onClick={() => setShowModal(true)}>Add New Service</Button>
+
+      {/* Modal for adding/editing a service */}
+      <Modal show={showModal} onHide={handleCloseModal}>
+        <Modal.Header closeButton>
+          <Modal.Title>{editingService ? 'Edit Service' : 'Add New Service'}</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form onSubmit={handleSaveService}>
+            <Form.Group controlId="serviceName">
+              <Form.Label>Service Name</Form.Label>
+              <Form.Control
+                type="text"
+                name="name"
+                value={newService.name}
+                onChange={handleInputChange}
+                placeholder="Service Name"
+                required
+              />
+            </Form.Group>
+            <Form.Group controlId="serviceDescription">
+              <Form.Label>Description</Form.Label>
+              <Form.Control
+                type="text"
+                name="description"
+                value={newService.description}
+                onChange={handleInputChange}
+                placeholder="Description"
+              />
+            </Form.Group>
+            <Form.Group controlId="serviceCategory">
+              <Form.Label>Category</Form.Label>
+              <Form.Control
+                type="text"
+                name="category"
+                value={newService.category}
+                onChange={handleInputChange}
+                placeholder="Category"
+                required
+              />
+            </Form.Group>
+            <Form.Group controlId="serviceAvailability">
+              <Form.Label>Availability</Form.Label>
+              <Form.Control
+                as="select"
+                name="availability"
+                value={newService.availability}
+                onChange={handleInputChange}
+              >
+                <option value="Available">Available</option>
+                <option value="Not Available">Not Available</option>
+                <option value="Coming Soon">Coming Soon</option>
+              </Form.Control>
+            </Form.Group>
+            <Form.Group controlId="serviceRequirements">
+              <Form.Label>Requirements</Form.Label>
+              <Form.Control
+                as="textarea"
+                name="requirements"
+                value={newService.requirements}
+                onChange={handleInputChange}
+                placeholder="Requirements"
+              />
+            </Form.Group>
+            <Button variant="primary" type="submit">
+              {editingService ? 'Update' : 'Add'}
+            </Button>
+          </Form>
+        </Modal.Body>
+      </Modal>
     </div>
   );
 }
