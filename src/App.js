@@ -16,7 +16,6 @@ import DashboardMain from './components/practitioner/dashboard/DashboardMain';
 import EditMode from './components/practitioner/editmode/EditMode';
 import TheAppointments from './components/practitioner/appointment/TheAppointmentsNav';
 
-
 import AccountInfo from './components/practitioner/accountinfo/AccountInfo';
 import MainMedicalRecord from './components/practitioner/medicalrecord/MainMedicalRecord';
 import DoctorProfile from './components/patient/doctorprofile/DoctorProfile';
@@ -59,6 +58,7 @@ import SasMain from './components/staffs/admin/specialtyandservices/SasMain';
 import StaffsManagement from './components/staffs/admin/management/account/StaffsManagement';
 import { PatientProvider } from './components/patient/PatientContext';
 import ChooseDoctorServices from './components/patient/homepage/ChooseDoctorServices';
+import MedSecAccInfo from './components/staffs/medical secretary/components/Account/MedSecAccInfo';
 
 
 function App() {
@@ -96,12 +96,12 @@ function App() {
           <Route path={"/staffs"} element={<StaffLogIn />}/>
 
         {/* Medical Secretary Routes */}
-          <Route path={"/medsec/appointments/:msid"} element={<MedSecMain />}/>
-          <Route path={"/medsec/dashboard/:msid"} element={<MedSecMainDashboard />}/>
+          <Route path={"/medsec/appointments"} element={<MedSecMain />}/>
+          <Route path={"/medsec/dashboard"} element={<MedSecMainDashboard />}/>
           <Route path={"/medsec/createpatient/:msid"} element={<CreatePatient />}/>
-          <Route path={"/medsec/doctors/:msid"} element={<AllDoctors />}/>
-          <Route path={"/medsec/:msid/doctors/:did/schedule"} element={<ManageDoctorMain />} />
-          
+          <Route path={"/medsec/doctors"} element={<AllDoctors />}/>
+          <Route path={"/medsec/doctors/schedule"} element={<ManageDoctorMain />} />
+          <Route path={"/medsec/account"} element={<MedSecAccInfo />} />
         
         {/* Cashier Routes */}
           <Route path={"/cashier/:cid"} element={<CashierMain />}/>

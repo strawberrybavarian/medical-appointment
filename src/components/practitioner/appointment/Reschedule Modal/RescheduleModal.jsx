@@ -11,10 +11,10 @@ const RescheduleModal = ({ show, handleClose, handleConfirm,  }) => {
 
   return (
     <Modal show={show} onHide={handleClose} backdrop="static" keyboard={false}>
-      <Modal.Header closeButton>
+      <Modal.Header className='w-100' closeButton>
         <Modal.Title>Reschedule Appointment</Modal.Title>
       </Modal.Header>
-      <Modal.Body>
+      <Modal.Body className='w-100'>
         <Form>
           <Form.Group controlId="formCancelReason">
             <Form.Label>Please state the reason for Rescheduling</Form.Label>

@@ -1,15 +1,18 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { Table, Container, Pagination, Form, Row, Col, Button } from 'react-bootstrap';
+import { Table, Container, Pagination, Form, Row, Col, Button, Dropdown } from 'react-bootstrap';
 import AssignAppointmentModal from './AssignAppointmentModal'; 
 import './Styles.css';
+import { ThreeDots } from 'react-bootstrap-icons';
+import RescheduleModal from "../../../../practitioner/appointment/Reschedule Modal/RescheduleModal";
+
 
 const MedSecPending = ({ allAppointments, setAllAppointments }) => {
   const { did } = useParams();
   const [error, setError] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [entriesPerPage, setEntriesPerPage] = useState(5);
+  const [entriesPerPage, setEntriesPerPage] = useState(15);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortConfig, setSortConfig] = useState({ key: '', direction: '' });
   const [showAssignModal, setShowAssignModal] = useState(false);
@@ -20,15 +23,52 @@ const MedSecPending = ({ allAppointments, setAllAppointments }) => {
   const [selectedTime, setSelectedTime] = useState("");
   const [selectedAccountStatus, setSelectedAccountStatus] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
+  const [showRescheduleModal, setShowRescheduleModal] = useState(false);
 
-  // Convert 24-hour format to 12-hour format (for display)
-  const convertTo12HourFormat = (time24h) => {
-    if (!time24h) return ''; // Return empty string if no time
-    const [hours, minutes] = time24h.split(':');
-    const period = hours >= 12 ? 'PM' : 'AM';
-    const hour12 = hours % 12 || 12; // Convert to 12-hour format
-    return `${hour12}:${minutes} ${period}`;
-  };
+    const handleConfirmReschedule = (rescheduledReason) => {
+      const newStatus = {
+        rescheduledReason: rescheduledReason,
+        status: 'Rescheduled'
+      };
+      
+      axios.put(`http://localhost:8000/doctor/${selectedAppointment._id}/rescheduledstatus`, newStatus)
+        .then(() => {
+          // Update the state of appointments in real-time
+          setAllAppointments(prevAppointments =>
+            prevAppointments.map(appointment =>
+              appointment._id === selectedAppointment._id
+                ? { ...appointment, status: 'Rescheduled', rescheduledReason: rescheduledReason }
+                : appointment
+            )
+          );
+          setShowRescheduleModal(false); // Close the modal after successful update
+          setSelectedAppointment(null); // Clear selected appointment
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    };
+
+    const handleReschedule = (appointment) => {
+      setSelectedAppointment(appointment);
+      setShowRescheduleModal(true);
+    };
+
+    const handleCloseRescheduleModal = () => {
+      setShowRescheduleModal(false);
+      setSelectedAppointment(null);
+    };
+const convertTo12HourFormat = (time) => {
+  if (!time) return 'Not Assigned'; 
+  if (time.includes('AM') || time.includes('PM')) {
+    return time; 
+  }
+  const [hours, minutes] = time.split(':');
+  const period = hours >= 12 ? 'PM' : 'AM';
+  const hour12 = hours % 12 || 12; 
+  return `${hour12}:${minutes} ${period}`;
+};
+
 
   useEffect(() => {
     axios.get(`http://localhost:8000/doctor/api/alldoctor`)
@@ -124,12 +164,12 @@ const MedSecPending = ({ allAppointments, setAllAppointments }) => {
       });
   };
 
-  const handleUpdateStatus = (appointmentId) => {
-    axios.put(`http://localhost:8000/appointments/${appointmentId}/status`, { status: 'Scheduled' })
+  const handleUpdateStatus = (appointmentId, newStatus) => {
+    axios.put(`http://localhost:8000/appointments/${appointmentId}/status`, { status: newStatus })
       .then((response) => {
         setAllAppointments(prevAppointments =>
           prevAppointments.map(appointment =>
-            appointment._id === appointmentId ? { ...appointment, status: 'Scheduled' } : appointment
+            appointment._id === appointmentId ? { ...appointment, status: newStatus } : appointment
           )
         );
       })
@@ -141,10 +181,11 @@ const MedSecPending = ({ allAppointments, setAllAppointments }) => {
 
   return (
     <>
-      <Container>
-        <div style={{ padding: '30px', width: '100%' }}>
-          <h1>Pending Appointments</h1>
-          <Container className="p-0">
+      <Container fluid className="w-100">
+       
+          <h3>Pending Appointments</h3>
+          <hr/>
+          <div >
             <Row>
               <Col lg={4} md={6} sm={12}>
                 <Form.Group controlId="formDoctorSearch" className="d-flex align-items-center">
@@ -213,7 +254,7 @@ const MedSecPending = ({ allAppointments, setAllAppointments }) => {
                 </Form.Group>
               </Col>
             </Row>
-          </Container>
+          </div>
 
           <Table responsive striped variant="light" className="mt-3">
             <thead>
@@ -251,32 +292,83 @@ const MedSecPending = ({ allAppointments, setAllAppointments }) => {
 
                 return (
                   <tr key={appointment._id}>
-                    <td>{patientName}</td>
-                    <td>{doctorName}</td>
-                    <td>{categoryTypes}</td>
-                    <td>{appointmentTypes}</td>
-                    <td>{appointment.date ? new Date(appointment.date).toLocaleDateString() : "Not Assigned"}</td>
-                    <td>{convertTo12HourFormat(appointment.time) || "Not Assigned"}</td>
-                    <td>{appointment.patient.accountStatus}</td>
+                    <td style={{fontSize: '14px', fontWeight: '600'}}>{patientName}</td>
+                    <td style={{fontSize: '14px'}}>{doctorName}</td>
+                    <td style={{fontSize: '14px'}}>{categoryTypes}</td>
+                    <td style={{fontSize: '14px'}}>{appointmentTypes}</td>
+                    <td style={{fontSize: '14px'}}>{appointment.date ? new Date(appointment.date).toLocaleDateString() : "Not Assigned"}</td>
+                    <td style={{fontSize: '14px'}}>{convertTo12HourFormat(appointment.time) || "Not Assigned"}</td>
+
+                    <td style={{fontSize: '14px'}}>{appointment.patient.accountStatus}</td>
                     <td>
                       <div className="d-flex justify-content-center">
-                      <div className="pending-appointment">
+                      <div className="pending-appointment" style={{fontSize: '12px'}}>
                             {appointment.status}
                       </div>
                       </div>
                     </td>
                     <td>
                       <div className="d-flex justify-content-around flex-wrap">
-                        {(!appointment.doctor || !appointment.date || !appointment.time) && (
-                          <Link variant="warning" onClick={() => handleAssignDetails(appointment)}>Assign Details</Link>
-                        )}
-                        {(appointment.doctor && appointment.date && appointment.time && appointment.status !== "Scheduled") && (
-                          <Link variant="success" onClick={() => handleUpdateStatus(appointment._id)}>
-                            Scheduled
-                          </Link>
-                        )}
+                        <Dropdown >
+                          <Dropdown.Toggle s as={Button} variant="light" className="action-button">
+                            <ThreeDots size={20} />
+                          </Dropdown.Toggle>
+
+                          <Dropdown.Menu style={{zIndex:'99999'}}>
+                            {(!appointment.doctor || !appointment.date || !appointment.time || !appointmentTypes || !categoryTypes) && (
+                              <Dropdown.Item
+                                onClick={() => handleAssignDetails(appointment)}
+                                className="action-item"
+                              >
+                                Assign Details
+                              </Dropdown.Item>
+                            )}
+                            
+                            {appointment.patient.accountStatus === "Unregistered" && (
+                              <>
+                               <Dropdown.Item
+                                onClick={() => handleUpdateStatus(appointment._id, "Scheduled")}
+                                className="action-item"
+                              >
+                                Scheduled
+                              </Dropdown.Item>
+                              <Dropdown.Item
+                                onClick={() => handleAssignDetails(appointment)}
+                                className="action-item"
+                              >
+                                Reschedule
+                              </Dropdown.Item>
+                              </>
+                             
+                            )}
+                            {appointment.patient.accountStatus === "Registered" && (
+                              <>
+                                                             <Dropdown.Item
+                                onClick={() => handleUpdateStatus(appointment._id, "Scheduled")}
+                                className="action-item"
+                              >
+                                Scheduled
+                              </Dropdown.Item>
+                                <Dropdown.Item
+                                  onClick={() => handleReschedule(appointment)}
+                                  className="action-item"
+                                  >
+                                    Reschedule
+                                </Dropdown.Item>
+                              </>
+                             
+                            )}
+                            <Dropdown.Item
+                              onClick={() => handleUpdateStatus(appointment._id, "Cancelled")}
+                              className="action-item"
+                            >
+                              Cancel
+                            </Dropdown.Item>
+                          </Dropdown.Menu>
+                        </Dropdown>
                       </div>
                     </td>
+
                   </tr>
                 );
               })}
@@ -308,7 +400,7 @@ const MedSecPending = ({ allAppointments, setAllAppointments }) => {
               <Pagination.Last onClick={() => setCurrentPage(pageNumbers.length)} disabled={currentPage === pageNumbers.length} />
             </Pagination>
           </Container>
-        </div>
+   
 
         {selectedAppointment && (
           <AssignAppointmentModal
@@ -328,7 +420,17 @@ const MedSecPending = ({ allAppointments, setAllAppointments }) => {
           />
         )}
 
-        <div style={{ paddingBottom: '50px' }} />
+        {selectedAppointment && (
+          <RescheduleModal 
+            show={showRescheduleModal} 
+            handleClose={handleCloseRescheduleModal} 
+            appointment={selectedAppointment} 
+            handleConfirm={handleConfirmReschedule}  // This will update the appointments in real-time
+          />
+        )}
+
+
+       
       </Container>
     </>
   );

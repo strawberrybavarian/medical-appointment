@@ -5,10 +5,12 @@ import Select from 'react-select';
 
 function AssignAppointmentModal({ show, handleClose, appointmentId }) {
     const [doctors, setDoctors] = useState([]);
+    const [services, setServices] = useState([]); // Store available services
+    const [selectedService, setSelectedService] = useState(null); // Store selected service
     const [selectedDoctor, setSelectedDoctor] = useState(null);
     const [doctorName, setDoctorName] = useState("");
     const [date, setDate] = useState("");
-    const [time, setTime] = useState(""); // Store time in HH:mm format
+    const [time, setTime] = useState(""); // Store time in AM/PM format
     const [availability, setAvailability] = useState({});
     const [morningTimeRange, setMorningTimeRange] = useState("");
     const [afternoonTimeRange, setAfternoonTimeRange] = useState("");
@@ -28,7 +30,7 @@ function AssignAppointmentModal({ show, handleClose, appointmentId }) {
             });
     }, []);
 
-    // Fetch doctor's availability based on the selected doctor
+    // Fetch doctor's availability and services based on the selected doctor
     useEffect(() => {
         if (selectedDoctor) {
             axios.get(`http://localhost:8000/doctor/${selectedDoctor.value}`)
@@ -36,15 +38,20 @@ function AssignAppointmentModal({ show, handleClose, appointmentId }) {
                     const doctor = response.data.doctor;
                     setDoctorName(`${doctor.dr_firstName} ${doctor.dr_middleInitial}. ${doctor.dr_lastName}`);
                     setAvailability(doctor.availability || {});
+                    setServices(doctor.dr_services || []); // Fetch only doctor's specific services
                 })
                 .catch((err) => {
                     console.log(err);
                 });
         } else {
-            setDoctorName('No Doctor Selected');
-            setAvailability({});
-            setMorningTimeRange("");
-            setAfternoonTimeRange("");
+            // Fetch all services if no doctor is selected
+            axios.get(`http://localhost:8000/admin/getall/services`)
+                .then((response) => {
+                    setServices(response.data); // Fetch all available services
+                })
+                .catch((err) => {
+                    console.log(err);
+                });
         }
     }, [selectedDoctor]);
 
@@ -92,28 +99,9 @@ function AssignAppointmentModal({ show, handleClose, appointmentId }) {
 
     const todayDate = getTodayDate();
 
-    // Function to convert 12-hour format to 24-hour format
-    const convertTo24HourFormat = (time12h) => {
-        const [time, modifier] = time12h.split(' '); // Split time and AM/PM
-        let [hours, minutes] = time.split(':');
-
-        if (hours === '12') {
-            hours = '00'; // Handle 12 AM as 00
-        }
-
-        if (modifier === 'PM' && hours !== '12') {
-            hours = parseInt(hours, 10) + 12; // Add 12 to convert to 24-hour format for PM times
-        }
-
-        return `${hours.padStart(2, '0')}:${minutes}`; // Return 24-hour formatted time
-    };
-
-    // Convert 24-hour format to 12-hour format (for display)
-    const convertTo12HourFormat = (time24h) => {
-        const [hours, minutes] = time24h.split(':');
-        const period = hours >= 12 ? 'PM' : 'AM';
-        const hour12 = hours % 12 || 12; // Convert to 12-hour format
-        return `${hour12}:${minutes} ${period}`;
+    // Function to handle time selection and directly set AM/PM formatted time
+    const handleTimeSelection = (selectedTime) => {
+        setTime(selectedTime); // Save time directly in AM/PM format
     };
 
     // Handle appointment update
@@ -123,16 +111,25 @@ function AssignAppointmentModal({ show, handleClose, appointmentId }) {
             return;
         }
 
-        if (!date || !time) {
-            window.alert("Please select a valid date and time.");
+        if (!date || !time || !selectedService) {
+            window.alert("Please select a valid date, time, and service.");
             return;
         }
 
+        // Ensure the appointment_type is structured correctly (appointment_type and category)
+        const appointmentType = {
+            appointment_type: selectedService.label,  // Assuming `label` is the name of the service
+            category: selectedService.category || 'General'  // Add the category if available, or default to 'General'
+        };
+
         const formData = {
             doctor: selectedDoctor ? selectedDoctor.value : null,
+            appointment_type: appointmentType,  // Pass the structured object
             date,
-            time: convertTo24HourFormat(time), // Store in 24-hour format
+            time, // Time is now stored in AM/PM format
         };
+
+        console.log('FormData being sent:', formData);  // Check the form data being sent
 
         axios.put(`http://localhost:8000/appointments/${appointmentId}/assign`, formData)
             .then(() => {
@@ -152,21 +149,50 @@ function AssignAppointmentModal({ show, handleClose, appointmentId }) {
 
     return (
         <Modal show={show} onHide={handleClose} className='am-overlay'>
-            <div className="am-content">
+            
                 <Modal.Header className="am-header" closeButton>
                     <Modal.Title>Assign Appointment</Modal.Title>
                 </Modal.Header>
-                <Modal.Body>
+                <Modal.Body className="w-100">
                     {/* Doctor Selection with react-select */}
                     <Form.Group as={Col} className="mb-3">
                         <Form.Label>Select Doctor</Form.Label>
                         <Select
-                            options={doctors}
-                            value={selectedDoctor}
-                            onChange={(selected) => setSelectedDoctor(selected)}
-                            placeholder="Search for a doctor"
-                            isClearable={true}
-                        />
+                          options={doctors}
+                          value={selectedDoctor}
+                          onChange={(selected) => {
+                              setSelectedDoctor(selected);
+                              if (!selected) {
+                                  // Reset all relevant states when doctor selection is cleared
+                                  setSelectedService(null);
+                                  setDoctorName("");
+                                  setDate("");
+                                  setTime("");
+                                  setAvailability({});
+                                  setMorningTimeRange("");
+                                  setAfternoonTimeRange("");
+                              }
+                          }}
+                          placeholder="Search for a doctor"
+                          isClearable={true}
+                      />
+                    </Form.Group>
+
+                    {/* Service Selection with react-select */}
+                    <Form.Group as={Col} className="mb-3">
+                        <Form.Label>Select Service</Form.Label>
+                        <Select
+                          options={services.map(service => ({
+                              value: service._id,
+                              label: service.name,
+                              category: service.category  // Assuming the category field is available
+                          }))} // Display services
+                          value={selectedService}
+                          onChange={(selected) => setSelectedService(selected)}
+                          placeholder="Select a service"
+                          isClearable={true}
+                      />
+
                     </Form.Group>
 
                     {/* Date Selection */}
@@ -187,7 +213,7 @@ function AssignAppointmentModal({ show, handleClose, appointmentId }) {
                         {morningTimeRange && (
                             <Button
                                 variant={time === morningTimeRange ? "secondary" : "outline-primary"}
-                                onClick={() => setTime(morningTimeRange)}
+                                onClick={() => handleTimeSelection(morningTimeRange)}
                                 className="m-1"
                             >
                                 Morning: {morningTimeRange}
@@ -196,7 +222,7 @@ function AssignAppointmentModal({ show, handleClose, appointmentId }) {
                         {afternoonTimeRange && (
                             <Button
                                 variant={time === afternoonTimeRange ? "secondary" : "outline-primary"}
-                                onClick={() => setTime(afternoonTimeRange)}
+                                onClick={() => handleTimeSelection(afternoonTimeRange)}
                                 className="m-1"
                             >
                                 Afternoon: {afternoonTimeRange}
@@ -205,7 +231,7 @@ function AssignAppointmentModal({ show, handleClose, appointmentId }) {
                         {!morningTimeRange && !afternoonTimeRange && (
                             <Form.Control
                                 type="time"
-                                value={time} // Keep time in 24-hour format for input
+                                value={time} // Keep time in 12-hour format for input
                                 onChange={(e) => setTime(e.target.value)}
                                 placeholder="Enter time"
                                 required
@@ -221,7 +247,7 @@ function AssignAppointmentModal({ show, handleClose, appointmentId }) {
                         Submit
                     </Button>
                 </Modal.Footer>
-            </div>
+          
         </Modal>
     );
 }

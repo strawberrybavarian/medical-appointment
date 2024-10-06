@@ -120,8 +120,9 @@ const MedSecForPayment = ({ allAppointments, setAllAppointments }) => {
   return (
     <>
       <Container>
-        <div style={{ padding: '30px', width: '100%' }}>
-          <h1>For Payment</h1>
+ 
+          <h3>For Payment</h3>
+          <hr/>
 
           <Container className="p-0">
             <Row>
@@ -207,29 +208,26 @@ const MedSecForPayment = ({ allAppointments, setAllAppointments }) => {
 
                 return (
                   <tr key={appointment._id}>
-                    <td>{patientName}</td>
-                    <td>{doctorName}</td>
-                    <td>{appointmentTypes}</td>
-                    <td>{appointment.date ? new Date(appointment.date).toLocaleDateString() : "Not Assigned"}</td>
-                    <td>{appointment.time || "Not Assigned"}</td>
-                    <td>{appointment.patient.accountStatus}</td>
+                    <td style={{fontSize: '14px', fontWeight: '600'}}>{patientName}</td>
+                    <td style={{fontSize: '14px'}}>{doctorName}</td>
+                    <td style={{fontSize: '14px'}}>{appointmentTypes}</td>
+                    <td style={{fontSize: '14px'}}>{appointment.date ? new Date(appointment.date).toLocaleDateString() : "Not Assigned"}</td>
+                    <td style={{fontSize: '14px'}}>{appointment.time || "Not Assigned"}</td>
+                    <td style={{fontSize: '14px'}}>{appointment.patient.accountStatus}</td>
                     <td>
                       <div className="d-flex justify-content-center">
-                        <div className="pending-appointment">
+                        <div className="forpayment-appointment" style={{fontSize: '12px'}}>
                           {appointment.status}
                         </div>
                       </div>
                     </td>
                     <td>
                       <div className="d-flex justify-content-around flex-wrap">
-                        {(!appointment.doctor || !appointment.date || !appointment.time) && (
-                          <Link variant="warning" onClick={() => handleAssignDetails(appointment)}>Assign Details</Link>
-                        )}
-                        {(appointment.doctor && appointment.date && appointment.time && appointment.status !== "Scheduled") && (
-                          <Button variant="success" onClick={() => handleUpdateStatus(appointment._id)}>
+                       
+                          <Link variant="success" style={{fontSize: '14px', textDecoration:'none', color: 'green'}} onClick={() => handleUpdateStatus(appointment._id)}>
                             Completed
-                          </Button>
-                        )}
+                          </Link>
+                      
                       </div>
                     </td>
                   </tr>
@@ -263,7 +261,7 @@ const MedSecForPayment = ({ allAppointments, setAllAppointments }) => {
               <Pagination.Last onClick={() => setCurrentPage(pageNumbers.length)} disabled={currentPage === pageNumbers.length} />
             </Pagination>
           </Container>
-        </div>
+   
 
         {selectedAppointment && (
           <AssignAppointmentModal
@@ -281,7 +279,7 @@ const MedSecForPayment = ({ allAppointments, setAllAppointments }) => {
           />
         )}
 
-        <div style={{ paddingBottom: '50px' }} />
+    
       </Container>
     </>
   );

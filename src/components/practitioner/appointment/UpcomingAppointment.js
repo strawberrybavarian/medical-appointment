@@ -138,9 +138,11 @@ const UpcomingAppointment = ({ allAppointments, setAllAppointments }) => {
             {currentAppointments.map((appointment) => {
               const patient = appointment.patient || {}; // Ensure patient is an object
               const patientName = `${patient.patient_firstName || ''} ${patient.patient_middleInitial || ''}. ${patient.patient_lastName || ''}`.trim();
-              const appointmentTypes = appointment.appointment_type.join(', ');
-              const patientImage = `${ip.address}/${patient.patient_image}` || `${ip.address}/${defaultImage}`;
               
+              const patientImage = `${ip.address}/${patient.patient_image}` || `${ip.address}/${defaultImage}`;
+              const appointmentTypes = appointment.appointment_type
+                  .map(typeObj => typeObj.appointment_type)
+                  .join(', ');
               return (
                 <React.Fragment key={appointment._id}>
                   <tr 

@@ -1,15 +1,18 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Card, Container, Row, Col } from "react-bootstrap";
 import axios from "axios";
 import './Styles.css'; // Import the CSS styles
-import MedSecNavbar from "../../navbar/MedSecNavbar";
 const defaultImage = "images/014ef2f860e8e56b27d4a3267e0a193a.jpg";
 
-function DoctorCards() {
+function DoctorCards({msid}) {
   const [doctors, setDoctors] = useState([]);
   const navigate = useNavigate();
-  const { msid } = useParams();
+
+
+  
+  // Extract msid from location state (or URL params, if available)
+
 
   useEffect(() => {
     axios.get("http://localhost:8000/doctor/api/alldoctor")
@@ -20,7 +23,10 @@ function DoctorCards() {
   }, []);
 
   const handleDoctorClick = (did) => {
-    navigate(`/medsec/${msid}/doctors/${did}/schedule`);
+    // Navigate to the doctor schedule page with msid and did in state
+    navigate(`/medsec/doctors/schedule`, {
+      state: { msid, did }
+    });
   };
 
   const timeSinceLastActive = (lastActive) => {
@@ -46,7 +52,7 @@ function DoctorCards() {
   return (
     <>
       <div className="cd-main d-flex justify-content-center ">
-        <Container  className=" d-flex justify-content-center">
+        <Container className=" d-flex justify-content-center">
           <Row className="d-flex justify-content-center">
 
             {/* In Session Doctors */}
@@ -54,10 +60,8 @@ function DoctorCards() {
               <React.Fragment>
                 <h2 className="section-title">In Session</h2>
                 <div className="cd-containergrid p-0">
-                 
-                {inSessionDoctors.map(doctor => (
-               
-                    <Card className="cd-card" onClick={() => handleDoctorClick(doctor._id)}>
+                  {inSessionDoctors.map(doctor => (
+                    <Card className="cd-card" key={doctor._id} onClick={() => handleDoctorClick(doctor._id)}>
                       <Card.Img variant="top" src={`http://localhost:8000/${doctor.dr_image || defaultImage}`} />
                       <Card.Body>
                         <Card.Title style={{ textAlign: "center" }}>
@@ -69,20 +73,18 @@ function DoctorCards() {
                         </p>
                       </Card.Body>
                     </Card>
-              
-                ))}
-                 </div>
+                  ))}
+                </div>
               </React.Fragment>
             )}
 
             {/* Online Doctors */}
             {onlineDoctors.length > 0 && (
               <React.Fragment>
-                 <h2 className="section-title">Online</h2>
-                 <div className="cd-containergrid p-0">
-                 
+                <h2 className="section-title">Online</h2>
+                <div className="cd-containergrid p-0">
                   {onlineDoctors.map(doctor => (
-                    <Col key={doctor._id} >
+                    <Col key={doctor._id}>
                       <Card className="doctor-card" onClick={() => handleDoctorClick(doctor._id)}>
                         <Card.Img variant="top" src={`http://localhost:8000/${doctor.dr_image || defaultImage}`} />
                         <Card.Body>
@@ -97,34 +99,31 @@ function DoctorCards() {
                       </Card>
                     </Col>
                   ))}
-
-                 </div>
-                
+                </div>
               </React.Fragment>
             )}
 
             {/* Offline Doctors */}
             {offlineDoctors.length > 0 && (
               <React.Fragment>
-                 <h2 className="section-title">Offline</h2>
+                <h2 className="section-title">Offline</h2>
                 <div className="cd-containergrid p-0">
-               
-                {offlineDoctors.map(doctor => (
-                  <Col key={doctor._id} >
-                    <Card className="doctor-card" onClick={() => handleDoctorClick(doctor._id)}>
-                      <Card.Img variant="top" src={`http://localhost:8000/${doctor.dr_image || defaultImage}`} />
-                      <Card.Body>
-                        <Card.Title className="text-center">
-                          {doctor.dr_firstName} {doctor.dr_middleInitial}. {doctor.dr_lastName}
-                        </Card.Title>
-                        <p className="text-center text-muted">{doctor.dr_specialty}</p>
-                        <p className="text-center text-muted" style={{ fontSize: '12px' }}>
-                          <span className="status-indicator offline"></span> {timeSinceLastActive(doctor.lastActive)}
-                        </p>
-                      </Card.Body>
-                    </Card>
-                  </Col>
-                ))}
+                  {offlineDoctors.map(doctor => (
+                    <Col key={doctor._id}>
+                      <Card className="doctor-card" onClick={() => handleDoctorClick(doctor._id)}>
+                        <Card.Img variant="top" src={`http://localhost:8000/${doctor.dr_image || defaultImage}`} />
+                        <Card.Body>
+                          <Card.Title className="text-center">
+                            {doctor.dr_firstName} {doctor.dr_middleInitial}. {doctor.dr_lastName}
+                          </Card.Title>
+                          <p className="text-center text-muted">{doctor.dr_specialty}</p>
+                          <p className="text-center text-muted" style={{ fontSize: '12px' }}>
+                            <span className="status-indicator offline"></span> {timeSinceLastActive(doctor.lastActive)}
+                          </p>
+                        </Card.Body>
+                      </Card>
+                    </Col>
+                  ))}
                 </div>
               </React.Fragment>
             )}

@@ -25,6 +25,7 @@ const CreateAppointment = ({ onClose }) => {
 
   useEffect(() => {
     if (selectedSpecialty) {
+      // Fetch doctors filtered by the selected specialty
       axios.get(`http://localhost:8000/doctor/api/alldoctor`)
         .then((response) => {
           const filteredDoctors = response.data.theDoctor.filter(
@@ -33,6 +34,10 @@ const CreateAppointment = ({ onClose }) => {
           setDoctors(filteredDoctors);
         })
         .catch((err) => console.log(err));
+    } else {
+      // Clear doctors if no specialty is selected
+      setDoctors([]);
+      setSelectedDoctor(null); // Clear the selected doctor if the specialty is cleared
     }
   }, [selectedSpecialty]);
 
@@ -83,7 +88,10 @@ const CreateAppointment = ({ onClose }) => {
                   <Select
                     options={getSpecialtyOptions()}
                     value={selectedSpecialty}
-                    onChange={setSelectedSpecialty}
+                    onChange={(selected) => {
+                      setSelectedSpecialty(selected);
+                      setSelectedDoctor(null); // Clear the doctor state if the specialty changes
+                    }}
                     isClearable
                     placeholder="Select specialty..."
                   />
@@ -96,7 +104,12 @@ const CreateAppointment = ({ onClose }) => {
                   <Select
                     options={getDoctorOptions()}
                     value={selectedDoctor}
-                    onChange={setSelectedDoctor}
+                    onChange={(selected) => {
+                      setSelectedDoctor(selected);
+                      if (!selected) {
+                        setSelectedDoctor(null); // Clear the state if doctor is cleared
+                      }
+                    }}
                     isClearable
                     placeholder="Search for a doctor..."
                   />

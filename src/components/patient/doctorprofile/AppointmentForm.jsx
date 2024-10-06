@@ -108,42 +108,54 @@ function AppointmentForm({pid , did}) {
   };
   
 
-  const handleServiceChange = (serviceId) => {
-    setSelectedServices((prevSelected) =>
-      prevSelected.includes(serviceId)
-        ? prevSelected.filter((id) => id !== serviceId)
-        : [...prevSelected, serviceId]
-    );
+// Function to handle checkbox change for services
+  const handleServiceChange = (service) => {
+    setSelectedServices((prevSelected) => {
+        const isSelected = prevSelected.some(s => s.appointment_type === service.name);
+        
+        if (isSelected) {
+            // If already selected, remove the service from the selected services
+            return prevSelected.filter((s) => s.appointment_type !== service.name);
+        } else {
+            // If not selected, add the service as an object { appointment_type, category }
+            return [...prevSelected, { appointment_type: service.name, category: service.category }];
+        }
+    });
   };
 
-  const createAppointment = () => {
-    if (!time || !selectedServices.length) {
-      window.alert("Please select a valid time and service for the appointment.");
+
+// Function to create an appointment
+const createAppointment = () => {
+  if (!date) {
+      window.alert("Please select a valid date for the appointment.");
       return;
-    }
+  }
 
-    const formData = {
-      doctorId: did,
+  // Create the appointment data
+  const formData = {
+      doctor: did || null, // doctorId can be null if optional
       date,
-      time,
+      time: time || null,
       reason,
-      appointment_type: selectedServices,
-    };
+      appointment_type: selectedServices, // Ensure selectedServices contains objects with appointment_type and category
+  };
 
-    axios
-      .post(`http://localhost:8000/patient/api/${pid}/createappointment`, formData)
+  axios.post(`http://localhost:8000/patient/api/${pid}/createappointment`, formData)
       .then(() => {
-        window.alert("Created an appointment!");
-        navigate(`/myappointment`, { state: { pid } });
+          window.alert("Created an appointment!");
+          window.location.reload();
       })
       .catch((err) => {
-        if (err.response) {
-          window.alert(`Error: ${err.response.data.message}`);
-        } else {
-          window.alert("An error occurred while creating the appointment.");
-        }
+          if (err.response) {
+              console.log(err.response.data);
+              window.alert(`Error: ${err.response.data.message}`);
+          } else {
+              console.log(err);
+              window.alert('An error occurred while creating the appointment.');
+          }
       });
-  };
+};
+
 
   const getTodayDate = () => {
     const today = new Date();
@@ -280,21 +292,21 @@ function AppointmentForm({pid , did}) {
 
               {/* Add doctor's services as checkboxes */}
               <Row>
-                <Form.Group as={Col} className="mb-3">
-                  <Form.Label style={{fontWeight:'600'}}>Select Services: </Form.Label>
-                  <div>
-                    {doctorServices.map((service) => (
-                      <Form.Check
-                        key={service._id}
-                        type="checkbox"
-                        label={service.name}
-                        value={service.name}
-                        onChange={() => handleServiceChange(service.name)}
-                        checked={selectedServices.includes(service.name)}
-                      />
+                      <Form.Group as={Col} className="mb-3">
+                <Form.Label>Select Services (Appointment Type)</Form.Label>
+                <div>
+                    {doctorServices.map(service => (
+                        <Form.Check
+                            key={service._id}
+                            type="checkbox"
+                            label={service.name}
+                            onChange={() => handleServiceChange(service)}
+                            checked={selectedServices.some(s => s.appointment_type === service.name)}
+                            disabled={service.availability === 'Not Available' || service.availability === 'Coming Soon'}
+                        />
                     ))}
-                  </div>
-                </Form.Group>
+                </div>
+            </Form.Group>
 
                
                 <Form.Group as={Col} className="mb-3">
@@ -358,12 +370,14 @@ function AppointmentForm({pid , did}) {
                   </Container>
 
                   <div className="fix"></div>
-                  <Container className="d-flex align-items-center m-0">
-                    <div className="ticket-icon">
-                      <i className="fa fa-stethoscope"></i>
-                    </div>
-                    <p className="m-0 px-2">Services: {selectedServices.join(", ")}</p>
-                  </Container>
+                    <Container className="d-flex align-items-center m-0">
+                      <div className="ticket-icon">
+                        <i className="fa fa-stethoscope"></i>
+                      </div>
+                      {/* Map over selectedServices to extract appointment_type */}
+                      <p className="m-0 px-2">Services: {selectedServices.map(service => service.appointment_type).join(", ")}</p>
+                    </Container>
+
                 </div> 
               </div>
             </div>

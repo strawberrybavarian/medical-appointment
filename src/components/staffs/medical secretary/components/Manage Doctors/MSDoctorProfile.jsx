@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Button, Table, Card } from 'react-bootstrap';
 import axios from 'axios';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { ip } from '../../../../../ContentExport';
 import AppointmentModal from '../../../../patient/doctorprofile/AppointmentModal';
 const defaultImage = "images/014ef2f860e8e56b27d4a3267e0a193a.jpg";
-
 function MSDoctorProfile() {
-    const { did } = useParams();
+    const location = useLocation();
+    const { did } = location.state;
     const [theDoctor, setTheDoctor] = useState({});
     const [theImage, setTheImage] = useState("");
     const [fullName, setFullName] = useState("");
@@ -69,8 +69,8 @@ function MSDoctorProfile() {
             }
         };
 
-        const morningAvailability = dayAvailability.morning.available ? `${formatTime(dayAvailability.morning.startTime)} - ${formatTime(dayAvailability.morning.endTime)}` : 'Not available';
-        const afternoonAvailability = dayAvailability.afternoon.available ? `${formatTime(dayAvailability.afternoon.startTime)} - ${formatTime(dayAvailability.afternoon.endTime)}` : 'Not available';
+        const morningAvailability = dayAvailability.morning?.available ? `${formatTime(dayAvailability.morning.startTime)} - ${formatTime(dayAvailability.morning.endTime)}` : 'Not available';
+        const afternoonAvailability = dayAvailability.afternoon?.available ? `${formatTime(dayAvailability.afternoon.startTime)} - ${formatTime(dayAvailability.afternoon.endTime)}` : 'Not available';
 
         return (
             <>
@@ -93,8 +93,8 @@ function MSDoctorProfile() {
                         </div>
                         <div className="flex-grow-1 ms-3">
                             <Card.Title style={{fontSize: '2rem', fontWeight: '800'}}>{fullName}</Card.Title>
-                            <Card.Text style={{ fontStyle: 'italic' }}>{theDoctor.dr_specialty}</Card.Text>
-                            
+                            {/* Add conditional rendering to avoid accessing undefined properties */}
+                            <Card.Text style={{ fontStyle: 'italic' }}>{theDoctor?.dr_specialty || 'Specialty not available'}</Card.Text>
                         </div>
                     </div>
 

@@ -10,10 +10,15 @@ const Payment = require('../payments/payment_model');
 
 const createAppointment = async (req, res) => {
   try {
-    const { doctorId, date, time, reason, medium, appointment_type } = req.body; 
+    const { doctor, date, time, reason, medium, appointment_type } = req.body; 
     const patientId = req.params.uid;
 
+    // Validate essential data
+    if (!date || !reason || !appointment_type) {
+      return res.status(400).json({ message: 'Date, reason, and appointment type are required.' });
+    }
 
+    // Create a new appointment object
     const newAppointment = new Appointment({
       patient: new mongoose.Types.ObjectId(patientId),
       date,
@@ -23,51 +28,58 @@ const createAppointment = async (req, res) => {
       appointment_type 
     });
 
-
-    if (doctorId) {
-      newAppointment.doctor = new mongoose.Types.ObjectId(doctorId);
+    // Attach the doctor if provided
+    if (doctor) {
+      newAppointment.doctor = new mongoose.Types.ObjectId(doctor);
     }
 
-
+    // Save the new appointment
     const savedAppointment = await newAppointment.save();
 
+    // Update doctor and patient records concurrently
+    const updateTasks = [
+      Patient.findByIdAndUpdate(patientId, { $push: { patient_appointments: savedAppointment._id } })
+    ];
 
-    if (doctorId) {
-      await Doctors.findByIdAndUpdate(doctorId, { $push: { dr_appointments: savedAppointment._id } });
+    if (doctor) {
+      updateTasks.push(
+        Doctors.findByIdAndUpdate(doctor, { $push: { dr_appointments: savedAppointment._id } })
+      );
     }
 
+    await Promise.all(updateTasks);
 
-    await Patient.findByIdAndUpdate(patientId, { $push: { patient_appointments: savedAppointment._id } });
-
-
+    // Prepare notifications
     const notifications = [
       { message: `You have a pending appointment scheduled on ${date} at ${time}.`, recipient: patientId, type: 'Patient' },
     ];
 
-
-    if (doctorId) {
+    if (doctor) {
       notifications.push({
         message: `You have a new pending appointment scheduled with a patient on ${date} at ${time}.`,
-        recipient: doctorId,
+        recipient: doctor,
         type: 'Doctor'
       });
     }
 
-    // Save notifications and update respective records
-    for (const notification of notifications) {
+    // Save notifications concurrently
+    const notificationTasks = notifications.map(async (notification) => {
       const newNotification = new Notification({
         message: notification.message,
         recipient: new mongoose.Types.ObjectId(notification.recipient),
         recipientType: notification.type
       });
-      await newNotification.save();
+
+      const savedNotification = await newNotification.save();
 
       if (notification.type === 'Patient') {
-        await Patient.findByIdAndUpdate(notification.recipient, { $push: { notifications: newNotification._id } });
+        return Patient.findByIdAndUpdate(notification.recipient, { $push: { notifications: savedNotification._id } });
       } else if (notification.type === 'Doctor') {
-        await Doctors.findByIdAndUpdate(notification.recipient, { $push: { notifications: newNotification._id } });
+        return Doctors.findByIdAndUpdate(notification.recipient, { $push: { notifications: savedNotification._id } });
       }
-    }
+    });
+
+    await Promise.all(notificationTasks);
 
     // Return the saved appointment as a response
     res.status(201).json(savedAppointment);
@@ -76,6 +88,7 @@ const createAppointment = async (req, res) => {
     res.status(500).json({ message: `Failed to create appointment: ${error.message}` });
   }
 };
+
 
 const getAppointmentById = async (req, res) => {
   try {
@@ -128,7 +141,7 @@ const updateAppointmentStatus = async (req, res) => {
 // Your updated controller for updating appointment with time in "AM/PM" format
 const updateAppointmentDetails = async (req, res) => {
   try {
-      const { doctor, date, time } = req.body; // time should be in "01:00 PM" format
+      const { doctor, date, time, appointment_type } = req.body; // time should be in "01:00 PM" format
       const appointmentId = req.params.appointmentId;
 
       // Find the appointment by its ID and update the fields
@@ -137,7 +150,8 @@ const updateAppointmentDetails = async (req, res) => {
           { 
               doctor: new mongoose.Types.ObjectId(doctor), 
               date, 
-              time  // Save time as a string, e.g., "01:00 PM"
+              time,
+              appointment_type // Save time as a string, e.g., "01:00 PM"
           },
           { new: true }
       );

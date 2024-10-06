@@ -132,7 +132,9 @@ const TodaysAppointment = ({ allAppointments, setAllAppointments }) => {
               const patientName = patient
                 ? `${patient.patient_firstName} ${patient.patient_middleInitial ? patient.patient_middleInitial + "." : ""} ${patient.patient_lastName}`
                 : "No Patient Info";  // Fallback if patient is undefined or null
-              const appointmentTypes = appointment.appointment_type.join(', ');
+                const appointmentTypes = appointment.appointment_type
+                .map(typeObj => typeObj.appointment_type)
+                .join(', ');
               const patientImage = `${ip.address}/${patient.patient_image}` || `${ip.address}/${defaultImage}`;
 
               return (

@@ -15,7 +15,7 @@ function PatientNavBar({pid}) {
     const inactivityLimit = 1000000; // 10 seconds
     let timeoutId = null; // To store the timeout ID
 
-    const defaultImage = "http://localhost:8000/images/014ef2f860e8e56b27d4a3267e0a193a.jpg";
+    const defaultImage = `${ip.address}/images/014ef2f860e8e56b27d4a3267e0a193a.jpg`;
     useEffect(() => {
         axios.get(`http://localhost:8000/patient/api/onepatient/${pid}`)
           .then((res) => {

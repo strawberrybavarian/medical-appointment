@@ -9,17 +9,31 @@ function AppointmentModal({ show, handleClose, pid, did, doctorName }) {
     const [availableTimes, setAvailableTimes] = useState([]);
     const [availability, setAvailability] = useState({});
     const [activeAppointmentStatus, setActiveAppointmentStatus] = useState(true);
-    const [doctorServices, setDoctorServices] = useState([]); // Services from dr_services or all services
-    const [selectedServices, setSelectedServices] = useState([]); // Store selected services (appointment_type)
+    const [doctorServices, setDoctorServices] = useState([]); 
+    const [selectedServices, setSelectedServices] = useState([]); 
 
-    // Fetch doctor's services (dr_services) or all services when the doctor is optional
+    const doctorId = did;
+    console.log(doctorId)
+    // Reset modal state when the modal is closed or the doctor changes
+    useEffect(() => {
+        if (!show) {
+            // Clear all states when the modal is closed
+            setDate("");
+            setTime("");
+            setReason("");
+            setAvailableTimes([]);
+            setDoctorServices([]);
+            setSelectedServices([]);
+        }
+    }, [show]);
+
     useEffect(() => {
         if (did) {
             // If a doctor ID is provided, fetch the doctor's specific services
             axios.get(`http://localhost:8000/doctor/${did}`)
                 .then((response) => {
                     const doctor = response.data.doctor;
-                    setDoctorServices(doctor.dr_services || []); // Assuming dr_services is populated
+                    setDoctorServices(doctor.dr_services || []); 
                     setAvailability(doctor.availability || {});
                     setActiveAppointmentStatus(doctor.activeAppointmentStatus);
                 })
@@ -28,10 +42,10 @@ function AppointmentModal({ show, handleClose, pid, did, doctorName }) {
                 });
         } else {
             // If no doctor ID, fetch all services
-            axios.get(`http://localhost:8000/admin/get/services`)
+            axios.get(`http://localhost:8000/admin/getall/services`)
                 .then((response) => {
-                    setDoctorServices(response.data); // Assuming this returns all services
-                    setActiveAppointmentStatus(true); // All services available for selection
+                    setDoctorServices(response.data); 
+                    setActiveAppointmentStatus(true); 
                 })
                 .catch((err) => {
                     console.log(err);
@@ -39,37 +53,38 @@ function AppointmentModal({ show, handleClose, pid, did, doctorName }) {
         }
     }, [did]);
 
-    // Function to handle checkbox change for services
-    const handleServiceChange = (serviceId) => {
+    const handleServiceChange = (service) => {
         setSelectedServices((prevSelected) => {
-            if (prevSelected.includes(serviceId)) {
-                return prevSelected.filter((id) => id !== serviceId); // Remove service if already selected
+            const isSelected = prevSelected.some(s => s.appointment_type === service.name);
+            
+            if (isSelected) {
+                return prevSelected.filter((s) => s.appointment_type !== service.name);
             } else {
-                return [...prevSelected, serviceId]; // Add service if not selected
+                return [...prevSelected, { appointment_type: service.name, category: service.category }];
             }
         });
     };
 
-    // Function to create an appointment
     const createAppointment = () => {
         if (!date) {
             window.alert("Please select a valid date for the appointment.");
             return;
         }
-
-        // Create the appointment data
+    
+        console.log("Doctor ID:", doctorId); // Check if doctorId is present
+    
         const formData = {
-            doctor: did || null, // doctorId can be null if optional
+            doctor: doctorId || null, // Ensure the doctor ID is included in the formData
             date,
             time: time || null,
             reason,
-            appointment_type: selectedServices, // Send selected services as appointment_type
+            appointment_type: selectedServices, 
         };
-
+    
         axios.post(`http://localhost:8000/patient/api/${pid}/createappointment`, formData)
             .then(() => {
                 window.alert("Created an appointment!");
-                window.location.reload();
+                handleClose(); // Close modal after success
             })
             .catch((err) => {
                 if (err.response) {
@@ -81,6 +96,8 @@ function AppointmentModal({ show, handleClose, pid, did, doctorName }) {
                 }
             });
     };
+    
+    
 
     const getTodayDate = () => {
         const today = new Date();
@@ -175,7 +192,6 @@ function AppointmentModal({ show, handleClose, pid, did, doctorName }) {
                                 </Form.Group>
                             </Row>
 
-                            {/* List services as checkboxes */} 
                             <Row>
                                 <Form.Group as={Col} className="mb-3">
                                     <Form.Label>Select Services (Appointment Type)</Form.Label>
@@ -185,8 +201,8 @@ function AppointmentModal({ show, handleClose, pid, did, doctorName }) {
                                                 key={service._id}
                                                 type="checkbox"
                                                 label={service.name}
-                                                onChange={() => handleServiceChange(service.name)}
-                                                checked={selectedServices.includes(service.name)}
+                                                onChange={() => handleServiceChange(service)}
+                                                checked={selectedServices.some(s => s.appointment_type === service.name)}
                                                 disabled={service.availability === 'Not Available' || service.availability === 'Coming Soon'}
                                             />
                                         ))}

@@ -12,8 +12,9 @@ import CreatePatientForms from '../Add Patient/Forms/CreatePatientForms';
 import CreateAppointment from '../Add Patient/New Appointment/CreateAppointment';
 import MedSecLaboratoryApp from '../Appointments/MedSecLaboratoryApp';
 function MedSecMain() {
-  const { msid } = useParams();
+  
   const location = useLocation(); 
+  const { userId, userName, role } = location.state || {};
   const [allappointments, setallappointments] = useState([]);
   const [selectedDoctor, setSelectedDoctor] = useState("");
   const [activeTab, setActiveTab] = useState("pending");
@@ -47,8 +48,8 @@ function MedSecMain() {
 
   return (
     <>
-      <MedSecNavbar /> 
-      <Container className='cont-fluid-no-gutter' fluid style={{overflowY: 'scroll', height: '100vh', paddingBottom: '100px', paddingTop: '1.5rem'}}>
+      <MedSecNavbar msid={userId} /> 
+      <Container fluid style={{ overflowY: 'auto', height: 'calc(100vh - 100px)', width: '100%', paddingBottom: '1.5rem' }}>
         
         <div className='maincolor-container'>
           <div className='content-area'>
@@ -81,9 +82,8 @@ function MedSecMain() {
               </Row>
             </Container>
 
-            <Container className="d-flex justify-content-center" style={{ marginTop: '2rem' }}>
-              <Row>
-                <Col>
+            <Container  fluid className="d-flex justify-content-center w-100" style={{ marginTop: '2rem' }}>
+
                   {/* Button to open Create Appointment modal */}
                  
                   <Container className="ai-container2 shadow-sm">
@@ -92,7 +92,7 @@ function MedSecMain() {
                     
                     {activeTab === "todays" && (
                       <>
-                       <Container className='m-0 p-0 d-flex justify-content-end'>
+                       <Container fluid className=' w-100 m-0 p-0 d-flex justify-content-end'>
                           <Button variant="primary" onClick={handleShowAppointmentModal} className="mb-3">
                             Create Appointment
                           </Button>
@@ -101,6 +101,9 @@ function MedSecMain() {
                             Add Patient
                           </Button>
                         </Container>
+
+
+
                     <MedSecTodaysApp
                         allAppointments={allappointments}
                         setAllAppointments={setallappointments}
@@ -149,6 +152,7 @@ function MedSecMain() {
                     {activeTab === "forpayment" && (
                       <>
                         <Container className='m-0 p-0 d-flex justify-content-end'>
+                          
                         <Button variant="primary" onClick={handleShowAppointmentModal} className="mb-3">
                           Create Appointment
                         </Button>
@@ -176,8 +180,7 @@ function MedSecMain() {
                     )}  
                     
                   </Container>
-                </Col>
-              </Row>
+           
             </Container>
 
           </div>
@@ -185,20 +188,20 @@ function MedSecMain() {
         
         {/* Modal for creating a patient */}
         <Modal show={showPatientModal} onHide={handleClosePatientModal} size="lg" centered>
-          <Modal.Header closeButton>
-            <Modal.Title>Create New Patient</Modal.Title>
+          <Modal.Header className='w-100' closeButton>
+            <Modal.Title className='w-100'>Create New Patient</Modal.Title>
           </Modal.Header>
-          <Modal.Body>
+          <Modal.Body className='w-100'>
             <CreatePatientForms onClose={handleClosePatientModal} />
           </Modal.Body>
         </Modal>
 
         {/* Modal for creating an appointment */}
         <Modal show={showAppointmentModal} onHide={handleCloseAppointmentModal} size="lg" centered>
-          <Modal.Header closeButton>
+          <Modal.Header className='w-100' closeButton>
             <Modal.Title>Create New Appointment</Modal.Title>
           </Modal.Header>
-          <Modal.Body>
+          <Modal.Body className='w-100'>
             <CreateAppointment onClose={handleCloseAppointmentModal} />
           </Modal.Body>
         </Modal>

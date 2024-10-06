@@ -167,7 +167,9 @@ const OngoingAppointment = ({ allAppointments, setAllAppointments }) => {
             {currentAppointments.map((appointment) => {
               const patient = appointment.patient;
               const patientName = `${patient.patient_firstName} ${patient.patient_middleInitial}. ${patient.patient_lastName}`;
-              const appointmentTypes = appointment.appointment_type.join(', ');
+              const appointmentTypes = appointment.appointment_type
+              .map(typeObj => typeObj.appointment_type)
+              .join(', ');
               const patientImage = `${ip.address}/${patient.patient_image}` || `${ip.address}/${defaultImage}`;
 
               return (

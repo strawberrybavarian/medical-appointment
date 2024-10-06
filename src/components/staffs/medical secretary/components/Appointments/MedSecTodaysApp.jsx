@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Container, Pagination, Form, Row, Col } from 'react-bootstrap';
+import { Table, Button, Container, Pagination, Form, Row, Col, Dropdown } from 'react-bootstrap';
 import axios from 'axios';
 import RescheduleModal from '../../../../practitioner/appointment/Reschedule Modal/RescheduleModal';
 import { Link } from 'react-router-dom';
-
+import { ThreeDots } from 'react-bootstrap-icons';
 function MedSecTodaysApp({ allAppointments, setAllAppointments }) {
   const [currentPage, setCurrentPage] = useState(1);
   const [entriesPerPage, setEntriesPerPage] = useState(5);
@@ -14,7 +14,7 @@ function MedSecTodaysApp({ allAppointments, setAllAppointments }) {
   const [selectedCategory, setSelectedCategory] = useState(""); // Category filter state
   const [showRescheduleModal, setShowRescheduleModal] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState(null);
-
+  const [error, setError] = useState("");
   useEffect(() => {
     axios.get(`http://localhost:8000/doctor/api/alldoctor`)
       .then((result) => {
@@ -54,41 +54,42 @@ function MedSecTodaysApp({ allAppointments, setAllAppointments }) {
 
   const todayDate = getTodayDate();
 
-  const ongoingAppointment = (appointmentID) => {
-    const newStatus = { status: 'Ongoing' };
-    axios.put(`http://localhost:8000/medicalsecretary/api/${appointmentID}/ongoing`, newStatus)
+  const handleUpdateStatus = (appointmentId, newStatus) => {
+    axios.put(`http://localhost:8000/appointments/${appointmentId}/status`, { status: newStatus })
       .then((response) => {
         setAllAppointments(prevAppointments =>
           prevAppointments.map(appointment =>
-            appointment._id === appointmentID ? { ...appointment, status: 'Ongoing' } : appointment
+            appointment._id === appointmentId ? { ...appointment, status: newStatus } : appointment
           )
         );
       })
       .catch((err) => {
-        console.log(err);
+        console.error("Error updating status:", err);
+        setError("Failed to update the appointment status.");
       });
   };
 
-  // Function to convert 24-hour time to 12-hour format with AM/PM
-  const convertTo12HourFormat = (time24h) => {
-    if (!time24h) return ''; // Return empty string if no time
-    const [hours, minutes] = time24h.split(':');
+
+  const convertTo12HourFormat = (time) => {
+    if (!time) return 'Not Assigned'; 
+    if (time.includes('AM') || time.includes('PM')) {
+      return time; 
+    }
+    const [hours, minutes] = time.split(':');
     const period = hours >= 12 ? 'PM' : 'AM';
-    const hour12 = hours % 12 || 12; // Convert to 12-hour format, 0 becomes 12
+    const hour12 = hours % 12 || 12; 
     return `${hour12}:${minutes} ${period}`;
   };
 
-  // Extract unique categories from all appointments
   const getUniqueCategories = () => {
     const categories = allAppointments.flatMap(appointment => 
       appointment.appointment_type.map(typeObj => typeObj.category)
     );
-    return [...new Set(categories)]; // Remove duplicates
+    return [...new Set(categories)]; 
   };
 
   const uniqueCategories = getUniqueCategories();
 
-  // Filter appointments based on criteria
   const filteredAppointments = allAppointments
     .filter(appointment => appointment.status === 'Scheduled')
     .filter(appointment => {
@@ -126,8 +127,9 @@ function MedSecTodaysApp({ allAppointments, setAllAppointments }) {
   return (
     <>
       <Container>
-        <div style={{ padding: '30px', width: '100%' }}>
-          <h1>Today's Appointments</h1>
+      
+          <h3>Today's Appointments</h3>
+          <hr/>
           <Container className="p-0">
             <Row className="g-3">
               {/* Doctor Filter */}
@@ -208,10 +210,10 @@ function MedSecTodaysApp({ allAppointments, setAllAppointments }) {
               <tr>
                 <th>Patient Name</th>
                 <th>Doctor Name</th>
+                <th>Category</th>
                 <th>Service</th>
                 <th>Date</th>
                 <th>Time</th>
-                <th>Reason</th>
                 <th>Status</th>
                 <th>Actions</th>
               </tr>
@@ -223,26 +225,60 @@ function MedSecTodaysApp({ allAppointments, setAllAppointments }) {
 
                 const doctor = appointment.doctor;
                 const doctorName = `${doctor?.dr_firstName} ${doctor?.dr_middleInitial}. ${doctor?.dr_lastName}`;
-                const appointmentTypes = appointment.appointment_type.map(typeObj => typeObj.appointment_type).join(', ');
+                
+                const appointmentTypes = appointment.appointment_type
+                .map(typeObj => typeObj.appointment_type)
+                .join(', ');
+
+                const categoryTypes = appointment.appointment_type
+                .map(typeObj => typeObj.category)
+                .join(', ');
 
                 return (
                   <tr key={appointment._id}>
-                    <td>{patientName}</td>
-                    <td>{doctorName}</td>
-                    <td>{appointmentTypes}</td>
-                    <td>{new Date(appointment.date).toLocaleDateString()}</td>
-                    <td>{convertTo12HourFormat(appointment.time)}</td> {/* Convert time to 12-hour AM/PM format */}
-                    <td>{appointment.reason}</td>
-                    <td>
+                    <td style={{fontSize: '14px'}}>{patientName}</td>
+                    <td style={{fontSize: '14px'}}>{doctorName}</td>
+                    <td style={{fontSize: '14px'}}>{categoryTypes}</td>
+                    <td style={{fontSize: '14px'}}>{appointmentTypes}</td>
+                    <td style={{fontSize: '14px'}}>{new Date(appointment.date).toLocaleDateString()}</td>
+                    <td style={{fontSize: '14px'}}> {convertTo12HourFormat(appointment.time)}</td> {/* Convert time to 12-hour AM/PM format */}
+                
+                    <td >
                       <div className="d-flex justify-content-center">
-                        <div className="scheduled-appointment">
+                        <div className="scheduled-appointment" style={{fontSize: '12px'}}>
                           {appointment.status}
                         </div>
                       </div>
                     </td>
                     <td>
-                      <Button variant="success" onClick={() => ongoingAppointment(appointment._id)}>Ongoing</Button>
-                      <Link variant="warning" onClick={() => handleReschedule(appointment)}>Reschedule</Link>
+                      <Dropdown >
+                        <Dropdown.Toggle as={Button} variant="light" className="action-button">
+                          <ThreeDots size={20} />
+                        </Dropdown.Toggle>
+
+                          <Dropdown.Menu>
+                            <Dropdown.Item
+                              onClick={() => handleUpdateStatus(appointment._id, "Ongoing")}
+                              className="action-item"
+                            >
+                              Ongoing
+                            </Dropdown.Item>
+
+                            <Dropdown.Item
+                              onClick={() => handleReschedule(appointment)}
+                              className="action-item"
+                            >
+                              Reschedule
+                            </Dropdown.Item>
+
+                            <Dropdown.Item
+                              onClick={() => handleUpdateStatus(appointment._id, "Cancelled")}
+                              className="action-item"
+                            >
+                              Cancel
+                            </Dropdown.Item>
+                        </Dropdown.Menu>
+                      </Dropdown>
                     </td>
                   </tr>
                 );
@@ -284,7 +320,7 @@ function MedSecTodaysApp({ allAppointments, setAllAppointments }) {
               />
             )}
           </Container>
-        </div>
+    
       </Container>
     </>
   );

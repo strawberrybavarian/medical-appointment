@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { Container, Row, Col, Dropdown, ButtonGroup } from "react-bootstrap";
+import { Container, Row, Col, Dropdown, ButtonGroup, Button } from "react-bootstrap";
 import { Link } from "react-router-dom"; // Import Link from react-router-dom
 import CreateNewsModal from "./CreateNewsModal";
 import axios from "axios";
 import EditNewsModal from "./EditNewsModal";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEllipsisH, faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons';
 
 function NewsAnnouncement({ user_image, user_name, user_id, role }) {
   const [theNews, setTheNews] = useState("");
@@ -13,24 +15,36 @@ function NewsAnnouncement({ user_image, user_name, user_id, role }) {
   const [showEditNewsModal, setShowEditNewsModal] = useState(false); // Show modal to edit news
   const [editNewsId, setEditNewsId] = useState(null); // Track news being edited
   const [deletedImages, setDeletedImages] = useState([]); // Images deleted during edit
-  const [headline, setHeadline] = useState(""); // Add this line to define the headline state
+  const [headline, setHeadline] = useState(""); // Headline state
+  const [currentImageIndexes, setCurrentImageIndexes] = useState({}); // Store individual image indexes for each news
 
   const defaultImage = "images/014ef2f860e8e56b27d4a3267e0a193a.jpg";
-  console.log(role);
   
-  // Fetch all news (Disregard API logic)
+  // Fetch all news
   useEffect(() => {
     axios
       .get(`http://localhost:8000/news/api/getallnews/${user_id}/${role}`)
-      .then((res) => setTheNewsList(res.data.news.reverse()))
+      .then((res) => {
+        const news = res.data.news.reverse();
+        setTheNewsList(news);
+
+        // Initialize image indexes for each news
+        const initialIndexes = {};
+        news.forEach((newsItem) => {
+          if (newsItem.images && newsItem.images.length > 0) {
+            initialIndexes[newsItem._id] = 0; // Initialize to the first image
+          }
+        });
+        setCurrentImageIndexes(initialIndexes);
+      })
       .catch((err) => console.log(err));
   }, [user_id, role]);
 
   // Submit new news
   const submitNews = (headline, newsContent) => {
     const formData = new FormData();
-    formData.append("headline", headline);  // Add the headline to the form data
-    formData.append("content", newsContent); // Add the content to the form data
+    formData.append("headline", headline);
+    formData.append("content", newsContent);
     formData.append("role", role);
   
     newsImages.forEach((image) => {
@@ -85,93 +99,130 @@ function NewsAnnouncement({ user_image, user_name, user_id, role }) {
       .catch((err) => console.log("Error deleting news:", err.response ? err.response.data : err.message));
   };
 
+  // Handler for navigating to the previous image for a specific news
+  const handlePreviousImage = (newsId, images) => {
+    setCurrentImageIndexes((prevIndexes) => ({
+      ...prevIndexes,
+      [newsId]: prevIndexes[newsId] === 0 ? images.length - 1 : prevIndexes[newsId] - 1,
+    }));
+  };
+
+  // Handler for navigating to the next image for a specific news
+  const handleNextImage = (newsId, images) => {
+    setCurrentImageIndexes((prevIndexes) => ({
+      ...prevIndexes,
+      [newsId]: prevIndexes[newsId] === images.length - 1 ? 0 : prevIndexes[newsId] + 1,
+    }));
+  };
+
   return (
-  <div style={{ display: "flex", flexDirection: "column", width: "100%" }} className="mt-2">
-    <div className="mb-2">
-      <h2> Share News </h2>
+    <div style={{ display: "flex", flexDirection: "column", width: "100%" }} className="mt-2">
+      <div className="mb-2">
+        <h2> Share News </h2>
+        <hr/>
+      </div>
+      <div className="d-flex post-container p-3 w-100 shadow-sm">
+        <img
+          src={`http://localhost:8000/${defaultImage}`}
+          alt="User"
+          style={{
+            width: "45px",
+            height: "45px",
+            borderRadius: "9999px",
+            objectFit: "cover",
+          }}
+        />
+        <Container>
+          <button className="button-post" onClick={() => setShowCreateNewsModal(true)}>
+            <span className="font-gray">Share your news, {user_name}!</span>
+          </button>
+        </Container>
+      </div>
       <hr/>
-    </div>
-  <div className="d-flex post-container p-3 w-100 shadow-sm">
-    <img
-      src={ `http://localhost:8000/${defaultImage}`}
-      alt="User"
-      style={{
-        width: "45px",
-        height: "45px",
-        borderRadius: "9999px",
-        objectFit: "cover",
-      }}
-    />
-    <Container>
-      <button className="button-post" onClick={() => setShowCreateNewsModal(true)}>
-        <span className="font-gray">Share your news, {user_name}!</span>
-      </button>
-    </Container>
-  </div>
-  <hr/>
-  {/* News List */}
-  <div className="w-100">
-    {theNewsList.map((newsItem, index) => (
-      <div key={index} className="posted-announcement-container shadow-sm d-flex flex-column align-items-start p-3 mb-3 w-100">
-        {/* Profile image and user name */}
-        <div className="d-flex w-100 align-items-center justify-content-between">
-          <div className="d-flex align-items-center" style={{ width: "100%" }}>
-            <img
-              src={`http://localhost:8000/${defaultImage}`}
-              alt="User"
-              style={{
-                width: "45px",
-                height: "45px",
-                borderRadius: "9999px",
-                objectFit: "cover",
-                flexShrink: 0,
-                marginRight: "10px", // Space between image and text
-              }}
-            />
-            <div className="w-100">
-              <span style={{ fontSize: "12px",margin: "5px 0", fontWeight: "bold", lineHeight: "1.2" }}>{user_name}</span>
-              <p style={{ fontSize: "12px", margin: "1.2px 0" , lineHeight: "1.2" }}>
-                <span>{role}</span>
-              </p>
+      {/* News List */}
+      <div className="w-100">
+        {theNewsList.map((newsItem, index) => (
+          <div key={index} className="posted-announcement-container shadow-sm d-flex flex-column align-items-start p-3 mb-3 w-100">
+            {/* Profile image and user name */}
+            <div className="d-flex w-100 align-items-center justify-content-between">
+              <div className="d-flex align-items-center" style={{ width: "100%" }}>
+                <img
+                  src={`http://localhost:8000/${defaultImage}`}
+                  alt="User"
+                  style={{
+                    width: "45px",
+                    height: "45px",
+                    borderRadius: "9999px",
+                    objectFit: "cover",
+                    flexShrink: 0,
+                    marginRight: "10px", // Space between image and text
+                  }}
+                />
+                <div className="w-100">
+                  <span style={{ fontSize: "12px", margin: "5px 0", fontWeight: "bold", lineHeight: "1.2" }}>{user_name}</span>
+                  <p style={{ fontSize: "12px", margin: "1.2px 0", lineHeight: "1.2" }}>
+                    <span>{role}</span>
+                  </p>
+                </div>
+              </div>
+
+              {/* Dropdown for Edit and Delete */}
+              <Dropdown as={ButtonGroup}>
+                <Dropdown.Toggle variant="secondary">&#8942;</Dropdown.Toggle>
+                <Dropdown.Menu>
+                  <Dropdown.Item onClick={() => openEditNewsModal(newsItem._id, newsItem.content, newsItem.images)}>
+                    Edit
+                  </Dropdown.Item>
+                  <Dropdown.Item onClick={() => deleteNews(index)}>Delete</Dropdown.Item>
+                </Dropdown.Menu>
+              </Dropdown>
+            </div>
+
+            {/* News Headline */}
+            {newsItem.headline && (
+              <h5 className="mt-2" style={{ fontWeight: "bold" }}>
+                <Link to={`/news/${newsItem._id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                  {newsItem.headline}
+                </Link>
+              </h5>
+            )}
+
+            {/* News Content */}
+            <div className="mt-2">
+              <div dangerouslySetInnerHTML={{ __html: newsItem.content }} />
+              {newsItem.images && newsItem.images.length > 0 && (
+                <div className="w-100 position-relative">
+                  <img
+                    src={newsItem.images[currentImageIndexes[newsItem._id]]}
+                    alt="News"
+                    style={{ maxWidth: "100%", height: "auto", cursor: "pointer" }}
+                  />
+                  {/* Left chevron button */}
+                  <Button
+                    className="position-absolute top-50 start-0 mx-3 translate-middle-y"
+                    variant="light"
+                    onClick={() => handlePreviousImage(newsItem._id, newsItem.images)}
+                    style={{ zIndex: 1, borderRadius: '9999px' }}
+                  >
+                    <FontAwesomeIcon icon={faChevronLeft} />
+                  </Button>
+                  {/* Right chevron button */}
+                  <Button
+                    className="position-absolute top-50 end-0 translate-middle-y"
+                    variant="light"
+                    onClick={() => handleNextImage(newsItem._id, newsItem.images)}
+                    style={{ zIndex: 1, borderRadius: '9999px' }}
+                  >
+                    <FontAwesomeIcon icon={faChevronRight} />
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
-
-
-
-          {/* Dropdown for Edit and Delete */}
-          <Dropdown as={ButtonGroup}>
-            <Dropdown.Toggle variant="secondary">&#8942;</Dropdown.Toggle>
-            <Dropdown.Menu>
-              <Dropdown.Item onClick={() => openEditNewsModal(newsItem._id, newsItem.content, newsItem.images)}>
-                Edit
-              </Dropdown.Item>
-              <Dropdown.Item onClick={() => deleteNews(index)}>Delete</Dropdown.Item>
-            </Dropdown.Menu>
-          </Dropdown>
-        </div>
-
-        {/* News Headline */}
-        {newsItem.headline && (
-          <h5 className="mt-2" style={{ fontWeight: "bold" }}>
-            <Link to={`/news/${newsItem._id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-              {newsItem.headline}
-            </Link>
-          </h5>
-        )}
-
-        {/* News Content */}
-        <div className="mt-2">
-          <div dangerouslySetInnerHTML={{ __html: newsItem.content }} />
-          {newsItem.images && newsItem.images.map((img, i) => (
-            <img key={i} src={img} alt="News" style={{ maxWidth: "100px", height: "100px", cursor: "pointer" }} />
-          ))}
-        </div>
+        ))}
       </div>
-    ))}
-  </div>
 
-
-  <CreateNewsModal
+      <CreateNewsModal
         show={showCreateNewsModal}
         handleClose={() => setShowCreateNewsModal(false)}
         handleSubmit={submitNews}
@@ -185,22 +236,18 @@ function NewsAnnouncement({ user_image, user_name, user_id, role }) {
       <EditNewsModal
         show={showEditNewsModal}
         handleClose={closeEditNewsModal}
-        newsContent={theNews} // Correct this from postContent to newsContent
-        setNewsContent={setTheNews} // Correct setter for news content
-        newsImages={newsImages} // Pass newsImages instead of postImages
-        setNewsImages={setNewsImages} // Pass setNewsImages instead of setPostImages
+        newsContent={theNews}
+        setNewsContent={setTheNews}
+        newsImages={newsImages}
+        setNewsImages={setNewsImages}
         deletedImages={deletedImages}
         setDeletedImages={setDeletedImages}
-        userId={user_id} // Reuse this for the user ID
-        newsId={editNewsId} // Correct the ID being passed
+        userId={user_id}
+        newsId={editNewsId}
         updateNewsInState={updateNewsInState}
         role={role}
       />
-</div>
-
-
-     
-
+    </div>
   );
 }
 
