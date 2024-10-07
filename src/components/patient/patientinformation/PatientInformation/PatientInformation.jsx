@@ -90,27 +90,31 @@ function PatientInformation({ pid }) {
     <>
       <div style={{ width: '100%', height: '100vh' }}>
         <Container className="mt-4">
-          <div className="pi-container2">
+       
             <div className="p-3">
               <h3 className="m-0">Account Details</h3>
               <p className="m-0">Manage your Profile</p>
               <hr />
             </div>
-            <Container>
-                <h5 className='m-0'>Your Image</h5>
-              <div className="text-center d-flex justify-content-start">
-            
-                {/* Display the current image */}
-                <div className="ai-image-wrapper">
-                  <Image  src={`http://localhost:8000/${image}`} alt="Patient" roundedCircle style={{objectFit: 'contain', width:'300px', height:'300px'}} />
-                  {/* Open the Image Modal when clicking this button */}
-                  <button className="ai-upload-button" onClick={() => setShowImageModal(true)}>
-                    <Icon.Upload />
-                  </button>
-                </div>
-              </div>
 
-              <Form>
+            <Container>
+            
+              <div className='pi-container2 d-flex align-items-center shadow-sm mb-4'> 
+                <img src={`http://localhost:8000/${image}`} alt="Doctor" className="ai-image" />
+                  <div style={{marginLeft: '1rem'}} className="d-flex align-items-center justify-content-between w-100">
+                    <div>
+                      <h4 className="m-0">{theName}</h4>
+                      <p style={{fontSize: '15px'}}>Patient</p>
+                    </div>
+
+                    <div>
+                      <Button  onClick={() => setShowImageModal(true)}>Upload Image<Icon.Upload style={{marginLeft:'0.4rem'}}/></Button>
+                    </div>
+                  </div>
+              </div>
+              
+
+              <Form className='pi-container2 shadow-sm '>
                 <div className="justify-content-end">
                   <Row>
                     <Form.Group as={Col} controlId="firstName">
@@ -157,7 +161,7 @@ function PatientInformation({ pid }) {
                 </div>
               </Form>
             </Container>
-          </div>
+        
         </Container>
       </div>
 

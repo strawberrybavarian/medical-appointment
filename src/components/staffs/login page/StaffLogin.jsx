@@ -18,14 +18,12 @@ const StaffLogIn = () => {
                 let response;
                 if (userRole === "Medical Secretary") {
                     response = await axios.get(`${ip.address}/medicalsecretary/api/allmedicalsecretary`);
-                } else if (userRole === "Cashier") {
-                    response = await axios.get(`${ip.address}/cashier/api/allcashier`);
                 } else if (userRole === "Admin") {
                     response = await axios.get(`${ip.address}/admin/api/alladmin`);
                 }
 
                 if (response && response.data) {
-                    const userData = response.data.theMedicalSecretary || response.data.theCashier || response.data.theAdmin;
+                    const userData = response.data.theMedicalSecretary || response.data.theAdmin;
                     setUsers(userData);
                 }
             } catch (err) {
@@ -41,25 +39,26 @@ const StaffLogIn = () => {
 
         const user = users.find(user => 
             (userRole === "Medical Secretary" && user.ms_username === username) ||
-            (userRole === "Cashier" && user.cs_username === username) ||
             (userRole === "Admin" && user.username === username)
         );
 
         if (user && (
             (userRole === "Medical Secretary" && user.ms_password === password) || 
-            (userRole === "Cashier" && user.cs_password === password) ||
             (userRole === "Admin" && user.password === password)
         )) {
             window.alert("Successfully logged in");
 
-            // Use state to pass user data instead of URL parameters
-            navigate('/medsec/dashboard', {
-                state: {
-                    userId: user._id,
-                    userName: `${user.ms_firstName} ${user.ms_lastName}`,
-                    role: userRole
-                }
-            });
+            if (userRole === "Medical Secretary") {
+                navigate('/medsec/dashboard', {
+                    state: {
+                        userId: user._id,
+                        userName: `${user.ms_firstName} ${user.ms_lastName}`,
+                        role: userRole
+                    }
+                });
+            } else if (userRole === "Admin") {
+                navigate(`/admin/dashboard/patient/${user._id}`);
+            }
         } else {
             setErrorMessage("Invalid username or password. Please try again.");
         }
@@ -100,8 +99,6 @@ const StaffLogIn = () => {
                                     <Form.Label>Choose Role:</Form.Label>
                                     <Form.Select value={userRole} onChange={(e) => setUserRole(e.target.value)} defaultValue="Medical Secretary">
                                         <option value="Medical Secretary">Medical Secretary</option>
-                                        <option value="Cashier">Cashier</option>
-                                        <option value="Pharmacist">Pharmacist</option>
                                         <option value="Admin">Admin</option>
                                     </Form.Select>
                                 </Form.Group>

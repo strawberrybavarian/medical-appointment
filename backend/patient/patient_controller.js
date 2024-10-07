@@ -437,11 +437,6 @@ const createPatientSession = (req, res) => {
   }
 };
 
-
-
-
-
-
 module.exports = {
     NewPatientSignUp,
     findAllPatient,
