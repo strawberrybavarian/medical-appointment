@@ -101,7 +101,7 @@ function MSDoctorProfile() {
                     <hr />
 
                     <h5>Weekly Schedule</h5>
-                    <Table responsive bordered className="dp-schedule">
+                    <Table responsive striped variant="light" className="mt-3">
                         <thead>
                             <tr>
                                 <th>Day</th>

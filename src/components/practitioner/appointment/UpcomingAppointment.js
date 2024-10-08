@@ -150,13 +150,13 @@ const UpcomingAppointment = ({ allAppointments, setAllAppointments }) => {
                     style={{ cursor: 'pointer' }}
                   >
 
-                    <td> <img alt='Patient Image' src={patientImage}style={{marginRight:'10px',width: '30px', height:'30px', borderRadius:'200px', objectFit:'contain'}}/> {patientName}</td>
-                    <td>{appointmentTypes}</td>
-                    <td>{new Date(appointment.date).toLocaleDateString()}</td>
-                    <td>{appointment.time}</td>
+                    <td> <img alt='Patient Image' src={patientImage}style={{marginRight:'10px',width: '30px', height:'30px', borderRadius:'200px', objectFit:'contain'}}/> <span style={{fontSize: '14px', fontWeight: '600'}}>{patientName}</span></td>
+                    <td style={{fontSize: '14px'}}>{appointmentTypes}</td>
+                    <td style={{fontSize: '14px'}}>{new Date(appointment.date).toLocaleDateString()}</td>
+                    <td style={{fontSize: '14px'}}>{appointment.time}</td>
                     <td>
                       <div className="d-flex justify-content-center">
-                        <div className="scheduled-appointment">
+                        <div className="scheduled-appointment" style={{fontSize: '12px'}}>
                           {appointment.status}
                         </div>
                       </div>
