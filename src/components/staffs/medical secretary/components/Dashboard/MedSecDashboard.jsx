@@ -30,9 +30,9 @@ function MedSecDashboard() {
   }, []);
 
   return (
-    <div className="mt-4">
-      <Row className="g-3">
-        <Col xs={12} md={6} lg={4}>
+    <div className="mt-4 flex-column">
+      <Row className="g-3 pt-5 flex-column align-items-end  w-100">
+        <Col >
           <Card className="shadow-sm border-left-blue" style={{ minHeight: '100px', padding: '10px' }}>
             <Card.Header className="msd-cardtitle">Total Pending Patients</Card.Header>
             <Card.Body className="d-flex justify-content-between align-items-center">
@@ -42,7 +42,7 @@ function MedSecDashboard() {
           </Card>
         </Col>
 
-        <Col xs={12} md={6} lg={4}>
+        <Col>
           <Card className="shadow-sm border-left-green" style={{ minHeight: '100px', padding: '10px' }}>
             <Card.Header className="msd-cardtitle">Total Today's Patients</Card.Header>
             <Card.Body className="d-flex justify-content-between align-items-center">
@@ -52,7 +52,7 @@ function MedSecDashboard() {
           </Card>
         </Col>
 
-        <Col xs={12} md={6} lg={4}>
+        <Col>
           <Card className="shadow-sm border-left-yellow" style={{ minHeight: '100px', padding: '10px' }}>
             <Card.Header className="msd-cardtitle">Total Ongoing Patients</Card.Header>
             <Card.Body className="d-flex justify-content-between align-items-center">

@@ -11,6 +11,7 @@ import './MedSecMain.css';
 import CreatePatientForms from '../Add Patient/Forms/CreatePatientForms';
 import CreateAppointment from '../Add Patient/New Appointment/CreateAppointment';
 import MedSecLaboratoryApp from '../Appointments/MedSecLaboratoryApp';
+import MedSecToSend from '../Appointments/MedSecToSend';
 function MedSecMain() {
   
   const location = useLocation(); 
@@ -71,6 +72,9 @@ function MedSecMain() {
                   </Nav.Item>
                   <Nav.Item>
                     <Nav.Link eventKey="forpayment">For Payment</Nav.Link>
+                  </Nav.Item>
+                  <Nav.Item>
+                    <Nav.Link eventKey="tosend">To-send Lab Results</Nav.Link>
                   </Nav.Item>
              
                
@@ -162,6 +166,26 @@ function MedSecMain() {
                         </Button>
                       </Container>
                       <MedSecForPayment
+                        allAppointments={allappointments}
+                        setAllAppointments={setallappointments}
+                        selectedDoctor={selectedDoctor}
+                      />
+                      </>
+                    )}
+                    {activeTab === "tosend" && (
+                      <>
+                        <Container className='m-0 p-0 d-flex justify-content-end'>
+                          
+                        <Button variant="primary" onClick={handleShowAppointmentModal} className="mb-3">
+                          Create Appointment
+                        </Button>
+                        {/* Button to open Add Patient modal */}
+                        <Button variant="secondary" onClick={handleShowPatientModal} className="mb-3 ml-3">
+                          Add Patient
+                        </Button>
+                      </Container>
+                      <MedSecToSend
+
                         allAppointments={allappointments}
                         setAllAppointments={setallappointments}
                         selectedDoctor={selectedDoctor}

@@ -5,7 +5,7 @@ import { Table, Container, Pagination, Form, Row, Col, Button } from 'react-boot
 import AssignAppointmentModal from './AssignAppointmentModal'; // Import the new modal component
 import './Styles.css';
 
-const MedSecForPayment = ({ allAppointments, setAllAppointments }) => {
+const MedSecToSend = ({ allAppointments, setAllAppointments }) => {
   const { did } = useParams();
   const [error, setError] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -49,7 +49,7 @@ const MedSecForPayment = ({ allAppointments, setAllAppointments }) => {
   });
 
   const filteredAppointments = sortedAppointments
-    .filter(appointment => appointment.status === 'For Payment')
+    .filter(appointment => appointment.status === 'To-send')
     .filter(appointment => 
       appointment.patient && 
       `${appointment.patient.patient_firstName} ${appointment.patient.patient_middleInitial}. ${appointment.patient.patient_lastName}`
@@ -102,12 +102,12 @@ const MedSecForPayment = ({ allAppointments, setAllAppointments }) => {
   };
 
   // Function to update the appointment status to 'Completed'
-  const handleUpdateStatus = (appointmentId,newStatus) => {
-    axios.put(`http://localhost:8000/appointments/${appointmentId}/status`, { status: newStatus })
+  const handleUpdateStatus = (appointmentId) => {
+    axios.put(`http://localhost:8000/appointments/${appointmentId}/status`, { status: 'Completed' })
       .then((response) => {
         setAllAppointments(prevAppointments =>
           prevAppointments.map(appointment =>
-            appointment._id === appointmentId ? { ...appointment, status: newStatus } : appointment
+            appointment._id === appointmentId ? { ...appointment, status: 'Completed' } : appointment
           )
         );
       })
@@ -121,7 +121,7 @@ const MedSecForPayment = ({ allAppointments, setAllAppointments }) => {
     <>
       <Container>
  
-          <h3>For Payment</h3>
+          <h3>To-send Laboratory Results</h3>
           <hr/>
 
           <Container className="p-0">
@@ -180,7 +180,7 @@ const MedSecForPayment = ({ allAppointments, setAllAppointments }) => {
             <thead>
               <tr>
                 <th>Patient Name</th>
-                <th>Doctor Name</th>
+               
                 <th>Service</th>
                 <th onClick={() => handleSort('date')}>
                   Date {sortConfig.key === 'date' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
@@ -188,7 +188,7 @@ const MedSecForPayment = ({ allAppointments, setAllAppointments }) => {
                 <th onClick={() => handleSort('time')}>
                   Time {sortConfig.key === 'time' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
                 </th>
-                <th>Account Status</th>
+           
                 <th>Appointment Status</th>
                 <th>Actions</th>
               </tr>
@@ -209,11 +209,11 @@ const MedSecForPayment = ({ allAppointments, setAllAppointments }) => {
                 return (
                   <tr key={appointment._id}>
                     <td style={{fontSize: '14px', fontWeight: '600'}}>{patientName}</td>
-                    <td style={{fontSize: '14px'}}>{doctorName}</td>
+                    
                     <td style={{fontSize: '14px'}}>{appointmentTypes}</td>
                     <td style={{fontSize: '14px'}}>{appointment.date ? new Date(appointment.date).toLocaleDateString() : "Not Assigned"}</td>
                     <td style={{fontSize: '14px'}}>{appointment.time || "Not Assigned"}</td>
-                    <td style={{fontSize: '14px'}}>{appointment.patient.accountStatus}</td>
+              
                     <td>
                       <div className="d-flex justify-content-center">
                         <div className="forpayment-appointment" style={{fontSize: '12px'}}>
@@ -224,11 +224,8 @@ const MedSecForPayment = ({ allAppointments, setAllAppointments }) => {
                     <td>
                       <div className="d-flex justify-content-around flex-wrap">
                        
-                          <Link variant="success" style={{fontSize: '14px', textDecoration:'none', color: 'green'}} onClick={() => handleUpdateStatus(appointment._id,"Completed")}>
+                          <Link variant="success" style={{fontSize: '14px', textDecoration:'none', color: 'green'}} onClick={() => handleUpdateStatus(appointment._id)}>
                             Completed
-                          </Link>
-                          <Link variant="success" style={{fontSize: '14px', textDecoration:'none', color: 'green'}} onClick={() => handleUpdateStatus(appointment._id, "To-send")}>
-                            To-send
                           </Link>
                       
                       </div>
@@ -288,4 +285,4 @@ const MedSecForPayment = ({ allAppointments, setAllAppointments }) => {
   );
 };
 
-export default MedSecForPayment;
+export default MedSecToSend;
