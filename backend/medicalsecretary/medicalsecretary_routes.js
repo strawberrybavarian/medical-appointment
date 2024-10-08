@@ -33,9 +33,9 @@ module.exports = app => {
 
     app.put('/medicalsecretary/api/:msid/update', upload.single('image'), MSController.updateMedicalSecretary);
     app.get('/medicalsecretary/api/test',(req,res)=>{res.json({message:"the api is working"})});
-    app.post('/medicalsecretary/api/change-password/:msid', MSController.changePassword);
+    app.put('/medicalsecretary/api/change-password/:msid', MSController.changePassword);
     //For Registration
-    app.post('/medicalsecretary/api/signup', MSController.NewMedicalSecretaryignUp);
+    app.post('/medicalsecretary/api/signup', MSController.NewMedicalSecretarySignUp);
  
     //For LogIn
     app.get('/medicalsecretary/api/allmedicalsecretary', MSController.findAllMedicalSecretary);

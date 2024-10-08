@@ -5,7 +5,7 @@ const path = require('path');
 const fs = require('fs');
 const session = require('express-session');
 const { ensurePatientSession, ensureDoctorSession } = require('./SessionMiddleware');
-
+require('dotenv').config();
 
 app.use(session({
     secret: 'your_secret_key', // Replace with a strong secret key

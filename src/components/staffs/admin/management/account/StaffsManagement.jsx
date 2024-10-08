@@ -4,12 +4,13 @@ import axios from 'axios';
 import { ip } from '../../../../../ContentExport';
 import AdminNavbar from '../../navbar/AdminNavbar';
 import SidebarAdmin from '../../sidebar/SidebarAdmin';
-
+import CreateStaffModal from '../modals/CreateStaffModal';
 function StaffsManagement() {
   const [staff, setStaff] = useState([]);
   const [selectedStaff, setSelectedStaff] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [modalAction, setModalAction] = useState("");
+  const [showCreateModal, setShowCreateModal] = useState(false); // State for the "Create Staff" modal
   const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
@@ -49,6 +50,11 @@ function StaffsManagement() {
       });
   };
 
+  const handleStaffCreation = (newStaff) => {
+    // Add the newly created staff to the state
+    setStaff([...staff, newStaff]);
+  };
+
   const filteredStaff = staff.filter(staffMember => {
     const fullName = staffMember.role === 'Medical Secretary' 
       ? `${staffMember.ms_firstName} ${staffMember.ms_lastName}`
@@ -65,6 +71,7 @@ function StaffsManagement() {
         <Container className='ad-container' style={{ height: 'calc(100vh - 56px)', overflowY: 'auto', padding: '20px' }}>
           <h1>Staff Management</h1>
 
+          {/* Search bar */}
           <Form.Group controlId="formStaffSearch">
             <Form.Control
               type="text"
@@ -73,6 +80,11 @@ function StaffsManagement() {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </Form.Group>
+
+          {/* Create Staff Button */}
+          <Button className="mt-3 mb-3" onClick={() => setShowCreateModal(true)}>
+            Create Staff
+          </Button>
 
           <Table responsive striped variant="light" className="mt-3">
             <thead>
@@ -118,6 +130,7 @@ function StaffsManagement() {
             </tbody>
           </Table>
 
+          {/* Register/Deactivate Modal */}
           <Modal show={showModal} onHide={handleCloseModal}>
             <Modal.Header closeButton>
               <Modal.Title>Confirm Action</Modal.Title>
@@ -134,6 +147,13 @@ function StaffsManagement() {
               </Button>
             </Modal.Footer>
           </Modal>
+
+          {/* Create Staff Modal */}
+          <CreateStaffModal
+            show={showCreateModal}
+            handleClose={() => setShowCreateModal(false)}
+            handleStaffCreation={handleStaffCreation} // Pass the callback to handle staff creation
+          />
         </Container>
       </div>
     </div>

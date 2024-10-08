@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const bcrypt = require('bcrypt');
+// const bcrypt = require('bcrypt');
 const {Schema, model} = mongoose
 
 const MedicalSecretarySchema = new Schema({
@@ -25,6 +25,9 @@ const MedicalSecretarySchema = new Schema({
     ms_contactNumber: {
         type: String,
   
+    },
+    status:{
+        type: String,
     },
     ms_image: { type: String },
     notifications: [{
