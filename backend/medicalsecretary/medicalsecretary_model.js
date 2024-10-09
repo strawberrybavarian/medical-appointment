@@ -28,6 +28,7 @@ const MedicalSecretarySchema = new Schema({
     },
     status:{
         type: String,
+        default: 'pending'
     },
     ms_image: { type: String },
     notifications: [{
