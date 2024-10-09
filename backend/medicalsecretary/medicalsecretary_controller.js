@@ -4,8 +4,108 @@ const Appointment = require('../appointments/appointment_model');
 const Doctors = require('../doctor/doctor_model');
 const Patient = require('../patient/patient_model');
 const Notification = require('../notifications/notifications_model')
+const nodemailer = require('nodemailer');
+const { staff_email } = require('../EmailExport');
 
+const generateRandomPassword = () => {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let password = '';
+    for (let i = 0; i < 8; i++) {
+      password += chars[Math.floor(Math.random() * chars.length)];
+    }
+    return password;
+  };
+  
+  const changePassword = async (req, res) => {
+    const { msid } = req.params;
+    const { oldPassword, newPassword, confirmNewPassword } = req.body;
+  
+    try {
+      // Find the medical secretary by ID
+      const secretary = await MedicalSecretary.findById(msid);
+      if (!secretary) {
+        return res.status(404).json({ message: 'Medical Secretary not found' });
+      }
+  
+      // Check if the old password matches
+      if (secretary.ms_password !== oldPassword) {
+        return res.status(400).json({ message: 'Old password is incorrect' });
+      }
+  
+      // Validate new password and confirm password
+      if (newPassword !== confirmNewPassword) {
+        return res.status(400).json({ message: 'New passwords do not match' });
+      }
+  
+      // Update the password
+      secretary.ms_password = newPassword;
+      secretary.status = 'registered'; // Set status to 'registered' after password change
+      await secretary.save();
+  
+      res.status(200).json({ message: 'Password changed successfully' });
+    } catch (error) {
+      console.error('Error changing password:', error);
+      res.status(500).json({ message: 'Server error' });
+    }
+  };
 
+  // Signup controller to create a new Medical Secretary
+  const NewMedicalSecretarySignUp = async (req, res) => {
+    const { ms_firstName, ms_lastName, ms_email, ms_contactNumber } = req.body;
+  
+    try {
+      // Check if email already exists
+      const existingSecretary = await MedicalSecretary.findOne({ ms_email });
+      if (existingSecretary) {
+        return res.status(400).json({ message: 'Email already registered' });
+      }
+  
+      // Generate a random password
+      const generatedPassword = generateRandomPassword();
+  
+      // Create the new Medical Secretary
+      const newSecretary = new MedicalSecretary({
+        ms_firstName,
+        ms_lastName,
+        ms_email,
+        ms_contactNumber,
+        ms_password: generatedPassword, // Assign the generated password
+        status: 'pending', // Set status as 'pending' initially
+      });
+  
+      await newSecretary.save();
+  
+      // Send email with the generated password
+      const transporter = nodemailer.createTransport({
+        service: 'gmail', // You can use other email services if needed
+        auth: {
+          user: staff_email.user, // Your email
+          pass: staff_email.pass, // Your email password
+        },
+      });
+  
+      const mailOptions = {
+        from: staff_email.user,
+        to: ms_email,
+        subject: 'Your Medical Secretary Account Password',
+        text: `Hello ${ms_firstName},\n\nYour account has been created. Your password is: ${generatedPassword}\n\nPlease log in and change your password.\n\nBest Regards,\nYour Healthcare Team`,
+      };
+  
+      transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+          console.error('Error sending email:', error);
+          return res.status(500).json({ message: 'Error sending email' });
+        }
+        console.log('Email sent: ' + info.response);
+      });
+  
+      res.status(201).json({ message: 'Medical Secretary registered successfully. Email sent with the password.' });
+  
+    } catch (error) {
+      console.error('Error registering Medical Secretary:', error);
+      res.status(500).json({ message: 'Server error' });
+    }
+  };
 
 const assignAppointment = async (req, res) => {
     try {
@@ -55,15 +155,15 @@ const assignAppointment = async (req, res) => {
 
 
 
-const NewMedicalSecretaryignUp = (req, res) => {
-    MedicalSecretary.create(req.body)
-        .then((newMedicalSecretary) => {
-             res.json({ newMedicalSecretary: newMedicalSecretary, status: "Successfully registered Medical Secretary." });
-        })
-        .catch((err) => {
-            res.json({ message: 'Something went wrong. Please try again.', error: err });
-        });
-};
+// const NewMedicalSecretaryignUp = (req, res) => {
+//     MedicalSecretary.create(req.body)
+//         .then((newMedicalSecretary) => {
+//              res.json({ newMedicalSecretary: newMedicalSecretary, status: "Successfully registered Medical Secretary." });
+//         })
+//         .catch((err) => {
+//             res.json({ message: 'Something went wrong. Please try again.', error: err });
+//         });
+// };
 
 const findAllMedicalSecretary = (req, res) => {
     MedicalSecretary.find()
@@ -246,38 +346,11 @@ const updateMedicalSecretary = async (req, res) => {
     }
 };
 
-const changePassword = async (req, res) => {
-    try {
-        const { email, oldPassword, newPassword } = req.body;
-        const msId = req.params.msid;
 
-        // Validate the Medical Secretary's information
-        const medicalSecretary = await MedicalSecretary.findById(msId);
-        if (!medicalSecretary) {
-            return res.status(404).json({ message: "Medical Secretary not found." });
-        }
-
-        // Check if the old password is correct
-        if (oldPassword !== medicalSecretary.ms_password) {
-            return res.status(400).json({ message: "Old password is incorrect." });
-        }
-
-        // Update the password directly without hashing
-        medicalSecretary.ms_password = newPassword; // Directly update the password
-
-        // Save the updated password
-        await medicalSecretary.save();
-
-        return res.status(200).json({ success: true, message: "Password updated successfully." });
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ message: "Server error", error: error.message });
-    }
-};
 
 
 module.exports = {
-    NewMedicalSecretaryignUp,
+    // NewMedicalSecretaryignUp,
     findAllMedicalSecretary,
     getAllAppointments,
     ongoingAppointment,
@@ -286,7 +359,9 @@ module.exports = {
     assignAppointment,
     updateMedicalSecretaryImage,
     updateMedicalSecretary,
-    changePassword
+    changePassword,
+    NewMedicalSecretarySignUp,
+    changePassword, 
 
 
 };

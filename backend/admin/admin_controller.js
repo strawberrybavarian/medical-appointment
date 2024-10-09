@@ -7,6 +7,111 @@ const Notification = require('../notifications/notifications_model')
 const Admin = require('./admin_model')
 const Services = require('../services/service_model')
 const Specialty = require('../specialty/specialty_model')
+const nodemailer = require('nodemailer');
+const { staff_email } = require('../EmailExport');
+const generateRandomPassword = () => {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let password = '';
+    for (let i = 0; i < 8; i++) {
+        password += chars[Math.floor(Math.random() * chars.length)];
+    }
+    return password;
+};
+
+const changeAdminPassword = async (req, res) => {
+    const { adminId } = req.params;
+    const { oldPassword, newPassword, confirmNewPassword } = req.body;
+
+    try {
+        // Find the admin by ID
+        const admin = await Admin.findById(adminId);
+        if (!admin) {
+            return res.status(404).json({ message: 'Admin not found' });
+        }
+
+        // Check if the old password matches
+        if (admin.password !== oldPassword) {
+            return res.status(400).json({ message: 'Old password is incorrect' });
+        }
+
+        // Validate new password and confirm password
+        if (newPassword !== confirmNewPassword) {
+            return res.status(400).json({ message: 'New passwords do not match' });
+        }
+
+        // Update the password
+        admin.password = newPassword;
+        admin.status = 'registered';
+        admin.isActive = true; // Set active status after password change
+        await admin.save();
+
+        res.status(200).json({ message: 'Password changed successfully' });
+    } catch (error) {
+        console.error('Error changing password:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+// Admin signup controller
+const adminSignUp = async (req, res) => {
+    const { firstName, lastName, email, username } = req.body;
+
+    try {
+        // Check if email already exists
+        const existingAdmin = await Admin.findOne({ email });
+        if (existingAdmin) {
+            return res.status(400).json({ message: 'Email already registered' });
+        }
+
+        // Generate a random password
+        const generatedPassword = generateRandomPassword();
+
+        // Create the new Admin
+        const newAdmin = new Admin({
+            firstName,
+            lastName,
+            email,
+            username,
+            password: generatedPassword, // Assign the generated password
+            isActive: true, // Set initial status
+            role: 'Admin',
+
+            status: 'pending',
+        });
+
+        await newAdmin.save();
+
+        // Send email with the generated password
+        const transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+                user: staff_email.user, // Your email
+                pass: staff_email.pass, // Your email password
+            },
+        });
+
+        const mailOptions = {
+            from: staff_email.user,
+            to: email,
+            subject: 'Your Admin Account Password',
+            text: `Hello ${firstName},\n\nYour Admin account has been created. Your password is: ${generatedPassword}\n\nPlease log in and change your password.\n\nBest Regards,\nYour Team`,
+        };
+
+        transporter.sendMail(mailOptions, (error, info) => {
+            if (error) {
+                console.error('Error sending email:', error);
+                return res.status(500).json({ message: 'Error sending email' });
+            }
+            console.log('Email sent: ' + info.response);
+        });
+
+        res.status(201).json({ message: 'Admin registered successfully. Email sent with the password.' });
+
+    } catch (error) {
+        console.error('Error registering Admin:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
 
 const getAllStaff = async (req, res) => {
     try {
@@ -253,6 +358,8 @@ module.exports = {
     getDeactivationRequests,
     getAllStaff,
     updateStaffAccountStatus,
+    adminSignUp,
+    changeAdminPassword
 
 
 };

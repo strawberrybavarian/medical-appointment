@@ -44,7 +44,7 @@ const AppointmentSchema = new Schema({
     },
     status: {
         type: String,
-        // enum: ['Pending', 'Scheduled', 'Completed', 'Cancelled', 'Missed', 'Rescheduled', 'Ongoing', 'For Payment', 'To-send' ],
+        enum: ['Pending', 'Scheduled', 'Completed', 'Cancelled', 'Missed', 'Rescheduled', 'Ongoing', 'For Payment' ],
         default: 'Pending'
     },
     medium: {

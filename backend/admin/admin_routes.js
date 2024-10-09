@@ -7,7 +7,10 @@ module.exports = app => {
     app.get('/admin/api/staff/all', AdminController.getAllStaff);
     app.put('/admin/api/staff/account-status/:id', AdminController.updateStaffAccountStatus);
     
-    app.post('/admin/api/signup', AdminController.NewAdminSignUp)
+    app.post('/admin/api/signup', AdminController.adminSignUp);
+
+    // Admin change password route
+    app.put('/admin/api/change-password/:adminId', AdminController.changeAdminPassword);
     app.get('/admin/api/alladmin', AdminController.findAllAdmin)
 
     //For Doctors

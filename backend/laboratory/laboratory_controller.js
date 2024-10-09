@@ -27,8 +27,32 @@ const createLaboratoryResult = async (req, res) => {
         // Generate the relative URL to be stored in the database
         const fileUrl = `/uploads/${req.file.filename}`;
 
-        // Create the laboratory result
-        const laboratoryResult = new Laboratory({
+        // Check if a laboratory result already exists for the given appointmentId
+        let laboratoryResult = await Laboratory.findOne({ appointment: appointmentId });
+
+        if (laboratoryResult) {
+            // If it exists, update the existing laboratory result
+            laboratoryResult.testResults = parsedTestResults;
+            laboratoryResult.interpretation = interpretation;
+            laboratoryResult.recommendations = recommendations;
+            laboratoryResult.file = {
+                path: fileUrl,  // Update the file URL
+                filename: req.file.originalname // Update the file name
+            };
+            laboratoryResult.interpretationDate = new Date();
+            laboratoryResult.remarks = req.body.remarks || '';
+
+            // Save the updated laboratory result
+            await laboratoryResult.save();
+
+            return res.status(200).json({
+                message: 'Laboratory result updated successfully.',
+                data: laboratoryResult
+            });
+        }
+
+        // If no existing result, create a new laboratory result
+        laboratoryResult = new Laboratory({
             patient: patientId,
             appointment: appointmentId,
             doctor: req.body.doctorId,
@@ -74,6 +98,7 @@ const createLaboratoryResult = async (req, res) => {
         });
     }
 };
+
 
 
   
