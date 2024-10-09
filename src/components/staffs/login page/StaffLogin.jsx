@@ -3,7 +3,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { Row, Form, Col, Button, Container } from 'react-bootstrap';
 import CreateStaffModal from './CreateStaffModal'; 
-import AdminPasswordModal from './AdminPasswordModal'; // Import the modal for password change
+import AdminPasswordModal from './AdminPasswordModal'; 
 import { ip } from '../../../ContentExport';
 
 const StaffLogIn = () => {
@@ -14,7 +14,7 @@ const StaffLogIn = () => {
     const [userRole, setUserRole] = useState("Medical Secretary");
     const [errorMessage, setErrorMessage] = useState("");
     const [showModal, setShowModal] = useState(false);
-    const [selectedUser, setSelectedUser] = useState(null);  // Store the logged-in user data
+    const [selectedUser, setSelectedUser] = useState(null);  
 
     useEffect(() => {
         const fetchData = async () => {
@@ -41,20 +41,20 @@ const StaffLogIn = () => {
     const handleLogIn = async (e) => {
         e.preventDefault();
     
-        // Find the user by email
+    
         const user = users.find(user =>
           (userRole === "Medical Secretary" && user.ms_email === email) ||
           (userRole === "Admin" && user.email === email)
         );
     
-        // If the user exists and the password matches
+
         if (user && (
           (userRole === "Medical Secretary" && user.ms_password === password) ||
           (userRole === "Admin" && user.password === password)
         )) {
           if (user.status === "pending") {
-            setSelectedUser(user);  // Set the user to pass to the modal
-            setShowModal(true);     // Show the modal
+            setSelectedUser(user);  
+            setShowModal(true);     
           } else if (user.status === "registered") {
             window.alert("Successfully logged in");
     
@@ -77,7 +77,7 @@ const StaffLogIn = () => {
     
     
 
-    // Close the modal after successful password update
+    
     const handleModalClose = () => {
         setShowModal(false);
         setSelectedUser(null);
@@ -129,7 +129,7 @@ const StaffLogIn = () => {
                             </div>
                         </Form>
 
-                        {/* Show modal for changing the password if status is pending */}
+
                         {selectedUser && userRole === 'Medical Secretary' && (
                                     <CreateStaffModal
                                     show={showModal}
