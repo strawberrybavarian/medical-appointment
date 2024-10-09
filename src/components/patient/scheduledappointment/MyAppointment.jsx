@@ -61,11 +61,12 @@ function MyAppointment() {
                                     <Nav.Item>
                                         <Nav.Link eventKey="active" onClick={() => setActiveTab("active")}>Scheduled</Nav.Link>
                                     </Nav.Item>
-                                    <Nav.Item>
-                                        <Nav.Link eventKey="cancel" onClick={() => setActiveTab("cancel")}>Cancelled</Nav.Link>
-                                    </Nav.Item>
+                                  
                                     <Nav.Item>
                                         <Nav.Link eventKey="completed" onClick={() => setActiveTab("completed")}>Completed</Nav.Link>
+                                    </Nav.Item>
+                                    <Nav.Item>
+                                        <Nav.Link eventKey="cancel" onClick={() => setActiveTab("cancel")}>Cancelled</Nav.Link>
                                     </Nav.Item>
                                     <Nav.Item>
                                         <Nav.Link eventKey="rescheduled" onClick={() => setActiveTab("rescheduled")}>Rescheduled</Nav.Link>

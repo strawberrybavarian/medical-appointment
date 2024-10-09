@@ -12,16 +12,6 @@ function CompleteAppointment({appointments, setAppointments}) {
     const [showModal, setShowModal] = useState(false);
     const [selectedAppointment, setSelectedAppointment] = useState(null);
 
-    // useEffect(() => {
-    //     axios.get(`http://localhost:8000/patient/api/onepatient/${pid}`)
-    //         .then((res) => {
-    //             setAppointments(res.data.thePatient.patient_appointments);
-    //         })
-    //         .catch((err) => {
-    //             console.log(err);
-    //         });
-    // }, [pid]);
-
     const handleCloseModal = () => {
         setShowModal(false);
         setSelectedAppointment(null);
@@ -80,51 +70,66 @@ function CompleteAppointment({appointments, setAppointments}) {
                                 <h4 className='font-gray'>{groupedAppointments[groupKey].month} {groupedAppointments[groupKey].year}</h4>
                             </div>
                             {groupedAppointments[groupKey].appointments.map((appointment, i) => {
-                                const { day, month, dayOfWeek, fullDate } = formatDate(appointment.date); // Format date
-                                const isAppointmentToday = isToday(fullDate);
-                                const dayStyle = {
-                                    display: 'block',
-                                    fontSize: '3rem',
-                                    color: isAppointmentToday ? '#E03900' : '#575859'
-                                };
-                                const dayOfWeekStyle = {
-                                    display: 'block',
-                                    fontSize: '1rem',
-                                    color: isAppointmentToday ? '#E03900' : '#575859'
-                                };
-                                const doctorImage = appointment?.doctor.dr_image || defaultImage;
-                                return (
-                                    <Container className='d-flex justify-content-start subContainer shadow-sm' key={i}>
-                                        <div className='aaContainer'>
-                                            <p style={{ textAlign: 'center' }}>
-                                                <span style={dayOfWeekStyle}>{dayOfWeek}</span>
-                                                <span style={dayStyle}>{day}</span>
-                                            </p>
-                                        </div>
-                                        <Container className="d-flex justify-content-start">
-                                            {/* <div>
-                                                <img src={`http://localhost:8000/${doctorImage}`} alt="Doctor" className='app-image' />
-                                            </div> */}
-                                            <div className='pa-cont1'>
-                                                <p style={{ fontSize: '1rem' }}> <PersonFill className='font-gray' size={20} style={{ marginRight: '0.7rem' }} /> Dr. {appointment.doctor.dr_firstName} {appointment.doctor.dr_middleInitial}. {appointment.doctor.dr_lastName}</p>
-                                                <p style={{ fontSize: '1rem' }}> <ClockFill className='font-gray' size={20} style={{ marginRight: '0.7rem' }} /> {appointment.time}</p>
-                                            </div>
-                                            <div className='pa-cont2'>
-                                                <p style={{ fontSize: '1rem' }}> <PeopleFill className='font-gray' size={20} style={{ marginRight: '0.7rem' }} /> {appointment.medium}</p>
-                                            </div>
-                                            <div className='pa-cont3'>
-                                                <p><PencilFill className='font-gray' size={20} style={{ marginRight: '0.7rem' }} /> Primary Concern :  </p>
-                                                <p style={{ fontSize: '1rem' }}> • {appointment.reason}</p>
-                                            </div>
-                                        </Container>
-                                        {appointment.status === 'Completed' && (
-                                            <div className="bContainer">
-                                                <Button onClick={() => handleNextModal(appointment)}>View Prescription</Button>
-                                            </div>
-                                        )}
-                                    </Container>
-                                )
-                            })}
+    const { day, month, dayOfWeek, fullDate } = formatDate(appointment.date); // Format date
+    const isAppointmentToday = isToday(fullDate);
+    const dayStyle = {
+        display: 'block',
+        fontSize: '3rem',
+        color: isAppointmentToday ? '#E03900' : '#575859'
+    };
+    const dayOfWeekStyle = {
+        display: 'block',
+        fontSize: '1rem',
+        color: isAppointmentToday ? '#E03900' : '#575859'
+    };
+    const doctorImage = appointment?.doctor?.dr_image || defaultImage; // Added check for appointment.doctor
+    return (
+        <Container className='d-flex justify-content-start subContainer shadow-sm' key={i}>
+            <div className='aaContainer'>
+                <p style={{ textAlign: 'center' }}>
+                    <span style={dayOfWeekStyle}>{dayOfWeek}</span>
+                    <span style={dayStyle}>{day}</span>
+                </p>
+            </div>
+            <Container className="d-flex justify-content-start">
+                {/* <div>
+                    <img src={`http://localhost:8000/${doctorImage}`} alt="Doctor" className='app-image' />
+                </div> */}
+                <div className='pa-cont1'>
+                    {appointment?.doctor ? (
+                        <>
+                            <p style={{ fontSize: '1rem' }}> 
+                                <PersonFill className='font-gray' size={20} style={{ marginRight: '0.7rem' }} /> 
+                                Dr. {appointment.doctor.dr_firstName} {appointment.doctor.dr_middleInitial}. {appointment.doctor.dr_lastName}
+                            </p>
+                            <p style={{ fontSize: '1rem' }}> 
+                                <ClockFill className='font-gray' size={20} style={{ marginRight: '0.7rem' }} /> 
+                                {appointment.time}
+                            </p>
+                        </>
+                    ) : (
+                        <p>No doctor assigned</p>
+                    )}
+                </div>
+                <div className='pa-cont2'>
+                    <p style={{ fontSize: '1rem' }}> 
+                        <PeopleFill className='font-gray' size={20} style={{ marginRight: '0.7rem' }} /> 
+                        {appointment.medium}
+                    </p>
+                </div>
+                <div className='pa-cont3'>
+                    <p><PencilFill className='font-gray' size={20} style={{ marginRight: '0.7rem' }} /> Primary Concern :  </p>
+                    <p style={{ fontSize: '1rem' }}> • {appointment.reason}</p>
+                </div>
+            </Container>
+            {appointment.status === 'Completed' && (
+                <div className="bContainer">
+                    <Button onClick={() => handleNextModal(appointment)}>View Prescription</Button>
+                </div>
+            )}
+        </Container>
+    );
+})}
                         </React.Fragment>
                     ))}
                 </Container>
