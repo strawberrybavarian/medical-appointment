@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { Form, Button, Table, Container, Row, Col } from 'react-bootstrap';
+import { Form, Button, Container, Row, Col } from 'react-bootstrap';
 import axios from 'axios';
 import LaboratoryHistory from './LaboratoryHistory';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css'; // Import Toastify CSS
+
 function LaboratoryResults({ patientId, appointmentId }) {
     const [formData, setFormData] = useState({
         file: null
     });
     const [labResults, setLabResults] = useState([]);
     const [error, setError] = useState(null);
-    const [success, setSuccess] = useState(null); // To show success message
 
-   
     useEffect(() => {
         const fetchLabResults = async () => {
             try {
@@ -19,6 +20,7 @@ function LaboratoryResults({ patientId, appointmentId }) {
                 console.log(response.data);
             } catch (err) {
                 setError('Failed to fetch laboratory results');
+                toast.error('Failed to fetch laboratory results'); // Show error toast
             }
         };
         fetchLabResults();
@@ -33,6 +35,7 @@ function LaboratoryResults({ patientId, appointmentId }) {
                 ...formData,
                 file: null
             });
+            toast.error('Only PDF files are allowed.'); // Show error toast
         } else {
             setError(null); // Clear any previous errors
             setFormData({
@@ -46,35 +49,33 @@ function LaboratoryResults({ patientId, appointmentId }) {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError(null); // Reset error state before submission
-        setSuccess(null); // Reset success state
-    
+
         if (!formData.file) {
             setError('Please upload a PDF file.');
+            toast.error('Please upload a PDF file.'); // Show error toast
             return;
         }
-    
+
         const labData = new FormData();
         labData.append('file', formData.file);
-    
-        // Add an empty array for testResults if it's not being used
-        labData.append('testResults', JSON.stringify([]));
-    
+        labData.append('testResults', JSON.stringify([])); // Add empty test results if needed
+
         try {
             await axios.post(`http://localhost:8000/doctor/api/createLaboratoryResult/${patientId}/${appointmentId}`, labData, {
                 headers: {
                     'Content-Type': 'multipart/form-data' // Ensure this is correctly set
                 }
             });
-            setSuccess('Laboratory result uploaded successfully');
             setFormData({
                 file: null
             });
+            toast.success('Laboratory result uploaded successfully'); // Show success toast
         } catch (err) {
             setError('Failed to upload laboratory result');
+            toast.error('Failed to upload laboratory result'); // Show error toast
             console.error('Error uploading file:', err.response?.data || err.message);
         }
     };
-    
 
     // Download file
     const downloadFile = async (resultId) => {
@@ -90,24 +91,21 @@ function LaboratoryResults({ patientId, appointmentId }) {
             link.click();
         } catch (err) {
             setError('Failed to download file');
+            toast.error('Failed to download file'); // Show error toast
             console.error('Error downloading file:', err.response?.data || err.message);
         }
     };
 
     return (
         <Container fluid>
-          
-            {/* {error && <p className="text-danger">{error}</p>}
-            {success && <p className="text-success">{success}</p>} */}
+            {/* React Toast Container to display notifications */}
+            <ToastContainer />
 
-            {/* Form for uploading lab results */}
-             
             <Row>
                 <Col md={6}>
                     <h4 className="m-0 font-weight-bold text-gray">Past Laboratories</h4>
-                    <hr/>
-                     <LaboratoryHistory pid={patientId}/> 
-                
+                    <hr />
+                    <LaboratoryHistory pid={patientId} />
                 </Col>
                 <Col>
                     <Form onSubmit={handleSubmit}>
@@ -116,7 +114,7 @@ function LaboratoryResults({ patientId, appointmentId }) {
                             <Form.Control
                                 type="file"
                                 accept="application/pdf"
-                                onChange={handleFileChange} 
+                                onChange={handleFileChange}
                             />
                         </Form.Group>
 
@@ -126,9 +124,6 @@ function LaboratoryResults({ patientId, appointmentId }) {
                     </Form>
                 </Col>
             </Row>
-            
-            {/* List of laboratory results with download option */}
-           
         </Container>
     );
 }

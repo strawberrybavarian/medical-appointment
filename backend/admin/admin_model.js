@@ -30,6 +30,7 @@ const AdminSchema = new mongoose.Schema({
     },
     status:{
         type: String,
+        default: 'pending'
     },
     notifications: [{
         type: Schema.Types.ObjectId,

@@ -73,7 +73,7 @@ const PatientLaboratory = ({ laboratoryResults }) => {
                             <p><strong>Interpretation:</strong> {result.interpretation || "None"}</p>
                             <p><strong>Recommendations:</strong> {result.recommendations || "None"}</p>
 
-                            {result.testResults.length > 0 && (
+                            {/* {result.testResults.length > 0 && (
                                 <>
                                     <p><strong>Test Results:</strong></p>
                                     <ul>
@@ -84,7 +84,7 @@ const PatientLaboratory = ({ laboratoryResults }) => {
                                         ))}
                                     </ul>
                                 </>
-                            )}
+                            )} */}
 
                             <p><strong>File:</strong> {result.file?.filename || "No file uploaded"}</p>
                             {result.file && (

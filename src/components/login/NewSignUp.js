@@ -16,9 +16,9 @@ const NewSignUp = () => {
     const [upassword, setPass] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [uNumber, setNumber] = useState("");
-    const [uGender, setGender] = useState("Male");
-    const [urole, setURole] = useState("Patient");
-    const [accountStatus, setAccountStatus] = useState('Registered')
+    const [uGender, setGender] = useState("");
+    const [urole, setURole] = useState("");
+    const [accountStatus, setAccountStatus] = useState('Registered');
 
     const [errors, setErrors] = useState({
         firstName: "",
@@ -28,6 +28,8 @@ const NewSignUp = () => {
         confirmPassword: "",
         birth: "",
         number: "",
+        gender: "",
+        role: "",
     });
 
     const validateFirstName = (name) => {
@@ -67,12 +69,27 @@ const NewSignUp = () => {
 
     const validateBirth = (birth) => {
         if (!birth) return "Date of birth is required";
+        const age = calculateAge(birth);
+        if (age < 0) return "Date of birth cannot be in the future";
+        if (urole === "Practitioner" && age < 21) return "You must be at least 21 years old to register as a Practitioner";
+        // No age validation for patients (including infants)
         return "";
     };
 
     const validateNumber = (number) => {
         if (!number) return "Contact number is required";
-        if (!/^\d+$/.test(number)) return "Contact number must be numeric";
+        const philippineNumberRegex = /^09\d{9}$/;
+        if (!philippineNumberRegex.test(number)) return "Contact number must be a valid 11-digit Philippine mobile number starting with '09'";
+        return "";
+    };
+
+    const validateGender = (gender) => {
+        if (!gender) return "Please select your gender";
+        return "";
+    };
+
+    const validateRole = (role) => {
+        if (!role) return "Please select a role";
         return "";
     };
 
@@ -100,13 +117,53 @@ const NewSignUp = () => {
             case "number":
                 error = validateNumber(value);
                 break;
+            case "gender":
+                error = validateGender(value);
+                break;
+            case "role":
+                error = validateRole(value);
+                break;
             default:
                 break;
         }
         setErrors((prevErrors) => ({ ...prevErrors, [field]: error }));
     };
 
+    const validateForm = () => {
+        const firstNameError = validateFirstName(ufirstName);
+        const lastNameError = validateLastName(uLastName);
+        const emailError = validateEmail(uemail);
+        const passwordError = validatePassword(upassword);
+        const confirmPasswordError = validateConfirmPassword(upassword, confirmPassword);
+        const birthError = validateBirth(uBirth);
+        const numberError = validateNumber(uNumber);
+        const genderError = validateGender(uGender);
+        const roleError = validateRole(urole);
+
+        const newErrors = {
+            firstName: firstNameError,
+            lastName: lastNameError,
+            email: emailError,
+            password: passwordError,
+            confirmPassword: confirmPasswordError,
+            birth: birthError,
+            number: numberError,
+            gender: genderError,
+            role: roleError,
+        };
+
+        setErrors(newErrors);
+
+        const isValid = Object.values(newErrors).every(error => error === "");
+        return isValid;
+    };
+
     const registerUser = () => {
+        if (!validateForm()) {
+            // Form is invalid, do not proceed
+            return;
+        }
+
         if (urole === "Practitioner") {
             const doctorUser = {
                 dr_firstName: ufirstName,
@@ -118,7 +175,7 @@ const NewSignUp = () => {
                 dr_age: uAge,
                 dr_contactNumber: uNumber,
                 dr_gender: uGender,
-            }
+            };
             axios.post('http://localhost:8000/doctor/api/signup', doctorUser)
                 .then((response) => {
                     console.log(response);
@@ -127,9 +184,8 @@ const NewSignUp = () => {
                 })
                 .catch((err) => {
                     console.log(err);
-                })
-        }
-        else if (urole === "Patient") {
+                });
+        } else if (urole === "Patient") {
             const patientUser = {
                 patient_firstName: ufirstName,
                 patient_middleInitial: uMiddleInitial,
@@ -140,9 +196,9 @@ const NewSignUp = () => {
                 patient_age: uAge,
                 patient_contactNumber: uNumber,
                 patient_gender: uGender,
-                accountStatus: accountStatus
+                accountStatus: accountStatus,
             };
-            console.log(patientUser)
+            console.log(patientUser);
             axios.post('http://localhost:8000/patient/api/signup', patientUser)
                 .then((response) => {
                     console.log(response);
@@ -153,7 +209,7 @@ const NewSignUp = () => {
                     console.log(err);
                 });
         }
-    }
+    };
 
     const calculateAge = (dob) => {
         const birthDate = new Date(dob);
@@ -172,6 +228,13 @@ const NewSignUp = () => {
             setAge(age);
         }
     }, [uBirth]);
+
+    // Re-validate birth date whenever role or birth date changes
+    useEffect(() => {
+        if (uBirth) {
+            handleBlur("birth", uBirth);
+        }
+    }, [urole, uBirth]); // Re-validate when urole or uBirth changes
 
     return (
         <>
@@ -246,7 +309,7 @@ const NewSignUp = () => {
                                         <Form.Label>Contact Number</Form.Label>
                                         <Form.Control
                                             type="text"
-                                            placeholder="Enter Contact Number"
+                                            placeholder="Enter Contact Number (e.g., 09123456789)"
                                             onBlur={(e) => handleBlur("number", e.target.value)}
                                             onChange={(e) => {
                                                 setNumber(e.target.value);
@@ -254,6 +317,7 @@ const NewSignUp = () => {
                                             }}
                                             isValid={errors.number === "" && uNumber !== ""}
                                             isInvalid={errors.number !== ""}
+                                            maxLength={11}
                                         />
                                         <Form.Control.Feedback type="invalid">{errors.number}</Form.Control.Feedback>
                                     </Form.Group>
@@ -292,7 +356,6 @@ const NewSignUp = () => {
                                             isInvalid={errors.password !== ""}
                                         />
                                         <Form.Control.Feedback type="invalid">{errors.password}</Form.Control.Feedback>
-                                       
                                     </Form.Group>
                                 </Row>
 
@@ -313,23 +376,45 @@ const NewSignUp = () => {
                                         <Form.Control.Feedback type="invalid">{errors.confirmPassword}</Form.Control.Feedback>
                                     </Form.Group>
                                 </Row>
-                                <PasswordValidation password={upassword} />                 
+                                <PasswordValidation password={upassword} />
                                 <Row>
                                     <Form.Group as={Col} controlId="formChooseGender">
                                         <Form.Label>Gender:</Form.Label>
-                                        <Form.Select onChange={(e) => setGender(e.target.value)} defaultValue="Gender">
+                                        <Form.Select
+                                            onBlur={(e) => handleBlur("gender", e.target.value)}
+                                            onChange={(e) => {
+                                                setGender(e.target.value);
+                                                handleBlur("gender", e.target.value);
+                                            }}
+                                            defaultValue=""
+                                            isValid={errors.gender === "" && uGender !== ""}
+                                            isInvalid={errors.gender !== ""}
+                                        >
+                                            <option value="" disabled>Select Gender</option>
                                             <option value="Male">Male</option>
                                             <option value="Female">Female</option>
                                             <option value="Other">Other</option>
                                         </Form.Select>
+                                        <Form.Control.Feedback type="invalid">{errors.gender}</Form.Control.Feedback>
                                     </Form.Group>
 
                                     <Form.Group as={Col} controlId="formChoose">
                                         <Form.Label>Choose what to register:</Form.Label>
-                                        <Form.Select onChange={(e) => setURole(e.target.value)} defaultValue="Choose">
+                                        <Form.Select
+                                            onBlur={(e) => handleBlur("role", e.target.value)}
+                                            onChange={(e) => {
+                                                setURole(e.target.value);
+                                                handleBlur("role", e.target.value);
+                                            }}
+                                            defaultValue=""
+                                            isValid={errors.role === "" && urole !== ""}
+                                            isInvalid={errors.role !== ""}
+                                        >
+                                            <option value="" disabled>Choose...</option>
                                             <option value="Patient">Patient</option>
                                             <option value="Practitioner">Practitioner</option>
                                         </Form.Select>
+                                        <Form.Control.Feedback type="invalid">{errors.role}</Form.Control.Feedback>
                                     </Form.Group>
                                 </Row>
 
@@ -349,7 +434,7 @@ const NewSignUp = () => {
                 </Card>
             </Container>
         </>
-    )
-}
+    );
+};
 
 export default NewSignUp;

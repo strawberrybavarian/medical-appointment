@@ -143,13 +143,13 @@ const TodaysAppointment = ({ allAppointments, setAllAppointments }) => {
                     onClick={() => toggleRow(appointment._id)} // Click to toggle collapse
                     style={{ cursor: 'pointer' }}
                   >
-                    <td><img alt='Patient Image' src={patientImage} style={{marginRight:'10px', width: '30px', height:'30px', borderRadius:'100px'}}/> {patientName}</td>
-                    <td>{appointmentTypes}</td>
-                    <td>{new Date(appointment.date).toLocaleDateString()}</td>
-                    <td>{appointment.time}</td>
+                    <td><img alt='Patient Image' src={patientImage} style={{marginRight:'10px', width: '30px', height:'30px', borderRadius:'100px'}}/> <span style={{fontSize: '14px', fontWeight: '600'}}>{patientName}</span> </td>
+                    <td style={{fontSize: '14px'}}>{appointmentTypes}</td>
+                    <td style={{fontSize: '14px'}}>{new Date(appointment.date).toLocaleDateString()}</td>
+                    <td style={{fontSize: '14px'}}>{appointment.time}</td>
                     <td style={{ textAlign: "center" }}>
                       <div className="d-flex justify-content-center">
-                        <div className="scheduled-appointment">
+                        <div className="scheduled-appointment" style={{fontSize: '12px'}}>
                           {appointment.status}
                         </div>
                       </div>

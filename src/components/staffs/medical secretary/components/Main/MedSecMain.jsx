@@ -62,13 +62,13 @@ function MedSecMain() {
                   </Nav.Item> */}
                   
                   <Nav.Item>
-                    <Nav.Link eventKey="pending">Pending Appointments</Nav.Link>
+                    <Nav.Link eventKey="pending">Pending</Nav.Link>
                   </Nav.Item>
                   <Nav.Item>
-                    <Nav.Link eventKey="todays">Today's Appointments</Nav.Link>
+                    <Nav.Link eventKey="todays">Today's</Nav.Link>
                   </Nav.Item>
                   <Nav.Item>
-                    <Nav.Link eventKey="ongoing">Ongoing Appointments</Nav.Link>
+                    <Nav.Link eventKey="ongoing">Ongoing</Nav.Link>
                   </Nav.Item>
                   <Nav.Item>
                     <Nav.Link eventKey="forpayment">For Payment</Nav.Link>

@@ -102,7 +102,7 @@ const MedSecForPayment = ({ allAppointments, setAllAppointments }) => {
   };
 
   // Function to update the appointment status to 'Completed'
-  const handleUpdateStatus = (appointmentId,newStatus) => {
+  const handleUpdateStatus = (appointmentId, newStatus) => {
     axios.put(`http://localhost:8000/appointments/${appointmentId}/status`, { status: newStatus })
       .then((response) => {
         setAllAppointments(prevAppointments =>
@@ -224,10 +224,10 @@ const MedSecForPayment = ({ allAppointments, setAllAppointments }) => {
                     <td>
                       <div className="d-flex justify-content-around flex-wrap">
                        
-                          <Link variant="success" style={{fontSize: '14px', textDecoration:'none', color: 'green'}} onClick={() => handleUpdateStatus(appointment._id,"Completed")}>
+                          <Link variant="success" style={{fontSize: '14px', textDecoration:'none', color: 'green'}} onClick={() => handleUpdateStatus(appointment._id, "Completed")}>
                             Completed
                           </Link>
-                          <Link variant="success" style={{fontSize: '14px', textDecoration:'none', color: 'green'}} onClick={() => handleUpdateStatus(appointment._id, "To-send")}>
+                          <Link variant="success" style={{fontSize: '14px', textDecoration:'none', color: 'orange'}} onClick={() => handleUpdateStatus(appointment._id, "To-send")}>
                             To-send
                           </Link>
                       
