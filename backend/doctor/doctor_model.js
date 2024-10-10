@@ -1,5 +1,7 @@
 const mongoose = require('mongoose');
 const { Schema, model } = mongoose;
+const bcrypt = require('bcrypt');
+
 
 // Define timeSlotSchema for morning and afternoon time slots
 const timeSlotSchema = new mongoose.Schema({
@@ -17,7 +19,15 @@ const dailyAvailabilitySchema = new mongoose.Schema({
 
 // Define DoctorSchema
 const DoctorSchema = new Schema({
-
+    resetPasswordToken: {
+        type: String,
+    },
+    resetPasswordExpires: {
+        type: Date,
+    },
+    dr_licenseNo:{
+        type: String,
+    },
     activityStatus: {
         type: String,
         enum: ['Online', 'Offline', 'In Session'],
@@ -149,6 +159,20 @@ const DoctorSchema = new Schema({
         ref: 'Service' // Reference to the services the doctor offers
     }],
 }, { timestamps: true });
+
+
+DoctorSchema.pre('save', async function (next) {
+    if (!this.isModified('dr_password')) {
+        return next();
+    }
+    try {
+        const salt = await bcrypt.genSalt(10);
+        this.dr_password = await bcrypt.hash(this.dr_password, salt);
+        next();
+    } catch (error) {
+        next(error);
+    }
+});
 
 // Define a method on DoctorSchema to generate QR code for two-factor authentication
 DoctorSchema.methods.generateQRCode = async function() {

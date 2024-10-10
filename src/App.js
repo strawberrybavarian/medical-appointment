@@ -56,23 +56,30 @@ import NewsDetailPage from './components/staffs/news/NewsDetailPage';
 import AdminAppointmentMain from './components/staffs/admin/appointment/AdminAppointmentMain';
 import SasMain from './components/staffs/admin/specialtyandservices/SasMain';
 import StaffsManagement from './components/staffs/admin/management/account/StaffsManagement';
-import { PatientProvider } from './components/patient/PatientContext';
+
 import ChooseDoctorServices from './components/patient/homepage/ChooseDoctorServices';
 import MedSecAccInfo from './components/staffs/medical secretary/components/Account/MedSecAccInfo';
+import ResetPassword from './components/login/ResetPassword';
 
+
+import { PatientProvider } from './components/patient/PatientContext';
+import { DoctorProvider } from './components/practitioner/DoctorContext';
 
 function App() {
 
   return (
     <>
      <PatientProvider>
-    <BrowserRouter>
+      <DoctorProvider>
+        
+           <BrowserRouter>
       <Routes>
 
           <Route path={'/'} element={<LandingPage/>}></Route>
           <Route path={'/medapp/signup'} element={<NewSignUp/>}> </Route>
           <Route path={'/medapp/login'} element={<LogInUser/>}> </Route>
           <Route path={'/verify-otp'} element={<VerifyOTP/>}> </Route>
+          <Route path="/reset-password/:role/:token" element={<ResetPassword />} />
           <Route path={'/news/:id'} element={<NewsDetailPage/>}/>
         {/* Practitioner Routes */}
           <Route path="/dashboard" element={<DashboardMain />} />
@@ -123,8 +130,9 @@ function App() {
 
   
 
-
+    </DoctorProvider> 
     </PatientProvider> 
+    
     </>
   );
 }

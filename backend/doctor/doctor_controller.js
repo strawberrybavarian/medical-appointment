@@ -9,10 +9,11 @@ const DoctorService = require('../doctor/doctor_service')
 const mongoose = require('mongoose');
 const QRCode = require('qrcode');
 const speakeasy = require('speakeasy');
-
-
+const bcrypt = require('bcrypt');
+const crypto = require('crypto');
 const nodemailer = require('nodemailer');
-// const { find } = require('lodash');
+const { staff_email } = require('../EmailExport');
+
 
 
 
@@ -191,15 +192,71 @@ const verifyTwoFactor = async (req, res) => {
     }
 };
 
-const NewDoctorSignUp = (req, res) => {
-    Doctors.create(req.body)
-        .then((newDoctor) => {
-            res.json({ newDoctor: newDoctor, status: "Successfully registered Doctor." });
-        })
-        .catch((err) => {
-            res.json({ message: 'Something went wrong. Please try again.', error: err });
+// const NewDoctorSignUp = (req, res) => {
+//     Doctors.create(req.body)
+//         .then((newDoctor) => {
+//             res.json({ newDoctor: newDoctor, status: "Successfully registered Doctor." });
+//         })
+//         .catch((err) => {
+//             res.json({ message: 'Something went wrong. Please try again.', error: err });
+//         });
+// };
+
+
+const NewDoctorSignUp = async (req, res) => {
+    const { dr_email, dr_password, ...otherFields } = req.body;
+  
+    try {
+        const newDoctor = new Doctors({
+            dr_email,
+            dr_password,
+            ...otherFields,
         });
-};
+  
+        await newDoctor.save();
+        res.status(201).json({ message: 'Doctor registered successfully' });
+    } catch (error) {
+        res.status(500).json({ message: 'Error registering doctor', error });
+    }
+  };
+
+
+  const loginDoctor = async (req, res) => {
+    const { email, password } = req.body;
+  
+    try {
+      const doctor = await Doctors.findOne({ dr_email: email });
+  
+      if (!doctor) {
+        return res.status(404).json({ message: 'No doctor with that email found' });
+      }
+  
+      const isMatch = await bcrypt.compare(password, doctor.dr_password);
+  
+      if (!isMatch) {
+        return res.status(401).json({ message: 'Invalid email or password' });
+      }
+  
+      // Exclude sensitive information before sending
+      const doctorData = {
+        _id: doctor._id,
+        dr_email: doctor.dr_email,
+        dr_firstName: doctor.dr_firstName,
+        dr_lastName: doctor.dr_lastName,
+        // Include other necessary fields
+      };
+  
+      res.json({
+        message: 'Successfully logged in',
+        doctorId: doctor._id,
+        doctorData: doctorData,
+      });
+    } catch (error) {
+      res.status(500).json({ message: 'Error logging in', error });
+    }
+  };
+
+
 const updateDoctorDetails = (req, res) => {
     const updateData = {
       dr_firstName: req.body.dr_firstName,
@@ -832,8 +889,103 @@ const deleteDoctorBiography = async (req, res) => {
   };
   
 
+  const createDoctorSession = (req, res) => {
+    const { userId, role } = req.body;
+  
+    if (role === "Physician") {
+        req.session.userId = userId;  
+        req.session.role = role;      
+        
+        // Log the session data in the backend console
+        console.log('Session Data:', req.session);
+  
+        res.json({ message: "Session created successfully" });
+    } else {
+        res.status(403).json({ message: "Unauthorized role" });
+    }
+  };
 
 
+  const forgotPassword = async (req, res) => {
+    const { email } = req.body;
+  
+    try {
+      // Step 1: Find the patient by email
+      const doctor = await Doctors.findOne({ dr_email: email });
+  
+      if (!doctor) {
+        return res.status(404).json({ message: 'No patient with that email found' });
+      }
+  
+      // Step 2: Generate a reset token and set the expiry
+      const token = crypto.randomBytes(20).toString('hex');
+      doctor.resetPasswordToken = token;
+      doctor.resetPasswordExpires = Date.now() + 30 * 60 * 1000; // 30 minutes expiration
+  
+      // Step 3: Save the patient with the token and expiry
+      await doctor.save();
+  
+      // Step 4: Configure nodemailer for sending emails
+      const transporter = nodemailer.createTransport({
+        service: 'Gmail', // You can use other services like 'SendGrid', 'Yahoo', etc.
+        auth: {
+          user: staff_email.user, // Your email address
+          pass: staff_email.pass, // Your email password or app-specific password
+        },
+      });
+  
+      // Construct the password reset link
+      // const resetLink = `${req.protocol}://${req.get('host')}/reset-password/${token}`;
+      const resetLink = `http://localhost:3000/reset-password/doctor/${token}`;
+      const mailOptions = {
+        to: doctor.dr_email,
+        from: staff_email.user,
+        subject: 'Password Reset',
+        text: `You are receiving this because you (or someone else) have requested a password reset for your account.\n\n` +
+              `Please click on the following link, or paste this into your browser to complete the process within 30 minutes:\n\n` +
+              `${resetLink}\n\n` +
+              `If you did not request this, please ignore this email and your password will remain unchanged.\n`,
+      };
+  
+  
+      await transporter.sendMail(mailOptions);
+  
+  
+      res.json({ message: `An email has been sent to ${doctor.dr_email} with further instructions.` });
+  
+    } catch (error) {
+      console.error('Error in forgot password process:', error); // Log the error for debugging
+      res.status(500).json({ message: 'Error in forgot password process', error });
+    }
+  };
+  
+  
+    const resetPassword = async (req, res) => {
+      const { token } = req.params;
+      const { password } = req.body;
+  
+      try {
+          const doctor = await Doctors.findOne({
+              resetPasswordToken: token,
+              resetPasswordExpires: { $gt: Date.now() },
+          });
+  
+          if (!doctor) {
+              return res.status(400).json({ message: 'Password reset token is invalid or has expired.' });
+          }
+  
+          // Update password
+          doctor.dr_password = password;
+          doctor.resetPasswordToken = undefined;
+          doctor.resetPasswordExpires = undefined;
+  
+          await doctor.save();
+  
+          res.json({ message: 'Password has been updated.' });
+      } catch (error) {
+          res.status(500).json({ message: 'Error in resetting password', error });
+      }
+  };
 module.exports = {
     NewDoctorSignUp,
     findAllDoctors,
@@ -870,5 +1022,8 @@ module.exports = {
     updateDoctorBiography,
     getDoctorBiography,
     deleteDoctorBiography,
+    loginDoctor,
+    createDoctorSession,
+    resetPassword, forgotPassword
 
 };

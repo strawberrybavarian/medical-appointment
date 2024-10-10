@@ -92,11 +92,9 @@ function PatientNavBar({pid}) {
         <Navbar fluid expand="md" className="pnb-navbar">
             <Container fluid>
                 <Link to={{ pathname: `/homepage`, state: { pid: patient._id } }}>
-                    <img className="molino-logo" src={image.logo} alt="Logo" />
+                    <img className="molino-logo" src={image.logo || defaultImage} alt="Logo" />
                 </Link>
-                <div className="msn-container">
-                    <h6>Molino Polyclinic</h6>
-                </div>
+             
 
                 <Navbar.Toggle aria-controls="basic-navbar-nav" />
                 <Navbar.Collapse id="basic-navbar-nav" className="justify-content-end">

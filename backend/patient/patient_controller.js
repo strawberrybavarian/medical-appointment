@@ -8,7 +8,9 @@ const speakeasy = require('speakeasy');
 const nodemailer = require('nodemailer');
 const QRCode = require('qrcode');
 const mongoose = require('mongoose');
-
+const bcrypt = require('bcrypt');
+const { staff_email } = require('../EmailExport');
+const crypto = require('crypto');
 //For Email
 
 
@@ -20,7 +22,6 @@ const transporter = nodemailer.createTransport({
       pass: 'vqbi dqjv oupi qndp'
   }
 });
-
 // Generate and send OTP
 const sendOTP = async (req, res) => {
   try {
@@ -53,7 +54,6 @@ const sendOTP = async (req, res) => {
       res.status(500).send('Error sending OTP');
   }
 };
-
 // Verify OTP
 const verifyOTP = async (req, res) => {
   try {
@@ -76,9 +76,6 @@ const verifyOTP = async (req, res) => {
       res.status(500).send('Error verifying OTP');
   }
 };
-
-
-
 // Setup Two-Factor Function Authenticator
 const setupTwoFactor = async (req, res) => {
   try {
@@ -121,8 +118,6 @@ const setupTwoFactor = async (req, res) => {
     res.status(500).json({ message: 'Error generating 2FA secret', error });
   }
 };
-
-
 // Verify Two-Factor Function
 const verifyTwoFactor = async (req, res) => {
   const { userId, token } = req.body;
@@ -162,23 +157,58 @@ const verifyTwoFactor = async (req, res) => {
   }
 };
 
+const NewPatientSignUp = async (req, res) => {
+  const { patient_email, patient_password, ...otherFields } = req.body;
+
+  try {
+      const newPatient = new Patient({
+          patient_email,
+          patient_password,
+          ...otherFields,
+      });
+
+      await newPatient.save();
+      res.status(201).json({ message: 'Patient registered successfully' });
+  } catch (error) {
+      res.status(500).json({ message: 'Error registering patient', error });
+  }
+};
 
 
+const loginPatient = async (req, res) => {
+  const { email, password } = req.body;
 
+  try {
+    const patient = await Patient.findOne({ patient_email: email });
 
+    if (!patient) {
+      return res.status(404).json({ message: 'No patient with that email found' });
+    }
 
+    const isMatch = await bcrypt.compare(password, patient.patient_password);
 
-const NewPatientSignUp = (req, res) => {
-    Patient.create(req.body)
-    .then((newPatient) => {
-        res.json({newPatient: newPatient, status:"Successfully registered Patient."})
-        console.log(newPatient)
-    })
-    .catch((err) => {
-        res.json({ message: 'Something went wrong. Please try again.', error:err})
-        console.log(err)
+    if (!isMatch) {
+      return res.status(401).json({ message: 'Invalid email or password' });
+    }
+
+    // Exclude sensitive information before sending
+    const patientData = {
+      _id: patient._id,
+      patient_email: patient.patient_email,
+      patient_firstName: patient.patient_firstName,
+      patient_lastName: patient.patient_lastName,
+      // Include other necessary fields
+    };
+
+    res.json({
+      message: 'Successfully logged in',
+      patientId: patient._id,
+      patientData: patientData,
     });
-} 
+  } catch (error) {
+    res.status(500).json({ message: 'Error logging in', error });
+  }
+};
 
 const updatePatientStatus = async (req, res) => {
   try {
@@ -198,8 +228,6 @@ const updatePatientStatus = async (req, res) => {
       res.status(400).json({ status: 'error', message: error.message });
   }
 };
-
-
 
 
 const changePatientPassword = async (req, res) => {
@@ -289,48 +317,65 @@ const findAllPatient = (req, res) => {
 //getPatient
 const findPatientById = (req, res) => {
   Patient.findOne({ _id: req.params.uid })
-    .populate({
-      path: 'patient_appointments',
-      populate: [
-        {
+  .populate({
+    path: 'patient_appointments',
+    populate: [
+      {
+        path: 'doctor',
+        model: 'Doctor'
+      },
+      {
+        path: 'laboratoryResults',
+        model: 'Laboratory'
+      },
+      {
+        path: 'prescription',
+        model: 'Prescription',
+        populate: {
           path: 'doctor',
           model: 'Doctor'
-        },
-        {
-          
-          path: 'laboratoryResults',
-          model: 'Laboratory'
-          
-        },
-        {
-          path: 'prescription',
-          model: 'Prescription',
-          populate: 
-          {
-            path: 'doctor',
-            model: 'Doctor'
-          }
-        },
-        {
-          path: 'payment',
-          model: 'Payment'
-        },
-      ]
-    })
-    .populate({
-      path: 'notifications',
-      model: 'Notification'
-    })
-    .populate({
-      path: 'prescriptions',
-      model: 'Prescription'
-    })
-    .populate({
-      path: 'immunizations',
-      model: 'Immunization'
-    })
-    .populate('patient_findings')
-    .populate('laboratoryResults')
+        }
+      },
+      {
+        path: 'payment',
+        model: 'Payment'
+      },
+    ]
+  })
+  .populate({
+    path: 'notifications',
+    model: 'Notification'
+  })
+  .populate({
+    path: 'prescriptions',
+    model: 'Prescription'
+  })
+  .populate({
+    path: 'immunizations',
+    model: 'Immunization',
+    populate :[
+      {
+        path: 'administeredBy',
+        model: 'Doctor'
+      }
+      
+    ]
+  })
+  .populate({
+    path: 'patient_findings',
+    model: 'Findings',
+    populate: [
+      {
+        path: 'doctor',
+        model: 'Doctor'
+      },
+      {
+        path: 'appointment',
+        model: 'Appointment'
+      }
+    ]
+  })
+  .populate('laboratoryResults')
 
 
     .then((thePatient) => {
@@ -437,6 +482,86 @@ const createPatientSession = (req, res) => {
   }
 };
 
+const forgotPassword = async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    // Step 1: Find the patient by email
+    const patient = await Patient.findOne({ patient_email: email });
+
+    if (!patient) {
+      return res.status(404).json({ message: 'No patient with that email found' });
+    }
+
+    // Step 2: Generate a reset token and set the expiry
+    const token = crypto.randomBytes(20).toString('hex');
+    patient.resetPasswordToken = token;
+    patient.resetPasswordExpires = Date.now() + 30 * 60 * 1000; // 30 minutes expiration
+
+    // Step 3: Save the patient with the token and expiry
+    await patient.save();
+
+    // Step 4: Configure nodemailer for sending emails
+    const transporter = nodemailer.createTransport({
+      service: 'Gmail', // You can use other services like 'SendGrid', 'Yahoo', etc.
+      auth: {
+        user: staff_email.user, // Your email address
+        pass: staff_email.pass, // Your email password or app-specific password
+      },
+    });
+
+    // Construct the password reset link
+    // const resetLink = `${req.protocol}://${req.get('host')}/reset-password/${token}`;
+    const resetLink = `http://localhost:3000/reset-password/patient/${token}`;
+    const mailOptions = {
+      to: patient.patient_email,
+      from: staff_email.user,
+      subject: 'Password Reset',
+      text: `You are receiving this because you (or someone else) have requested a password reset for your account.\n\n` +
+            `Please click on the following link, or paste this into your browser to complete the process within 30 minutes:\n\n` +
+            `${resetLink}\n\n` +
+            `If you did not request this, please ignore this email and your password will remain unchanged.\n`,
+    };
+
+
+    await transporter.sendMail(mailOptions);
+
+
+    res.json({ message: `An email has been sent to ${patient.patient_email} with further instructions.` });
+
+  } catch (error) {
+    console.error('Error in forgot password process:', error); // Log the error for debugging
+    res.status(500).json({ message: 'Error in forgot password process', error });
+  }
+};
+
+
+  const resetPassword = async (req, res) => {
+    const { token } = req.params;
+    const { password } = req.body;
+
+    try {
+        const patient = await Patient.findOne({
+            resetPasswordToken: token,
+            resetPasswordExpires: { $gt: Date.now() },
+        });
+
+        if (!patient) {
+            return res.status(400).json({ message: 'Password reset token is invalid or has expired.' });
+        }
+
+        // Update password
+        patient.patient_password = password;
+        patient.resetPasswordToken = undefined;
+        patient.resetPasswordExpires = undefined;
+
+        await patient.save();
+
+        res.json({ message: 'Password has been updated.' });
+    } catch (error) {
+        res.status(500).json({ message: 'Error in resetting password', error });
+    }
+};
 module.exports = {
     NewPatientSignUp,
     findAllPatient,
@@ -453,5 +578,6 @@ module.exports = {
     bookedSlots,
     createUnregisteredPatient,
     updatePatientImage,
-    createPatientSession
+    createPatientSession,
+    forgotPassword, resetPassword, loginPatient
 }

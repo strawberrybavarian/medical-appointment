@@ -8,12 +8,14 @@ import Footer from '../../Footer';
 import DoctorServices from './DoctorServices';
 import { useNavigate } from 'react-router-dom';
 import { ip } from '../../../ContentExport';
+
 function HomePagePatient() {
   const navigate = useNavigate();
   const { patient } = usePatient(); // Get patient data from context
 
   if (!patient) {
-    return navigate('/');
+  
+    navigate("/medapp/login") // Redirect to login page if patient data is not found
   }
 
   const fullName = `${patient.patient_firstName} ${patient.patient_lastName}`;

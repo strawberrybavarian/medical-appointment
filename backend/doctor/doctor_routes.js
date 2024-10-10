@@ -55,6 +55,12 @@ module.exports = app => {
   app.post('/doctor/api/signup', DoctorController.NewDoctorSignUp);
   app.get('/doctor/one/:id', DoctorController.findOneDoctor )
   // For LogIn
+  
+  app.post('/doctor/api/forgot-password', DoctorController.forgotPassword);
+  app.post('/doctor/api/reset-password/:token', DoctorController.resetPassword);
+
+  app.post('/api/doctor/session', DoctorController.createDoctorSession);
+  app.post('/doctor/api/login', DoctorController.loginDoctor);
   app.get('/doctor/api/alldoctor', DoctorController.findAllDoctors);
   app.post('/doctor/api/setup-2fa/:id', DoctorController.setupTwoFactorForDoctor);
   app.post('/doctor/api/verify-2fa', DoctorController.verifyTwoFactor);

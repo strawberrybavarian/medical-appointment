@@ -1,154 +1,243 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { Row, Form, Col, Button, Container } from 'react-bootstrap';
-import './LogIn.css';
+import { Row, Form, Col, Button, Container, Modal, Card } from 'react-bootstrap';
+import './LogIn.css'; // Optional: Add custom styles here
 import NavigationalBar from '../landpage/navbar';
-import { ip } from '../../ContentExport';
-import { usePatient } from '../patient/PatientContext'; // Import the context hook
+import { image, ip } from '../../ContentExport';
+import { usePatient } from '../patient/PatientContext';
+import { useDoctor } from '../practitioner/DoctorContext';
 
 const LogInUser = () => {
-    const navigate = useNavigate();
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [users, setUsers] = useState([]);
-    const [userRole, setUserRole] = useState("Patient");
+  const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [userRole, setUserRole] = useState("Patient");
+  const [rememberMe, setRememberMe] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [modalEmail, setModalEmail] = useState("");
+  const [modalRole, setModalRole] = useState("Patient");
+  const [modalMessage, setModalMessage] = useState("");
 
-    const { setPatient } = usePatient(); // Use the context
+  const { setPatient } = usePatient();
+  const { setDoctor } = useDoctor();
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                let response;
-                if (userRole === "Patient") {
-                    response = await axios.get(`${ip.address}/patient/api/allpatient`);
-                } else if (userRole === "Practitioner") {
-                    response = await axios.get(`${ip.address}/doctor/api/alldoctor`);
-                }
+  const loginuser = async (e) => {
+    e.preventDefault();
 
-                if (response && response.data) {
-                    const userData = response.data.thePatient || response.data.theDoctor;
-                    setUsers(userData);
-                }
-            } catch (err) {
-                console.log(err);
-            }
-        };
-
-        fetchData();
-    }, [userRole]);
-
-    const loginuser = async (e) => {
-        e.preventDefault();
-
-        const user = users.find(user => {
-            if (userRole === "Patient") {
-                return user.patient_email === email;
-            } else if (userRole === "Practitioner") {
-                return user.dr_email === email;
-            }
-            return false;
+    if (userRole === "Patient") {
+      try {
+        const response = await axios.post(`${ip.address}/patient/api/login`, {
+          email,
+          password,
         });
 
-        if (user) {
-            if (userRole === "Practitioner") {
-                if (user.accountStatus === "Review") {
-                    window.alert("Your account is under review and you cannot log in at this time.");
-                    return;
-                }
+        if (response.data.patientData) {
+          const patientData = response.data.patientData;
 
-                if (user.dr_password !== password) {
-                    window.alert("Invalid email or password. Please try again.");
-                    return;
-                }
+          if (rememberMe) {
+            localStorage.setItem('patient', JSON.stringify(patientData));
+          } else {
+            sessionStorage.setItem('patient', JSON.stringify(patientData));
+          }
 
-                const userId = user._id;
-                try {
-                    await axios.put(`${ip.address}/doctor/${userId}/status`, { status: 'Online' });
-                } catch (err) {
-                    console.error('Error updating doctor status:', err);
-                }
+          setPatient(patientData); // Update context with patient data
+          window.alert("Successfully logged in");
 
-                window.alert("Successfully logged in");
-                navigate("/dashboard", { state: { did: userId } });
-
-
-
-            } else if (userRole === "Patient") {
-                const userId = user._id;
-                if (user.patient_password === password) {
-                    setPatient(user); // Store patient data in context
-                    try {
-                        await axios.post(`${ip.address}/api/patient/session`, { userId: user._id, role: userRole });
-                        window.alert("Successfully logged in");
-                        navigate(`/homepage`); // Redirect to patient homepage
-                    } catch (err) {
-                        console.error('Error creating session:', err);
-                        window.alert("An error occurred while logging in.");
-                    }
-                } else {
-                    window.alert("Invalid email or password. Please try again.");
-                }
-            }
+          // Navigate to homepage
+          await axios.post(`${ip.address}/api/patient/session`, { userId: patientData._id, role: userRole });
+          navigate('/homepage');
         } else {
-            window.alert("Invalid email or password. Please try again.");
+          window.alert(response.data.message || "Invalid email or password. Please try again.");
         }
-    };
+      } catch (err) {
+        console.error('Error logging in:', err);
+        window.alert("An error occurred while logging in.");
+      }
+    } else if (userRole === "Physician") {
+      try {
+        const response = await axios.post(`${ip.address}/doctor/api/login`, {
+          email,
+          password,
+        });
 
-    return (
-        <>
-            <NavigationalBar />
-            <div className="align-items-center d-flex vh-100">
-                <Container fluid className="maincontainer d-flex justify-content-center align-items-center">
-                    <div className="container">
-                        <h1>Welcome Back!</h1>
-                        <Form>
-                            <Row className="mb-3">
-                                <Form.Group className="mb-3" controlId="formEmail">
-                                    <Form.Label>Email Address</Form.Label>
-                                    <Form.Control
-                                        type="email"
-                                        placeholder="Enter Email Address"
-                                        value={email}
-                                        onChange={(e) => setEmail(e.target.value)}
-                                    />
-                                </Form.Group>
-                            </Row>
-                            <Row className="align-items right">
-                                <Form.Group className="mb-3" controlId="formPassword">
-                                    <Form.Label>Password</Form.Label>
-                                    <Form.Control
-                                        type="password"
-                                        placeholder="Enter Password"
-                                        value={password}
-                                        onChange={(e) => setPassword(e.target.value)}
-                                    />
-                                </Form.Group>
-                            </Row>
-                            <Row>
-                                <Form.Group as={Col} controlId="formChoose">
-                                    <Form.Label>Choose your role:</Form.Label>
-                                    <Form.Select value={userRole} onChange={(e) => setUserRole(e.target.value)} defaultValue="Choose">
-                                        <option value="Patient">Patient</option>
-                                        <option value="Practitioner">Practitioner</option>
-                                    </Form.Select>
-                                </Form.Group>
-                            </Row>
-                            <Row className="mb-3"></Row>
-                            <div className="justify-content-center">
-                                <Button type="submit" className="mb-2 buttonStyle" onClick={loginuser}>
-                                    Log In
-                                </Button>
-                            </div>
-                            <div className="mb-0">
-                                <a href="/medapp/signup">No account yet? Sign up</a>
-                            </div>
-                        </Form>
+        if (response.data.doctorData) {
+          const doctorData = response.data.doctorData;
+
+          if (rememberMe) {
+            localStorage.setItem('doctor', JSON.stringify(doctorData));
+          } else {
+            sessionStorage.setItem('doctor', JSON.stringify(doctorData));
+          }
+
+          setDoctor(doctorData);
+          window.alert("Successfully logged in");
+
+          await axios.post(`${ip.address}/api/doctor/session`, { userId: doctorData._id, role: userRole });
+          navigate('/dashboard');
+        } else {
+          window.alert(response.data.message || "Invalid email or password. Please try again.");
+        }
+      } catch (err) {
+        console.error('Error logging in:', err);
+        window.alert("An error occurred while logging in.");
+      }
+    }
+  };
+
+  const handleForgotPassword = async (e) => {
+    e.preventDefault();
+
+    if (modalRole === "Patient") {
+      try {
+        const response = await axios.post(`${ip.address}/patient/api/forgot-password`, { email: modalEmail });
+        setModalMessage(response.data.message);
+      } catch (err) {
+        console.error('Error in forgot password:', err);
+        setModalMessage(err.response?.data?.message || 'An error occurred.');
+      }
+    } else if (modalRole === "Physician") {
+      try {
+        const response = await axios.post(`${ip.address}/doctor/api/forgot-password`, { email: modalEmail });
+        setModalMessage(response.data.message);
+      } catch (err) {
+        console.error('Error in forgot password:', err);
+        setModalMessage(err.response?.data?.message || 'An error occurred.');
+      }
+    }
+  };
+
+  return (
+    <>
+      <NavigationalBar />
+      <div
+        className="login-background"
+        style={{
+        //   backgroundImage: `url(${ip.address}/images/Background-Login.png)`, // Dynamically load the image URL
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+      >
+        <div className="login-background">
+
+
+        <div className="login-overlay"></div>
+        <div className="login-page">
+            <Container>
+            <Row className="justify-content-center">
+                <Col md={6} lg={5}>
+                <Card className="shadow p-4">
+                    <Card.Body>
+                    <div className="text-center">
+                        <img src={image.logo}
+                            style={{ 
+                                width: '11rem',
+                                height: '5.5rem', 
+
+
+                            }}
+                        />
+                        
                     </div>
-                </Container>
-            </div>
-        </>
-    );
+                    <p style={{fontWeight:'100', fontSize:'1.5rem'}} className="mb-4">Log in</p>
+                    <Form onSubmit={loginuser}>
+                        <Form.Group controlId="formEmail">
+                        <Form.Label>Email Address</Form.Label>
+                        <Form.Control
+                            type="email"
+                            placeholder="Enter Email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            required
+                        />
+                        </Form.Group>
+                        <Form.Group controlId="formPassword" className="mt-3">
+                        <Form.Label>Password</Form.Label>
+                        <Form.Control
+                            type="password"
+                            placeholder="Enter Password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
+                        />
+                        </Form.Group>
+                        <Form.Group className="mt-3">
+                        <Form.Label>Select Role</Form.Label>
+                        <Form.Select
+                            value={userRole}
+                            onChange={(e) => setUserRole(e.target.value)}
+                        >
+                            <option value="Patient">Patient</option>
+                            <option value="Physician">Physician</option>
+                        </Form.Select>
+                        </Form.Group>
+                        <Form.Group className="mt-3 d-flex justify-content-between align-items-center">
+                        <Form.Check
+                            type="checkbox"
+                            label="Remember Me"
+                            checked={rememberMe}
+                            onChange={(e) => setRememberMe(e.target.checked)}
+                        />
+                        <a href="#" onClick={() => setShowModal(true)} className="text-primary">
+                            Forgot Password?
+                        </a>
+                        </Form.Group>
+                        <Button type="submit" variant="primary" className="w-100 mt-4">
+                        Log In
+                        </Button>
+                    </Form>
+                    <p className="text-center mt-3">
+                        Not a member? <a href="/medapp/signup" className="text-primary">Sign up</a>
+                    </p>
+                    </Card.Body>
+                </Card>
+                </Col>
+            </Row>
+            </Container>
+        </div>
+        </div>
+
+      </div>
+
+      {/* Forgot Password Modal */}
+      <Modal show={showModal} onHide={() => setShowModal(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Forgot Password</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {modalMessage ? (
+            <p>{modalMessage}</p>
+          ) : (
+            <Form onSubmit={handleForgotPassword}>
+              <Form.Group controlId="formModalEmail">
+                <Form.Label>Email Address</Form.Label>
+                <Form.Control
+                  type="email"
+                  placeholder="Enter Email Address"
+                  value={modalEmail}
+                  onChange={(e) => setModalEmail(e.target.value)}
+                  required
+                />
+              </Form.Group>
+              <Form.Group controlId="formModalRole" className="mt-3">
+                <Form.Label>Select Role</Form.Label>
+                <Form.Select
+                  value={modalRole}
+                  onChange={(e) => setModalRole(e.target.value)}
+                >
+                  <option value="Patient">Patient</option>
+                  <option value="Physician">Physician</option>
+                </Form.Select>
+              </Form.Group>
+              <Button type="submit" variant="primary" className="mt-3">
+                Submit
+              </Button>
+            </Form>
+          )}
+        </Modal.Body>
+      </Modal>
+    </>
+  );
 };
 
 export default LogInUser;

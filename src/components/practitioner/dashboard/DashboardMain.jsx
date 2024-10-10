@@ -9,22 +9,26 @@ import "./Dashboard.css";
 import DoctorNavbar from "../navbar/DoctorNavbar";
 import Footer from "../../Footer";
 import { ip } from "../../../ContentExport";
+import { useDoctor } from "../DoctorContext";
+
 function DashboardMain() {
   const location = useLocation();
-  const { did } = location.state || {};  // Get 'did' from the state passed via navigation
+  // const { did } = location.state || {}; 
+  const {doctor} = useDoctor();
+  const did = doctor._id;
+   // Get 'did' from the state passed via navigation
   const [doctorData, setDoctorData] = useState({
     id: "",
     name: "",
     image: "images/014ef2f860e8e56b27d4a3267e0a193a.jpg",
   });
   const navigate = useNavigate();
-
+  if (!did) {
+  
+    navigate("/medapp/login") // Redirect to login page if patient data is not found
+  }
   useEffect(() => {
-    if (!did) {
-      // If no 'did' is found in state, redirect back or handle error
-      navigate('/');
-      return;
-    }
+
 
     axios.get(`${ip.address}/doctor/api/finduser/${did}`)
       .then((res) => {

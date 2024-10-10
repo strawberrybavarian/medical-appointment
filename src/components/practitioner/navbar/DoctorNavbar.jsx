@@ -42,9 +42,7 @@ function DoctorNavbar({doctor_image, did}) {
                 <Container fluid>
                            
                             <img className="molino-logo" src={image.logo} alt="Logo" />
-                            <div className='msn-container'>    
-                                <h6>Molino Polyclinic</h6>
-                            </div>
+                           
                            
          
            

@@ -7,12 +7,12 @@ const Immunization = ({ immunizations }) => {
     const sortedImmunizations = [...immunizations].sort(
         (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
     );
-
+    
     return (
         <Container>
             <h1 className="my-4">Immunization Records</h1>
             {sortedImmunizations.length > 0 ? (
-                <Table responsive striped  variant="light" className="mt-3">
+                <Table responsive striped variant="light" className="mt-3">
                     <thead>
                         <tr>
                             <th>Date Administered</th>
@@ -27,19 +27,26 @@ const Immunization = ({ immunizations }) => {
                         </tr>
                     </thead>
                     <tbody>
-                        {sortedImmunizations.map((immunization, index) => (
-                            <tr key={immunization._id}>
-                                <td>{moment(immunization.dateAdministered).format('MMMM DD, YYYY')}</td>
-                                <td>{immunization.vaccineName}</td>
-                                <td>{immunization.administeredBy}</td>
-                                <td>{immunization.dose}</td>
-                                <td>{immunization.route}</td>
-                                <td>{immunization.site}</td>
-                                <td>{immunization.lotNumber}</td>
-                                <td>{moment(immunization.expirationDate).format('MMMM DD, YYYY')}</td>
-                                <td>{immunization.remarks || 'No remarks available'}</td>
-                            </tr>
-                        ))}
+                        {sortedImmunizations.map((immunization) => {
+                            // Check if doctor details are available
+                            const doctorFullname = immunization.administeredBy
+                                ? `${immunization.administeredBy.dr_firstName} ${immunization.administeredBy.dr_lastName}`
+                                : 'Doctor not available';
+
+                            return (
+                                <tr key={immunization._id}>
+                                    <td>{moment(immunization.dateAdministered).format('MMMM DD, YYYY')}</td>
+                                    <td>{immunization.vaccineName}</td>
+                                    <td>{doctorFullname}</td>
+                                    <td>{immunization.dose || immunization.doseNumber}</td>
+                                    <td>{immunization.route || immunization.routeOfAdministration}</td>
+                                    <td>{immunization.site || immunization.siteOfAdministration}</td>
+                                    <td>{immunization.lotNumber || 'N/A'}</td>
+                                    <td>{moment(immunization.expirationDate).format('MMMM DD, YYYY')}</td>
+                                    <td>{immunization.remarks || immunization.notes || 'No remarks available'}</td>
+                                </tr>
+                            );
+                        })}
                     </tbody>
                 </Table>
             ) : (
