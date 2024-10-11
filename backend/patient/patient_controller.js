@@ -486,32 +486,35 @@ const forgotPassword = async (req, res) => {
   const { email } = req.body;
 
   try {
-    // Step 1: Find the patient by email
     const patient = await Patient.findOne({ patient_email: email });
 
     if (!patient) {
       return res.status(404).json({ message: 'No patient with that email found' });
     }
 
-    // Step 2: Generate a reset token and set the expiry
     const token = crypto.randomBytes(20).toString('hex');
     patient.resetPasswordToken = token;
-    patient.resetPasswordExpires = Date.now() + 30 * 60 * 1000; // 30 minutes expiration
+    patient.resetPasswordExpires = Date.now() + 30 * 60 * 1000;
 
-    // Step 3: Save the patient with the token and expiry
     await patient.save();
 
-    // Step 4: Configure nodemailer for sending emails
     const transporter = nodemailer.createTransport({
-      service: 'Gmail', // You can use other services like 'SendGrid', 'Yahoo', etc.
+      service: 'Gmail',
       auth: {
-        user: staff_email.user, // Your email address
-        pass: staff_email.pass, // Your email password or app-specific password
+        user: staff_email.user,
+        pass: staff_email.pass,
       },
     });
 
-    // Construct the password reset link
-    // const resetLink = `${req.protocol}://${req.get('host')}/reset-password/${token}`;
+    // Verify connection configuration
+    transporter.verify(function (error, success) {
+      if (error) {
+        console.log("SMTP configuration error:", error);
+      } else {
+        console.log("Server is ready to send messages:", success);
+      }
+    });
+
     const resetLink = `http://localhost:3000/reset-password/patient/${token}`;
     const mailOptions = {
       to: patient.patient_email,
@@ -523,17 +526,21 @@ const forgotPassword = async (req, res) => {
             `If you did not request this, please ignore this email and your password will remain unchanged.\n`,
     };
 
-
-    await transporter.sendMail(mailOptions);
-
-
-    res.json({ message: `An email has been sent to ${patient.patient_email} with further instructions.` });
-
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.log('Error sending email:', error);
+        return res.status(500).json({ message: 'Error sending email', error });
+      } else {
+        console.log('Email sent:', info.response);
+        return res.json({ message: `An email has been sent to ${patient.patient_email} with further instructions.` });
+      }
+    });
   } catch (error) {
-    console.error('Error in forgot password process:', error); // Log the error for debugging
+    console.error('Error in forgot password process:', error);
     res.status(500).json({ message: 'Error in forgot password process', error });
   }
 };
+
 
 
   const resetPassword = async (req, res) => {
