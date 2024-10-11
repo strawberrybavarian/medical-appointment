@@ -4,6 +4,7 @@ import ReactQuill from "react-quill";
 import 'react-quill/dist/quill.snow.css';
 import axios from "axios";
 import ImageNewsUpload from "./ImageNewsUpload";
+import { ip } from "../../../ContentExport";
 
 function EditNewsModal({ 
     show,
@@ -45,7 +46,7 @@ function EditNewsModal({
   
     try {
       const response = await axios.put(
-        `http://localhost:8000/news/api/updatenews/${userId}/${newsId}`, // Correct URL format
+        `${ip.address}/news/api/updatenews/${userId}/${newsId}`, // Correct URL format
         formData,
         { headers: { "Content-Type": "multipart/form-data" } }
       );

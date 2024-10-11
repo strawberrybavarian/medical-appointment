@@ -2,6 +2,8 @@ import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { Button, Card, Collapse, Container, Table } from 'react-bootstrap';
 import moment from 'moment';
+import { ip } from "../../../../ContentExport";
+
 const LaboratoryHistory = ({ pid }) => {
     const [theLaboratory, setLaboratory] = useState([]);
     const [error, setError] = useState(null);
@@ -12,7 +14,7 @@ const LaboratoryHistory = ({ pid }) => {
     );
 
     useEffect(() => {
-        axios.get(`http://localhost:8000/patient/api/onepatient/${pid}`)
+        axios.get(`${ip.address}/patient/api/onepatient/${pid}`)
             .then((res) => {
                 console.log(res.data.thePatient.laboratoryResults);  // Log the entire response to understand its structure
                 if (res.data && res.data.thePatient && Array.isArray(res.data.thePatient.laboratoryResults)) {
@@ -38,13 +40,13 @@ const LaboratoryHistory = ({ pid }) => {
     };
 
     const handleViewPDF = (filePath) => {
-        const fullUrl = `http://localhost:8000${filePath}`;
+        const fullUrl = `${ip.address}${filePath}`;
         window.open(fullUrl, '_blank');  // Open PDF in new tab
     };
     
     const handleDownload = async (filePath, fileName) => {
         try {
-            const fullUrl = `http://localhost:8000${filePath}`;
+            const fullUrl = `${ip.address}${filePath}`;
             console.log(`Attempting to download from URL: ${fullUrl}`);
     
             const response = await axios.get(fullUrl, {

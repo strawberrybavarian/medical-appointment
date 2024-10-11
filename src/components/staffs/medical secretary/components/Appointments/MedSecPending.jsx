@@ -6,7 +6,7 @@ import AssignAppointmentModal from './AssignAppointmentModal';
 import './Styles.css';
 import { ThreeDots } from 'react-bootstrap-icons';
 import RescheduleModal from "../../../../practitioner/appointment/Reschedule Modal/RescheduleModal";
-
+import { ip } from "../../../../../ContentExport";
 
 const MedSecPending = ({ allAppointments, setAllAppointments }) => {
   const { did } = useParams();
@@ -31,7 +31,7 @@ const MedSecPending = ({ allAppointments, setAllAppointments }) => {
         status: 'Rescheduled'
       };
       
-      axios.put(`http://localhost:8000/doctor/${selectedAppointment._id}/rescheduledstatus`, newStatus)
+      axios.put(`${ip.address}/doctor/${selectedAppointment._id}/rescheduledstatus`, newStatus)
         .then(() => {
           // Update the state of appointments in real-time
           setAllAppointments(prevAppointments =>
@@ -71,7 +71,7 @@ const convertTo12HourFormat = (time) => {
 
 
   useEffect(() => {
-    axios.get(`http://localhost:8000/doctor/api/alldoctor`)
+    axios.get(`${ip.address}/doctor/api/alldoctor`)
       .then((result) => {
         setAllDoctors(result.data.theDoctor);
       })
@@ -148,7 +148,7 @@ const convertTo12HourFormat = (time) => {
       time: selectedTime,
     };
   
-    axios.put(`http://localhost:8000/api/appointment/${selectedAppointment._id}/assign`, updatedAppointment)
+    axios.put(`${ip.address}/api/appointment/${selectedAppointment._id}/assign`, updatedAppointment)
       .then(() => {
         setAllAppointments(prevAppointments =>
           prevAppointments.map(appointment =>
@@ -165,7 +165,7 @@ const convertTo12HourFormat = (time) => {
   };
 
   const handleUpdateStatus = (appointmentId, newStatus) => {
-    axios.put(`http://localhost:8000/appointments/${appointmentId}/status`, { status: newStatus })
+    axios.put(`${ip.address}/appointments/${appointmentId}/status`, { status: newStatus })
       .then((response) => {
         setAllAppointments(prevAppointments =>
           prevAppointments.map(appointment =>

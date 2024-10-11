@@ -2,6 +2,7 @@ import axios from "axios";
 import { useState, useEffect } from "react";
 import { Row, Col, Button, Form, Modal } from 'react-bootstrap';
 import Select from 'react-select';
+import { ip } from "../../../../../ContentExport";
 
 function AssignAppointmentModal({ show, handleClose, appointmentId }) {
     const [doctors, setDoctors] = useState([]);
@@ -17,7 +18,7 @@ function AssignAppointmentModal({ show, handleClose, appointmentId }) {
 
     // Fetch all doctors
     useEffect(() => {
-        axios.get(`http://localhost:8000/doctor/api/alldoctor`)
+        axios.get(`${ip.address}/doctor/api/alldoctor`)
             .then((response) => {
                 const doctorOptions = response.data.theDoctor.map((doctor) => ({
                     value: doctor._id,
@@ -33,7 +34,7 @@ function AssignAppointmentModal({ show, handleClose, appointmentId }) {
     // Fetch doctor's availability and services based on the selected doctor
     useEffect(() => {
         if (selectedDoctor) {
-            axios.get(`http://localhost:8000/doctor/${selectedDoctor.value}`)
+            axios.get(`${ip.address}/doctor/${selectedDoctor.value}`)
                 .then((response) => {
                     const doctor = response.data.doctor;
                     setDoctorName(`${doctor.dr_firstName} ${doctor.dr_middleInitial}. ${doctor.dr_lastName}`);
@@ -45,7 +46,7 @@ function AssignAppointmentModal({ show, handleClose, appointmentId }) {
                 });
         } else {
             // Fetch all services if no doctor is selected
-            axios.get(`http://localhost:8000/admin/getall/services`)
+            axios.get(`${ip.address}/admin/getall/services`)
                 .then((response) => {
                     setServices(response.data); // Fetch all available services
                 })
@@ -131,7 +132,7 @@ function AssignAppointmentModal({ show, handleClose, appointmentId }) {
 
         console.log('FormData being sent:', formData);  // Check the form data being sent
 
-        axios.put(`http://localhost:8000/appointments/${appointmentId}/assign`, formData)
+        axios.put(`${ip.address}/appointments/${appointmentId}/assign`, formData)
             .then(() => {
                 window.alert("Appointment updated successfully!");
                 window.location.reload();

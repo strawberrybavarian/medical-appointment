@@ -6,6 +6,7 @@ import CashierNavbar from '../navbar/CashierNavbar';
 import UnpaidPatient from '../Queries/UnpaidPatient';
 import InexactPatient from '../Queries/InexactPatient';
 import './Styles.css';
+import { ip } from '../../../../ContentExport';
 
 function CashierMain() {
   const [allappointments, setallappointments] = useState([]);
@@ -13,7 +14,7 @@ function CashierMain() {
 
   
   useEffect(() => {
-    axios.get(`http://localhost:8000/medicalsecretary/api/allappointments`)
+    axios.get(`${ip.address}/medicalsecretary/api/allappointments`)
       .then((result) => {
         console.log(result.data.Appointments); // Log the data to inspect it
         setallappointments(result.data.Appointments);

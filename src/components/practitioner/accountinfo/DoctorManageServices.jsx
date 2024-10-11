@@ -1,7 +1,7 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { Button, ListGroup } from "react-bootstrap";
-
+import { ip } from "../../../ContentExport";
 function DoctorManageServices({ doctorId }) {
     const [availableServices, setAvailableServices] = useState([]);
     const [doctorServices, setDoctorServices] = useState([]);
@@ -13,7 +13,7 @@ function DoctorManageServices({ doctorId }) {
     // Fetch all services and the doctor's current services
     useEffect(() => {
         // Fetch all services
-        axios.get('http://localhost:8000/admin/getall/services')
+        axios.get('${ip.address}/admin/getall/services')
             .then((res) => {
                 setAvailableServices(res.data);
             })
@@ -22,7 +22,7 @@ function DoctorManageServices({ doctorId }) {
             });
 
         // Fetch the doctor's current services
-        axios.get(`http://localhost:8000/doctor/${doctorId}/services-status`)
+        axios.get(`${ip.address}/doctor/${doctorId}/services-status`)
             .then((res) => {
                 console.log("Doctor services response:", res.data);
                 if (res.data && res.data.dr_services) {
@@ -44,7 +44,7 @@ function DoctorManageServices({ doctorId }) {
 
     // Add a service to the doctor
     const addService = (serviceId) => {
-        axios.post(`http://localhost:8000/doctor/${doctorId}/add-service/${serviceId}`)
+        axios.post(`${ip.address}/doctor/${doctorId}/add-service/${serviceId}`)
             .then((res) => {
                 if (res.data && res.data.dr_services) {
                     setDoctorServices(res.data.dr_services);  // Set the updated list of services
@@ -58,7 +58,7 @@ function DoctorManageServices({ doctorId }) {
 
     // Remove a service from the doctor
     const removeService = (serviceId) => {
-        axios.delete(`http://localhost:8000/doctor/${doctorId}/remove-service/${serviceId}`)
+        axios.delete(`${ip.address}/doctor/${doctorId}/remove-service/${serviceId}`)
             .then((res) => {
                 if (res.data && res.data.dr_services) {
                     setDoctorServices(res.data.dr_services);  // Set the updated list of services

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Form, Button, Row, Col } from 'react-bootstrap';
 import DeactivationModal from './modal/DeactivationModal';
-
+import { ip } from '../../../ContentExport';
 
 const initialTimeSlot = { startTime: '', endTime: '', interval: 30, available: false };
 
@@ -22,7 +22,7 @@ function DoctorAvailability({ doctorId }) {
     const [showModal, setShowModal] = useState(false); // To control modal visibility
 
     useEffect(() => {
-        axios.get(`http://localhost:8000/doctor/${doctorId}/available`)
+        axios.get(`${ip.address}/doctor/${doctorId}/available`)
             .then(res => {
                 const { availability, activeAppointmentStatus } = res.data;
                 setAvailability(availability || initialAvailability); // Set default if undefined
@@ -58,7 +58,7 @@ function DoctorAvailability({ doctorId }) {
     };
 
     const handleSubmit = () => {
-        axios.put(`http://localhost:8000/doctor/${doctorId}/availability`, { availability })
+        axios.put(`${ip.address}/doctor/${doctorId}/availability`, { availability })
             .then(res => {
                 alert('Availability updated successfully');
             })
@@ -70,7 +70,7 @@ function DoctorAvailability({ doctorId }) {
             setShowModal(true); // Show modal for deactivation
         } else {
             axios
-                .put(`http://localhost:8000/doctor/${doctorId}/appointmentstatus`, {
+                .put(`${ip.address}/doctor/${doctorId}/appointmentstatus`, {
                     activeAppointmentStatus: !activeAppointmentStatus
                 })
                 .then((res) => {
@@ -82,7 +82,7 @@ function DoctorAvailability({ doctorId }) {
 
     const handleModalConfirm = (reason) => {
         axios
-            .post(`http://localhost:8000/doctor/${doctorId}/request-deactivation`, { reason })
+            .post(`${ip.address}/doctor/${doctorId}/request-deactivation`, { reason })
             .then((res) => {
                 setShowModal(false);
                 alert('Deactivation request sent. Awaiting confirmation.');

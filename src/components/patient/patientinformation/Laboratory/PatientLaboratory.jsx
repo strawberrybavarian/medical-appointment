@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Card, Collapse, Button, Container } from 'react-bootstrap';
 import moment from 'moment';
 import axios from 'axios';
-
+import { ip } from '../../../../ContentExport';
 const PatientLaboratory = ({ laboratoryResults }) => {
     const [openRecords, setOpenRecords] = useState({});
 
@@ -19,7 +19,7 @@ const PatientLaboratory = ({ laboratoryResults }) => {
         }));
     };
     const handleViewPDF = (filePath) => {
-        const fullUrl = `http://localhost:8000${filePath}`;
+        const fullUrl = `${ip.address}/${filePath}`;
         window.open(fullUrl, '_blank');  // Open PDF in new tab
     };
     
@@ -28,7 +28,7 @@ const PatientLaboratory = ({ laboratoryResults }) => {
     // Handle file download
     const handleDownload = async (filePath, fileName) => {
         try {
-            const fullUrl = `http://localhost:8000${filePath}`;
+            const fullUrl = `${ip.address}/${filePath}`;
             console.log(`Attempting to download from URL: ${fullUrl}`);
     
             const response = await axios.get(fullUrl, {

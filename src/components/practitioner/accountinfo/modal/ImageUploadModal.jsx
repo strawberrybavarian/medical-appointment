@@ -4,7 +4,7 @@ import axios from 'axios';
 import { Button, Form, Col } from "react-bootstrap";
 import './UploadImageModal.css';
 import CropResizeTiltModal from './CropResizeTiltModal'; // Import the CropResizeTiltModal
-
+import { ip } from '../../../../ContentExport';
 const ImageUploadModal = ({ isOpen, onRequestClose, did }) => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [imageSrc, setImageSrc] = useState(null); // For previewing the selected image
@@ -48,7 +48,7 @@ const ImageUploadModal = ({ isOpen, onRequestClose, did }) => {
     }
 
     try {
-      const response = await axios.post(`http://localhost:8000/doctor/api/${did}/updateimage`, formData, {
+      const response = await axios.post(`${ip.address}/doctor/api/${did}/updateimage`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },

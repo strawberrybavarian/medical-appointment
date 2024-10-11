@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Modal, Button, Form } from 'react-bootstrap';
 import axios from 'axios';
-
+import { ip } from '../../../../../../ContentExport';
 const UploadLabResultModal = ({ show, handleClose, patientId, appointmentId, onSuccess }) => {
   const [formData, setFormData] = useState({
     file: null,
@@ -39,7 +39,7 @@ const UploadLabResultModal = ({ show, handleClose, patientId, appointmentId, onS
     labData.append('testResults', JSON.stringify([]));
 
     try {
-      await axios.post(`http://localhost:8000/doctor/api/createLaboratoryResult/${patientId}/${appointmentId}`, labData, {
+      await axios.post(`${ip.address}/doctor/api/createLaboratoryResult/${patientId}/${appointmentId}`, labData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },

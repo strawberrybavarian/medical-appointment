@@ -2,6 +2,7 @@ import { Modal, Button, Form, Row, Col } from 'react-bootstrap';
 import { useState } from 'react';
 import axios from 'axios';
 import './PrescriptionStyle.css'
+import { ip } from '../../../../ContentExport';
 function PrescriptionModal({ show, handleClose, patientId, appointmentId, doctorId }) {
     
     
@@ -33,7 +34,7 @@ function PrescriptionModal({ show, handleClose, patientId, appointmentId, doctor
                 medications
             };
 
-            await axios.post(`http://localhost:8000/doctor/api/createPrescription/${patientId}/${appointmentId}`, prescriptionData);
+            await axios.post(`${ip.address}/doctor/api/createPrescription/${patientId}/${appointmentId}`, prescriptionData);
             window.alert("Prescription created successfully!");
             handleClose();
         } catch (err) {

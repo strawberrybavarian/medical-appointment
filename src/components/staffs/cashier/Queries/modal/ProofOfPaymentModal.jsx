@@ -1,6 +1,7 @@
 import React from "react";
 import { Modal, Button } from "react-bootstrap";
 import './Styles.css'
+import { ip } from "../../../../../ContentExport";
 function ProofOfPaymentModal({ show, handleClose, patientName, proofOfPayment }) {
     return (
       <>
@@ -12,7 +13,7 @@ function ProofOfPaymentModal({ show, handleClose, patientName, proofOfPayment })
           <Modal.Body>
             {proofOfPayment ? (
               <img
-                src={`http://localhost:8000/${proofOfPayment}`} // Assuming images are served from the root directory
+                src={`${ip.address}/${proofOfPayment}`} // Assuming images are served from the root directory
                 alt="Proof of Payment"
                 style={{ width: "100%", height: "auto" }}
               />

@@ -3,8 +3,8 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Card, Container, Row, Col } from "react-bootstrap";
 import axios from "axios";
 import './Styles.css'; // Import the CSS styles
+import { ip } from "../../../../../ContentExport";
 const defaultImage = "images/014ef2f860e8e56b27d4a3267e0a193a.jpg";
-
 function DoctorCards({msid}) {
   const [doctors, setDoctors] = useState([]);
   const navigate = useNavigate();
@@ -15,7 +15,7 @@ function DoctorCards({msid}) {
 
 
   useEffect(() => {
-    axios.get("http://localhost:8000/doctor/api/alldoctor")
+    axios.get(`${ip.address}/doctor/api/alldoctor`)
       .then(res => {
         setDoctors(res.data.theDoctor);
       })
@@ -62,7 +62,7 @@ function DoctorCards({msid}) {
                 <div className="cd-containergrid p-0">
                   {inSessionDoctors.map(doctor => (
                     <Card className="cd-card" key={doctor._id} onClick={() => handleDoctorClick(doctor._id)}>
-                      <Card.Img variant="top" src={`http://localhost:8000/${doctor.dr_image || defaultImage}`} />
+                      <Card.Img variant="top" src={`${ip.address}/${doctor.dr_image || defaultImage}`} />
                       <Card.Body>
                         <Card.Title style={{ textAlign: "center" }}>
                           {doctor.dr_firstName} {doctor.dr_middleInitial}. {doctor.dr_lastName}
@@ -86,7 +86,7 @@ function DoctorCards({msid}) {
                   {onlineDoctors.map(doctor => (
                     <Col key={doctor._id}>
                       <Card className="doctor-card" onClick={() => handleDoctorClick(doctor._id)}>
-                        <Card.Img variant="top" src={`http://localhost:8000/${doctor.dr_image || defaultImage}`} />
+                        <Card.Img variant="top" src={`${ip.address}/${doctor.dr_image || defaultImage}`} />
                         <Card.Body>
                           <Card.Title className="text-center">
                             {doctor.dr_firstName} {doctor.dr_middleInitial}. {doctor.dr_lastName}
@@ -111,7 +111,7 @@ function DoctorCards({msid}) {
                   {offlineDoctors.map(doctor => (
                     <Col key={doctor._id}>
                       <Card className="doctor-card" onClick={() => handleDoctorClick(doctor._id)}>
-                        <Card.Img variant="top" src={`http://localhost:8000/${doctor.dr_image || defaultImage}`} />
+                        <Card.Img variant="top" src={`${ip.address}/${doctor.dr_image || defaultImage}`} />
                         <Card.Body>
                           <Card.Title className="text-center">
                             {doctor.dr_firstName} {doctor.dr_middleInitial}. {doctor.dr_lastName}

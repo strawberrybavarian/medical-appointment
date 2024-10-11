@@ -71,7 +71,7 @@ function DoctorNavbar({doctor_image, did}) {
                                             
                                         </div>
                                         <img
-                                            src={ doctor_image ? `http://localhost:8000/${doctor_image}` : defaultImage}
+                                            src={ doctor_image ? `${ip.address}/${doctor_image}` : defaultImage}
                                             alt="Profile"
                                             className="profile-image ms-3"
                                             style={{objectFit: 'cover'}}

@@ -5,13 +5,15 @@ import './DoctorSpecialty.css';
 import OBGYNE from './images/ObstetricsAndGynecology.png';
 import PEDIATRICS from './images/Pedia.png';
 import { Container } from "react-bootstrap";
+import { ip } from "../../../ContentExport";
+
 function DoctorSpecialty({ pid, did }) {
     const [specialties, setSpecialties] = useState([]);
     const navigate = useNavigate();
     console.log(`hello`, pid, did);
 
     useEffect(() => {
-        axios.get('http://localhost:8000/doctor/api/specialties')
+        axios.get(`${ip.address}/doctor/api/specialties`)
             .then((res) => {
                 setSpecialties(res.data.specialties);
             })

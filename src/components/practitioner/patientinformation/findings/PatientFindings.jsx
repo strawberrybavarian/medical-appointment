@@ -4,6 +4,7 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import './PatientFindings.css'; 
 import PatientHistory from "./PatientHistory";
+import { ip } from "../../../../ContentExport";
 function PatientFindings({ patientId, appointmentId, doctorId }) {
     const [fname, setFname] = useState('');
     const [lname, setLname] = useState('');
@@ -45,7 +46,7 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
 
     const navigate = useNavigate();
     useEffect(() => {
-        axios.get(`http://localhost:8000/appointments/${appointmentId}`)
+        axios.get(`${ip.address}/appointments/${appointmentId}`)
             .then((res) => {                        
                 setReason(res.data.reason);
             })
@@ -60,19 +61,19 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
         const fetchPatientAndFindings = async () => {
             setLoading(true);
             try {
-                const patientRes = await axios.get(`http://localhost:8000/patient/api/onepatient/${patientId}`);
+                const patientRes = await axios.get(`${ip.address}/patient/api/onepatient/${patientId}`);
                 setFname(patientRes.data.thePatient.patient_firstName);
                 setLname(patientRes.data.thePatient.patient_lastName);
                 setAge(patientRes.data.thePatient.patient_age);
                 setEmail(patientRes.data.thePatient.patient_email);
     
-                const findingsRes = await axios.get(`http://localhost:8000/getfindings/${appointmentId}`);
+                const findingsRes = await axios.get(`${ip.address}/getfindings/${appointmentId}`);
     
                 if (findingsRes.data && findingsRes.data.findings) {
                     setFindings(findingsRes.data.findings);
                 }
 
-                const appointmnetRes = await axios.get(`http://localhost:8000/appointments/${appointmentId}`);
+                const appointmnetRes = await axios.get(`${ip.address}/appointments/${appointmentId}`);
 
                 if (appointmnetRes.data && appointmnetRes.data.appointment) { 
                    
@@ -176,7 +177,7 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
         
     
         try {
-            await axios.post('http://localhost:8000/createfindings', {
+            await axios.post('${ip.address}/createfindings', {
                 ...findings,
                 skinCondition: updatedSkinConditions,
                 allergy: updatedAllergies,

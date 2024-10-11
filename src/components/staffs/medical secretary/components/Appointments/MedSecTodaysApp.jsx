@@ -4,6 +4,7 @@ import axios from 'axios';
 import RescheduleModal from '../../../../practitioner/appointment/Reschedule Modal/RescheduleModal';
 import { Link } from 'react-router-dom';
 import { ThreeDots } from 'react-bootstrap-icons';
+import { ip } from '../../../../../ContentExport';
 function MedSecTodaysApp({ allAppointments, setAllAppointments }) {
   const [currentPage, setCurrentPage] = useState(1);
   const [entriesPerPage, setEntriesPerPage] = useState(5);
@@ -16,7 +17,7 @@ function MedSecTodaysApp({ allAppointments, setAllAppointments }) {
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [error, setError] = useState("");
   useEffect(() => {
-    axios.get(`http://localhost:8000/doctor/api/alldoctor`)
+    axios.get(`${ip.address}/doctor/api/alldoctor`)
       .then((result) => {
         setalldoctors(result.data.theDoctor);
       })
@@ -30,7 +31,7 @@ function MedSecTodaysApp({ allAppointments, setAllAppointments }) {
       rescheduledReason: rescheduledReason,
       status: 'Rescheduled'
     };
-    axios.put(`http://localhost:8000/doctor/${selectedAppointment._id}/rescheduledstatus`, newStatus)
+    axios.put(`${ip.address}/doctor/${selectedAppointment._id}/rescheduledstatus`, newStatus)
       .then(() => {
         setAllAppointments(prevAppointments =>
           prevAppointments.map(appointment =>
@@ -55,7 +56,7 @@ function MedSecTodaysApp({ allAppointments, setAllAppointments }) {
   const todayDate = getTodayDate();
 
   const handleUpdateStatus = (appointmentId, newStatus) => {
-    axios.put(`http://localhost:8000/appointments/${appointmentId}/status`, { status: newStatus })
+    axios.put(`${ip.address}/appointments/${appointmentId}/status`, { status: newStatus })
       .then((response) => {
         setAllAppointments(prevAppointments =>
           prevAppointments.map(appointment =>

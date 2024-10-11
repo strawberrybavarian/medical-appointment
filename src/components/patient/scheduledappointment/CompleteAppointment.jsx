@@ -92,9 +92,7 @@ function CompleteAppointment({appointments, setAppointments}) {
                 </p>
             </div>
             <Container className="d-flex justify-content-start">
-                {/* <div>
-                    <img src={`http://localhost:8000/${doctorImage}`} alt="Doctor" className='app-image' />
-                </div> */}
+
                 <div className='pa-cont1'>
                     {appointment?.doctor ? (
                         <>

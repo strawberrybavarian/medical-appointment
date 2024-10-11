@@ -7,8 +7,8 @@ import PatientNavBar from "../PatientNavBar/PatientNavBar";
 import { usePatient } from "../PatientContext";
 import { Helmet } from "react-helmet";
 import Footer from "../../Footer";
+import { ip } from "../../../ContentExport";
 const defaultImage = "images/014ef2f860e8e56b27d4a3267e0a193a.jpg";
-
 function ChooseDoctor() {
     const [doctors, setDoctors] = useState([]);
     const [filteredDoctors, setFilteredDoctors] = useState([]);
@@ -29,7 +29,7 @@ function ChooseDoctor() {
 
     // Fetch all doctors and populate specializations
     useEffect(() => {
-        axios.get(`http://localhost:8000/doctor/api/alldoctor`)
+        axios.get(`${ip.address}/doctor/api/alldoctor`)
             .then((res) => {
                 const doctorsData = res.data.theDoctor;
                 setDoctors(doctorsData);
@@ -256,7 +256,7 @@ function ChooseDoctor() {
 
                                     return (
                                         <Card key={doctor._id} className="cd-card" onClick={() => handleDoctorClick(doctor._id)}>
-                                            <Card.Img variant="top" src={`http://localhost:8000/${doctorImage}`} />
+                                            <Card.Img variant="top" src={`${ip.address}/${doctorImage}`} />
                                             <Card.Body>
                                                 <Card.Title style={{ textAlign: "center" }}>
                                                     {doctor.dr_firstName} {doctor.dr_middleInitial}. {doctor.dr_lastName}

@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { Container, Row, Col, Button, Form, Modal } from 'react-bootstrap';
 import axios from "axios";
 import { useState, useEffect } from "react";
+import { ip } from "../../../../../../ContentExport";
 
 
 function CreateAppointmentModal({ show, handleClose, pid, did, doctorName }) {
@@ -33,7 +34,7 @@ function CreateAppointmentModal({ show, handleClose, pid, did, doctorName }) {
             payment: payment,
         };
     
-        axios.post(`http://localhost:8000/patient/api/${pid}/createappointment`, appointmentField)
+        axios.post(`${ip.address}/patient/api/${pid}/createappointment`, appointmentField)
             .then((response) => {
                 window.alert("Created an appointment!");
                 window.location.reload()
@@ -105,7 +106,7 @@ function CreateAppointmentModal({ show, handleClose, pid, did, doctorName }) {
             setTotalAvailableSlots(times.length);
 
             // Fetch already booked times for the selected date and doctor
-            axios.get(`http://localhost:8000/doctor/${did}/booked-slots?date=${date}`)
+            axios.get(`${ip.address}/doctor/${did}/booked-slots?date=${date}`)
                 .then((response) => {
                     const bookedSlots = response.data.bookedSlots;
                     console.log(`Booked Times for ${date}:`, bookedSlots); 
@@ -123,7 +124,7 @@ function CreateAppointmentModal({ show, handleClose, pid, did, doctorName }) {
 
     useEffect(() => {
 
-        axios.get(`http://localhost:8000/doctor/${did}/available`)
+        axios.get(`${ip.address}/doctor/${did}/available`)
             .then((response) => {
                 const { availability, activeAppointmentStatus } = response.data;
                 console.log('Doctor Availability:', availability); // Debugging

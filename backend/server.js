@@ -22,7 +22,6 @@ require('dotenv').config();
 // CORS Configuration
 const cors = require('cors');
 app.use(cors({
-    origin: 'http://localhost:3000',
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization']
     // Remove credentials: true
@@ -40,7 +39,7 @@ app.use('/images', express.static(path.join(__dirname, 'payment', 'images')));
 
 // Static file serving for uploaded PDFs
 app.use('/uploads', cors({
-    origin: 'http://localhost:3000',  // Replace with your frontend URL
+    
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true

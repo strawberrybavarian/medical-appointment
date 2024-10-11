@@ -6,7 +6,7 @@ import axios from "axios";
 import EditNewsModal from "./EditNewsModal";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEllipsisH, faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons';
-
+import { ip } from "../../../ContentExport";
 function NewsAnnouncement({ user_image, user_name, user_id, role }) {
   const [theNews, setTheNews] = useState("");
   const [newsImages, setNewsImages] = useState([]); // For storing new images during creation
@@ -23,7 +23,7 @@ function NewsAnnouncement({ user_image, user_name, user_id, role }) {
   // Fetch all news
   useEffect(() => {
     axios
-      .get(`http://localhost:8000/news/api/getallnews/${user_id}/${role}`)
+      .get(`${ip.address}/news/api/getallnews/${user_id}/${role}`)
       .then((res) => {
         const news = res.data.news.reverse();
         setTheNewsList(news);
@@ -52,7 +52,7 @@ function NewsAnnouncement({ user_image, user_name, user_id, role }) {
     });
   
     axios
-      .post(`http://localhost:8000/news/api/addnews/${user_id}`, formData, {
+      .post(`${ip.address}/news/api/addnews/${user_id}`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       })
       .then(() => {
@@ -92,7 +92,7 @@ function NewsAnnouncement({ user_image, user_name, user_id, role }) {
   // Delete news from the list
   const deleteNews = (index) => {
     axios
-      .delete(`http://localhost:8000/news/api/delete/${user_id}/${index}`)
+      .delete(`${ip.address}/news/api/delete/${user_id}/${index}`)
       .then(() => {
         setTheNewsList(theNewsList.filter((_, i) => i !== index));
       })
@@ -123,7 +123,7 @@ function NewsAnnouncement({ user_image, user_name, user_id, role }) {
       </div>
       <div className="d-flex post-container p-3 w-100 shadow-sm">
         <img
-          src={`http://localhost:8000/${defaultImage}`}
+          src={`${ip.address}/${defaultImage}`}
           alt="User"
           style={{
             width: "45px",
@@ -147,7 +147,7 @@ function NewsAnnouncement({ user_image, user_name, user_id, role }) {
             <div className="d-flex w-100 align-items-center justify-content-between">
               <div className="d-flex align-items-center" style={{ width: "100%" }}>
                 <img
-                  src={`http://localhost:8000/${defaultImage}`}
+                  src={`${ip.address}/${defaultImage}`}
                   alt="User"
                   style={{
                     width: "45px",

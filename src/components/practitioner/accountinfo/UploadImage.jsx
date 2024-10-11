@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { ip } from '../../../ContentExport';
 
 const UploadImage = ({did}) => {
     const [selectedFile, setSelectedFile] = useState(null);
@@ -15,7 +16,7 @@ const UploadImage = ({did}) => {
         formData.append('image', selectedFile);
 
         try {
-            const response = await axios.post(`http://localhost:8000/doctor/api/${did}/updateimage`, formData, {
+            const response = await axios.post(`${ip.address}/doctor/api/${did}/updateimage`, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data'
                 }

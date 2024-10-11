@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Form, Button, Container, Card } from "react-bootstrap";
 import axios from "axios";
-
+import { ip } from "../../ContentExport";
 const VerifyOTP = () => {
     const [otp, setOTP] = useState("");
     const navigate = useNavigate();
@@ -10,7 +10,7 @@ const VerifyOTP = () => {
     const email = location.state.email;
 
     const verifyOTP = () => {
-        const apiUrl = email.includes("@doctor") ? 'http://localhost:8000/doctor/verify-otp' : 'http://localhost:8000/patient/verify-otp';
+        const apiUrl = email.includes("@doctor") ? `${ip.address}/doctor/verify-otp` : `${ip.address}/patient/verify-otp`;
 
         axios.post(apiUrl, { otp, email })
             .then((response) => {

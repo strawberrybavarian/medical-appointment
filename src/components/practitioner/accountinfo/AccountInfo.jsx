@@ -8,6 +8,7 @@ import UpdateInfoModal from "./modal/UpdateInfoModal";
 import './AccountInfo.css';
 import { PencilFill } from "react-bootstrap-icons";
 import DoctorBiography from "./DoctorBiography";
+import { ip } from "../../../ContentExport";
 const AccountInfo = () => {
   const location = useLocation();
   const { did } = location.state || {};
@@ -31,7 +32,7 @@ const AccountInfo = () => {
   const [biographyCollapseOpen, setBiographyCollapseOpen] = useState(false);
 
   useEffect(() => {
-    axios.get(`http://localhost:8000/doctor/api/finduser/${did}`)
+    axios.get(`${ip.address}/doctor/api/finduser/${did}`)
       .then((res) => {
         const data = res.data.theDoctor;
         setDoctorData({
@@ -69,7 +70,7 @@ const AccountInfo = () => {
   };
 
   const handleUpdate = (updatedData) => {
-    axios.put(`http://localhost:8000/doctor/api/${did}/updateDetails`, updatedData)
+    axios.put(`${ip.address}/doctor/api/${did}/updateDetails`, updatedData)
       .then((response) => {
         const data = response.data.updatedDoctor;
         setDoctorData({
@@ -96,7 +97,7 @@ const AccountInfo = () => {
       <div className="w-100">
         <div fluid className="d-flex justify-content-center ">
           <div className="ai-container d-flex align-items-center shadow-sm">
-            <img src={`http://localhost:8000/${doctorData.theImage}`} alt="Doctor" className="ai-image" />
+            <img src={`${ip.address}/${doctorData.theImage}`} alt="Doctor" className="ai-image" />
             <div style={{marginLeft: '1rem'}} className="d-flex align-items-center justify-content-between w-100">
               <div>
                 <h4 className="m-0">{fullname}</h4>

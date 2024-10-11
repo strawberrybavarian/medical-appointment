@@ -5,8 +5,8 @@ import { useParams, Link, useLocation } from "react-router-dom";
 import Table from 'react-bootstrap/Table';
 import { Button, Pagination, Form, Row, Col, Collapse } from 'react-bootstrap';
 import './Appointment.css';
-import { ip } from "../../../ContentExport";
 import RescheduleModal from "./Reschedule Modal/RescheduleModal";
+import { ip } from "../../../ContentExport";
 
 const OngoingAppointment = ({ allAppointments, setAllAppointments }) => {
   const location = useLocation();
@@ -36,7 +36,7 @@ const OngoingAppointment = ({ allAppointments, setAllAppointments }) => {
       rescheduledReason: rescheduledReason,
       status: 'Rescheduled'
     };
-    axios.put(`http://localhost:8000/doctor/${selectedAppointment._id}/rescheduledstatus`, newStatus)
+    axios.put(`${ip.address}/doctor/${selectedAppointment._id}/rescheduledstatus`, newStatus)
       .then(() => {
         setAllAppointments(prevAppointments =>
           prevAppointments.map(appointment =>
@@ -56,7 +56,7 @@ const OngoingAppointment = ({ allAppointments, setAllAppointments }) => {
   }, [allAppointments]);
 
   const handleUpdateStatus = (appointmentId, newStatus) => {
-    axios.put(`http://localhost:8000/appointments/${appointmentId}/status`, { status: newStatus })
+    axios.put(`${ip.address}/appointments/${appointmentId}/status`, { status: newStatus })
       .then((response) => {
         setAllAppointments(prevAppointments =>
           prevAppointments.map(appointment =>

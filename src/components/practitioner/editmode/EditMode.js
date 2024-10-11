@@ -11,6 +11,7 @@ import Nav from 'react-bootstrap/Nav';
 import { Container, Form, Button } from "react-bootstrap";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
+import { ip } from "../../../ContentExport";
 
 function EditMode() {
   const navigate = useNavigate();
@@ -18,7 +19,7 @@ function EditMode() {
   const [post, setPost] = useState([""]);
 
   const [theName, setTheName] =useState("");
-  axios.get(`http://localhost:8000/doctor/api/finduser/`+uid)
+  axios.get(`${ip.address}/doctor/api/finduser/`+uid)
   .then((res) => {
 
     setTheName(res.data.theDoctor.dr_firstName)
@@ -28,7 +29,7 @@ function EditMode() {
   });
 
   useEffect(()=>{
-    axios.get("http://localhost:8000/doctor/api/finduser/"+uid)
+    axios.get("${ip.address}/doctor/api/finduser/"+uid)
     .then((res)=>{
         console.log(index);
         console.log(uid);
@@ -46,7 +47,7 @@ function EditMode() {
       content:post,
     }
     navigate('/dashboard/'+uid);
-    axios.put(`http://localhost:8000/doctor/api/post/updatepost/${uid}/${index}`,newPost)
+    axios.put(`${ip.address}/doctor/api/post/updatepost/${uid}/${index}`,newPost)
     .then((response)=>{
       console.log(response.data);
       window.location.reload();

@@ -3,7 +3,7 @@ import { Table, Container, Pagination, Dropdown, Form, Toast } from 'react-boots
 import axios from "axios";
 import { useParams } from "react-router-dom";
 import UploadLabResultsModal from "./modal/UploadLabResultsModal";
-
+import { ip } from "../../../../../ContentExport";
 const MedSecToSend = ({ allAppointments, setAllAppointments }) => {
   const { did } = useParams();
   const [error, setError] = useState("");
@@ -18,7 +18,7 @@ const MedSecToSend = ({ allAppointments, setAllAppointments }) => {
   const [alldoctors, setAllDoctors] = useState([]);  // State for doctors
 
   useEffect(() => {
-    axios.get("http://localhost:8000/doctor/api/alldoctor")
+    axios.get(`${ip.address}/doctor/api/alldoctor`)
       .then((result) => {
         setAllDoctors(result.data.theDoctor);
       })
@@ -76,7 +76,7 @@ const MedSecToSend = ({ allAppointments, setAllAppointments }) => {
     labData.append('file', file);
 
     try {
-      await axios.post(`http://localhost:8000/doctor/api/createLaboratoryResult/${selectedAppointment.patient._id}/${selectedAppointment._id}`, labData, {
+      await axios.post(`${ip.address}/doctor/api/createLaboratoryResult/${selectedAppointment.patient._id}/${selectedAppointment._id}`, labData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       setShowToast(true);  // Show success toast

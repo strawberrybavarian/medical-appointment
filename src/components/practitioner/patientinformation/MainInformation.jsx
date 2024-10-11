@@ -9,6 +9,7 @@ import PractitionerNavBar from './navbar/PractitionerNavBar';
 import DoctorNavbar from '../navbar/DoctorNavbar';
 import Footer from '../../Footer';
 import { ChevronLeft } from 'react-bootstrap-icons';
+import { ip } from '../../../ContentExport';
 
 function MainInformation() {
     const location = useLocation();
@@ -21,7 +22,7 @@ function MainInformation() {
     const defaultImage = "images/014ef2f860e8e56b27d4a3267e0a193a.jpg";
 
     useEffect(() => {
-        axios.get(`http://localhost:8000/doctor/api/finduser/${did}`)
+        axios.get(`${ip.address}/doctor/api/finduser/${did}`)
             .then((res) => {
                 setTheId(res.data.theDoctor._id);
                 setTheName(res.data.theDoctor.dr_firstName);

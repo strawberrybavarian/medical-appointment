@@ -4,6 +4,7 @@ import { Container, Row, Col, Button, Form, Alert } from "react-bootstrap";
 import axios from "axios";
 import { PassFill, CheckAll } from "react-bootstrap-icons";
 import { Helmet } from "react-helmet";
+import { ip } from "../../../ContentExport";
 function AppointmentForm({pid , did}) {
   const navigate = useNavigate();
 
@@ -20,7 +21,7 @@ function AppointmentForm({pid , did}) {
   useEffect(() => {
     // Fetch doctor's services, availability, and name
     axios
-      .get(`http://localhost:8000/doctor/${did}`)
+      .get(`${ip.address}/doctor/${did}`)
       .then((response) => {
         const doctor = response.data.doctor;
         setDoctorName(`${doctor.dr_firstName} ${doctor.dr_lastName}`);
@@ -140,7 +141,7 @@ const createAppointment = () => {
       appointment_type: selectedServices, // Ensure selectedServices contains objects with appointment_type and category
   };
 
-  axios.post(`http://localhost:8000/patient/api/${pid}/createappointment`, formData)
+  axios.post(`${ip.address}/patient/api/${pid}/createappointment`, formData)
       .then(() => {
           window.alert("Created an appointment!");
           window.location.reload();

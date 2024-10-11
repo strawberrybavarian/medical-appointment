@@ -8,7 +8,7 @@ import 'tippy.js/dist/tippy.css'; // Required for styling
 import axios from 'axios';
 import { Container, Card } from 'react-bootstrap';
 import { useNavigate, useLocation } from 'react-router-dom'; // Import useNavigate and useLocation
-
+import { ip } from '../../../../../ContentExport';
 function AppointmentFullCalendar() {
   const [allAppointments, setAllappointments] = useState([]);
   const calendarRef = useRef(null); // Reference to FullCalendar
@@ -27,7 +27,7 @@ function AppointmentFullCalendar() {
 
   useEffect(() => {
     axios
-      .get(`http://localhost:8000/medicalsecretary/api/allappointments`)
+      .get(`${ip.address}/medicalsecretary/api/allappointments`)
       .then((result) => {
         setAllappointments(result.data.Appointments);
       })

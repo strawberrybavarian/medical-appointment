@@ -4,7 +4,7 @@ import { Link, useParams } from "react-router-dom";
 import { Table, Container, Pagination, Form, Row, Col, Button } from 'react-bootstrap';
 import AssignAppointmentModal from './AssignAppointmentModal'; // Import the new modal component
 import './Styles.css';
-
+import { ip } from "../../../../../ContentExport";
 const MedSecForPayment = ({ allAppointments, setAllAppointments }) => {
   const { did } = useParams();
   const [error, setError] = useState("");
@@ -21,7 +21,7 @@ const MedSecForPayment = ({ allAppointments, setAllAppointments }) => {
   const [selectedAccountStatus, setSelectedAccountStatus] = useState("");
 
   useEffect(() => {
-    axios.get(`http://localhost:8000/doctor/api/alldoctor`)
+    axios.get(`${ip.address}/doctor/api/alldoctor`)
       .then((result) => {
         setAllDoctors(result.data.theDoctor);
       })
@@ -85,7 +85,7 @@ const MedSecForPayment = ({ allAppointments, setAllAppointments }) => {
       time: selectedTime,
     };
   
-    axios.put(`http://localhost:8000/api/appointment/${selectedAppointment._id}/assign`, updatedAppointment)
+    axios.put(`${ip.address}/api/appointment/${selectedAppointment._id}/assign`, updatedAppointment)
       .then(() => {
         setAllAppointments(prevAppointments =>
           prevAppointments.map(appointment =>
@@ -103,7 +103,7 @@ const MedSecForPayment = ({ allAppointments, setAllAppointments }) => {
 
   // Function to update the appointment status to 'Completed'
   const handleUpdateStatus = (appointmentId, newStatus) => {
-    axios.put(`http://localhost:8000/appointments/${appointmentId}/status`, { status: newStatus })
+    axios.put(`${ip.address}/appointments/${appointmentId}/status`, { status: newStatus })
       .then((response) => {
         setAllAppointments(prevAppointments =>
           prevAppointments.map(appointment =>

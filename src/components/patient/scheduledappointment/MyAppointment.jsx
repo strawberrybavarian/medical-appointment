@@ -12,6 +12,8 @@ import VerticalDoctorList from "./VerticalDoctorList";
 import { useLocation, useParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import Footer from '../../Footer';
+import { ip } from '../../../ContentExport';
+
 function MyAppointment() {
     const [activeTab, setActiveTab] = useState("pending");
     const [appointments, setAppointments] = useState([]);
@@ -20,7 +22,7 @@ function MyAppointment() {
     console.log('MyAPpointment',pid);
     
     useEffect(() => {
-        axios.get(`http://localhost:8000/patient/api/onepatient/${pid}`)
+        axios.get(`${ip.address}/patient/api/onepatient/${pid}`)
             .then((res) => {
                 setAppointments(res.data.thePatient.patient_appointments);
             })

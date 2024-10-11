@@ -12,6 +12,7 @@ import CreatePatientForms from '../Add Patient/Forms/CreatePatientForms';
 import CreateAppointment from '../Add Patient/New Appointment/CreateAppointment';
 import MedSecLaboratoryApp from '../Appointments/MedSecLaboratoryApp';
 import MedSecToSend from '../Appointments/MedSecToSend';
+import { ip } from '../../../../../ContentExport';
 function MedSecMain() {
   
   const location = useLocation(); 
@@ -31,7 +32,7 @@ function MedSecMain() {
   }, [location.search]); 
 
   useEffect(() => {
-    axios.get(`http://localhost:8000/medicalsecretary/api/allappointments`)
+    axios.get(`${ip.address}/medicalsecretary/api/allappointments`)
       .then((result) => {
         setallappointments(result.data.Appointments);
       })

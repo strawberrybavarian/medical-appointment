@@ -23,7 +23,7 @@ function Dashboard({ doctor_image, doctor_name, did }) {
 
   useEffect(() => {
     axios
-      .get(`http://localhost:8000/doctor/appointments/${did}`)
+      .get(`${ip.address}/doctor/appointments/${did}`)
       .then((res) => {
         const appointments = res.data;
 

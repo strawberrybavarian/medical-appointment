@@ -4,7 +4,7 @@ import axios from 'axios';
 import LaboratoryHistory from './LaboratoryHistory';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css'; // Import Toastify CSS
-
+import { ip } from '../../../../ContentExport';
 function LaboratoryResults({ patientId, appointmentId }) {
     const [formData, setFormData] = useState({
         file: null
@@ -15,7 +15,7 @@ function LaboratoryResults({ patientId, appointmentId }) {
     useEffect(() => {
         const fetchLabResults = async () => {
             try {
-                const response = await axios.get(`http://localhost:8000/patient/${patientId}/appointments/${appointmentId}/labResults`);
+                const response = await axios.get(`${ip.address}/patient/${patientId}/appointments/${appointmentId}/labResults`);
                 setLabResults(response.data);
                 console.log(response.data);
             } catch (err) {
@@ -61,7 +61,7 @@ function LaboratoryResults({ patientId, appointmentId }) {
         labData.append('testResults', JSON.stringify([])); // Add empty test results if needed
 
         try {
-            await axios.post(`http://localhost:8000/doctor/api/createLaboratoryResult/${patientId}/${appointmentId}`, labData, {
+            await axios.post(`${ip.address}/doctor/api/createLaboratoryResult/${patientId}/${appointmentId}`, labData, {
                 headers: {
                     'Content-Type': 'multipart/form-data' // Ensure this is correctly set
                 }
@@ -80,7 +80,7 @@ function LaboratoryResults({ patientId, appointmentId }) {
     // Download file
     const downloadFile = async (resultId) => {
         try {
-            const response = await axios.get(`http://localhost:8000/doctor/api/laboratoryResult/download/${resultId}`, {
+            const response = await axios.get(`${ip.address}/doctor/api/laboratoryResult/download/${resultId}`, {
                 responseType: 'blob'
             });
             const url = window.URL.createObjectURL(new Blob([response.data]));

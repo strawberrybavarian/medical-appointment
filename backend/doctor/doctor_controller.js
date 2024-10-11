@@ -935,8 +935,8 @@ const deleteDoctorBiography = async (req, res) => {
       });
   
       // Construct the password reset link
-      // const resetLink = `${req.protocol}://${req.get('host')}/reset-password/${token}`;
-      const resetLink = `http://localhost:3000/reset-password/doctor/${token}`;
+      const resetLink = `${req.protocol}://${req.get('host')}/reset-password/${token}`;
+      // const resetLink = `http://localhost:3000/reset-password/doctor/${token}`;
       const mailOptions = {
         to: doctor.dr_email,
         from: staff_email.user,

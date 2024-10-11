@@ -4,7 +4,7 @@ import axios from "axios";
 import CancelModal from "../scheduledappointment/Modal/CancelModal";
 import './Appointment.css';
 import { PeopleFill, ClockFill, PersonFill, PencilFill } from 'react-bootstrap-icons';
-
+import { ip } from '../../../ContentExport';
 function CancelledAppointments({ appointments, setAppointments }) {
     const [showModal, setShowModal] = useState(false);
     const [selectedAppointment, setSelectedAppointment] = useState(null);
@@ -25,7 +25,7 @@ function CancelledAppointments({ appointments, setAppointments }) {
     const handleConfirmCancellation = (cancelReason) => {
         if (!selectedAppointment) return;
 
-        axios.put(`http://localhost:8000/patient/api/${selectedAppointment._id}/updateappointment`, { cancelReason: cancelReason })
+        axios.put(`${ip.address}/patient/api/${selectedAppointment._id}/updateappointment`, { cancelReason: cancelReason })
             .then((response) => {
                 console.log(response.data);
                 setAppointments(prevAppointments => 

@@ -11,7 +11,7 @@ import DoctorManageServices from "./DoctorManageServices";  // Import the new co
 import Footer from "../../Footer";
 import { ChevronLeft } from "react-bootstrap-icons";
 import './AccountInfo.css';
-
+import { ip } from "../../../ContentExport";
 function DoctorInformation() {
     const location = useLocation();
     const { did } = location.state || {};
@@ -24,7 +24,7 @@ function DoctorInformation() {
 
     useEffect(() => {
         axios
-            .get(`http://localhost:8000/doctor/api/finduser/${did}`)
+            .get(`${ip.address}/doctor/api/finduser/${did}`)
             .then((res) => {
                 setTheId(res.data.theDoctor._id);
                 setTheName(res.data.theDoctor.dr_firstName);
@@ -35,7 +35,7 @@ function DoctorInformation() {
             });
 
         axios
-            .get(`http://localhost:8000/doctor/appointments/${did}`)
+            .get(`${ip.address}/doctor/appointments/${did}`)
             .then((res) => {
                 setAllAppointments(res.data);
             })

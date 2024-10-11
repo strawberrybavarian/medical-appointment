@@ -3,6 +3,7 @@ import axios from "axios";
 import { Container, Form, Row, Col, Button, Card } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import "./Styles.css";
+import {  } from "../../../../../../ContentExport";
 
 const CreatePatientForms = () => {
     const navigate = useNavigate();
@@ -132,7 +133,7 @@ const CreatePatientForms = () => {
                 }
             };
 
-            axios.post('http://localhost:8000/patient/api/unregistered', patientUser)
+            axios.post(`${.address}/patient/api/unregistered`, patientUser)
                 .then((response) => {
                     console.log(response);
                     window.alert("Successfully registered Patient");

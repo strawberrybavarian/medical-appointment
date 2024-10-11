@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Modal, Button, Form } from "react-bootstrap";
 import axios from "axios";
-
+import { ip } from "../../../../ContentExport";
 const UpdatePatientInfoModal = ({ show, handleClose, thePatient, pid }) => {
     // Define state variables for patient information
     const [firstName, setFirstName] = useState("");
@@ -21,7 +21,7 @@ const UpdatePatientInfoModal = ({ show, handleClose, thePatient, pid }) => {
 
     const handleSaveChanges = async () => {
         try {
-            const response = await axios.put(`http://localhost:8000/patient/api/updateinfo/${pid}`, {
+            const response = await axios.put(`${ip.address}/patient/api/updateinfo/${pid}`, {
                 patient_firstName: firstName,
                 patient_lastName: lastName,
                 patient_middleInitial: middleInitial,

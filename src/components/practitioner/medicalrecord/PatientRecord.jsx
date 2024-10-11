@@ -2,13 +2,14 @@ import axios from 'axios';
 import React, { useState, useEffect } from 'react';
 import { Card, Table, Button } from 'react-bootstrap';
 import ForPrescription from './ForPrescription';
+import { ip } from '../../../ContentExport';
 
 const PatientRecord = ({ patientId, onClose }) => {
     const [patient, setPatient] = useState(null);
 
     useEffect(() => {
         axios
-            .get(`http://localhost:8000/patient/api/onepatient/${patientId}`)
+            .get(`${ip.address}/patient/api/onepatient/${patientId}`)
             .then((res) => {
                 console.log(res.data.thePatient);
                 setPatient(res.data.thePatient);

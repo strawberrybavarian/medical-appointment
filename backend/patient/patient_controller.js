@@ -11,6 +11,7 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const { staff_email } = require('../EmailExport');
 const crypto = require('crypto');
+const { ip } = require('../../src/ContentExport');
 //For Email
 
 
@@ -515,7 +516,7 @@ const forgotPassword = async (req, res) => {
       }
     });
 
-    const resetLink = `http://localhost:3000/reset-password/patient/${token}`;
+    const resetLink = `${ip.address}/reset-password/patient/${token}`;
     const mailOptions = {
       to: patient.patient_email,
       from: staff_email.user,

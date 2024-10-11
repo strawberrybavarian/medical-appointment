@@ -3,14 +3,14 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { Table, Container, Button } from 'react-bootstrap';
 import './PatientPrescriptions.css';
-
+import { ip } from "../../../../ContentExport";
 function PatientPrescriptions() {
     const { pid } = useParams(); 
     const [thePrescriptions, setPrescriptions] = useState([]);
     const [error, setError] = useState(null);
 
     useEffect(() => {
-        axios.get(`http://localhost:8000/patient/api/onepatient/${pid}`)
+        axios.get(`${ip.address}/patient/api/onepatient/${pid}`)
             .then((res) => {
                 console.log(res.data);  // Log the entire response to understand its structure
                 if (res.data && res.data.thePatient && Array.isArray(res.data.thePatient.patient_appointments)) {
@@ -31,10 +31,10 @@ function PatientPrescriptions() {
     const downloadLabResult = async (labResultId) => {
         try {
             // This will trigger the backend to serve the file directly
-            const response = await axios.get(`http://localhost:8000/doctor/api/laboratoryResult/download/${labResultId}`, {
+            const response = await axios.get(`${ip.address}/doctor/api/laboratoryResult/download/${labResultId}`, {
                 responseType: 'blob'  // Ensure response is returned as a Blob
             });
-            window.open(`http://localhost:8000/doctor/api/laboratoryResult/download/${labResultId}`);
+            window.open(`${ip.address}/doctor/api/laboratoryResult/download/${labResultId}`);
             // Create a link to download the file
             const url = window.URL.createObjectURL(new Blob([response.data]));
             const link = document.createElement('a');

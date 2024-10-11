@@ -2,6 +2,7 @@ import axios from 'axios';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { Collapse, Container, Card, Button } from 'react-bootstrap';
+import { ip } from '../../../../ContentExport';
 
 const PatientHistory = ({pid}) => {
     
@@ -10,7 +11,7 @@ const PatientHistory = ({pid}) => {
     
     const [openRecords, setOpenRecords] = useState({}); // Track which records are open
     useEffect(() => {
-        axios.get(`http://localhost:8000/patient/api/onepatient/${pid}`)
+        axios.get(`${ip.address}/patient/api/onepatient/${pid}`)
             .then((res) => {
                 console.log(res.data);  // Log the entire response to understand its structure
                 if (res.data && res.data.thePatient && Array.isArray(res.data.thePatient.patient_appointments)) {

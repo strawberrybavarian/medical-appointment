@@ -6,7 +6,7 @@ import OBGYNE from './images/ObstetricsAndGynecology.png';
 import PEDIATRICS from './images/Pedia.png';
 import { Container, Button } from "react-bootstrap";
 import AppointmentModal from './AppointmentModal'; // Import the new component
-
+import { ip } from "../../../ContentExport";
 function DoctorServices({ pid, did }) {
     const [services, setServices] = useState([]);
     const [showModal, setShowModal] = useState(false); // State for modal visibility
@@ -14,7 +14,7 @@ function DoctorServices({ pid, did }) {
 
     useEffect(() => {
         // Fetch the list of services from the backend
-        axios.get('http://localhost:8000/admin/getall/services')
+        axios.get(`${ip.address}/admin/getall/services`)
             .then((res) => {
                 setServices(res.data || []); // Ensure services is always an array
             })

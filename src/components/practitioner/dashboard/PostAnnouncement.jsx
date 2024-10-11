@@ -5,6 +5,7 @@ import CreatePostModal from "./CreatePostModal";
 import EditPostModal from "./EditPostModal";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEllipsisH, faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons';
+import { ip } from "../../../ContentExport";
 
 function PostAnnouncement({ doctor_image, doctor_name, did }) {
   const [thePost, setThePost] = useState(""); 
@@ -20,7 +21,7 @@ function PostAnnouncement({ doctor_image, doctor_name, did }) {
 
   useEffect(() => {
     axios
-      .get(`http://localhost:8000/doctor/api/post/getallpost/${did}`)
+      .get(`${ip.address}/doctor/api/post/getallpost/${did}`)
       .then((res) => {
         const posts = res.data.posts.reverse();
         setThePosts(posts);
@@ -45,7 +46,7 @@ function PostAnnouncement({ doctor_image, doctor_name, did }) {
     });
 
     axios
-      .post(`http://localhost:8000/doctor/api/addpost/${did}`, formData, {
+      .post(`${ip.address}/doctor/api/addpost/${did}`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       })
       .then((res) => {
@@ -77,7 +78,7 @@ function PostAnnouncement({ doctor_image, doctor_name, did }) {
 
   const deletePost = (index) => {
     axios
-      .delete(`http://localhost:8000/doctor/api/post/deletepost/${did}/${index}`)
+      .delete(`${ip.address}/doctor/api/post/deletepost/${did}/${index}`)
       .then(() => setThePosts(thePosts.filter((_, i) => i !== index)))
       .catch((err) => {
         console.log("Error deleting post:", err.response ? err.response.data : err.message);
@@ -106,7 +107,7 @@ function PostAnnouncement({ doctor_image, doctor_name, did }) {
         <Col>
           <div className="post-container shadow-sm d-flex align-items-center p-3 w-100">
             <img
-              src={doctor_image ? `http://localhost:8000/${doctor_image}` : defaultImage}
+              src={doctor_image ? `${ip.address}/${doctor_image}` : defaultImage}
               alt={doctor_name}
               style={{
                 width: "45px",
@@ -160,7 +161,7 @@ function PostAnnouncement({ doctor_image, doctor_name, did }) {
                   <div className="d-flex w-100 align-items-center justify-content-between p-3">
                     <div className="d-flex align-items-center">
                       <img
-                        src={doctor_image ? `http://localhost:8000/${doctor_image}` : defaultImage}
+                        src={doctor_image ? `${ip.address}/${doctor_image}` : defaultImage}
                         alt={doctor_name}
                         style={{ width: "45px", height: "45px", borderRadius: "9999px" }}
                       />

@@ -25,7 +25,6 @@ const specialties = [
     "Internal Medicine",
     "Family Medicine",
     "General Medicine"
- 
 ];
 export {
     image,

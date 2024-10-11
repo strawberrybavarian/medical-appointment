@@ -1,19 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Button, Card } from 'react-bootstrap';
-
+import { ip } from '../../../../../ContentExport';
 function DeactivationRequests() {
     const [requests, setRequests] = useState([]);
 
     useEffect(() => {
-        axios.get('http://localhost:8000/admin/deactivation-requests')
+        axios.get(`${ip.address}/admin/deactivation-requests`)
             .then(res => setRequests(res.data))
             .catch(err => console.log(err));
     }, []);
 
     const handleConfirm = (doctorId, confirm) => {
         axios
-            .post(`http://localhost:8000/admin/confirm-deactivation/${doctorId}`, { confirm })
+            .post(`${ip.address}/admin/confirm-deactivation/${doctorId}`, { confirm })
             .then((res) => {
                 alert(res.data.message);
                 setRequests(requests.filter(request => request._id !== doctorId)); // Remove handled request

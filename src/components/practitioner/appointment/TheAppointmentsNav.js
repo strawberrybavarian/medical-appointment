@@ -8,6 +8,7 @@ import MyPendingAppointment from "./MyPendingAppointment";
 import './Appointment.css';
 import DoctorNavbar from '../navbar/DoctorNavbar';
 import Footer from "../../Footer";
+import { ip } from "../../../ContentExport";
 const TheAppointmentsNav = () => {
   const location = useLocation();
   const { did } = location.state || {};
@@ -30,7 +31,7 @@ const TheAppointmentsNav = () => {
   
 
     axios
-      .get(`http://localhost:8000/doctor/api/finduser/${did}`)
+      .get(`${ip.address}/doctor/api/finduser/${did}`)
       .then((res) => {
         setTheId(res.data.theDoctor._id);
         setTheName(res.data.theDoctor.dr_firstName);
@@ -41,7 +42,7 @@ const TheAppointmentsNav = () => {
       });
 
     axios
-      .get(`http://localhost:8000/doctor/appointments/${did}`)
+      .get(`${ip.address}/doctor/appointments/${did}`)
       .then((res) => {
         setAllAppointments(res.data);
       })

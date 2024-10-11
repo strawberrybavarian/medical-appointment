@@ -2,9 +2,9 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { Table, Container, Pagination, Form, Row, Col, Nav } from 'react-bootstrap';
-
 import './Appointment.css';
 import RescheduleModal from "./Reschedule Modal/RescheduleModal";
+import { ip } from "../../../ContentExport";
 
 const TodaysAppointment = () => {
   const location = useLocation();
@@ -20,7 +20,7 @@ const TodaysAppointment = () => {
 
   useEffect(() => {
     axios
-    .get(`http://localhost:8000/doctor/appointments/${did}`)
+    .get(`${ip.address}/doctor/appointments/${did}`)
     .then((res) => {
       setAllAppointments(res.data);
     })
@@ -31,7 +31,7 @@ const TodaysAppointment = () => {
   }, [did]);
 
   const updateAppointmentStatus = (appointmentID, newStatus) => {
-    axios.put(`http://localhost:8000/appointments/${appointmentID}/status`, { status: newStatus })
+    axios.put(`${ip.address}/appointments/${appointmentID}/status`, { status: newStatus })
       .then(() => {
         setAllAppointments(prevAppointments =>
           prevAppointments.map(appointment =>
@@ -47,7 +47,7 @@ const TodaysAppointment = () => {
       rescheduledReason: rescheduledReason,
       status: 'Rescheduled'
     };
-    axios.put(`http://localhost:8000/doctor/${selectedAppointment._id}/rescheduledstatus`, newStatus)
+    axios.put(`${ip.address}/doctor/${selectedAppointment._id}/rescheduledstatus`, newStatus)
       .then(() => {
         setAllAppointments(prevAppointments =>
           prevAppointments.map(appointment =>

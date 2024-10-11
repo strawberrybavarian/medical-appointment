@@ -4,7 +4,7 @@ import { useParams } from 'react-router-dom';
 import './TwoFactorAuth.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Modal, Button } from 'react-bootstrap';
-
+import { ip } from '../../../../ContentExport';
 function TwoFactorAuth() {
     const { pid } = useParams();
     const [qrCode, setQrCode] = useState(null);
@@ -13,7 +13,7 @@ function TwoFactorAuth() {
 
     const setupTwoFactor = async (userId, regenerate = false) => {
         try {
-            const response = await axios.post(`http://localhost:8000/patient/api/setup-2fa/${userId}`, { regenerate });
+            const response = await axios.post(`${ip.address}/patient/api/setup-2fa/${userId}`, { regenerate });
             if (response.data.qrCode && response.data.secret) {
                 setQrCode(response.data.qrCode);
                 setSecretKey(response.data.secret);

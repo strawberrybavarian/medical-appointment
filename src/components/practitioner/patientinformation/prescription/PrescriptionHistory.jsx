@@ -2,13 +2,14 @@ import  axios  from 'axios';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { Button, Card, Collapse, Container, Table } from 'react-bootstrap';
+import { ip } from '../../../../ContentExport';
 
 const PrescriptionHistory = ({pid}) => {
     const [thePrescriptions, setPrescriptions] = useState([]);
     const [error, setError] = useState(null);
     console.log('PrescriptionHistory',pid);
     useEffect(() => {
-        axios.get(`http://localhost:8000/patient/api/onepatient/${pid}`)
+        axios.get(`${ip.address}/patient/api/onepatient/${pid}`)
             .then((res) => {
                 console.log(res.data);  // Log the entire response to understand its structure
                 if (res.data && res.data.thePatient && Array.isArray(res.data.thePatient.patient_appointments)) {

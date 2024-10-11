@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Modal, Button, Form } from 'react-bootstrap';
 import axios from 'axios';
 import CropResizeTiltModal from './CropResizeTiltModal'; // Import the cropping modal
+import { ip } from '../../../../ContentExport';
 
 const UpdatePatientImageModal = ({ show, handleClose, pid, onImageUpload }) => {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -42,7 +43,7 @@ const UpdatePatientImageModal = ({ show, handleClose, pid, onImageUpload }) => {
     }
 
     try {
-      const response = await axios.post(`http://localhost:8000/patient/api/${pid}/updateimage`, formData, {
+      const response = await axios.post(`${ip.address}/patient/api/${pid}/updateimage`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },

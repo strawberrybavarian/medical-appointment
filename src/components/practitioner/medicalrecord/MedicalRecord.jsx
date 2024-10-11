@@ -3,14 +3,14 @@ import { useEffect, useState } from "react";
 import { Button } from "react-bootstrap";
 import Table from 'react-bootstrap/Table';
 import { useParams } from "react-router-dom";
-
+import { ip } from "../../../ContentExport";
 const MedicalRecord = ({ onViewRecord }) => {
     const { did } = useParams();
     const [allPatient, setAllPatient] = useState([]);
 
     useEffect(() => {
       axios
-        .get(`http://localhost:8000/patient/api/allpatient`)
+        .get(`${ip.address}/patient/api/allpatient`)
         .then((res) => {
           setAllPatient(res.data.thePatient);
         })

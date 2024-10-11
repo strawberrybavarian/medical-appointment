@@ -1,9 +1,9 @@
 import axios from 'axios';
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Modal, Button } from 'react-bootstrap';
+import { ip } from '../../../ContentExport';
 
 function DrTwoFactorAuth() {
     const { did } = useParams();
@@ -14,7 +14,7 @@ function DrTwoFactorAuth() {
 
     const setupTwoFactor = async (userId, regenerate = false) => {
         try {
-            const response = await axios.post(`http://localhost:8000/doctor/api/setup-2fa/${userId}`, { regenerate });
+            const response = await axios.post(`${ip.address}/doctor/api/setup-2fa/${userId}`, { regenerate });
             if (response.data.qrCode && response.data.secret) {
                 setQrCode(response.data.qrCode);
                 setSecretKey(response.data.secret);

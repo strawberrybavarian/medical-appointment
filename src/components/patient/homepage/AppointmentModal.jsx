@@ -1,7 +1,7 @@
 import axios from "axios";
 import { useState, useEffect } from "react";
 import { Row, Col, Button, Form, Modal } from 'react-bootstrap';
-
+import { ip } from "../../../ContentExport";
 function AppointmentModal({ show, handleClose, serviceId, pid }) {
     const [date, setDate] = useState("");
     const [reason, setReason] = useState("");
@@ -10,7 +10,7 @@ function AppointmentModal({ show, handleClose, serviceId, pid }) {
     // Fetch the service details based on the serviceId 
     useEffect(() => {
         if (serviceId) {
-            axios.get(`http://localhost:8000/admin/services/${serviceId}`)
+            axios.get(`${ip.address}/admin/services/${serviceId}`)
                 .then((response) => {
                     console.log(response.data);
                     setService(response.data); // Set the fetched service details
@@ -41,7 +41,7 @@ function AppointmentModal({ show, handleClose, serviceId, pid }) {
             reason,
         };
     
-        axios.post(`http://localhost:8000/patient/api/${pid}/createappointment`, formData)
+        axios.post(`${ip.address}/patient/api/${pid}/createappointment`, formData)
             .then(() => {
                 window.alert("Created an appointment!");
                 window.location.reload();

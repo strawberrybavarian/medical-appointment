@@ -5,6 +5,7 @@ import { useParams, useLocation } from "react-router-dom";
 import SidebarMenu from "../sidebar/SidebarMenu";
 import MedicalRecord from "./MedicalRecord";
 import PatientRecord from "./PatientRecord";
+import { ip } from "../../../ContentExport";
 
 const MainMedicalRecord = () => {
     const location = useLocation();
@@ -17,7 +18,7 @@ const MainMedicalRecord = () => {
 
     useEffect(() => {
       axios
-        .get(`http://localhost:8000/doctor/api/finduser/` + did)
+        .get(`${ip.address}/doctor/api/finduser/` + did)
         .then((res) => {
           setTheId(res.data.theDoctor._id);
           setTheName(res.data.theDoctor.dr_firstName);

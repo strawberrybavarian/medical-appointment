@@ -1,7 +1,7 @@
 import axios from "axios";
 import { useState, useEffect } from "react";
 import { Row, Col, Button, Form, Modal } from 'react-bootstrap';
-
+import { ip } from "../../../ContentExport";
 function AppointmentModal({ show, handleClose, pid, did, doctorName }) {
     const [date, setDate] = useState("");
     const [time, setTime] = useState("");
@@ -30,7 +30,7 @@ function AppointmentModal({ show, handleClose, pid, did, doctorName }) {
     useEffect(() => {
         if (did) {
             // If a doctor ID is provided, fetch the doctor's specific services
-            axios.get(`http://localhost:8000/doctor/${did}`)
+            axios.get(`${ip.address}/doctor/${did}`)
                 .then((response) => {
                     const doctor = response.data.doctor;
                     setDoctorServices(doctor.dr_services || []); 
@@ -42,7 +42,7 @@ function AppointmentModal({ show, handleClose, pid, did, doctorName }) {
                 });
         } else {
             // If no doctor ID, fetch all services
-            axios.get(`http://localhost:8000/admin/getall/services`)
+            axios.get(`${ip.address}/admin/getall/services`)
                 .then((response) => {
                     setDoctorServices(response.data); 
                     setActiveAppointmentStatus(true); 
@@ -81,7 +81,7 @@ function AppointmentModal({ show, handleClose, pid, did, doctorName }) {
             appointment_type: selectedServices, 
         };
     
-        axios.post(`http://localhost:8000/patient/api/${pid}/createappointment`, formData)
+        axios.post(`${ip.address}/patient/api/${pid}/createappointment`, formData)
             .then(() => {
                 window.alert("Created an appointment!");
                 handleClose(); // Close modal after success

@@ -8,7 +8,7 @@ import PatientFindings from '../findings/PatientFindings';
 import './PractitionerNavBarStyles.css';
 import Immunization from '../immunization/Immunization';
 import LaboratoryResults from '../laboratory/LaboratoryResults';
-
+import { ip } from '../../../../ContentExport';
 function PractitionerNavBar({ pid, did, apid }) {
     const navigate = useNavigate();
     console.log('PractitionerNavBar', pid, did, apid);
@@ -21,7 +21,7 @@ function PractitionerNavBar({ pid, did, apid }) {
     useEffect(() => {
         const fetchPatientData = async () => {
             try {
-                await axios.get(`http://localhost:8000/patient/api/onepatient/${pid}`);
+                await axios.get(`${ip.address}/patient/api/onepatient/${pid}`);
             } catch (error) {
                 console.error('Error fetching patient data', error);
             }

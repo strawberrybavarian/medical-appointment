@@ -5,6 +5,7 @@ import { Row, Col, Button, Form, Container, Card } from "react-bootstrap";
 import PasswordValidation from "./PasswordValidation";
 import "./SignUp.css";
 import NavigationalBar from '../landpage/navbar';
+import { ip } from "../../ContentExport";
 
 const NewSignUp = () => {
     const navigate = useNavigate();
@@ -119,7 +120,7 @@ const NewSignUp = () => {
                 dr_gender: uGender,
                 dr_licenseNo: dr_licenseNo,  // Practitioner-specific field
             };
-            axios.post('http://localhost:8000/doctor/api/signup', doctorUser)
+            axios.post(`${ip.address}/doctor/api/signup`, doctorUser)
                 .then((response) => {
                     console.log(response);
                     window.alert("Successfully registered Practitioner");
@@ -145,7 +146,7 @@ const NewSignUp = () => {
                 patient_civilstatus: patientCivilStatus,
             };
             console.log(patientUser);
-            axios.post('http://localhost:8000/patient/api/signup', patientUser)
+            axios.post(`${ip.address}/patient/api/signup`, patientUser)
                 .then((response) => {
                     console.log(response);
                     window.alert("Successfully registered Patient");

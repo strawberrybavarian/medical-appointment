@@ -4,7 +4,7 @@ import ReactQuill from "react-quill";
 import 'react-quill/dist/quill.snow.css';
 import ImageUpload from "./ImageUpload"; // Import image upload component
 import axios from "axios";
-
+import { ip } from "../../../ContentExport";
 function EditPostModal({ show, handleClose, postContent, setPostContent, postImages, setPostImages, deletedImages, setDeletedImages, did, postId, updatePostInState }) {
   const [loading, setLoading] = useState(false);
 
@@ -25,7 +25,7 @@ function EditPostModal({ show, handleClose, postContent, setPostContent, postIma
     try {
       setLoading(true);
       const response = await axios.put(
-        `http://localhost:8000/doctor/api/post/updatepost/${did}/${postId}`,
+        `${ip.address}/doctor/api/post/updatepost/${did}/${postId}`,
         formData,
         { headers: { "Content-Type": "multipart/form-data" } }
       );

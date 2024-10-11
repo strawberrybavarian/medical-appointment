@@ -6,6 +6,8 @@ import UpdatePatientInfoModal from './UpdatePatientInfoModal';
 import UpdatePatientImageModal from './UpdatePatientImageModal';  // Import the image upload modal
 import './PatientInformation.css';
 import * as Icon from "react-bootstrap-icons";
+import { ip } from '../../../../ContentExport';
+
 function PatientInformation({ pid }) {
   const [thePatient, setThePatient] = useState();
   const [theName, setTheName] = useState("");
@@ -38,7 +40,7 @@ function PatientInformation({ pid }) {
   };
 
   useEffect(() => {
-    axios.get(`http://localhost:8000/patient/api/onepatient/${pid}`)
+    axios.get(`${ip.address}/patient/api/onepatient/${pid}`)
       .then((res) => {
         const patientData = res.data.thePatient;
         setThePatient(patientData);
@@ -100,7 +102,7 @@ function PatientInformation({ pid }) {
             <Container>
             
               <div className='pi-container2 d-flex align-items-center shadow-sm mb-4'> 
-                <img src={`http://localhost:8000/${image}`} alt="Doctor" className="ai-image" />
+                <img src={`${ip.address}/${image}`} alt="Doctor" className="ai-image" />
                   <div style={{marginLeft: '1rem'}} className="d-flex align-items-center justify-content-between w-100">
                     <div>
                       <h4 className="m-0">{theName}</h4>

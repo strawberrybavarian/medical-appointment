@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { Card, Container } from "react-bootstrap";
 import axios from "axios";
 import { useEffect, useState, useRef } from "react";
-
+import { ip } from "../../../ContentExport";
 const defaultImage = "images/014ef2f860e8e56b27d4a3267e0a193a.jpg";
 
 function VerticalDoctorList({ pid }) {
@@ -13,7 +13,7 @@ function VerticalDoctorList({ pid }) {
   // Fetch all the doctors when the component loads
   useEffect(() => {
     axios
-      .get(`http://localhost:8000/doctor/api/alldoctor`)
+      .get(`${ip.address}/doctor/api/alldoctor`)
       .then((res) => {
         setDoctors(res.data.theDoctor);
       })
@@ -84,7 +84,7 @@ function VerticalDoctorList({ pid }) {
             >
               <Card.Img
                 variant="top"
-                src={`http://localhost:8000/${doctorImage}`}
+                src={`${ip.address}/${doctorImage}`}
               />
               <Card.Body>
                 <Card.Title style={{ fontSize: "14px" }}>

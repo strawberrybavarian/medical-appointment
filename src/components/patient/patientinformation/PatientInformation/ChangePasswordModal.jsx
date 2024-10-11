@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Modal, Button, Form } from "react-bootstrap";
 import axios from "axios";
+import { ip } from "../../../../ContentExport";
 
 const ChangePasswordModal = ({ show, handleClose, pid, email: propsEmail, password: propsPassword }) => {
     const [email, setEmail] = useState("");
@@ -47,7 +48,7 @@ const ChangePasswordModal = ({ show, handleClose, pid, email: propsEmail, passwo
 
         // Make API call to change password
         try {
-            const response = await axios.post(`http://localhost:8000/patient/api/change-password/${pid}`, {
+            const response = await axios.post(`${ip.address}/patient/api/change-password/${pid}`, {
                 email,
                 oldPassword,
                 newPassword,

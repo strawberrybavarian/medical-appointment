@@ -10,6 +10,7 @@ import $ from 'jquery';
 import './Styles.css'
 // Import Bootstrap 5 DataTable styles
 import 'datatables.net-bs5/css/dataTables.bootstrap5.min.css';
+import { ip } from '../../../../../ContentExport';
 
 
 DataTable.use(DT); // Initialize DataTables with Bootstrap 5 styling
@@ -23,7 +24,7 @@ function PatientManagement() {
   const tableRef = useRef();
 
   useEffect(() => {
-    axios.get('http://localhost:8000/patient/api/allpatient')
+    axios.get(`${ip.address}/patient/api/allpatient`)
       .then((result) => {
         setPatients(result.data.thePatient);
       })
@@ -45,7 +46,7 @@ function PatientManagement() {
 
   const handleAction = () => {
     const status = modalAction === 'register' ? 'Registered' : 'Deactivated';
-    axios.put(`http://localhost:8000/admin/patient/account-status/${selectedPatient._id}`, { status })
+    axios.put(`${ip.address}/admin/patient/account-status/${selectedPatient._id}`, { status })
       .then(() => {
         setPatients(patients.map(pat => pat._id === selectedPatient._id ? { ...pat, accountStatus: status } : pat));
         handleCloseModal();

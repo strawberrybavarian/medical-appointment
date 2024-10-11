@@ -3,11 +3,11 @@ import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Nav, Container } from 'react-bootstrap';
 import './Appointment.css';
-
 import TodaysAppointment from "./TodaysAppointment";
 import UpcomingAppointment from "./UpcomingAppointment";
 import CompletedAppointment from "./CompletedAppointment";
 import OngoingAppointment from "./OngoingAppointment";
+import { ip } from "../../../ContentExport";
 
 const MyPatientsNav = () => {
   const navigate = useNavigate();
@@ -24,7 +24,7 @@ const MyPatientsNav = () => {
 
   useEffect(() => {
     axios
-      .get(`http://localhost:8000/doctor/appointments/${did}`)
+      .get(`${ip.address}/doctor/appointments/${did}`)
       .then((res) => {
         setAllAppointments(res.data);
       })

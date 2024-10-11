@@ -6,6 +6,8 @@ import PrescriptionPatientModal from "./Modal/PrescriptionPatientModal";
 import RescheduledModal from "./Modal/RescheduledModal";
 import { PeopleFill, ClockFill, PersonFill, PencilFill } from 'react-bootstrap-icons';
 import { useParams } from 'react-router-dom';
+import { ip } from '../../../ContentExport';
+
 function RescheduledAppointment({appointments, setAppointments}) {
    
     const defaultImage = "images/014ef2f860e8e56b27d4a3267e0a193a.jpg";
@@ -40,7 +42,7 @@ function RescheduledAppointment({appointments, setAppointments}) {
         if (!selectedAppointment) return;
     
         const rescheduleData = { newDate, newTime };
-        axios.put(`http://localhost:8000/doctor/${selectedAppointment._id}/rescheduleappointment`, rescheduleData)
+        axios.put(`${ip.address}/doctor/${selectedAppointment._id}/rescheduleappointment`, rescheduleData)
           .then((response) => {
             setAppointments(prevAppointments =>
               prevAppointments.map(appointment =>

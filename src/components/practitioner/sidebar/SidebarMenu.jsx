@@ -4,7 +4,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import './SidebarMenu.css';
 import { CDBSidebar, CDBSidebarContent, CDBSidebarHeader, CDBSidebarMenu, CDBSidebarMenuItem, CDBSidebarFooter, CDBBadge } from 'cdbreact';
 import { Modal, Button } from 'react-bootstrap';
-
+import { ip } from '../../../ContentExport';
 const SidebarMenu = (props) => {
     const [isLeftIcon, setIsLeftIcon] = useState(true);
     const [showLogoutModal, setShowLogoutModal] = useState(false);
@@ -21,7 +21,7 @@ const SidebarMenu = (props) => {
 
     const confirmLogout = () => {
         // Call the backend to set the doctor to offline and then navigate
-        axios.put(`http://localhost:8000/doctor/api/${props.did}/logout`)
+        axios.put(`${ip.address}/doctor/api/${props.did}/logout`)
             .then(res => {
                 console.log('Doctor status updated to Offline');
                 setShowLogoutModal(false);

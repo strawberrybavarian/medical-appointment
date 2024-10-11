@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import { ChevronLeft, ChevronRight } from "react-bootstrap-icons";
 import axios from "axios";
 import { usePatient } from "../PatientContext";
-
+import { ip } from "../../../ContentExport";
 const defaultImage = "images/014ef2f860e8e56b27d4a3267e0a193a.jpg";
 
 function DoctorCarousel({ pid }) {
@@ -16,7 +16,7 @@ function DoctorCarousel({ pid }) {
   // Fetch all the doctors when the component loads
   useEffect(() => {
     axios
-      .get(`http://localhost:8000/doctor/api/alldoctor`)
+      .get(`${ip.address}/doctor/api/alldoctor`)
       .then((res) => {
         setDoctors(res.data.theDoctor);
       })
@@ -98,7 +98,7 @@ function DoctorCarousel({ pid }) {
                 >
                   <Card.Img
                     variant="top"
-                    src={`http://localhost:8000/${doctorImage}`}
+                    src={`${ip.address}/${doctorImage}`}
                   />
                   <Card.Body>
                     <Card.Title

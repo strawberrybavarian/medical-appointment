@@ -3,7 +3,7 @@ import { Container, Row, Col, Card, Button, Form, Table } from 'react-bootstrap'
 import axios from 'axios';
 import { PencilSquare, Trash } from 'react-bootstrap-icons'; // Import the icons
 import { Link } from 'react-router-dom';
-
+import { ip } from '../../../../ContentExport';
 function Immunization({ patientId, doctorId, appointmentId }) {
     const [immunizations, setImmunizations] = useState([]);
     const [formData, setFormData] = useState({
@@ -24,7 +24,7 @@ function Immunization({ patientId, doctorId, appointmentId }) {
         const fetchImmunizations = async () => {
             setLoading(true);
             try {
-                const response = await axios.get(`http://localhost:8000/patient/api/onepatient/${patientId}`);
+                const response = await axios.get(`${ip.address}/patient/api/onepatient/${patientId}`);
                 if (response.data && response.data.thePatient && response.data.thePatient.immunizations) {
                     setImmunizations(response.data.thePatient.immunizations);
                 } else {
@@ -52,7 +52,7 @@ function Immunization({ patientId, doctorId, appointmentId }) {
         try {
             if (editingIndex !== null) {
                 const immunizationId = immunizations[editingIndex]._id;
-                const response = await axios.put(`http://localhost:8000/api/immunization/update/${immunizationId}`, {
+                const response = await axios.put(`${ip.address}/api/immunization/update/${immunizationId}`, {
                     ...formData,
                     patientId,
                     administeredBy: doctorId,
@@ -63,7 +63,7 @@ function Immunization({ patientId, doctorId, appointmentId }) {
                     index === editingIndex ? response.data : immunization
                 ));
             } else {
-                const response = await axios.post('http://localhost:8000/api/immunization', {
+                const response = await axios.post('${ip.address}/api/immunization', {
                     ...formData,
                     patientId,
                     administeredBy: doctorId,
@@ -104,7 +104,7 @@ function Immunization({ patientId, doctorId, appointmentId }) {
         console.log('appointmentId:', appointmentId);
     
         try {
-            await axios.delete(`http://localhost:8000/api/immunization/delete/${id}`);
+            await axios.delete(`${ip.address}/api/immunization/delete/${id}`);
             setImmunizations(immunizations.filter(immunization => immunization._id !== id));
         } catch (err) {
             console.error('Failed to delete immunization', err);

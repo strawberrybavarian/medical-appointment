@@ -3,6 +3,7 @@ import { Container, Form, Row, Col, Button, Card } from "react-bootstrap";
 import axios from "axios";
 import Select from "react-select";
 import AppointmentModal from "../../../../../patient/doctorprofile/AppointmentModal";
+import { ip } from "../../../../../../ContentExport";
 
 const CreateAppointment = ({ onClose }) => {
   const [patients, setPatients] = useState([]);
@@ -14,11 +15,11 @@ const CreateAppointment = ({ onClose }) => {
   const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
-    axios.get("http://localhost:8000/patient/api/allpatient")
+    axios.get(`${ip.address}/patient/api/allpatient`)
       .then((res) => setPatients(res.data.thePatient))
       .catch((err) => console.log(err));
 
-    axios.get("http://localhost:8000/doctor/api/specialties")
+    axios.get(`${ip.address}/doctor/api/specialties`)
       .then((res) => setSpecialties(res.data.specialties))
       .catch((err) => console.log(err));
   }, []);
@@ -26,7 +27,7 @@ const CreateAppointment = ({ onClose }) => {
   useEffect(() => {
     if (selectedSpecialty) {
       // Fetch doctors filtered by the selected specialty
-      axios.get(`http://localhost:8000/doctor/api/alldoctor`)
+      axios.get(`${ip.address}/doctor/api/alldoctor`)
         .then((response) => {
           const filteredDoctors = response.data.theDoctor.filter(
             (doctor) => doctor.dr_specialty === selectedSpecialty.value

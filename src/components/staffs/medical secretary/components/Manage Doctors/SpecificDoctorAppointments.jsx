@@ -3,6 +3,7 @@ import axios from 'axios';
 import { Table, Form, Container, Row, Col } from 'react-bootstrap';
 import RescheduleModal from '../../../../practitioner/appointment/Reschedule Modal/RescheduleModal';
 import { Link } from 'react-router-dom';
+import { ip } from '../../../../../ContentExport';
 
 function SpecificDoctorAppointments({ did }) {
   const [appointments, setAppointments] = useState([]);
@@ -17,7 +18,7 @@ function SpecificDoctorAppointments({ did }) {
 
   // Fetch appointments for the doctor
   const fetchAppointments = () => {
-    axios.get(`http://localhost:8000/doctor/${did}/appointments`)
+    axios.get(`${ip.address}/doctor/${did}/appointments`)
       .then(res => {
         setAppointments(res.data);
         setFilteredAppointments(res.data);  // Set filteredAppointments only once
@@ -114,7 +115,7 @@ const renderSortArrow = (column) => {
 
   // Update the status of the appointment and refetch the appointments
   const updateAppointmentStatus = (appointmentID, newStatus) => {
-    axios.put(`http://localhost:8000/appointments/${appointmentID}/status`, { status: newStatus })
+    axios.put(`${ip.address}/appointments/${appointmentID}/status`, { status: newStatus })
       .then(() => {
         fetchAppointments(); // Refetch the updated list of appointments
       })
@@ -128,7 +129,7 @@ const renderSortArrow = (column) => {
       status: 'Rescheduled'
     };
 
-    axios.put(`http://localhost:8000/doctor/${selectedAppointment._id}/rescheduledstatus`, newStatus)
+    axios.put(`${ip.address}/doctor/${selectedAppointment._id}/rescheduledstatus`, newStatus)
       .then(() => {
         fetchAppointments(); // Refetch the appointments after rescheduling
         setShowRescheduleModal(false); // Close the modal after success
