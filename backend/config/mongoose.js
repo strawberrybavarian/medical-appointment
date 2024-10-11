@@ -5,7 +5,6 @@ mongoose.connect('mongodb+srv://mern:mern@cluster0.6mdyfjt.mongodb.net/PIMSdb?re
     useNewUrlParser: true,
     useUnifiedTopology: true,
     ssl: true,
-    tlsVersion: 'TLSv1_2_method',  // Add this line
   });
 
 
