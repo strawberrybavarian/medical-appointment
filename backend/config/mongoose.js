@@ -1,9 +1,10 @@
 const mongoose = require('mongoose');
 
-mongoose.connect('mongodb+srv://mern:mern@cluster0.6mdyfjt.mongodb.net/PIMSdb?retryWrites=true&w=majority&tlsAllowInvalidCertificates=true', 
-  {
- 
-  });
+// mongoose.connect('mongodb+srv://mern:mern@cluster0.6mdyfjt.mongodb.net/PIMSdb?retryWrites=true&w=majority&appName=Cluster0',
+mongoose.connect('mongodb://127.0.0.1:27017/PIMSdb', 
+{
+
+});
 
 
 mongoose.connection.once('open', async () => {

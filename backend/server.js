@@ -13,7 +13,7 @@ const { ensurePatientSession, ensureDoctorSession } = require('./SessionMiddlewa
 // });
 
 app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'build', 'index.html')); // Ensure it points to your frontend's `index.html`
+    res.sendFile(path.join(__dirname, 'public', 'index.html')); // Ensure it points to your frontend's `index.html`
 });
 
 require('dotenv').config();
