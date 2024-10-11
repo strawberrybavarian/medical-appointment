@@ -3,7 +3,8 @@ const image = {
 };
 
 const ip ={
-    address: 'http://localhost:8000'
+    // address: 'http://localhost:8000'
+    address: 'https://medical-appointment-aqqs.onrender.com'
 };
 
 const specialties = [
