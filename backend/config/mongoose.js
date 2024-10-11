@@ -9,40 +9,30 @@ mongoose.connect('mongodb://127.0.0.1:27017/PIMSdb',
 
 mongoose.connection.once('open', async () => {
   try {
-    const collection = mongoose.connection.db.collection('patients');
+    // Patients collection
+    const patientsCollection = mongoose.connection.db.collection('patients');
+    const patientIndexes = await patientsCollection.indexes();
+    const patientIndexExists = patientIndexes.some(index => index.name === 'patient_email_1');
 
-    // Get the list of indexes
-    const indexes = await collection.indexes();
-    const indexExists = indexes.some(index => index.name === 'patient_email_1');
-
-    if (indexExists) {
-      console.log('Index found. Dropping the existing index...');
-      await collection.dropIndex('patient_email_1');  // Drop the existing index
-      console.log('Index dropped.');
+    if (patientIndexExists) {
+      console.log('Index "patient_email_1" found. Dropping the existing index...');
+      await patientsCollection.dropIndex('patient_email_1');
+      console.log('Index "patient_email_1" dropped.');
     } else {
-      console.log('Index not found. Skipping drop index.');
+      console.log('Index "patient_email_1" not found. Skipping drop index.');
     }
+    
+    await patientsCollection.createIndex({ patient_email: 1 }, { unique: true, sparse: true });
+    console.log('New index "patient_email_1" created.');
 
-    // Create the new index
-    await collection.createIndex({ patient_email: 1 }, { unique: true, sparse: true });
-    console.log('New index created.');
-  } catch (error) {
-    console.error('Error handling indexes:', error);
-  }
-});
+    // Appointments collection
+    const appointmentsCollection = mongoose.connection.db.collection('appointments');
+    const appointmentIndexes = await appointmentsCollection.indexes();
+    const appointmentIndexExists = appointmentIndexes.some(index => index.name === 'appointment_ID_1');
 
-//For Appointment_ID
-mongoose.connection.once('open', async () => {
-  try {
-    const collection = mongoose.connection.db.collection('appointments');
-
-    // Get the list of indexes
-    const indexes = await collection.indexes();
-    const indexExists = indexes.some(index => index.name === 'appointment_ID_1');
-
-    if (indexExists) {
+    if (appointmentIndexExists) {
       console.log('Index "appointment_ID_1" found. Dropping the existing index...');
-      await collection.dropIndex('appointment_ID_1');
+      await appointmentsCollection.dropIndex('appointment_ID_1');
       console.log('Index "appointment_ID_1" dropped.');
     } else {
       console.log('Index "appointment_ID_1" not found. Skipping drop index.');
