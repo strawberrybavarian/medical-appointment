@@ -5,6 +5,9 @@ const path = require('path');
 const fs = require('fs');
 const session = require('express-session');
 const { ensurePatientSession, ensureDoctorSession } = require('./SessionMiddleware');
+
+
+
 require('dotenv').config();
 
 app.use(session({
@@ -63,6 +66,7 @@ app.get('/uploads/:filename', (req, res) => {
         res.status(404).send('File not found.');
     }
 });
+
 
 // Routes for your other resources (appointments, etc.)
 const DoctorRoutes = require("./doctor/doctor_routes");

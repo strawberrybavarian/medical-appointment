@@ -1,12 +1,12 @@
 const mongoose = require('mongoose');
 
-mongoose.connect('mongodb+srv://mern:mern@cluster0.6mdyfjt.mongodb.net/PIMSdb?retryWrites=true&w=majority&appName=Cluster0',
-// mongoose.connect('mongodb://127.0.0.1:27017/PIMSdb', 
-{
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-  ssl: true,
-});
+mongoose.connect('mongodb+srv://mern:mern@cluster0.6mdyfjt.mongodb.net/PIMSdb?retryWrites=true&w=majority&tlsAllowInvalidCertificates=true', 
+  {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    ssl: true,
+    tlsVersion: 'TLSv1_2_method',  // Add this line
+  });
 
 
 mongoose.connection.once('open', async () => {
