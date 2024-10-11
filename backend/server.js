@@ -16,6 +16,16 @@ const { ensurePatientSession, ensureDoctorSession } = require('./SessionMiddlewa
 //     res.sendFile(path.join(__dirname, 'public', 'index.html')); // Ensure it points to your frontend's `index.html`
 // });
 
+// app.use(express.static(path.join(__dirname, '../public')));
+
+
+// // AFTER defining your routes for the API, add this catch-all route:
+// app.get('*', (req, res) => {
+//     res.sendFile(path.join(__dirname, '../public', 'index.html'));
+// });
+
+
+
 require('dotenv').config();
 
 app.use(session({
@@ -75,7 +85,7 @@ app.get('/uploads/:filename', (req, res) => {
         res.status(404).send('File not found.');
     }
 });
-
+app.use(express.static(path.join(__dirname, '../public')));
 
 // Routes for your other resources (appointments, etc.)
 const DoctorRoutes = require("./doctor/doctor_routes");
@@ -107,6 +117,8 @@ const SpecialtyRoutes = require('./specialty/specialty_routes');
 SpecialtyRoutes(app);
 const ServiceRoutes = require('./services/service_routes');
 ServiceRoutes(app);
-
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../public', 'index.html'));
+});
 // Start the server
 app.listen(port, () => console.log("\nThe server is all fired up on port 8000"));
