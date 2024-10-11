@@ -3,7 +3,7 @@ import SidebarMenu from "../sidebar/SidebarMenu";
 import { People } from 'react-bootstrap-icons';
 import { Container, Row, Col, Card } from "react-bootstrap";
 import axios from "axios";
-
+import { ip } from "../../../ContentExport";
 function Dashboard({ doctor_image, doctor_name, did }) {
   const [pendingCount, setPendingCount] = useState(0);
   const [todaysCount, setTodaysCount] = useState(0);
