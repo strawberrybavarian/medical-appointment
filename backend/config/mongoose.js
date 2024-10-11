@@ -1,7 +1,8 @@
 const mongoose = require('mongoose');
 
-
-mongoose.connect('mongodb://127.0.0.1:27017/PIMSdb', {
+mongoose.connect('mongodb://136.158.26.105/32/PIMSdb',
+// mongoose.connect('mongodb://127.0.0.1:27017/PIMSdb', 
+{
 
 });
 
