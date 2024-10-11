@@ -1,5 +1,5 @@
 const image = {
-    logo: "http://localhost:8000/images/Molino-Polyclinic-Logo.png",
+    logo: "https://medical-appointment-aqqs.onrender.com/images/Molino-Polyclinic-Logo.png",
 };
 
 const ip ={
