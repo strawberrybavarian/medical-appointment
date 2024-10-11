@@ -7,7 +7,10 @@ const session = require('express-session');
 const { ensurePatientSession, ensureDoctorSession } = require('./SessionMiddleware');
 
 
-
+app.use(express.static("./backend/build"));
+app.get("*", (req, res) => {
+    res.sendFile(path.resolve(__dirname, "backend", "build", "index.html"));    
+});
 require('dotenv').config();
 
 app.use(session({
