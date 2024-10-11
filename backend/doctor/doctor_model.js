@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const { Schema, model } = mongoose;
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 
 
 // Define timeSlotSchema for morning and afternoon time slots

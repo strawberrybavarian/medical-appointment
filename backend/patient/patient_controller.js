@@ -8,7 +8,7 @@ const speakeasy = require('speakeasy');
 const nodemailer = require('nodemailer');
 const QRCode = require('qrcode');
 const mongoose = require('mongoose');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const { staff_email } = require('../EmailExport');
 const crypto = require('crypto');
 //For Email
