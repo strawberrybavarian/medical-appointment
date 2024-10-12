@@ -1,10 +1,11 @@
 const image = {
-    logo: "https://ec2-54-151-200-168.ap-southeast-1.compute.amazonaws.com/images/Molino-Polyclinic-Logo.png",
+    logo: "http://ec2-54-151-200-168.ap-southeast-1.compute.amazonaws.com:8000/images/Molino-Polyclinic-Logo.png",
 };
 
 const ip ={
     // address: 'http://localhost:8000'
-    address: 'https://ec2-54-151-200-168.ap-southeast-1.compute.amazonaws.com/'
+    address: 'http://ec2-54-151-200-168.ap-southeast-1.compute.amazonaws.com:8000'
+
 };
 
 const specialties = [
