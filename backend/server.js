@@ -122,4 +122,6 @@ app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, '../public', 'index.html'));
 });
 // Start the server
-app.listen(port, () => console.log("\nThe server is all fired up on port 8000"));
+app.listen(port, '0.0.0.0', () => {
+    console.log(`Server running on port ${port}`);
+  });
