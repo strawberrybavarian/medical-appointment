@@ -6,33 +6,6 @@ const fs = require('fs');
 const session = require('express-session');
 const { ensurePatientSession, ensureDoctorSession } = require('./SessionMiddleware');
 
-app.use(express.static(path.join(__dirname, 'public')));
-
-app.use(express.static(path.join(__dirname, 'build')));
-
-app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'build', 'index.html'));
-});
-
-// app.use(express.static("./backend/build"));
-// app.get("*", (req, res) => {
-//     res.sendFile(path.resolve(__dirname, "backend", "build", "index.html"));    
-// });
-
-// app.get('*', (req, res) => {
-//     res.sendFile(path.join(__dirname, 'public', 'index.html')); // Ensure it points to your frontend's `index.html`
-// });
-
-app.use(express.static(path.join(__dirname, '../public')));
-
-
-// AFTER defining your routes for the API, add this catch-all route:
-app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../public', 'index.html'));
-});
-
-
-
 require('dotenv').config();
 
 app.use(session({
@@ -96,7 +69,7 @@ app.get('/uploads/:filename', (req, res) => {
     }
 });
 app.use(express.static(path.join(__dirname, '../public')));
-
+app.use(express.static(path.join(__dirname, 'build')));
 // Routes for your other resources (appointments, etc.)
 const DoctorRoutes = require("./doctor/doctor_routes");
 DoctorRoutes(app);
@@ -130,6 +103,10 @@ ServiceRoutes(app);
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, '../public', 'index.html'));
 });
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'build', 'index.html'));
+});
+
 // Start the server
 app.listen(port, '0.0.0.0', () => {
     console.log(`Server running on port ${port}`);
