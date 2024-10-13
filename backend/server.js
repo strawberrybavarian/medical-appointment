@@ -68,8 +68,8 @@ app.get('/uploads/:filename', (req, res) => {
         res.status(404).send('File not found.');
     }
 });
-app.use(express.static(path.join(__dirname, '../public')));
-app.use(express.static(path.join(__dirname, 'build')));
+app.use(express.static(path.join(__dirname, '../frontend/public')));
+app.use(express.static(path.join(__dirname, '../frontend/build')));
 // Routes for your other resources (appointments, etc.)
 const DoctorRoutes = require("./doctor/doctor_routes");
 DoctorRoutes(app);
@@ -101,10 +101,10 @@ SpecialtyRoutes(app);
 const ServiceRoutes = require('./services/service_routes');
 ServiceRoutes(app);
 app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../public', 'index.html'));
+    res.sendFile(path.join(__dirname, '../frontend/public', 'index.html'));
 });
 app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'build', 'index.html'));
+    res.sendFile(path.join(__dirname, '../frontend/build', 'index.html'));
 });
 
 // Start the server
