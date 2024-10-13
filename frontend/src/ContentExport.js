@@ -1,9 +1,9 @@
 const image = {
-    logo: "http://localhost:8000/images/Molino-Polyclinic-Logo.png",
+    logo: "http://54.251.53.18/images/Molino-Polyclinic-Logo.png",
 };
 
 const ip ={
-    address: 'http://localhost:8000'
+    address: 'http://54.251.53.18'
     // address: 'http://ec2-54-151-200-168.ap-southeast-1.compute.amazonaws.com:8000'
 
 };
