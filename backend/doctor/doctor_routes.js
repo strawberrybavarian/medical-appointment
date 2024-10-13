@@ -50,7 +50,7 @@ module.exports = app => {
   app.put('/api/doctor/api/:id/logout', DoctorController.offlineActivityStatus);
   app.put('/api/doctor/:id/status', DoctorController.updateDoctorStatus);
 
-  app.get('/api/doctor/api/test', (req, res) => { res.json({ message: "the api is working" }) });
+  
   // For Registration
   app.post('/api/doctor/api/signup', DoctorController.NewDoctorSignUp);
   app.get('/api/doctor/one/:id', DoctorController.findOneDoctor )
