@@ -8,6 +8,12 @@ const { ensurePatientSession, ensureDoctorSession } = require('./SessionMiddlewa
 
 app.use(express.static(path.join(__dirname, 'public')));
 
+app.use(express.static(path.join(__dirname, 'build')));
+
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'build', 'index.html'));
+});
+
 // app.use(express.static("./backend/build"));
 // app.get("*", (req, res) => {
 //     res.sendFile(path.resolve(__dirname, "backend", "build", "index.html"));    
@@ -17,13 +23,13 @@ app.use(express.static(path.join(__dirname, 'public')));
 //     res.sendFile(path.join(__dirname, 'public', 'index.html')); // Ensure it points to your frontend's `index.html`
 // });
 
-// app.use(express.static(path.join(__dirname, '../public')));
+app.use(express.static(path.join(__dirname, '../public')));
 
 
-// // AFTER defining your routes for the API, add this catch-all route:
-// app.get('*', (req, res) => {
-//     res.sendFile(path.join(__dirname, '../public', 'index.html'));
-// });
+// AFTER defining your routes for the API, add this catch-all route:
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../public', 'index.html'));
+});
 
 
 
