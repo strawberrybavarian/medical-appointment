@@ -98,13 +98,20 @@ function Immunization({ patientId, doctorId, appointmentId }) {
 
   
     const handleDelete = async (id) => {
+        console.log('Deleting immunization:', id);
+        console.log('patientId:', patientId);
+        console.log('doctorId:', doctorId);
+        console.log('appointmentId:', appointmentId);
+    
         try {
-            await axios.delete(`http://localhost:8000/api/immunization/${id}`);
+            await axios.delete(`http://localhost:8000/api/immunization/delete/${id}`);
             setImmunizations(immunizations.filter(immunization => immunization._id !== id));
         } catch (err) {
+            console.error('Failed to delete immunization', err);
             setError('Failed to delete immunization');
         }
     };
+    
 
     if (loading) return <div>Loading...</div>;
     if (error) return <div>{error}</div>;
@@ -227,24 +234,39 @@ function Immunization({ patientId, doctorId, appointmentId }) {
                                                 <td>{immunization.doseNumber || 'N/A'}</td>
                                                 <td>{immunization.totalDoses || 'N/A'}</td>
                                                 <td>{immunization.routeOfAdministration || 'N/A'}</td>
-
                                                 <td>
-                                                    <div className="d-flex justify-content-around flex-wrap">
-                                                        {/* Check if the current doctor is the one who administered the immunization */}
-                                                        {immunization.administeredBy === doctorId ? (
-                                                            <>
-                                                                <Link className="warning-color" onClick={() => handleEdit(index)} title="Edit">
-                                                                    <PencilSquare /> {/* Edit icon */}
-                                                                </Link>{" "}
-                                                                <Link className="danger-color" onClick={() => handleDelete(immunization._id)} title="Remove">
-                                                                    <Trash /> {/* Remove icon */}
-                                                                </Link>
-                                                            </>
-                                                        ) : (
-                                                            <span>Not Editable</span>
-                                                        )}
-                                                    </div>
-                                                </td>
+    <div className="d-flex justify-content-around flex-wrap">
+        {immunization.administeredBy === doctorId ? (
+            <>
+                <a
+                    href="#"
+                    className="warning-color"
+                    onClick={(e) => {
+                        e.preventDefault(); // Prevent default anchor behavior
+                        handleEdit(index);
+                    }}
+                    title="Edit"
+                >
+                    <PencilSquare />
+                </a>{" "}
+                <a
+                    href="#"
+                    className="danger-color"
+                    onClick={(e) => {
+                        e.preventDefault(); // Prevent default anchor behavior
+                        handleDelete(immunization._id);
+                    }}
+                    title="Remove"
+                >
+                    <Trash />
+                </a>
+            </>
+        ) : (
+            <span>Not Editable</span>
+        )}
+    </div>
+</td>
+
                                             </tr>
                                         ))
                                     ) : (

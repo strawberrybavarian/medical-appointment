@@ -1,10 +1,9 @@
-import { useEffect, useState } from "react";
-import Table from 'react-bootstrap/Table';
-import { Pagination, Form, Container, Row, Col } from 'react-bootstrap';
+import React, { useEffect, useState } from "react";
+import { Table, Pagination, Form, Row, Col, Collapse } from 'react-bootstrap';
 import './Appointment.css';
 import RescheduleModal from "./Reschedule Modal/RescheduleModal"; 
 import axios from "axios";
-
+import { ip } from "../../../ContentExport";
 const UpcomingAppointment = ({ allAppointments, setAllAppointments }) => {
   const [error, setError] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -12,7 +11,8 @@ const UpcomingAppointment = ({ allAppointments, setAllAppointments }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [showRescheduleModal, setShowRescheduleModal] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState(null);
-
+  const [expandedRow, setExpandedRow] = useState(null); // Track expanded row
+  const defaultImage = "images/014ef2f860e8e56b27d4a3267e0a193a.jpg";
   // Get today's date
   const getTodayDate = () => {
     const today = new Date();
@@ -23,8 +23,6 @@ const UpcomingAppointment = ({ allAppointments, setAllAppointments }) => {
   };
 
   const todayDate = getTodayDate();
-
-  
 
   // Filter upcoming appointments
   const upcomingAppointments = allAppointments.filter(appointment => {
@@ -55,7 +53,6 @@ const UpcomingAppointment = ({ allAppointments, setAllAppointments }) => {
     setShowRescheduleModal(true);
   };
 
-  
   const handleConfirmReschedule = (rescheduledReason) => {
     const newStatus = {
       rescheduledReason: rescheduledReason,
@@ -76,7 +73,10 @@ const UpcomingAppointment = ({ allAppointments, setAllAppointments }) => {
       });
   };
 
-  
+  // Function to toggle expanded row
+  const toggleRow = (appointmentId) => {
+    setExpandedRow(expandedRow === appointmentId ? null : appointmentId); // Toggle the expanded row
+  };
 
   return (
     <div>
@@ -122,13 +122,14 @@ const UpcomingAppointment = ({ allAppointments, setAllAppointments }) => {
           </Col>
         </Row>
 
-        <Table responsive striped  variant="light" className="mt-3">
+        <Table responsive striped variant="light" className="mt-3">
           <thead>
             <tr>
+          
               <th>Patient Name</th>
+              <th>Service</th>
               <th>Date</th>
               <th>Time</th>
-              <th>Reason</th>
               <th>Status</th>
               <th>Actions</th>
             </tr>
@@ -138,30 +139,48 @@ const UpcomingAppointment = ({ allAppointments, setAllAppointments }) => {
               const patient = appointment.patient || {}; // Ensure patient is an object
               const patientName = `${patient.patient_firstName || ''} ${patient.patient_middleInitial || ''}. ${patient.patient_lastName || ''}`.trim();
               
+              const patientImage = `${ip.address}/${patient.patient_image}` || `${ip.address}/${defaultImage}`;
+              const appointmentTypes = appointment.appointment_type
+                  .map(typeObj => typeObj.appointment_type)
+                  .join(', ');
               return (
-                <tr key={appointment._id}>
-                  <td>{patientName}</td>
-                  <td>{new Date(appointment.date).toLocaleDateString()}</td>
-                  <td>{appointment.time}</td>
-                  <td>{appointment.reason}</td>
-                  <td>
-                    <div className="d-flex justify-content-center">
-                      <div className="scheduled-appointment">
-                        {appointment.status}
+                <React.Fragment key={appointment._id}>
+                  <tr 
+                    onClick={() => toggleRow(appointment._id)} // Click to toggle
+                    style={{ cursor: 'pointer' }}
+                  >
+
+                    <td> <img alt='Patient Image' src={patientImage}style={{marginRight:'10px',width: '30px', height:'30px', borderRadius:'200px', objectFit:'contain'}}/> {patientName}</td>
+                    <td>{appointmentTypes}</td>
+                    <td>{new Date(appointment.date).toLocaleDateString()}</td>
+                    <td>{appointment.time}</td>
+                    <td>
+                      <div className="d-flex justify-content-center">
+                        <div className="scheduled-appointment">
+                          {appointment.status}
+                        </div>
                       </div>
-                    </div>
-
-
-                  </td>
-                  <td>
-                    <span 
-                      onClick={() => handleReschedule(appointment)} 
-                      style={{ cursor: 'pointer', color: 'orange', textDecoration: 'underline' }}
-                    >
-                      Reschedule
-                    </span>
-                  </td>
-                </tr>
+                    </td>
+                    <td>
+                      <span 
+                        onClick={(e) => { e.stopPropagation(); handleReschedule(appointment); }} 
+                        style={{ cursor: 'pointer', color: 'orange', textDecoration: 'underline' }}
+                      >
+                        Reschedule
+                      </span>
+                    </td>
+                  </tr>
+                  
+                  <tr>
+                    <td colSpan="6" style={{ padding: 0 }}>
+                      <Collapse in={expandedRow === appointment._id}>
+                        <div style={{ padding: '10px', backgroundColor: '#f8f9fa', transition: 'height 0.35s ease'}}>
+                          <strong>Reason:</strong> {appointment.reason}
+                        </div>
+                      </Collapse>
+                    </td>
+                  </tr>
+                </React.Fragment>
               );
             })}
           </tbody>

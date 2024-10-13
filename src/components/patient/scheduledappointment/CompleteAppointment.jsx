@@ -5,22 +5,22 @@ import './Appointment.css';
 import PrescriptionPatientModal from "./Modal/PrescriptionPatientModal";
 import { PeopleFill, ClockFill, PersonFill, PencilFill } from 'react-bootstrap-icons';
 import { useParams } from 'react-router-dom';
-function CompleteAppointment() {
-    const [appointments, setAppointments] = useState([]);
+function CompleteAppointment({appointments, setAppointments}) {
+   
     const { pid } = useParams(); 
     const defaultImage = "images/014ef2f860e8e56b27d4a3267e0a193a.jpg";
     const [showModal, setShowModal] = useState(false);
     const [selectedAppointment, setSelectedAppointment] = useState(null);
 
-    useEffect(() => {
-        axios.get(`http://localhost:8000/patient/api/onepatient/${pid}`)
-            .then((res) => {
-                setAppointments(res.data.thePatient.patient_appointments);
-            })
-            .catch((err) => {
-                console.log(err);
-            });
-    }, [pid]);
+    // useEffect(() => {
+    //     axios.get(`http://localhost:8000/patient/api/onepatient/${pid}`)
+    //         .then((res) => {
+    //             setAppointments(res.data.thePatient.patient_appointments);
+    //         })
+    //         .catch((err) => {
+    //             console.log(err);
+    //         });
+    // }, [pid]);
 
     const handleCloseModal = () => {
         setShowModal(false);

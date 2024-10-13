@@ -8,6 +8,39 @@ const Admin = require('./admin_model')
 const Services = require('../services/service_model')
 const Specialty = require('../specialty/specialty_model')
 
+const getAllStaff = async (req, res) => {
+    try {
+      const admins = await Admin.find();
+      const medicalSecretaries = await MedicalSecretary.find();
+      const staff = [...admins, ...medicalSecretaries];
+      res.status(200).json({ staff });
+    } catch (error) {
+      res.status(500).json({ message: 'Error fetching staff', error: error.message });
+    }
+  };
+
+  const updateStaffAccountStatus = async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { status, role } = req.body;
+  
+      let updatedStaff;
+      if (role === 'admin') {
+        updatedStaff = await Admin.findByIdAndUpdate(id, { accountStatus: status }, { new: true });
+      } else if (role === 'medicalSecretary') {
+        updatedStaff = await MedicalSecretary.findByIdAndUpdate(id, { accountStatus: status }, { new: true });
+      }
+  
+      if (!updatedStaff) {
+        return res.status(404).json({ message: 'Staff member not found' });
+      }
+  
+      res.status(200).json({ message: 'Staff account status updated', staff: updatedStaff });
+    } catch (error) {
+      res.status(500).json({ message: 'Error updating account status', error: error.message });
+    }
+  };
+
 
 const confirmDeactivation = async (req, res) => {
     try {
@@ -217,7 +250,9 @@ module.exports = {
     updateDoctorAccountStatus,
     updatePatientAccountStatus,
     confirmDeactivation,
-    getDeactivationRequests
+    getDeactivationRequests,
+    getAllStaff,
+    updateStaffAccountStatus,
 
 
 };

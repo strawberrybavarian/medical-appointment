@@ -6,24 +6,15 @@ import PrescriptionPatientModal from "./Modal/PrescriptionPatientModal";
 import RescheduledModal from "./Modal/RescheduledModal";
 import { PeopleFill, ClockFill, PersonFill, PencilFill } from 'react-bootstrap-icons';
 import { useParams } from 'react-router-dom';
-function RescheduledAppointment() {
-    const [appointments, setAppointments] = useState([]);
-    const { pid, did } = useParams(); 
+function RescheduledAppointment({appointments, setAppointments}) {
+   
     const defaultImage = "images/014ef2f860e8e56b27d4a3267e0a193a.jpg";
     const [showModal, setShowModal] = useState(false);
     const [showRescheduleModal, setShowRescheduleModal] = useState(false);
     const [selectedAppointment, setSelectedAppointment] = useState(null);
     const [error, setError] = useState("");
 
-    useEffect(() => {
-        axios.get(`http://localhost:8000/patient/api/onepatient/${pid}`)
-            .then((res) => {
-                setAppointments(res.data.thePatient.patient_appointments);
-            })
-            .catch((err) => {
-                console.log(err);
-            });
-    }, [pid]);
+
 
     const handleCloseModal = () => {
         setShowModal(false);
@@ -105,8 +96,7 @@ function RescheduledAppointment() {
 
     return (
         <>
-            <div className='mainContainer'>
-                <Container>
+           
                     {Object.keys(groupedAppointments).map((groupKey, index) => (
                         <React.Fragment key={index}>
                             <div className='mt-5'>
@@ -162,8 +152,7 @@ function RescheduledAppointment() {
                             })}
                         </React.Fragment>
                     ))}
-                </Container>
-            </div>
+             
             <PrescriptionPatientModal 
                 show={showModal} 
                 handleClose={handleCloseModal} 

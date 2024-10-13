@@ -1,22 +1,19 @@
-import {  useParams  } from "react-router-dom";
+import {  useLocation, useParams  } from "react-router-dom";
 
 
 
 import PatientNavBar from "../PatientNavBar/PatientNavBar";
 import PatientInformationSidebar from "./Sidebar/PatientInformationSidebar";
-
-
+import { usePatient } from "../PatientContext";
 function MainPatientInformation() {
-    
-    const { pid } = useParams(); 
+    const { patient } = usePatient();
 
-  
  
     return (
         <>
       
-                <PatientNavBar/>
-                <PatientInformationSidebar pid={pid}/>    
+                <PatientNavBar pid={patient._id}/>
+                <PatientInformationSidebar pid={patient._id}/>    
         </>
     );
 }

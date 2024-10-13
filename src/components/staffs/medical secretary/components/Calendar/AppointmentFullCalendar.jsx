@@ -7,14 +7,16 @@ import Tippy from '@tippyjs/react';
 import 'tippy.js/dist/tippy.css'; // Required for styling
 import axios from 'axios';
 import { Container, Card } from 'react-bootstrap';
-import { useNavigate, useParams } from 'react-router-dom'; // Import useNavigate
+import { useNavigate, useLocation } from 'react-router-dom'; // Import useNavigate and useLocation
 
 function AppointmentFullCalendar() {
   const [allAppointments, setAllappointments] = useState([]);
   const calendarRef = useRef(null); // Reference to FullCalendar
   const navigate = useNavigate(); // Replace useHistory with useNavigate
-  const {msid} = useParams();
-  console.log(msid);
+  const location = useLocation(); // Use useLocation to get the passed state
+
+  // Extract userId, userName, and role from location state
+  const { userId: msid, userName: name, role: roles } = location.state || {};
 
   // State variable for headerToolbar
   const [headerToolbar, setHeaderToolbar] = useState({
@@ -62,18 +64,18 @@ function AppointmentFullCalendar() {
 
   const parseTimeString = (timeString) => {
     if (!timeString) return '00:00:00'; // Default to midnight if time is not provided
-  
+
     const [time, modifier] = timeString.split(' ');
     let [hours, minutes] = time.split(':');
-  
+
     if (hours === '12') {
       hours = '00';
     }
-  
+
     if (modifier === 'PM') {
       hours = parseInt(hours, 10) + 12;
     }
-  
+
     return `${hours}:${minutes}:00`;
   };
 
@@ -82,7 +84,7 @@ function AppointmentFullCalendar() {
     const timePart = appointment.time ? parseTimeString(appointment.time) : '00:00:00'; // Fallback to '00:00:00' if no time
     const dateTimeString = `${datePart}T${timePart}`;
     const startTime = new Date(dateTimeString);
-  
+
     return {
       id: appointment._id,
       title: `${appointment.patient.patient_firstName} ${appointment.patient.patient_lastName}`,
@@ -95,11 +97,10 @@ function AppointmentFullCalendar() {
         : 'No doctor assigned',
     };
   });
-  
 
   const handleEventClick = (eventInfo) => {
     const { status } = eventInfo.event.extendedProps; // Get status from extendedProps
-  
+
     // Determine the correct tab based on the appointment status
     let tab;
     if (status === 'Scheduled') {
@@ -109,13 +110,14 @@ function AppointmentFullCalendar() {
     } else if (status === 'Pending') {
       tab = 'pending';
     }
-  
+
     // If a valid tab is found, navigate to the respective URL
     if (tab) {
-      navigate(`/medsec/appointments/${msid}?tab=${tab}`); // Programmatic navigation using useNavigate
+      navigate(`/medsec/appointments?tab=${tab}`, {
+        state: { userId: msid, userName: name, role: roles },
+      });
     }
   };
-  
 
   const renderEventContent = (eventInfo) => {
     const tooltipContent = `

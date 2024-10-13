@@ -19,6 +19,7 @@ const storage = multer.diskStorage({
     cb(null, Date.now() + '-' + file.originalname);
   }
 });
+
 const fileFilter = (req, file, cb) => {
   if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png') {
     cb(null, true);
@@ -26,6 +27,7 @@ const fileFilter = (req, file, cb) => {
     cb(new Error('File type not supported'), false);
   }
 };
+
 const upload = multer({
   storage: storage,
   fileFilter: fileFilter
@@ -37,10 +39,13 @@ const upload = multer({
 
 
 module.exports = app => {
-
+  //Biography
+  app.put('/doctor/:id/updatebiography', DoctorController.updateDoctorBiography);  // Update Biography
+  app.get('/doctor/:id/getbiography', DoctorController.getDoctorBiography);      // Get Biography
+  app.delete('/doctor/:id/deletebiography', DoctorController.deleteDoctorBiography); // Delete Biography
   // Uploading Image
   app.post('/doctor/api/:id/updateimage', upload.single('image'), DoctorController.updateDoctorImage);
-
+  app.get('/doctor/:id', DoctorController.findOneDoctor);
   //Activity Status
   app.put('/doctor/api/:id/logout', DoctorController.offlineActivityStatus);
   app.put('/doctor/:id/status', DoctorController.updateDoctorStatus);
@@ -70,6 +75,7 @@ module.exports = app => {
   // app.get('/doctor/api/post/getallpost/:id', DoctorController.getAllPostbyId);
   // app.delete('/doctor/api/post/deletepost/:id/:index', DoctorController.findPostByIdDelete);
   // app.put('/doctor/api/post/updatepost/:id/:index', DoctorController.updatePostAtIndex);
+
 
   // For Appointments
   app.put('/doctor/api/:uid/acceptpatient', DoctorController.acceptPatient)

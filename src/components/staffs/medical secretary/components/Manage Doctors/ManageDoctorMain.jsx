@@ -3,16 +3,23 @@ import DoctorScheduleManagement from './DoctorScheduleManagement';
 import MSDoctorProfile from './MSDoctorProfile';
 import MedSecNavbar from '../../navbar/MedSecNavbar';
 import SpecificDoctorAppointments from './SpecificDoctorAppointments';
-import { useParams } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 import { Container, Row, Col, Nav } from 'react-bootstrap';
 import DeactivationRequests from '../../../admin/appointment/doctors/DeactivationRequests';
 function ManageDoctorMain() {
-    const { did, msid } = useParams();
+    const location = useLocation();
+    const { did, msid } = location.state || {}; // Get did and msid from location state
+
+    console.log('Received did:', did);
+    console.log('Received msid:', msid);
+    
+    
     const [activeTab, setActiveTab] = useState('profile');
 
     return (
         <div>
-            <MedSecNavbar did={did} msid={msid} />
+         
+            <MedSecNavbar  msid={msid} />
             <Container fluid style={{ overflowY: 'auto', height: 'calc(100vh - 100px)', width: '100%', paddingBottom: '1.5rem' }}>
                 <div style={{paddingLeft: '5rem' , paddingRight: '5rem'}} className='pt-5'>
                     {/* Tabs for switching between sections */}

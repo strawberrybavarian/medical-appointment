@@ -222,6 +222,7 @@ const updateDoctorDetails = (req, res) => {
 const findAllDoctors = (req, res) => {
     Doctors.find()
         .populate('dr_posts')
+        .populate('dr_services')
         .then(allDataDoctors => {
             res.json({ theDoctor: allDataDoctors });
         })
@@ -234,18 +235,12 @@ const findOneDoctor = (req, res) => {
     const doctorId = req.params.id;
 
     Doctors.findById(doctorId)
+        .populate('dr_services')
+        .populate('dr_appointments') // Populate services offered by the doctor
         .then(doctor => {
             if (!doctor) {
                 return res.status(404).json({ message: 'Doctor not found' });
             }
-
-            // Optionally, update status here based on specific conditions, such as an explicit login action
-            // For example:
-            // if (req.query.updateStatus === 'true') {
-            //     doctor.activityStatus = 'Online';
-            //     doctor.lastActive = Date.now();
-            // }
-
             res.json({ doctor });
         })
         .catch(err => {
@@ -266,9 +261,9 @@ const findUniqueSpecialties = (req, res) => {
 const updateDoctorImage = async (req, res) => {
     try {
       const doctorId = req.params.id;
-      const imagePath = `images/${req.file.filename}`; 
+      const imagePath = `images/${req.file.filename}`; // Path to saved image
   
-
+      // Update doctor's image in the database
       const updatedDoctor = await Doctors.findByIdAndUpdate(doctorId, { dr_image: imagePath }, { new: true });
   
       res.json({ updatedDoctor, message: 'Doctor image updated successfully' });
@@ -276,11 +271,12 @@ const updateDoctorImage = async (req, res) => {
       console.error('Error updating doctor image:', error);
       res.status(500).json({ message: 'Error updating doctor image', error });
     }
-};
+  };
 // Get Doctor by ID
 const findDoctorById = (req, res) => {
     Doctors.findOne({ _id: req.params.id })
         .populate('dr_posts')
+        .populate('dr_appointments')
         .then((theDoctor) => {
             res.json({ theDoctor });
         })
@@ -768,6 +764,73 @@ const getPatientsByDoctor = async (req, res) => {
     }
 };
 
+const updateDoctorBiography = async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { biography } = req.body;
+  
+      // Find and update the doctor's biography
+      const updatedDoctor = await Doctors.findByIdAndUpdate(
+        id,
+        { biography },
+        { new: true, runValidators: true }
+      );
+  
+      if (!updatedDoctor) {
+        return res.status(404).json({ message: 'Doctor not found' });
+      }
+  
+      res.status(200).json({ message: 'Biography updated successfully', biography: updatedDoctor.biography });
+    } catch (error) {
+      console.error('Error updating biography:', error);
+      res.status(500).json({ message: 'Internal server error', error });
+    }
+  };
+  
+  // Read (Get) Biography
+// doctor_controller.js
+
+// Get Doctor Biography
+const getDoctorBiography = async (req, res) => {
+    try {
+      const { id } = req.params;
+  
+      const doctor = await Doctors.findById(id).select('biography');
+      if (!doctor) {
+        return res.status(404).json({ message: 'Doctor not found' });
+      }
+  
+      res.status(200).json({ biography: doctor.biography });
+    } catch (error) {
+      res.status(500).json({ message: 'Error fetching biography', error });
+    }
+  };
+  
+  
+  // Delete Biography
+// doctor_controller.js
+
+// Delete Doctor Biography
+const deleteDoctorBiography = async (req, res) => {
+    try {
+      const { id } = req.params;
+  
+      const updatedDoctor = await Doctors.findByIdAndUpdate(
+        id,
+        { biography: {} },
+        { new: true }
+      );
+  
+      if (!updatedDoctor) {
+        return res.status(404).json({ message: 'Doctor not found' });
+      }
+  
+      res.status(200).json({ message: 'Biography deleted successfully', biography: updatedDoctor.biography });
+    } catch (error) {
+      res.status(500).json({ message: 'Error deleting biography', error });
+    }
+  };
+  
 
 
 
@@ -803,6 +866,9 @@ module.exports = {
     offlineActivityStatus,
     updateDoctorStatus,
     requestDeactivation,
-    specificAppointmentsforDoctor
+    specificAppointmentsforDoctor,
+    updateDoctorBiography,
+    getDoctorBiography,
+    deleteDoctorBiography,
 
 };

@@ -17,4 +17,34 @@
   .fc .fc-daygrid-day-number {
     color: #007bff;
   }
+
+  .forpayment-appointment{
+    background-color: #fc983c;
+    color: white;
+    width: 100px;
+    border-radius: 12px;
+  }
+
+  .action-button {
+    border: none;
+    color: #007bff;
+    background-color: transparent;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  
+  .action-button:hover {
+    color: #0056b3;
+  }
+  
+  .action-item {
+    font-size: 14px;
+    cursor: pointer;
+  }
+  
+  .action-item:hover {
+    background-color: #f8f9fa;
+    color: #0056b3;
+  }
+  
   

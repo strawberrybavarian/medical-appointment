@@ -26,6 +26,7 @@ const MedicalSecretarySchema = new Schema({
         type: String,
   
     },
+    ms_image: { type: String },
     notifications: [{
         type: Schema.Types.ObjectId,
         ref: 'Notification'

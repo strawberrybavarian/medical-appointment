@@ -9,8 +9,13 @@
 
 body{
   font-family: 'Poppins', sans-serif !important;
+  background-color: #F0F2F5;
 }
-
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
 .molino-logo{
  width: 5.6rem;
  height:5.2rem
@@ -82,4 +87,38 @@ thead{
    --bs-table-striped-bg: #fcfbfbf3 !important; 
 
   
+}
+
+.maincolor-container {
+
+
+}
+
+.maincolor-container {
+  background-color: #FCFAFA;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+
+}
+
+/* Content area should take up the remaining space and be scrollable */
+.content-area {
+  flex: 1; /* Fills remaining space */
+ /* Allows scrolling within the content area */
+  padding: 1.5rem 0;
+}
+
+/* Footer stays at the bottom */
+.footer-container {
+  margin-top: auto; /* Pushes footer to the bottom */
+  width: 100vw;}
+
+.cont-fluid-no-gutter{
+  --bs-gutter-x: 0 !important;
+}
+
+.no-decoration{
+  color: gray;
+  text-decoration: none;
 }

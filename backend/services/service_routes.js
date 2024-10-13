@@ -7,17 +7,22 @@ module.exports = app => {
  
     app.post('/admin/add/services', ServicesController.createService);
 
-    // Route to get all services
-    app.get('/admin/get/services', ServicesController.getAllServices);
+
+    app.get('/admin/getall/services', ServicesController.getAllServices);
     
-    // Route to get a single service by ID
+
     app.get('/admin/services/:id', ServicesController.getServiceById);
     
-    // Route to update a service by ID
+
     app.put('/admin/update/services/:id', ServicesController.updateService);
     
-    // Route to delete a service by ID
+
     app.delete('/admin/delete/services/:id', ServicesController.deleteService);
+
+    app.post('/doctor/:doctorId/add-service/:serviceId', ServicesController.addServiceToDoctor); // Doctor adds a service they offer
+    app.delete('/doctor/:doctorId/remove-service/:serviceId', ServicesController.removeServiceFromDoctor); // Doctor removes a service they offer
+    app.get('/doctor/:doctorId/services-status', ServicesController.fetchDoctorServiceStatus);
+
 
 
 }

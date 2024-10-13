@@ -34,8 +34,30 @@ function MedSecOngoing({ allAppointments, setAllAppointments }) {
       .catch((err) => {
         console.log(err);
       });
-  }
+  };
 
+  // Function to convert 24-hour time to 12-hour format with AM/PM
+  const convertTo12HourFormat = (time) => {
+    if (!time) return 'Not Assigned'; // Handle null or undefined times
+  
+    // Check if the time is already in "HH:MM AM/PM - HH:MM AM/PM" format
+    if (time.includes('AM') || time.includes('PM')) {
+      return time; // Return time as is if it's already in the correct format
+    }
+  
+    // Split the time into hours and minutes (HH:MM)
+    const [hours, minutes] = time.split(':');
+  
+    // Determine if it's AM or PM
+    const period = hours >= 12 ? 'PM' : 'AM';
+    
+    // Convert to 12-hour format
+    const hour12 = hours % 12 || 12; // Convert to 12-hour format
+  
+    return `${hour12}:${minutes} ${period}`;
+  };
+
+  // Filter appointments based on criteria
   const filteredAppointments = allAppointments
     .filter(appointment => appointment.status === 'Ongoing')
     .filter(appointment => 
@@ -46,6 +68,7 @@ function MedSecOngoing({ allAppointments, setAllAppointments }) {
     .filter(appointment => selectedDoctor === "" || appointment.doctor?._id === selectedDoctor)
     .filter(appointment => selectedAccountStatus === "" || appointment.patient.accountStatus === selectedAccountStatus);
 
+  // Pagination logic
   const indexOfLastAppointment = currentPage * entriesPerPage;
   const indexOfFirstAppointment = indexOfLastAppointment - entriesPerPage;
   const currentAppointments = filteredAppointments.slice(indexOfFirstAppointment, indexOfLastAppointment);
@@ -58,10 +81,12 @@ function MedSecOngoing({ allAppointments, setAllAppointments }) {
   return (
     <>
       <Container>
-        <div style={{ padding: '30px', width: '100%' }}>
-          <h1>Ongoing Appointments</h1>
+     
+          <h3>Ongoing Appointments</h3>
+          <hr/>
           <Container className="p-0">
-            <Row className="g-3"> {/* Use gutter spacing to control the space between columns */}
+            <Row className="g-3">
+              {/* Doctor Filter */}
               <Col lg={4} md={6} sm={12}>
                 <Form.Group controlId="formDoctorSearch" className="d-flex align-items-center">
                   <Form.Label style={{ marginRight: '1vh' }}>Doctor:</Form.Label>
@@ -81,6 +106,7 @@ function MedSecOngoing({ allAppointments, setAllAppointments }) {
                 </Form.Group>
               </Col>
 
+              {/* Patient Search Input */}
               <Col lg={4} md={6} sm={12} className="p-0">
                 <Form.Group controlId="formSearch" className="d-flex align-items-center">
                   <Form.Label style={{ marginLeft: '1vh', marginRight: '1vh' }}>Patient:</Form.Label>
@@ -94,6 +120,7 @@ function MedSecOngoing({ allAppointments, setAllAppointments }) {
                 </Form.Group>
               </Col>
 
+              {/* Account Status Filter */}
               <Col lg={3} md={5} sm={12} className="p-0">
                 <Form.Group controlId="formAccountStatus" className="d-flex align-items-center">
                   <Form.Label style={{ marginLeft: '1vh', marginRight: '1vh' }}>Status:</Form.Label>
@@ -112,14 +139,15 @@ function MedSecOngoing({ allAppointments, setAllAppointments }) {
             </Row>
           </Container>
 
-          <Table striped bordered hover variant="light">
+          {/* Appointment Table */}
+          <Table responsive striped variant="light" className="mt-3">
             <thead>
               <tr>
                 <th>Patient Name</th>
                 <th>Doctor Name</th>
                 <th>Service</th> 
                 <th>Date</th>
-                <th>Time</th>
+                <th>Time</th> {/* Add Time column */}
                 <th>Reason</th>
                 <th>Status</th>
                 <th>Actions</th>
@@ -130,22 +158,33 @@ function MedSecOngoing({ allAppointments, setAllAppointments }) {
                 const patient = appointment.patient;
                 const patientName = `${patient.patient_firstName} ${patient.patient_middleInitial}. ${patient.patient_lastName}`;
 
-                // Check if doctor exists before rendering
+                // Handle missing doctor gracefully
                 const doctor = appointment.doctor;
                 const doctorName = doctor 
                   ? `${doctor.dr_firstName} ${doctor.dr_middleInitial}. ${doctor.dr_lastName}` 
                   : 'No Doctor Assigned';
 
-                const appointmentTypes = appointment.appointment_type.join(', ');
+                // If appointment_type is an array of objects, extract the type names
+                const appointmentTypes = appointment.appointment_type
+                  .map(typeObj => typeObj.appointment_type) // Extract the service type name
+                  .join(', ');
+
                 return (
                   <tr key={appointment._id}>
-                    <td>{patientName}</td>
-                    <td>{doctorName}</td> {/* Handle missing doctor */}
-                    <td>{appointmentTypes}</td>
-                    <td>{new Date(appointment.date).toLocaleDateString()}</td>
-                    <td>{appointment.time}</td>
-                    <td>{appointment.reason}</td>
-                    <td>{appointment.status}</td>
+                    <td style={{fontSize: '14px'}}>{patientName}</td>
+                    <td style={{fontSize: '14px'}}>{doctorName}</td>
+                    <td style={{fontSize: '14px'}}>{appointmentTypes}</td>
+                    <td style={{fontSize: '14px'}}>{new Date(appointment.date).toLocaleDateString()}</td>
+                    <td style={{fontSize: '14px'}}>{convertTo12HourFormat(appointment.time)}</td> {/* Add time format conversion */}
+                    <td style={{fontSize: '14px'}}>{appointment.reason}</td>
+                    <td>
+
+                        <div className="d-flex justify-content-center">
+                          <div className="ongoing-appointment" style={{fontSize: '12px'}}>
+                            {appointment.status}
+                          </div>
+                        </div>
+                    </td>
                     <td>
                       {/* Actions can be added here */}
                     </td>
@@ -155,6 +194,7 @@ function MedSecOngoing({ allAppointments, setAllAppointments }) {
             </tbody>
           </Table>
 
+          {/* Pagination */}
           <Container className="d-flex justify-content-between p-0">
             <div style={{ height: '40%', width: '40%' }} className="d-flex p-0 align-content-center">
               <div style={{ height: '60%', width: '60%' }}>
@@ -180,7 +220,7 @@ function MedSecOngoing({ allAppointments, setAllAppointments }) {
               <Pagination.Last onClick={() => setCurrentPage(pageNumbers.length)} disabled={currentPage === pageNumbers.length} />
             </Pagination>
           </Container>
-        </div>
+
       </Container>
     </>
   );

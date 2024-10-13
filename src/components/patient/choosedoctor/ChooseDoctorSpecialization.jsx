@@ -4,13 +4,14 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import PatientNavBar from "../PatientNavBar/PatientNavBar";
 import { ip } from "../../../ContentExport";
-
+import { usePatient } from "../PatientContext";
 function ChooseDoctorSpecialization({ did }) {
     const [theDoctors, setAllDoctors] = useState([]);
     const { specialty, pid } = useParams();
     const navigate = useNavigate();
     const defaultImage = "images/014ef2f860e8e56b27d4a3267e0a193a.jpg";
-
+    const { patient } = usePatient();
+    const { setDoctorId } = usePatient();
     useEffect(() => {
         axios.get(`${ip.address}/doctor/api/alldoctor`)
             .then((res) => {
@@ -25,12 +26,13 @@ function ChooseDoctorSpecialization({ did }) {
     }, [specialty]);
 
     const handleDoctorClick = (did) => {
-        navigate(`/doctorprofile/${pid}/${did}`);
+        setDoctorId(did);
+        navigate(`/doctorprofile`);
     };
 
     return (
         <>
-             <PatientNavBar/>
+             <PatientNavBar pid={patient._id}/>
 
            
 <div style={{paddingTop: '40px'}}>

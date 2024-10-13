@@ -3,13 +3,14 @@ import { Container, Row, Col, Button, Card, Form, Table, } from 'react-bootstrap
 import axios from "axios";
 import { useEffect, useState } from "react";
 import './PatientFindings.css'; 
-
+import PatientHistory from "./PatientHistory";
 function PatientFindings({ patientId, appointmentId, doctorId }) {
     const [fname, setFname] = useState('');
     const [lname, setLname] = useState('');
     const [age, setAge] = useState('');
     const [email, setEmail] = useState('');
-
+ 
+    const [reason, setReason] = useState('');
     const [findings, setFindings] = useState({
         bloodPressure: { systole: '', diastole: '' },
         respiratoryRate: '',
@@ -38,11 +39,22 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
         assessment: '',
     });
     
-
+;
     const [loading, setLoading] = useState(true);  
     const [error, setError] = useState(null);      
 
     const navigate = useNavigate();
+    useEffect(() => {
+        axios.get(`http://localhost:8000/appointments/${appointmentId}`)
+            .then((res) => {                        
+                setReason(res.data.reason);
+            })
+            .catch((err) => {
+                console.error('Error fetching appointment:', err);
+                setError('Failed to load appointment data. Please try again later.');
+            });
+    }, [appointmentId]);
+
 
     useEffect(() => {
         const fetchPatientAndFindings = async () => {
@@ -59,6 +71,16 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
                 if (findingsRes.data && findingsRes.data.findings) {
                     setFindings(findingsRes.data.findings);
                 }
+
+                const appointmnetRes = await axios.get(`http://localhost:8000/appointments/${appointmentId}`);
+
+                if (appointmnetRes.data && appointmnetRes.data.appointment) { 
+                   
+                    setReason(appointmnetRes.data);
+                }
+
+
+                
     
                 setLoading(false);
             } catch (err) {
@@ -196,8 +218,16 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
                             <Card.Text>
                                 <strong>Patient Email:</strong> {email}
                             </Card.Text>
+                            <Card.Text>
+                                <strong>Primary Concern:</strong> {reason}
+                            </Card.Text>
                         </Card.Body>
                     </Card>
+
+                    <PatientHistory pid={patientId}/>
+
+
+                    
                 </Col>
 
                 <Col md={8}>

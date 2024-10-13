@@ -1,32 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { Form, Button, Table, Container } from 'react-bootstrap';
+import { Form, Button, Table, Container, Row, Col } from 'react-bootstrap';
 import axios from 'axios';
-
-function LaboratoryResults({ patientId, appointmentId, doctorId }) {
+import LaboratoryHistory from './LaboratoryHistory';
+function LaboratoryResults({ patientId, appointmentId }) {
     const [formData, setFormData] = useState({
-        interpretation: '',
-        recommendations: '',
-        testResults: [],
         file: null
-    });
-    const [newTestResult, setNewTestResult] = useState({
-        name: '',
-        value: '',
-        unit: '',
-        lower: '',
-        upper: '',
-        status: 'Normal',
-        notes: ''
     });
     const [labResults, setLabResults] = useState([]);
     const [error, setError] = useState(null);
+    const [success, setSuccess] = useState(null); // To show success message
 
-    // Fetch laboratory results for the patient
+   
     useEffect(() => {
         const fetchLabResults = async () => {
             try {
                 const response = await axios.get(`http://localhost:8000/patient/${patientId}/appointments/${appointmentId}/labResults`);
                 setLabResults(response.data);
+                console.log(response.data);
             } catch (err) {
                 setError('Failed to fetch laboratory results');
             }
@@ -34,74 +24,57 @@ function LaboratoryResults({ patientId, appointmentId, doctorId }) {
         fetchLabResults();
     }, [patientId, appointmentId]);
 
-    // Handle form input changes
-    const handleInputChange = (e) => {
-        setFormData({
-            ...formData,
-            [e.target.name]: e.target.value
-        });
-    };
-
-    // Handle test result changes
-    const handleTestResultChange = (e) => {
-        setNewTestResult({
-            ...newTestResult,
-            [e.target.name]: e.target.value
-        });
-    };
-
-    // Add a new test result to the form
-    const addTestResult = () => {
-        setFormData({
-            ...formData,
-            testResults: [...formData.testResults, newTestResult]
-        });
-        setNewTestResult({
-            name: '',
-            value: '',
-            unit: '',
-            lower: '',
-            upper: '',
-            status: 'Normal',
-            notes: ''
-        });
-    };
-
     // Handle file input change
     const handleFileChange = (e) => {
-        setFormData({
-            ...formData,
-            file: e.target.files[0]
-        });
+        const file = e.target.files[0];
+        if (file && file.type !== 'application/pdf') {
+            setError('Only PDF files are allowed.');
+            setFormData({
+                ...formData,
+                file: null
+            });
+        } else {
+            setError(null); // Clear any previous errors
+            setFormData({
+                ...formData,
+                file: file
+            });
+        }
     };
 
-    // Handle form submission (creating lab result)
+    // Handle form submission (creating lab result with file upload)
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setError(null); // Reset error state before submission
+        setSuccess(null); // Reset success state
+    
+        if (!formData.file) {
+            setError('Please upload a PDF file.');
+            return;
+        }
+    
         const labData = new FormData();
-        labData.append('interpretation', formData.interpretation);
-        labData.append('recommendations', formData.recommendations);
-        labData.append('testResults', JSON.stringify(formData.testResults)); // send test results as JSON string
         labData.append('file', formData.file);
-        labData.append('doctorId', doctorId);
-
+    
+        // Add an empty array for testResults if it's not being used
+        labData.append('testResults', JSON.stringify([]));
+    
         try {
             await axios.post(`http://localhost:8000/doctor/api/createLaboratoryResult/${patientId}/${appointmentId}`, labData, {
                 headers: {
-                    'Content-Type': 'multipart/form-data'
+                    'Content-Type': 'multipart/form-data' // Ensure this is correctly set
                 }
             });
-            alert('Laboratory result created successfully');
+            setSuccess('Laboratory result uploaded successfully');
             setFormData({
-                interpretation: '',
-                recommendations: '',
-                testResults: [],
                 file: null
             });
         } catch (err) {
-            setError('Failed to create laboratory result');
+            setError('Failed to upload laboratory result');
+            console.error('Error uploading file:', err.response?.data || err.message);
         }
     };
+    
 
     // Download file
     const downloadFile = async (resultId) => {
@@ -117,139 +90,45 @@ function LaboratoryResults({ patientId, appointmentId, doctorId }) {
             link.click();
         } catch (err) {
             setError('Failed to download file');
+            console.error('Error downloading file:', err.response?.data || err.message);
         }
     };
 
     return (
-        <Container>
-            <h3>Laboratory Results for Appointment #{appointmentId}</h3>
-            {error && <p className="text-danger">{error}</p>}
+        <Container fluid>
+          
+            {/* {error && <p className="text-danger">{error}</p>}
+            {success && <p className="text-success">{success}</p>} */}
+
+            {/* Form for uploading lab results */}
+             
+            <Row>
+                <Col md={6}>
+                    <h4 className="m-0 font-weight-bold text-gray">Past Laboratories</h4>
+                    <hr/>
+                     <LaboratoryHistory pid={patientId}/> 
+                
+                </Col>
+                <Col>
+                    <Form onSubmit={handleSubmit}>
+                        <Form.Group controlId="file">
+                            <Form.Label>Upload Laboratory Result (PDF Only)</Form.Label>
+                            <Form.Control
+                                type="file"
+                                accept="application/pdf"
+                                onChange={handleFileChange} 
+                            />
+                        </Form.Group>
+
+                        <Button type="submit" variant="primary" className="mt-3">
+                            Upload Laboratory Result
+                        </Button>
+                    </Form>
+                </Col>
+            </Row>
             
-            {/* Form for submitting lab results */}
-            <Form onSubmit={handleSubmit}>
-                <Form.Group controlId="interpretation">
-                    <Form.Label>Interpretation</Form.Label>
-                    <Form.Control
-                        as="textarea"
-                        name="interpretation"
-                        value={formData.interpretation}
-                        onChange={handleInputChange}
-                    />
-                </Form.Group>
-
-                <Form.Group controlId="recommendations">
-                    <Form.Label>Recommendations</Form.Label>
-                    <Form.Control
-                        as="textarea"
-                        name="recommendations"
-                        value={formData.recommendations}
-                        onChange={handleInputChange}
-                    />
-                </Form.Group>
-
-                {/* Add test results */}
-                <h5>Test Results</h5>
-                <Form.Group>
-                    <Form.Label>Test Name</Form.Label>
-                    <Form.Control
-                        type="text"
-                        name="name"
-                        value={newTestResult.name}
-                        onChange={handleTestResultChange}
-                    />
-                </Form.Group>
-                <Form.Group>
-                    <Form.Label>Value</Form.Label>
-                    <Form.Control
-                        type="text"
-                        name="value"
-                        value={newTestResult.value}
-                        onChange={handleTestResultChange}
-                    />
-                </Form.Group>
-                <Form.Group>
-                    <Form.Label>Unit</Form.Label>
-                    <Form.Control
-                        type="text"
-                        name="unit"
-                        value={newTestResult.unit}
-                        onChange={handleTestResultChange}
-                    />
-                </Form.Group>
-                <Form.Group>
-                    <Form.Label>Reference Range</Form.Label>
-                    <Form.Control
-                        type="number"
-                        placeholder="Lower"
-                        name="lower"
-                        value={newTestResult.lower}
-                        onChange={handleTestResultChange}
-                    />
-                    <Form.Control
-                        type="number"
-                        placeholder="Upper"
-                        name="upper"
-                        value={newTestResult.upper}
-                        onChange={handleTestResultChange}
-                    />
-                </Form.Group>
-                <Form.Group>
-                    <Form.Label>Status</Form.Label>
-                    <Form.Select name="status" value={newTestResult.status} onChange={handleTestResultChange}>
-                        <option value="Normal">Normal</option>
-                        <option value="Abnormal">Abnormal</option>
-                        <option value="Critical">Critical</option>
-                    </Form.Select>
-                </Form.Group>
-                <Button variant="secondary" onClick={addTestResult}>
-                    Add Test Result
-                </Button>
-
-                {/* File upload */}
-                <Form.Group controlId="file">
-                    <Form.Label>Upload File</Form.Label>
-                    <Form.Control type="file" onChange={handleFileChange} />
-                </Form.Group>
-
-                <Button type="submit" variant="primary" className="mt-3">
-                    Submit Laboratory Result
-                </Button>
-            </Form>
-
-            {/* List of laboratory results */}
-            <h4 className="mt-4">Previous Laboratory Results</h4>
-            <Table striped bordered hover>
-                <thead>
-                    <tr>
-                        <th>Interpretation</th>
-                        <th>Recommendations</th>
-                        <th>Test Results</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {labResults.map((result) => (
-                        <tr key={result._id}>
-                            <td>{result.interpretation}</td>
-                            <td>{result.recommendations}</td>
-                            <td>
-                                <ul>
-                                    {result.testResults.map((test, index) => (
-                                        <li key={index}>{test.name}: {test.value} {test.unit} (Range: {test.referenceRange.lower}-{test.referenceRange.upper})</li>
-                                    ))}
-                                </ul>
-                            </td>
-                            <td>
-                                {result.file && (
-                                    <Button variant="secondary" onClick={() => downloadFile(result._id)}>
-                                        Download File
-                                    </Button>
-                                )}
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </Table>
+            {/* List of laboratory results with download option */}
+           
         </Container>
     );
 }

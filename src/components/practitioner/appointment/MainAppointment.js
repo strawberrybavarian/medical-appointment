@@ -20,7 +20,7 @@ const MyPatientsNav = () => {
   const [allAppointments, setAllAppointments] = useState([]);
 
   // Get the innerTab from the URL query params
-  const innerTabFromUrl = new URLSearchParams(location.search).get("innerTab") || "upcoming";
+  const innerTabFromUrl = new URLSearchParams(location.search).get("innerTab") || "todays";
 
   useEffect(() => {
     axios
@@ -44,12 +44,12 @@ const MyPatientsNav = () => {
 
   return (
     <>
-      <div className="white-background p-4" style={{ overflowY: "hidden" }}>
+      <div className="white-background shadow-sm p-4 mb-5" style={{ overflowY: "hidden" }}>
         <Container className="d-flex justify-content-center">
           <Nav
             fill
             variant="tabs"
-            className="app-navtabs-doctor"
+            className="app-navtabs"
             activeKey={innerTabFromUrl}
             onSelect={handleSelect}
           >
@@ -70,8 +70,8 @@ const MyPatientsNav = () => {
 
         {/* Render components based on the innerTab */}
         {innerTabFromUrl === "upcoming" && <UpcomingAppointment allAppointments={allAppointments} setAllAppointments={setAllAppointments} />}
-        {innerTabFromUrl === "todays" && <TodaysAppointment allAppointments={allAppointments} />}
-        {innerTabFromUrl === "ongoing" && <OngoingAppointment allAppointments={allAppointments} />}
+        {innerTabFromUrl === "todays" && <TodaysAppointment allAppointments={allAppointments} setAllAppointments={setAllAppointments}/>}
+        {innerTabFromUrl === "ongoing" && <OngoingAppointment allAppointments={allAppointments} setAllAppointments={setAllAppointments}/>}
         {innerTabFromUrl === "completed" && <CompletedAppointment allAppointments={allAppointments} />}
       </div>
     </>

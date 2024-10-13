@@ -1,172 +1,178 @@
-import { useNavigate, useParams } from "react-router-dom";
-import { Container, Row, Col, Button, Table } from 'react-bootstrap';
+import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { Container, Row, Col, Collapse } from 'react-bootstrap';
 import axios from "axios";
-import { useEffect, useState } from "react";
-import './DoctorProfile.css';
 import PatientNavBar from "../PatientNavBar/PatientNavBar";
 import { ip } from "../../../ContentExport";
+import DoctorWeeklySchedule from './DoctorWeeklySchedule';
+import AppointmentForm from './AppointmentForm';
+import './DoctorProfile.css';
+import DoctorAnnouncements from "./DoctorAnnouncements";
+import DoctorCalendar from "./DoctorCalendar";
+import { usePatient } from "../PatientContext";
+import Footer from "../../Footer";
+import DoctorBiography from "./DoctorBiography";
 
 function DoctorProfile() {
-    const [theDoctor, setTheDoctor] = useState([]);
+    const [theDoctor, setTheDoctor] = useState(null); 
     const [theImage, setTheImage] = useState("");
     const [FullName, setFullName] = useState("");
-    const [availability, setAvailability] = useState({});
-    const { pid, did } = useParams();
-    const [thePost, setThePost] = useState([]);
-    const navigate = useNavigate();
-    const defaultImage = "images/014ef2f860e8e56b27d4a3267e0a193a.jpg";
+    const [biography, setBiography] = useState({});
+    const [openProfile, setOpenProfile] = useState(false); 
+    const [openAnnouncements, setOpenAnnouncements] = useState(false);
+    const [openCalendar, setOpenCalendar] = useState(false);
+    const { doctorId, patient } = usePatient();
 
     useEffect(() => {
-        axios
-            .get(`${ip.address}/doctor/api/finduser/${did}`)
-            .then((res) => {
-                const doctor = res.data.theDoctor;
-                setTheDoctor(doctor);
+        if (doctorId) {
+            axios.get(`${ip.address}/doctor/api/finduser/${doctorId}`)
+                .then((res) => {
+                    const doctor = res.data.theDoctor;
+                    setTheDoctor(doctor);
 
-                const formattedName = `${doctor.dr_firstName} ${doctor.dr_middleInitial ? doctor.dr_middleInitial + '.' : ''} ${doctor.dr_lastName}`;
-                setFullName(formattedName);
+                    const formattedName = `${doctor.dr_firstName} ${doctor.dr_middleInitial ? doctor.dr_middleInitial + '.' : ''} ${doctor.dr_lastName}`;
+                    setFullName(formattedName);
 
-                setTheImage(res.data.theDoctor.dr_image || defaultImage);
-            })
-            .catch((err) => {
-                console.log(err);
-            });
-    }, [did]);
-
-    useEffect(() => {
-        axios
-            .get(`${ip.address}/doctor/api/post/getallpost/${did}`)
-            .then((res) => {
-                setThePost(res.data.posts);
-            })
-            .catch((err) => {
-                console.log(err);
-            });
-    }, [did]);
+                    setTheImage(doctor.dr_image || "images/014ef2f860e8e56b27d4a3267e0a193a.jpg");
+                })
+                .catch((err) => {
+                    console.log(err);
+                });
+        }
+    }, [doctorId]);
 
     useEffect(() => {
-        axios
-            .get(`${ip.address}/doctor/${did}/available`)
-            .then((res) => {
-                setAvailability(res.data.availability);
-            })
-            .catch((err) => {
-                console.log(err);
-            });
-    }, [did]);
-
-    const handleDoctorClick = () => {
-        navigate(`/appointment/${pid}/${did}`);
-    };
-
-    const renderAvailability = (day) => {
-        const dayAvailability = availability[day];
-        if (!dayAvailability) return <td colSpan="2">Doctor is not available</td>;
-
-        const formatTime = (time) => {
-            const [hour, minute] = time.split(':');
-            const parsedHour = parseInt(hour);
-            if (parsedHour === 12) {
-                return `${hour}:${minute} PM`;
-            } else if (parsedHour > 12) {
-                return `${parsedHour - 12}:${minute} PM`;
-            } else {
-                return `${hour}:${minute} AM`;
-            }
+        const fetchBiography = async () => {
+          try {
+            const response = await axios.get(`${ip.address}/doctor/${doctorId}/getbiography`);
+            setBiography(response.data.biography || {});
+          } catch (error) {
+            console.error('Error fetching biography:', error);
+          }
         };
+    
+        fetchBiography();
+      }, [doctorId]);
 
-        const morningAvailability = dayAvailability.morning.available ? `${formatTime(dayAvailability.morning.startTime)} - ${formatTime(dayAvailability.morning.endTime)}` : 'Not available';
-        const afternoonAvailability = dayAvailability.afternoon.available ? `${formatTime(dayAvailability.afternoon.startTime)} - ${formatTime(dayAvailability.afternoon.endTime)}` : 'Not available';
+    if (!doctorId) {
+        return <p>Please select a doctor.</p>;
+    }
 
-        return (
-            <>
-                <td>{morningAvailability}</td>
-                <td>{afternoonAvailability}</td>
-            </>
-        );
-    };
-
-    return (
+    return theDoctor ? (
         <>
-            <div style={{ width: '100%', height: '100vh' }}>
-                <PatientNavBar />
-                <div className="dp-main">
-                    <div className="dp-containermain">
-                        <div>
-                            <h1>Doctor Information</h1>
-                            <div className="dp-container1">
+            <PatientNavBar pid={patient._id} />
+            <Container fluid style={{ overflowY: 'scroll', height: '100vh', paddingBottom: '100px', paddingTop: '1.5rem' }}>
+                <Container className='maincolor-container'>
+                    <div className="content-area">
+                        <Row>
+                        <Col md={6}>
+                            <Container className="dp-container1 white-background shadow-sm">
                                 <img src={`${ip.address}/${theImage}`} alt="Doctor" className='dp-image' />
                                 <div className="dp-container2">
-                                    <h3>{FullName}</h3>
-                                    <p style={{ fontStyle: 'italic' }}>{theDoctor.dr_specialty}</p>
+                                    <h4>{FullName}</h4>
+                                    <p style={{ fontStyle: 'italic', fontSize: '14px' }}>{theDoctor.dr_specialty}</p>
                                 </div>
-                                <div className="dp-container3">
-                                    <Button onClick={handleDoctorClick}>Book Now</Button>
-                                </div>
-                            </div>
-                        </div>
+                            </Container>
 
-                        <div className='dp-schedule'>
-                            <h1>Weekly Schedule</h1>
-                            <Table bordered>
-                                <thead>
-                                    <tr>
-                                        <th>Day</th>
-                                        <th>Morning Availability</th>
-                                        <th>Afternoon Availability</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>Monday</td>
-                                        {renderAvailability('monday')}
-                                    </tr>
-                                    <tr>
-                                        <td>Tuesday</td>
-                                        {renderAvailability('tuesday')}
-                                    </tr>
-                                    <tr>
-                                        <td>Wednesday</td>
-                                        {renderAvailability('wednesday')}
-                                    </tr>
-                                    <tr>
-                                        <td>Thursday</td>
-                                        {renderAvailability('thursday')}
-                                    </tr>
-                                    <tr>
-                                        <td>Friday</td>
-                                        {renderAvailability('friday')}
-                                    </tr>
-                                    <tr>
-                                        <td>Saturday</td>
-                                        {renderAvailability('saturday')}
-                                    </tr>
-                                    <tr>
-                                        <td>Sunday</td>
-                                        {renderAvailability('sunday')}
-                                    </tr>
-                                </tbody>
-                            </Table>
-                        </div>
+                            <Container className="p-3 shadow-sm white-background dp-container11 mt-3">
+                                <DoctorWeeklySchedule did={doctorId} />
+                            </Container>
 
-                        <div className='dp-posts'>
-                            <h1>Announcements</h1>
-                            {thePost.slice().reverse().map((post, index) => (
-                                <div key={index}>
-                                    <div className="d-flex align-items-center justify-content-between">
-                                    <li className="list-unstyled decoration-none" key={index}>
-                                        <div dangerouslySetInnerHTML={{ __html: post.content }} />
-                                    </li>
+                            <Container className="announcement-container white-background align-items-center mt-3 mb-3 shadow-sm">
+                                <div className="d-flex align-items-center">
+                                    <div className="w-100 d-flex align-items-center">
+                                        <span className="m-0" style={{ fontWeight: 'bold' }}>Doctor Profile</span>
                                     </div>
-                                    <hr className="divider d-lg" />
+
+                                    <div className="w-100 d-flex justify-content-end align-items-center">
+                                        <Link
+                                            onClick={() => setOpenProfile(!openProfile)}
+                                            aria-controls="profile-collapse"
+                                            aria-expanded={openProfile}
+                                            className="link-collapse"
+                                            style={{ transition: 'transform 0.3s ease' }}
+                                        >
+                                            {openProfile ? <span>&#8722;</span> : <span>&#43;</span>}
+                                        </Link>
+                                    </div>
                                 </div>
-                            ))}
-                        </div>
+
+                                <Collapse in={openProfile}>
+                                    <div id="profile-collapse">
+                                        <DoctorBiography biography={biography} doctor_image={theImage} doctor_name={FullName} />
+                                    </div>
+                                </Collapse>
+                            </Container>
+
+                            <Container className="announcement-container white-background align-items-center mt-3 mb-3 shadow-sm">
+                                <div className="d-flex align-items-center">
+                                    <div className="w-100 d-flex align-items-center">
+                                        <p className="m-0" style={{ fontWeight: 'bold' }}>Announcements</p>
+                                    </div>
+
+                                    <div className="w-100 d-flex justify-content-end align-items-center">
+                                        <Link
+                                            onClick={() => setOpenAnnouncements(!openAnnouncements)}
+                                            aria-controls="announcements-collapse"
+                                            aria-expanded={openAnnouncements}
+                                            className="link-collapse"
+                                            style={{ transition: 'transform 0.3s ease' }}
+                                        >
+                                            {openAnnouncements ? <span>&#8722;</span> : <span>&#43;</span>}
+                                        </Link>
+                                    </div>
+                                </div>
+
+                                <Collapse in={openAnnouncements}>
+                                    <div id="announcements-collapse">
+                                        <DoctorAnnouncements doctorId={doctorId} theImage={theImage} />
+                                    </div>
+                                </Collapse>
+                            </Container>
+
+                            <Container className="announcement-container white-background align-items-center mt-3 mb-3 shadow-sm">
+                                <div className="d-flex align-items-center">
+                                    <div className="w-100 d-flex align-items-center">
+                                        <p className="m-0" style={{ fontWeight: 'bold' }}>Doctor Calendar</p>
+                                    </div>
+
+                                    <div className="w-100 d-flex justify-content-end align-items-center">
+                                        <Link
+                                            onClick={() => setOpenCalendar(!openCalendar)}
+                                            aria-controls="calendar-collapse"
+                                            aria-expanded={openCalendar}
+                                            className="link-collapse"
+                                            style={{ transition: 'transform 0.3s ease' }}
+                                        >
+                                            {openCalendar ? <span>&#8722;</span> : <span>&#43;</span>}
+                                        </Link>
+                                    </div>
+                                </div>
+
+                                <Collapse in={openCalendar}>
+                                    <div id="calendar-collapse">
+                                        <DoctorCalendar did={doctorId} />
+                                    </div>
+                                </Collapse>
+                            </Container>
+                        </Col>
+
+                        <Col md={6}>
+                            <Container className="shadow-sm white-background dp-container1">
+                                <AppointmentForm did={doctorId} pid={patient._id}/>
+                            </Container>
+                        </Col>
+                    </Row>
                     </div>
-                </div>
-            </div>
+
+                </Container>
+
+                <Container fluid style={{ marginTop: '10rem' }}>
+                    <Footer />
+                </Container>
+            </Container>
         </>
-    );
+    ) : null;
 }
 
 export default DoctorProfile;

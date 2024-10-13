@@ -8,31 +8,29 @@ const PatientSchema = new Schema({
         type: String,
         unique: true
     },
+    role:{
+        type: String,
+        default: 'Patient'
+    },
+    patient_image: {   
+        type: String,
+    },
     patient_firstName: {
         type: String,
-        minlength: 3,
-        maxlength: 20
     },
     patient_middleInitial: {
         type: String,
-        maxlength: 1
     },
     patient_lastName: {
         type: String,
-        minlength: 2,
-        maxlength: 20
     },
     patient_email: {
-
         type: String,
         unique: true,
         sparse: true
-
-
     },
     patient_password: {
         type: String,
-        minlength: 6,
     },
     patient_dob: {
         type: Date,
@@ -40,10 +38,9 @@ const PatientSchema = new Schema({
     patient_age: {
         type: String
     },
-    accountStatus:{
-        type:String,
-        
-        enum: ['Registered','Unregistered','Deactivated','Deleted'],
+    accountStatus: {
+        type: String,
+        enum: ['Registered', 'Unregistered', 'Deactivated', 'Deleted'],
         default: 'Registered'
     },
     patient_contactNumber: {
@@ -63,26 +60,46 @@ const PatientSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'Appointment'
     }],
-    patient_findings:[{
-        type:Schema.Types.ObjectId,
+    patient_findings: [{
+        type: Schema.Types.ObjectId,
         ref: 'Findings'
     }],
+    patient_address: {  // Added patient_address field
+        street: {
+            type: String,
+        },
+        city: {
+            type: String,
+        },
+        state: {
+            type: String,
+        },
+        zipCode: {
+            type: String,
+        },
+        country: {
+            type: String,
+        }
+    },
+    patient_nationality:{
+        type: String,
+    },
+    patient_civilstatus:{
+        type: String,
+    },
+    
     medicalHistory: {
         type: Schema.Types.ObjectId,
         ref: 'MedicalHistory'
     },
-
     prescriptions: [{
         type: Schema.Types.ObjectId,
         ref: 'Prescription'
     }],
-    laboratoryResults: [
-        {
-          type: Schema.Types.ObjectId,
-          ref: 'Laboratory'
-        }
-      ],
-
+    laboratoryResults: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Laboratory'
+    }],
     immunizations: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Immunization'
@@ -91,6 +108,7 @@ const PatientSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'Notification'
     }],
+    
     twoFactorSecret: { type: String },
     twoFactorEnabled: { type: Boolean, default: false },
     otp: {
@@ -98,8 +116,12 @@ const PatientSchema = new Schema({
     },
     otpExpires: {
         type: Date
+    },
+    lastProfileUpdate: { // New field to track profile updates
+        type: Date,
+        default: Date.now
     }
-}, { timestamps: true });
+}, { timestamps: true }); // Keep timestamps for `createdAt` and `updatedAt`
 
 // Pre-save hook for generating the patient ID
 PatientSchema.pre('save', async function (next) {
@@ -140,6 +162,28 @@ PatientSchema.methods.generateQRCode = async function () {
 };
 
 
+
+PatientSchema.pre('save', async function (next) {
+
+    if (this.isNew) {
+        return next();  
+    }
+    if (!this.isModified('accountStatus')) {
+        return next(); 
+    }
+
+    const lastStatusUpdate = this.lastProfileUpdate || this.updatedAt; 
+    const thirtyDaysInMillis = 30 * 24 * 60 * 60 * 1000;
+    const now = Date.now();
+
+
+    if (lastStatusUpdate && (now - lastStatusUpdate.getTime()) < thirtyDaysInMillis) {
+        const error = new Error("Account status can only be updated once every 30 days.");
+        return next(error);
+    }
+    this.lastProfileUpdate = new Date();
+    next();
+});
 
 
 

@@ -1,61 +1,48 @@
-import { Carousel } from 'react-bootstrap';
+import { Container } from 'react-bootstrap';
 import PatientNavBar from "../PatientNavBar/PatientNavBar";
-import Image1 from './images/Jeno.jpg';
-import Image2 from './images/Mark.jpg';
-import Image3 from './images/Sohee.jpg';
 import './HomePagePatient.css';
 import DoctorSpecialty from './DoctorSpecialty';
-import { useParams } from 'react-router-dom';
-
+import DoctorCarousel from './DoctorCarousel';
+import { usePatient } from '../PatientContext';
+import Footer from '../../Footer';
+import DoctorServices from './DoctorServices';
+import { useNavigate } from 'react-router-dom';
+import { ip } from '../../../ContentExport';
 function HomePagePatient() {
+  const navigate = useNavigate();
+  const { patient } = usePatient(); // Get patient data from context
 
- const { pid } = useParams();
- console.log(pid);
+  if (!patient) {
+    return navigate('/');
+  }
 
- return (
-   <>
-     <PatientNavBar />
+  const fullName = `${patient.patient_firstName} ${patient.patient_lastName}`;
 
-     <div className='hp-container'>
-       <Carousel data-bs-theme="dark" className='hp-carouselsize'>
-         <Carousel.Item>
-           <img
-             className="d-block w-100"
-             src={Image1}
-             alt="First slide"
-           />
-           <Carousel.Caption>
-             <h5>Miss Jade So - DRPH - Season 2</h5>
-             <p>You Better Work. Hun.</p>
-           </Carousel.Caption>
-         </Carousel.Item>
-         <Carousel.Item>
-           <img
-             className="d-block w-100"
-             src={Image2}
-             alt="Second slide"
-           />
-           <Carousel.Caption>
-             <h5>Nymphia Wind</h5>
-             <p>I love Bananas!.</p>
-           </Carousel.Caption>
-         </Carousel.Item>
-         <Carousel.Item>
-           <img
-             className="d-block w-100"
-             src={Image3}
-             alt="Third slide"
-           />
-           <Carousel.Caption>
-             <h5>Third slide label</h5>
-             <p>Praesent commodo cursus magna, vel scelerisque nisl consectetur.</p>
-           </Carousel.Caption>
-         </Carousel.Item>
-       </Carousel>
-     </div>
-     <DoctorSpecialty pid={pid} />
-   </>
- );
+  return (
+    <>
+      <PatientNavBar pid={patient._id} />
+      <Container className='cont-fluid-no-gutter' fluid style={{overflowY: 'scroll', height: '100vh', paddingBottom: '100px', paddingTop: '1.5rem'}}>
+     
+
+  
+        <div className="maincolor-container">
+          {/* Main Content Area */}
+          <div className="content-area">
+            <DoctorCarousel fluid className='w-100' pid={patient._id} />
+            <DoctorSpecialty fluid className='w-100' pid={patient._id} />
+            <DoctorServices fluid className='w-100' pid={patient._id}/>
+
+          
+          </div>
+
+          {/* Footer at the bottom */}
+          <Container fluid className="footer-container cont-fluid-no-gutter">
+            <Footer />
+          </Container>
+        </div>
+      </Container>
+    </>
+  );
 }
 
 export default HomePagePatient;

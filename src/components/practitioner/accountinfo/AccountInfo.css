@@ -11,18 +11,20 @@
   text-align: center;
 }
 .ai-image {
-    width: 300px;
-    height: 300px;
-    margin-bottom: 20px;
+    width: 50px;
+    height: 50px;
     border-radius: 1000px;
     object-fit: cover;
 }
 
 .ai-container2{
-  display:inline-flex;
-  justify-content: center;
+  background-color: white ;
+  padding: 2rem;
+  margin-top: 1.5rem;
+  width: 90%;
+  border-radius: 15px;
+  width: 90%;
 
-  width: 100%;
 }
 /* Ensure the sidebar has a lower z-index */
 .sidebar-menu {
@@ -61,9 +63,20 @@
     
 /* AccountInfo.css */
 .ai-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  padding: 2rem;
+  background-color: white;
+  border-radius: 15px;
+  width: 90%;
+
+}
+
+.ai-imageupload{
+  background-color: #0D6EFD;
+  color: white;
+  width: 8vw;
+  border: 0;
+  padding: 0.5rem;
+  border-radius: 10px;
 }
 
 .ai-image-wrapper {
@@ -72,8 +85,8 @@
 }
 
 .ai-image {
-  width: 300px;
-  height: 300px;
+  width: 120px;
+  height: 120px;
   border-radius: 50%;
 }
 
@@ -96,4 +109,58 @@
 
 .ai-upload-button:hover {
   background-color: #0056b3;
+}
+.horizontal-tabs {
+	margin-top: 1.5rem;
+	display: flex;
+	align-items: center;
+	overflow-x: auto;
+	@media (max-width: 1000px) {
+		scrollbar-width: none;
+		position: relative;
+		&::-webkit-scrollbar {
+			display: none;
+		}
+	}
+
+	a {
+		display: inline-flex;
+		flex-shrink: 0;
+		align-items: center;
+		height: 48px;
+		padding: 0 0.25rem;
+		font-weight: 500;
+		color: inherit;
+		border-bottom: 3px solid transparent;
+		text-decoration: none;
+		transition: 0.15s ease;
+		&:hover,
+		&:focus,
+		&.active {
+			color: var(--c-accent-primary);
+			border-bottom-color: var(--c-accent-primary);
+		}
+
+		& + * {
+			margin-left: 1rem;
+		}
+	}
+}
+
+
+.border-top{
+  border-top: 1px solid var(--c-border-primary);
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+    padding-top: 3rem;
+    margin-top: -1px;
+}
+
+.responsive-wrapper {
+	width: 90%;
+	max-width: 1280px;
+	margin-left: auto;
+	margin-right: auto;
 }

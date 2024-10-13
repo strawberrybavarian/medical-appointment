@@ -25,7 +25,7 @@ const StaffLogIn = () => {
                 }
 
                 if (response && response.data) {
-                    const userData = response.data.theMedicalSecretary || response.data.theCashier || response.data.theAdmin
+                    const userData = response.data.theMedicalSecretary || response.data.theCashier || response.data.theAdmin;
                     setUsers(userData);
                 }
             } catch (err) {
@@ -39,30 +39,27 @@ const StaffLogIn = () => {
     const handleLogIn = async (e) => {
         e.preventDefault();
 
-        // Find the user based on the role and username
         const user = users.find(user => 
             (userRole === "Medical Secretary" && user.ms_username === username) ||
             (userRole === "Cashier" && user.cs_username === username) ||
             (userRole === "Admin" && user.username === username)
         );
 
-        // Validate the password
         if (user && (
             (userRole === "Medical Secretary" && user.ms_password === password) || 
             (userRole === "Cashier" && user.cs_password === password) ||
             (userRole === "Admin" && user.password === password)
         )) {
-            const userId = user._id;
             window.alert("Successfully logged in");
 
-            // Redirect to respective dashboard based on the role
-            navigate(userRole === 'Medical Secretary' 
-                ? `/medsec/dashboard/${userId}` 
-                : userRole === 'Cashier' 
-                ? `/cashier/${userId}` 
-                : userRole === 'Admin' 
-                ? `/admin/dashboard/patient/${userId}` 
-                : `/staffs`);
+            // Use state to pass user data instead of URL parameters
+            navigate('/medsec/dashboard', {
+                state: {
+                    userId: user._id,
+                    userName: `${user.ms_firstName} ${user.ms_lastName}`,
+                    role: userRole
+                }
+            });
         } else {
             setErrorMessage("Invalid username or password. Please try again.");
         }

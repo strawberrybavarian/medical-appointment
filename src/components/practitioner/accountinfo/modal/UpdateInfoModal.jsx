@@ -7,8 +7,13 @@ const UpdateInfoModal = ({ show, handleClose, doctorData, handleUpdate }) => {
   const [formData, setFormData] = useState({});
   const [specialties, setSpecialties] = useState([]); // State for storing specialties from the backend
 
+
+  
+  // Update formData when doctorData is received
   useEffect(() => {
-    setFormData(doctorData);
+    if (doctorData) {
+      setFormData(doctorData);
+    }
   }, [doctorData]);
 
   // Fetch specialties from the backend when the modal is opened
@@ -51,7 +56,7 @@ const UpdateInfoModal = ({ show, handleClose, doctorData, handleUpdate }) => {
             <Form.Label>First Name:</Form.Label>
             <Form.Control
               name="dr_firstName"
-              value={formData.dr_firstName || ""}
+              value={formData.dr_firstName || doctorData.theName}
               onChange={handleChange}
             />
           </Form.Group>
@@ -60,7 +65,7 @@ const UpdateInfoModal = ({ show, handleClose, doctorData, handleUpdate }) => {
               <Form.Label>Last Name:</Form.Label>
               <Form.Control
                 name="dr_lastName"
-                value={formData.dr_lastName || ""}
+                value={formData.dr_lastName || doctorData.theLastName}
                 onChange={handleChange}
               />
             </Form.Group>
@@ -68,7 +73,7 @@ const UpdateInfoModal = ({ show, handleClose, doctorData, handleUpdate }) => {
               <Form.Label>Middle Initial:</Form.Label>
               <Form.Control
                 name="dr_middleInitial"
-                value={formData.dr_middleInitial || ""}
+                value={formData.dr_middleInitial || doctorData.theMI}
                 onChange={handleChange}
               />
             </Form.Group>
@@ -77,7 +82,7 @@ const UpdateInfoModal = ({ show, handleClose, doctorData, handleUpdate }) => {
             <Form.Label>Email:</Form.Label>
             <Form.Control
               name="dr_email"
-              value={formData.dr_email || ""}
+              value={formData.dr_email || doctorData.email}
               onChange={handleChange}
             />
           </Form.Group>
@@ -87,7 +92,7 @@ const UpdateInfoModal = ({ show, handleClose, doctorData, handleUpdate }) => {
               <Form.Control
                 type="date"
                 name="dr_dob"
-                value={formData.dr_dob ? new Date(formData.dr_dob).toISOString().split('T')[0] : ""}
+                value={formData.dr_dob ? new Date(formData.dr_dob).toISOString().split('T')[0] : (doctorData.dob ? new Date(doctorData.dob).toISOString().split('T')[0] : "")}
                 onChange={handleChange}
               />
             </Form.Group>
@@ -100,20 +105,12 @@ const UpdateInfoModal = ({ show, handleClose, doctorData, handleUpdate }) => {
               />
             </Form.Group>
           </Row>
-          <Form.Group controlId="password">
-            <Form.Label>Password:</Form.Label>
-            <Form.Control
-              type="password"
-              name="dr_password"
-              value={formData.dr_password || ""}
-              onChange={handleChange}
-            />
-          </Form.Group>
+      
           <Form.Group controlId="specialty">
             <Form.Label>Specialty:</Form.Label>
             <Form.Select
               name="dr_specialty"
-              value={formData.dr_specialty || ""}
+              value={formData.dr_specialty || doctorData.specialty}
               onChange={handleChange}
             >
               <option value="">Select a specialty</option>

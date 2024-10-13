@@ -1,3 +1,37 @@
+
+.dm-photo{
+  width: 80vw;
+  height: 50vh;
+  object-fit: cover;
+  border-radius: 10px;
+
+}
+/* Ensure the image is responsive */
+
+
+/* Position the overlay content */
+.overlay-content {
+  position: absolute;
+  top: 50%; /* Vertically centered */
+  left: 10%; /* Positioned to the left with a little margin */
+  transform: translateY(-50%); /* Center vertically */
+  color: white;
+}
+
+/* For better readability over the image */
+.overlay-content p {
+  color: white;
+  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7);
+}
+
+/* Ensure button is styled correctly */
+button {
+  font-size: 1.25rem;
+  padding: 0.75rem 2rem;
+}
+
+
+
 .removegutter {
   --bs-gutter-x: 0rem !important;
 }
@@ -278,8 +312,8 @@
   
 } */
 
-.maincolor-container{
-  background-color: #F0F2F5;
+body{
+  background-color: #fcfafa;
 }
 
 .button-post{
@@ -302,7 +336,7 @@
   background-color: #FFFFFF ;
   margin-top: 1rem;
   border-radius: 10px;
-  padding: 2rem;
+
 
 }
 

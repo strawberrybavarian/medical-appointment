@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Form, Button, Row, Col, Card, Toast, ToastContainer } from 'react-bootstrap';
-import { useParams } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 import './Styles.css';
-
 const initialTimeSlot = { startTime: '', endTime: '', available: false };
 
 const initialAvailability = {
@@ -17,7 +16,8 @@ const initialAvailability = {
 };
 
 function DoctorScheduleManagement() {
-    const { did } = useParams(); // Get the doctor ID from the route parameters
+    const location = useLocation();
+    const { did } = location.state; // Get the doctor ID from the route parameters
     
     const [availability, setAvailability] = useState(initialAvailability);
     const [activeAppointmentStatus, setActiveAppointmentStatus] = useState(true);

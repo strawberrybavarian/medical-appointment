@@ -10,7 +10,7 @@ function CancelledAppointments({ appointments, setAppointments }) {
     const [selectedAppointment, setSelectedAppointment] = useState(null);
     
     const defaultImage = "images/014ef2f860e8e56b27d4a3267e0a193a.jpg";
-    console.log(appointments);
+
 
     const handleCancelClick = (appointment) => {
         setSelectedAppointment(appointment);
@@ -111,7 +111,7 @@ function CancelledAppointments({ appointments, setAppointments }) {
                                         </div>
                                         <Container className="d-flex justify-content-start">
                                             <div className='pa-cont1'>
-                                                <p style={{ fontSize: '1rem' }}> <PersonFill className='font-gray' size={20} style={{marginRight: '0.7rem'}}/> Dr. {appointment.doctor.dr_firstName} {appointment.doctor.dr_middleInitial}. {appointment.doctor.dr_lastName}</p>
+                                                <p style={{ fontSize: '1rem' }}> <PersonFill className='font-gray' size={20} style={{marginRight: '0.7rem'}}/> Dr. {appointment?.doctor?.dr_firstName} {appointment?.doctor?.dr_middleInitial}. {appointment?.doctor?.dr_lastName}</p>
                                                 <p style={{ fontSize: '1rem' }}> <ClockFill className='font-gray' size={20} style={{marginRight: '0.7rem'}}/> {appointment.time}</p>
                                             </div>
                                             <div className='pa-cont2'>

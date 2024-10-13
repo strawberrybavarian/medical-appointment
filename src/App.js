@@ -16,7 +16,6 @@ import DashboardMain from './components/practitioner/dashboard/DashboardMain';
 import EditMode from './components/practitioner/editmode/EditMode';
 import TheAppointments from './components/practitioner/appointment/TheAppointmentsNav';
 
-
 import AccountInfo from './components/practitioner/accountinfo/AccountInfo';
 import MainMedicalRecord from './components/practitioner/medicalrecord/MainMedicalRecord';
 import DoctorProfile from './components/patient/doctorprofile/DoctorProfile';
@@ -25,7 +24,6 @@ import AppointmentForm from './components/patient/doctorprofile/AppointmentForm'
 //Patient
 import HomePagePatient from './components/patient/homepage/HomePagePatient';
 import ChooseDoctor from './components/patient/choosedoctor/choosedoctor';
-
 import MyAppointment from './components/patient/scheduledappointment/MyAppointment';
 import MainPatientInformation from './components/patient/patientinformation/MainPatientInformation';
 import DoctorInformation from './components/practitioner/accountinfo/DoctorInformation';
@@ -57,13 +55,17 @@ import PatientManagement from './components/staffs/admin/management/account/Pati
 import NewsDetailPage from './components/staffs/news/NewsDetailPage';
 import AdminAppointmentMain from './components/staffs/admin/appointment/AdminAppointmentMain';
 import SasMain from './components/staffs/admin/specialtyandservices/SasMain';
-
+import StaffsManagement from './components/staffs/admin/management/account/StaffsManagement';
+import { PatientProvider } from './components/patient/PatientContext';
+import ChooseDoctorServices from './components/patient/homepage/ChooseDoctorServices';
+import MedSecAccInfo from './components/staffs/medical secretary/components/Account/MedSecAccInfo';
 
 
 function App() {
 
   return (
     <>
+     <PatientProvider>
     <BrowserRouter>
       <Routes>
 
@@ -76,27 +78,30 @@ function App() {
           <Route path="/dashboard" element={<DashboardMain />} />
           <Route path={'/mainappointment'} element={<TheAppointments/>}></Route>
           <Route path={'/medicalrecord'} element={<MainMedicalRecord/>}/>
-          <Route path={"/information/:pid/:did/:apid"} element={<MainInformation />}/>
+          <Route path={"/information"} element={<MainInformation />}/>
           <Route path={"/account"} element={<DoctorInformation />}/>
         
         {/* Patient Routes */}
-          <Route path={"/homepage/:pid"} element={<HomePagePatient />}/>
-          <Route path={"/choosedoctor/:pid"} element={<ChooseDoctor />}/>
-          <Route path={"/:specialty/choosedoctor/:pid"} element={<ChooseDoctorSpecialization />} />
-          <Route path={"/doctorprofile/:pid/:did"} element={<DoctorProfile />}/>
-          <Route path={"/myappointment/:pid"} element={<MyAppointment />}/>
-          <Route path={"/accinfo/:pid"} element={<MainPatientInformation />}/>
-          <Route path={"/appointment/:pid/:did"} element={<AppointmentForm />} />
+       
+          <Route path={"/homepage"} element={<HomePagePatient />}/>
+               
+          <Route path={"/choosedoctor"} element={<ChooseDoctor />}/>
+          <Route path={"/choosedoctor/:specialty"} element={<ChooseDoctorSpecialization />} />
+          <Route path={"/choosedoctor/service/:services"} element={<ChooseDoctorServices />} />
+          <Route path={"/doctorprofile"} element={<DoctorProfile />}/>
+          <Route path={"/myappointment"} element={<MyAppointment />}/>
+          <Route path={"/accinfo"} element={<MainPatientInformation />}/>
+          {/* <Route path={"/appointment/:pid/:did"} element={<AppointmentForm />} /> */}
         {/* Staff Login */}
           <Route path={"/staffs"} element={<StaffLogIn />}/>
 
         {/* Medical Secretary Routes */}
-          <Route path={"/medsec/appointments/:msid"} element={<MedSecMain />}/>
-          <Route path={"/medsec/dashboard/:msid"} element={<MedSecMainDashboard />}/>
+          <Route path={"/medsec/appointments"} element={<MedSecMain />}/>
+          <Route path={"/medsec/dashboard"} element={<MedSecMainDashboard />}/>
           <Route path={"/medsec/createpatient/:msid"} element={<CreatePatient />}/>
-          <Route path={"/medsec/doctors/:msid"} element={<AllDoctors />}/>
-          <Route path={"/medsec/:msid/doctors/:did/schedule"} element={<ManageDoctorMain />} />
-          
+          <Route path={"/medsec/doctors"} element={<AllDoctors />}/>
+          <Route path={"/medsec/doctors/schedule"} element={<ManageDoctorMain />} />
+          <Route path={"/medsec/account"} element={<MedSecAccInfo />} />
         
         {/* Cashier Routes */}
           <Route path={"/cashier/:cid"} element={<CashierMain />}/>
@@ -105,6 +110,7 @@ function App() {
           <Route path={"/admin/dashboard/patient/:aid"} element={<PatientMain />}/>
           <Route path={"/admin/dashboard/doctor/:aid"} element={<DoctorMain />}/>
           <Route path={"/admin/account/doctor/:aid"} element={<DoctorManagement />}/>
+          <Route path={"/admin/account/staffs/:aid"} element={<StaffsManagement />}/>
           <Route path={"/admin/account/patient/:aid"} element={<PatientManagement />}/>
           <Route path={"/admin/appointments/:aid"} element={<AdminAppointmentMain />}/>
           <Route path={"/admin/sas/:aid"} element={<SasMain />}/>
@@ -118,7 +124,7 @@ function App() {
   
 
 
-
+    </PatientProvider> 
     </>
   );
 }

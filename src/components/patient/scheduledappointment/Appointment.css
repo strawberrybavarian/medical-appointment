@@ -71,6 +71,7 @@
     border-radius: 10px;
     justify-content: center; /* Center-align the nav tabs */
     padding: 10px 0; /* Padding around the nav bar */
+    box-shadow: 1px 3px 8px 2px rgba(0, 0, 0, 0.05);
     
 }
 
@@ -100,8 +101,8 @@
 }
 
 .app-navtabs .nav-link.active {
-    background-color: #ffffff; /* White background for active tab */
-    color: #000; /* Text color for active tab */
+    background-color: #0d6efd; /* White background for active tab */
+    color: #ffffff; /* Text color for active tab */
     border-color : #ffffff !important;
     border-radius: 10px;
    

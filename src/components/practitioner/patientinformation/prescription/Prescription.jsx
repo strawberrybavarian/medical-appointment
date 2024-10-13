@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { Button, Form, Table, Container, Card } from "react-bootstrap";
+import { Button, Form, Table, Container, Card, Row, Col } from "react-bootstrap";
 import { PencilSquare, Trash, CheckCircle, XCircle } from 'react-bootstrap-icons'; // Import the icons
 import axios from "axios";
 import { ip } from "../../../../ContentExport";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-
+import PrescriptionHistory from "./PrescriptionHistory";
 
 function Prescription({ patientId, appointmentId, doctorId }) {
   const [medication, setMedication] = useState({
@@ -190,101 +190,110 @@ function Prescription({ patientId, appointmentId, doctorId }) {
 
   return (
     <Container fluid>
-      <Card className="mb-4">
-        <Card.Header>
-          <h4 className="m-0 font-weight-bold text-gray">Prescription Preview</h4>
-        </Card.Header>
-        <Card.Body>
-          <Table responsive striped variant="light" className="mt-3">
-            <thead>
-              <tr>
-                <th>Name of Drug</th>
-                <th>Type of Drug</th>
-                <th>Dosage</th>
-                <th>Frequency</th>
-                <th>Duration</th>
-                <th>Instructions</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {medications.map((med, index) => (
-                <tr key={index}>
-                  {editingIndex === index ? (
-                    <>
-                      <td><Form.Control type="text" value={medication.name} onChange={(e) => handleMedicationChange("name", e.target.value)} /></td>
-                      <td><Form.Control type="text" value={medication.type} onChange={(e) => handleMedicationChange("type", e.target.value)} /></td>
-                      <td><Form.Control type="text" value={medication.dosage} onChange={(e) => handleMedicationChange("dosage", e.target.value)} /></td>
-                      <td><Form.Control type="text" value={medication.frequency} onChange={(e) => handleMedicationChange("frequency", e.target.value)} /></td>
-                      <td><Form.Control type="text" value={medication.duration} onChange={(e) => handleMedicationChange("duration", e.target.value)} /></td>
-                      <td><Form.Control type="text" value={medication.instruction} onChange={(e) => handleMedicationChange("instruction", e.target.value)} /></td>
-                      <td>
-                        <CheckCircle
-                          onClick={addMedication}  // Handles both adding and saving to the backend
-                          style={{ color: "green", cursor: "pointer" }}
-                          title="Save"
-                        />
-                        <XCircle onClick={cancelEdit} style={{ color: "red", cursor: "pointer", marginLeft: "10px" }} title="Cancel" />
-                      </td>
-                    </>
-                  ) : (
-                    <>
-                      <td>{med.name}</td>
-                      <td>{med.type}</td>
-                      <td>{med.dosage}</td>
-                      <td>{med.frequency}</td>
-                      <td>{med.duration}</td>
-                      <td>{med.instruction}</td>
-                      <td>
-                        <PencilSquare onClick={() => editMedication(index)} style={{ color: "blue", cursor: "pointer" }} title="Edit" />
-                        <Trash onClick={() => removeMedication(index)} style={{ color: "red", cursor: "pointer", marginLeft: "10px" }} title="Delete" />
-                      </td>
-                    </>
-                  )}
-                </tr>
-              ))}
+      <Row>
+        <Col md={4}>
+          <PrescriptionHistory pid={patientId} />
+        </Col>
+        <Col md={8}>
 
-              {isAdding && (
+          <Card className="mb-4">
+          <Card.Header>
+            <h4 className="m-0 font-weight-bold text-gray">Prescription Preview</h4>
+          </Card.Header>
+          <Card.Body>
+            <Table responsive striped variant="light" className="mt-3">
+              <thead>
                 <tr>
-                  <td><Form.Control type="text" value={medication.name} onChange={(e) => handleMedicationChange("name", e.target.value)} /></td>
-                  <td><Form.Control type="text" value={medication.type} onChange={(e) => handleMedicationChange("type", e.target.value)} /></td>
-                  <td><Form.Control type="text" value={medication.dosage} onChange={(e) => handleMedicationChange("dosage", e.target.value)} /></td>
-                  <td><Form.Control type="text" value={medication.frequency} onChange={(e) => handleMedicationChange("frequency", e.target.value)} /></td>
-                  <td><Form.Control type="text" value={medication.duration} onChange={(e) => handleMedicationChange("duration", e.target.value)} /></td>
-                  <td><Form.Control type="text" value={medication.instruction} onChange={(e) => handleMedicationChange("instruction", e.target.value)} /></td>
-                  <td>
-                    <CheckCircle
-                      onClick={addMedication}  // Handles both adding and saving to the backend
-                      style={{ color: "green", cursor: "pointer" }}
-                      title="Save"
-                    />
-                    <XCircle onClick={() => setIsAdding(false)} style={{ color: "red", cursor: "pointer", marginLeft: "10px" }} title="Cancel" />
-                  </td>
+                  <th>Name of Drug</th>
+                  <th>Type of Drug</th>
+                  <th>Dosage</th>
+                  <th>Frequency</th>
+                  <th>Duration</th>
+                  <th>Instructions</th>
+                  <th>Actions</th>
                 </tr>
+              </thead>
+              <tbody>
+                {medications.map((med, index) => (
+                  <tr key={index}>
+                    {editingIndex === index ? (
+                      <>
+                        <td><Form.Control type="text" value={medication.name} onChange={(e) => handleMedicationChange("name", e.target.value)} /></td>
+                        <td><Form.Control type="text" value={medication.type} onChange={(e) => handleMedicationChange("type", e.target.value)} /></td>
+                        <td><Form.Control type="text" value={medication.dosage} onChange={(e) => handleMedicationChange("dosage", e.target.value)} /></td>
+                        <td><Form.Control type="text" value={medication.frequency} onChange={(e) => handleMedicationChange("frequency", e.target.value)} /></td>
+                        <td><Form.Control type="text" value={medication.duration} onChange={(e) => handleMedicationChange("duration", e.target.value)} /></td>
+                        <td><Form.Control type="text" value={medication.instruction} onChange={(e) => handleMedicationChange("instruction", e.target.value)} /></td>
+                        <td>
+                          <CheckCircle
+                            onClick={addMedication}  // Handles both adding and saving to the backend
+                            style={{ color: "green", cursor: "pointer" }}
+                            title="Save"
+                          />
+                          <XCircle onClick={cancelEdit} style={{ color: "red", cursor: "pointer", marginLeft: "10px" }} title="Cancel" />
+                        </td>
+                      </>
+                    ) : (
+                      <>
+                        <td>{med.name}</td>
+                        <td>{med.type}</td>
+                        <td>{med.dosage}</td>
+                        <td>{med.frequency}</td>
+                        <td>{med.duration}</td>
+                        <td>{med.instruction}</td>
+                        <td>
+                          <PencilSquare onClick={() => editMedication(index)} style={{ color: "blue", cursor: "pointer" }} title="Edit" />
+                          <Trash onClick={() => removeMedication(index)} style={{ color: "red", cursor: "pointer", marginLeft: "10px" }} title="Delete" />
+                        </td>
+                      </>
+                    )}
+                  </tr>
+                ))}
+
+                {isAdding && (
+                  <tr>
+                    <td><Form.Control type="text" value={medication.name} onChange={(e) => handleMedicationChange("name", e.target.value)} /></td>
+                    <td><Form.Control type="text" value={medication.type} onChange={(e) => handleMedicationChange("type", e.target.value)} /></td>
+                    <td><Form.Control type="text" value={medication.dosage} onChange={(e) => handleMedicationChange("dosage", e.target.value)} /></td>
+                    <td><Form.Control type="text" value={medication.frequency} onChange={(e) => handleMedicationChange("frequency", e.target.value)} /></td>
+                    <td><Form.Control type="text" value={medication.duration} onChange={(e) => handleMedicationChange("duration", e.target.value)} /></td>
+                    <td><Form.Control type="text" value={medication.instruction} onChange={(e) => handleMedicationChange("instruction", e.target.value)} /></td>
+                    <td>
+                      <CheckCircle
+                        onClick={addMedication}  // Handles both adding and saving to the backend
+                        style={{ color: "green", cursor: "pointer" }}
+                        title="Save"
+                      />
+                      <XCircle onClick={() => setIsAdding(false)} style={{ color: "red", cursor: "pointer", marginLeft: "10px" }} title="Cancel" />
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </Table>
+
+            <div className="d-flex justify-content-between">
+              {!isAdding && (
+                <Button variant="primary" onClick={() => setIsAdding(true)}>
+                  Add Medication
+                </Button>
               )}
-            </tbody>
-          </Table>
 
-          <div className="d-flex justify-content-between">
-            {!isAdding && (
-              <Button variant="primary" onClick={() => setIsAdding(true)}>
-                Add Medication
+              {/* Save Prescription Button linked to handleSubmit */}
+              <Button variant="success" onClick={handleSubmit}>
+                Save Prescription
               </Button>
-            )}
 
-            {/* Save Prescription Button linked to handleSubmit */}
-            <Button variant="success" onClick={handleSubmit}>
-              Save Prescription
-            </Button>
+              <Button variant="success" onClick={printPrescription}>
+                Print Prescription
+              </Button>
+            </div>
 
-            <Button variant="success" onClick={printPrescription}>
-              Print Prescription
-            </Button>
-          </div>
-
-          {error && <p className="text-danger mt-2">{error}</p>}
-        </Card.Body>
-      </Card>
+            {error && <p className="text-danger mt-2">{error}</p>}
+          </Card.Body>
+        </Card>
+        </Col>
+      </Row>
+      
       <ToastContainer />
 
     </Container>

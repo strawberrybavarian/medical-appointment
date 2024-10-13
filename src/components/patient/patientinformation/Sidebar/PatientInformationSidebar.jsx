@@ -1,15 +1,22 @@
 import { useState } from 'react';
-import { useNavigate, useParams, Link } from 'react-router-dom';
+import { useNavigate, useParams, Link, useLocation } from 'react-router-dom';
 import { CDBSidebar, CDBSidebarContent, CDBSidebarHeader, CDBSidebarMenu, CDBSidebarMenuItem, CDBSidebarFooter } from 'cdbreact';
 import './PatientInformationSidebar.css';
 import PatientInformation from "../PatientInformation/PatientInformation";
 import PatientPrescriptions from '../PatientPrescriptions/PatientPrescriptions';
 import TwoFactorAuth from '../TwoFactorAuth/TwoFactorAuth';
 import { Container } from "react-bootstrap";
+import PatientMedicalRecord from '../Medical Record/PatientMedicalRecord';
+import Footer from '../../../Footer';
 
-function PatientInformationSidebar() {
+function PatientInformationSidebar({pid}) {
     const navigate = useNavigate();
-    const { pid } = useParams();
+       
+
+
+
+
+    
     const [activeTab, setActiveTab] = useState('profile');
 
     const handleTabClick = (tabName) => {
@@ -20,7 +27,6 @@ function PatientInformationSidebar() {
         <div className='pisb-sidebarcontainer'>
             <CDBSidebar textColor="#fff" backgroundColor="#333" minWidth="250px">
                 <CDBSidebarHeader className="pisb-newheader head-div">
-                 
                 </CDBSidebarHeader>
 
                 <CDBSidebarContent>
@@ -34,12 +40,6 @@ function PatientInformationSidebar() {
                         <Link  onClick={() => handleTabClick('records')}>
                             <CDBSidebarMenuItem icon="file-alt" className="pisb-name">
                                 My Medical Record
-                            </CDBSidebarMenuItem>
-                        </Link>
-
-                        <Link onClick={() => handleTabClick('prescriptions')}>
-                            <CDBSidebarMenuItem icon="prescription" className="pisb-name">
-                                My Prescription
                             </CDBSidebarMenuItem>
                         </Link>
 
@@ -57,20 +57,22 @@ function PatientInformationSidebar() {
                     </div>
                 </CDBSidebarFooter>
             </CDBSidebar>
+
             
-            <div className=" pis-container maincolor-container overflow-y-scroll" style={{paddingBottom: '95vh'}}>
-                {activeTab === 'profile' && <PatientInformation />}
-                {activeTab === 'records' && <div>My Medical Record Component</div>}
-                {activeTab === 'prescriptions' && <PatientPrescriptions />}
-                {activeTab === 'twofactor' && <TwoFactorAuth />}
-                
-               <div style={{marginBottom: '150px'
-               }}>
+            <Container fluid className='cont-fluid-no-gutter' style={{overflowY: 'scroll', height: '100vh', paddingBottom: '100px', paddingTop: '1.5rem'}}>
+                <div>
+                    <div className="content-area mb-5">
+                        {activeTab === 'profile' && <PatientInformation pid={pid} />}
+                        {activeTab === 'records' && <PatientMedicalRecord pid={pid} />}
+                        {activeTab === 'twofactor' && <TwoFactorAuth pid={pid} />}
+                    </div>
 
-               </div>
-             
+                    <Container fluid className="footer-container cont-fluid-no-gutter w-100">
+                        <Footer />
+                </Container>
+                </div>
+            </Container>
 
-            </div>
         </div>
     );
 }

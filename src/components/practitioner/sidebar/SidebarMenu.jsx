@@ -45,7 +45,7 @@ const SidebarMenu = (props) => {
 
     // Navigate to appointments and preserve the outerTab
     const navigateToAppointment = () => {
-        const outerTab = props.outerTab || 'pending'; // Default to 'pending' if outerTab is missing
+        const outerTab = props.outerTab || 'mypatients'; // Default to 'pending' if outerTab is missing
         navigate(`/mainappointment?outerTab=${outerTab}`, { state: { did: props.did } });
     };
 
@@ -79,13 +79,13 @@ const SidebarMenu = (props) => {
                                 className="font-style-poppins" 
                                 onClick={navigateToAppointment}
                                 icon="calendar-alt"> 
-                                Appointment 
+                                My Patient 
                             </CDBSidebarMenuItem>
 
                             <CDBSidebarMenuItem className="font-style-poppins" icon="bell"> Notification </CDBSidebarMenuItem>
                             <CDBSidebarMenuItem className="font-style-poppins" icon="book" iconType="solid" onClick={() => navigate(`/medicalrecord`, { state: { did: props.did } })}> Medical Records </CDBSidebarMenuItem>
-                            <CDBSidebarMenuItem className="font-style-poppins" icon="user" iconType="solid" onClick={() => navigate(`/account`, { state: { did: props.did } })}> Account Information </CDBSidebarMenuItem>
-                            <CDBSidebarMenuItem className="font-style-poppins" icon="arrow-left" iconType="solid" onClick={handleLogout}> Log Out </CDBSidebarMenuItem>
+                            {/* <CDBSidebarMenuItem className="font-style-poppins" icon="user" iconType="solid" onClick={() => navigate(`/account`, { state: { did: props.did } })}> Account Information </CDBSidebarMenuItem>
+                            <CDBSidebarMenuItem className="font-style-poppins" icon="arrow-left" iconType="solid" onClick={handleLogout}> Log Out </CDBSidebarMenuItem> */}
                         </CDBSidebarMenu>
                     </CDBSidebarContent>
 

@@ -8,35 +8,32 @@ function MedSecDashboard() {
   const [stats, setStats] = useState({
     pendingPatients: 0,
     todaysPatients: 0,
-    ongoingPatients: 0
+    ongoingPatients: 0,
   });
 
   useEffect(() => {
     // Fetch statistics data from the backend
-    axios.get(`${ip.address}/medicalsecretary/api/patient-stats`)
-      .then(response => {
+    axios
+      .get(`${ip.address}/medicalsecretary/api/patient-stats`)
+      .then((response) => {
         const data = response.data;
+        console.log('Patient Stats:', data);
 
+        // Directly use the stats data from the backend response
         setStats({
           pendingPatients: data.pendingPatients || 0,
           todaysPatients: data.todaysPatients || 0,
-          ongoingPatients: data.ongoingPatients || 0
+          ongoingPatients: data.ongoingPatients || 0,
         });
       })
-      .catch(error => console.error('Error fetching patient stats:', error));
+      .catch((error) => console.error('Error fetching patient stats:', error));
   }, []);
 
   return (
     <div className="mt-4">
-      <Row className="g-3"> {/* Use g-3 for smaller gaps between cards */}
+      <Row className="g-3">
         <Col xs={12} md={6} lg={4}>
-          <Card 
-            className="shadow-sm border-left-blue"
-            style={{
-              minHeight: '100px',
-              padding: '10px',
-            }}
-          >
+          <Card className="shadow-sm border-left-blue" style={{ minHeight: '100px', padding: '10px' }}>
             <Card.Header className="msd-cardtitle">Total Pending Patients</Card.Header>
             <Card.Body className="d-flex justify-content-between align-items-center">
               <div className="h5 text-gray-800 mb-0">{stats.pendingPatients}</div>
@@ -46,13 +43,7 @@ function MedSecDashboard() {
         </Col>
 
         <Col xs={12} md={6} lg={4}>
-          <Card 
-            className="shadow-sm border-left-green"
-            style={{
-              minHeight: '100px',
-              padding: '10px',
-            }}
-          >
+          <Card className="shadow-sm border-left-green" style={{ minHeight: '100px', padding: '10px' }}>
             <Card.Header className="msd-cardtitle">Total Today's Patients</Card.Header>
             <Card.Body className="d-flex justify-content-between align-items-center">
               <div className="h5 text-gray-800 mb-0">{stats.todaysPatients}</div>
@@ -62,13 +53,7 @@ function MedSecDashboard() {
         </Col>
 
         <Col xs={12} md={6} lg={4}>
-          <Card 
-            className="shadow-sm border-left-yellow"
-            style={{
-              minHeight: '100px',
-              padding: '10px',
-            }}
-          >
+          <Card className="shadow-sm border-left-yellow" style={{ minHeight: '100px', padding: '10px' }}>
             <Card.Header className="msd-cardtitle">Total Ongoing Patients</Card.Header>
             <Card.Body className="d-flex justify-content-between align-items-center">
               <div className="h5 text-gray-800 mb-0">{stats.ongoingPatients}</div>
