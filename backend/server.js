@@ -73,7 +73,7 @@ app.get('/uploads/:filename', (req, res) => {
     }
 });
 // app.use(express.static(path.join(__dirname, '../frontend/public')));
-app.use(express.static(path.join(__dirname, '../frontend/build')));
+app.use(express.static(path.join(__dirname, '../frontend/public')));
 // Routes for your other resources (appointments, etc.)
 const DoctorRoutes = require("./doctor/doctor_routes");
 DoctorRoutes(app);
@@ -108,7 +108,7 @@ ServiceRoutes(app);
 //     res.sendFile(path.join(__dirname, '../frontend/public', 'index.html'));
 // });
 app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../frontend/build', 'index.html'));
+    res.sendFile(path.join(__dirname, '../frontend/public', 'index.html'));
 });
 
 // Start the server
