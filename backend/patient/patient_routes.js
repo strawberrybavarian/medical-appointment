@@ -43,7 +43,7 @@ module.exports = app => {
     
     app.post('/api/patient/api/:id/updateimage', upload.single('image'), PatientController.updatePatientImage);
     app.get('/api/patient/api/test',(req,res)=>{res.json({message:"the api is working"})});
-    app.post('/api/patient/api/session', PatientController.createPatientSession);
+    app.post('/api/patient/session', PatientController.createPatientSession);
     
     //
     app.post(`/api/patient/api/unregistered`, PatientController.createUnregisteredPatient);
