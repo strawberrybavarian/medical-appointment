@@ -6,6 +6,7 @@ const fs = require('fs');
 const session = require('express-session');
 const { ensurePatientSession, ensureDoctorSession } = require('./SessionMiddleware');
 
+app.use(express.static(path.join(__dirname, 'public')));
 
 // app.use(express.static("./backend/build"));
 // app.get("*", (req, res) => {
