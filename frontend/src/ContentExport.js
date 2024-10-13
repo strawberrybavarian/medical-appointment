@@ -4,7 +4,7 @@ const image = {
 };
 
 const ip ={
-    address: 'http://13.214.60.24 ',
+    address: 'http://13.214.60.24',
     // address: 'http://localhost:8000'
 
 };
