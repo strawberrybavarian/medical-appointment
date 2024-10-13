@@ -52,8 +52,10 @@ app.use(cors({
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-const apiRouter = require('./routes/api'); // Adjust the path as needed
-app.use('/api', apiRouter);
+
+ // Adjust the path as needed
+
+
 // Static file serving for images
 app.use('/images', express.static(path.join(__dirname, 'doctor', 'images')));
 app.use('/images', express.static(path.join(__dirname, 'patient', 'images')));
