@@ -13,7 +13,7 @@ const MedicalSecretaryInfoForm = ({ msid }) => {
   
   useEffect(() => {
     // Fetch the Medical Secretary's information
-    axios.get(`${ip.address}/medicalsecretary/api/findone/${msid}`)
+    axios.get(`${ip.address}/api/medicalsecretary/api/findone/${msid}`)
       .then(response => {
         setMedSecData(response.data.theMedSec);
         setIsLoading(false);

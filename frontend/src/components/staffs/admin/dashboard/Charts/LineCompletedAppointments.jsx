@@ -11,7 +11,7 @@ function LineCompletedAppointments() {
 
   useEffect(() => {
     // Fetch appointment stats from the backend
-    axios.get(`${ip.address}/admin/api/appointments/completed-by-month`)
+    axios.get(`${ip.address}/api/admin/api/appointments/completed-by-month`)
       .then(response => {
         const data = response.data;
 

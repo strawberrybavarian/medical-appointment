@@ -36,7 +36,7 @@ const OngoingAppointment = ({ allAppointments, setAllAppointments }) => {
       rescheduledReason: rescheduledReason,
       status: 'Rescheduled'
     };
-    axios.put(`${ip.address}/doctor/${selectedAppointment._id}/rescheduledstatus`, newStatus)
+    axios.put(`${ip.address}/api/doctor/${selectedAppointment._id}/rescheduledstatus`, newStatus)
       .then(() => {
         setAllAppointments(prevAppointments =>
           prevAppointments.map(appointment =>
@@ -56,7 +56,7 @@ const OngoingAppointment = ({ allAppointments, setAllAppointments }) => {
   }, [allAppointments]);
 
   const handleUpdateStatus = (appointmentId, newStatus) => {
-    axios.put(`${ip.address}/appointments/${appointmentId}/status`, { status: newStatus })
+    axios.put(`${ip.address}/api/appointments/${appointmentId}/status`, { status: newStatus })
       .then((response) => {
         setAllAppointments(prevAppointments =>
           prevAppointments.map(appointment =>

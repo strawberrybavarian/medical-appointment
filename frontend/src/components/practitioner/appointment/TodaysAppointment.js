@@ -25,7 +25,7 @@ const TodaysAppointment = ({ allAppointments, setAllAppointments }) => {
 
   // Function to update the appointment status
   const updateAppointmentStatus = (appointmentID, newStatus) => {
-    axios.put(`${ip.address}/appointments/${appointmentID}/status`, { status: newStatus })
+    axios.put(`${ip.address}/api/appointments/${appointmentID}/status`, { status: newStatus })
       .then(() => {
         // Update the appointment status locally in the state
         setAllAppointments(prevAppointments =>

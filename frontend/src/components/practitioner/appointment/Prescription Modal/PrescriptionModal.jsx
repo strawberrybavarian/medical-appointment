@@ -34,7 +34,7 @@ function PrescriptionModal({ show, handleClose, patientId, appointmentId, doctor
                 medications
             };
 
-            await axios.post(`${ip.address}/doctor/api/createPrescription/${patientId}/${appointmentId}`, prescriptionData);
+            await axios.post(`${ip.address}/api/doctor/api/createPrescription/${patientId}/${appointmentId}`, prescriptionData);
             window.alert("Prescription created successfully!");
             handleClose();
         } catch (err) {

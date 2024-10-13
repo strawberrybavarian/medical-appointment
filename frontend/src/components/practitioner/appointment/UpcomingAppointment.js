@@ -58,7 +58,7 @@ const UpcomingAppointment = ({ allAppointments, setAllAppointments }) => {
       rescheduledReason: rescheduledReason,
       status: 'Rescheduled'
     };
-    axios.put(`${ip.address}/doctor/${selectedAppointment._id}/rescheduledstatus`, newStatus)
+    axios.put(`${ip.address}/api/doctor/${selectedAppointment._id}/rescheduledstatus`, newStatus)
       .then(() => {
         setAllAppointments(prevAppointments =>
           prevAppointments.map(appointment =>

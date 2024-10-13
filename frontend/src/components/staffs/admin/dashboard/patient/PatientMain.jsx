@@ -20,7 +20,7 @@ function PatientMain() {
     const { aid } = useParams();
 
     useEffect(() => {
-        axios.get(`${ip.address}/admin/api/patients/count`)
+        axios.get(`${ip.address}/api/admin/api/patients/count`)
             .then(response => {
                 setTotalPatients(response.data.totalPatients);
             })
@@ -28,7 +28,7 @@ function PatientMain() {
                 console.error('Error fetching total patients:', error);
             });
 
-        axios.get(`${ip.address}/admin/api/patients/registered/count`)
+        axios.get(`${ip.address}/api/admin/api/patients/registered/count`)
             .then(response => {
                 setRegisteredPatients(response.data.registeredPatients);
             })
@@ -36,7 +36,7 @@ function PatientMain() {
                 console.error('Error fetching registered patients:', error);
             });
 
-        axios.get(`${ip.address}/admin/api/patients/unregistered/count`)
+        axios.get(`${ip.address}/api/admin/api/patients/unregistered/count`)
             .then(response => {
                 setUnregisteredPatients(response.data.unregisteredPatients);
             })

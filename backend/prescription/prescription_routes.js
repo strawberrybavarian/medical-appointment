@@ -29,5 +29,5 @@ const fileFilter = (req, file, cb) => {
 const upload = multer({ storage: storage, fileFilter: fileFilter });
 
 module.exports = app => {
-    app.post('/doctor/api/createPrescription/:patientId/:appointmentId', upload.single('image'), PrescriptionController.createPrescription);
+    app.post('/api/doctor/api/createPrescription/:patientId/:appointmentId', upload.single('image'), PrescriptionController.createPrescription);
 };

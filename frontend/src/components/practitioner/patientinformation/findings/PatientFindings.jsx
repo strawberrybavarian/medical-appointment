@@ -46,7 +46,7 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
 
     const navigate = useNavigate();
     useEffect(() => {
-        axios.get(`${ip.address}/appointments/${appointmentId}`)
+        axios.get(`${ip.address}/api/appointments/${appointmentId}`)
             .then((res) => {                        
                 setReason(res.data.reason);
             })
@@ -61,19 +61,19 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
         const fetchPatientAndFindings = async () => {
             setLoading(true);
             try {
-                const patientRes = await axios.get(`${ip.address}/patient/api/onepatient/${patientId}`);
+                const patientRes = await axios.get(`${ip.address}/api/patient/api/onepatient/${patientId}`);
                 setFname(patientRes.data.thePatient.patient_firstName);
                 setLname(patientRes.data.thePatient.patient_lastName);
                 setAge(patientRes.data.thePatient.patient_age);
                 setEmail(patientRes.data.thePatient.patient_email);
     
-                const findingsRes = await axios.get(`${ip.address}/getfindings/${appointmentId}`);
+                const findingsRes = await axios.get(`${ip.address}/api/getfindings/${appointmentId}`);
     
                 if (findingsRes.data && findingsRes.data.findings) {
                     setFindings(findingsRes.data.findings);
                 }
 
-                const appointmnetRes = await axios.get(`${ip.address}/appointments/${appointmentId}`);
+                const appointmnetRes = await axios.get(`${ip.address}/api/appointments/${appointmentId}`);
 
                 if (appointmnetRes.data && appointmnetRes.data.appointment) { 
                    
@@ -177,7 +177,7 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
         
     
         try {
-            await axios.post('${ip.address}/createfindings', {
+            await axios.post(`${ip.address}/api/createfindings`, {
                 ...findings,
                 skinCondition: updatedSkinConditions,
                 allergy: updatedAllergies,

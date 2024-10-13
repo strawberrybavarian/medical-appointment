@@ -27,7 +27,7 @@ const LogInUser = () => {
 
     if (userRole === "Patient") {
       try {
-        const response = await axios.post(`${ip.address}/patient/api/login`, {
+        const response = await axios.post(`${ip.address}/api/patient/api/login`, {
           email,
           password,
         });
@@ -56,7 +56,7 @@ const LogInUser = () => {
       }
     } else if (userRole === "Physician") {
       try {
-        const response = await axios.post(`${ip.address}/doctor/api/login`, {
+        const response = await axios.post(`${ip.address}/api/doctor/api/login`, {
           email,
           password,
         });

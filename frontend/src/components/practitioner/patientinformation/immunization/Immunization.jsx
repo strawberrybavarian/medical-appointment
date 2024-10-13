@@ -24,7 +24,7 @@ function Immunization({ patientId, doctorId, appointmentId }) {
         const fetchImmunizations = async () => {
             setLoading(true);
             try {
-                const response = await axios.get(`${ip.address}/patient/api/onepatient/${patientId}`);
+                const response = await axios.get(`${ip.address}/api/patient/api/onepatient/${patientId}`);
                 if (response.data && response.data.thePatient && response.data.thePatient.immunizations) {
                     setImmunizations(response.data.thePatient.immunizations);
                 } else {
@@ -63,7 +63,7 @@ function Immunization({ patientId, doctorId, appointmentId }) {
                     index === editingIndex ? response.data : immunization
                 ));
             } else {
-                const response = await axios.post('${ip.address}/api/immunization', {
+                const response = await axios.post(`${ip.address}/api/immunization`, {
                     ...formData,
                     patientId,
                     administeredBy: doctorId,

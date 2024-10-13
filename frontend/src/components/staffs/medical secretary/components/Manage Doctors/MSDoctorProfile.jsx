@@ -18,7 +18,7 @@ function MSDoctorProfile() {
 
     useEffect(() => {
         // Fetch doctor details
-        axios.get(`${ip.address}/doctor/api/finduser/${did}`)
+        axios.get(`${ip.address}/api/doctor/api/finduser/${did}`)
             .then(res => {
                 const doctor = res.data.theDoctor;
                 setTheDoctor(doctor);
@@ -33,7 +33,7 @@ function MSDoctorProfile() {
 
     useEffect(() => {
         // Fetch doctor's posts
-        axios.get(`${ip.address}/doctor/api/post/getallpost/${did}`)
+        axios.get(`${ip.address}/api/doctor/api/post/getallpost/${did}`)
             .then(res => {
                 setThePost(res.data.posts);
             })
@@ -42,7 +42,7 @@ function MSDoctorProfile() {
 
     useEffect(() => {
         // Fetch doctor's availability
-        axios.get(`${ip.address}/doctor/${did}/available`)
+        axios.get(`${ip.address}/api/doctor/${did}/available`)
             .then(res => {
                 setAvailability(res.data.availability);
             })

@@ -23,7 +23,7 @@ const CreateStaffModal = ({ show, handleClose, handleStaffCreation }) => {
 
       // Determine which API endpoint and payload to use based on the selected role
       if (role === 'Medical Secretary') {
-        endpoint = `${ip.address}/medicalsecretary/api/signup`;
+        endpoint = `${ip.address}/api/medicalsecretary/api/signup`;
         payload = {
           ms_firstName: firstName,
           ms_lastName: lastName,
@@ -32,7 +32,7 @@ const CreateStaffModal = ({ show, handleClose, handleStaffCreation }) => {
           role,
         };
       } else if (role === 'Admin') {
-        endpoint = `${ip.address}/admin/api/signup`;
+        endpoint = `${ip.address}/api/admin/api/signup`;
         payload = {
           firstName,
           lastName,

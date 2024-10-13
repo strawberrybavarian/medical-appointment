@@ -14,7 +14,7 @@ function MedSecDashboard() {
   useEffect(() => {
     // Fetch statistics data from the backend
     axios
-      .get(`${ip.address}/medicalsecretary/api/patient-stats`)
+      .get(`${ip.address}/api/medicalsecretary/api/patient-stats`)
       .then((response) => {
         const data = response.data;
         console.log('Patient Stats:', data);

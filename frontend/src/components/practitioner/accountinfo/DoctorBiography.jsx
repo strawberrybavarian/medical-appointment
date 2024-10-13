@@ -35,7 +35,7 @@ const DoctorBiography = ({ did }) => {
   useEffect(() => {
     const fetchBiography = async () => {
       try {
-        const response = await axios.get(`${ip.address}/doctor/${did}/getbiography`);
+        const response = await axios.get(`${ip.address}/api/doctor/${did}/getbiography`);
         setBiography(response.data.biography || {});
       } catch (error) {
         console.error('Error fetching biography:', error);
@@ -60,7 +60,7 @@ const DoctorBiography = ({ did }) => {
   // Handle saving biography
   const handleSave = async () => {
     try {
-      const response = await axios.put(`${ip.address}/doctor/${did}/updatebiography`, { biography });
+      const response = await axios.put(`${ip.address}/api/doctor/${did}/updatebiography`, { biography });
       setBiography(response.data.biography); // Update with the new biography
       setIsEditing(false);
     } catch (error) {
@@ -71,7 +71,7 @@ const DoctorBiography = ({ did }) => {
   // Handle deleting biography
   const handleDelete = async () => {
     try {
-      await axios.delete(`${ip.address}/doctor/${did}/deletebiography`);
+      await axios.delete(`${ip.address}/api/doctor/${did}/deletebiography`);
       setBiography({
         medicalSchool: {},
         residency: {},

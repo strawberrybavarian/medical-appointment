@@ -46,7 +46,7 @@ function EditNewsModal({
   
     try {
       const response = await axios.put(
-        `${ip.address}/news/api/updatenews/${userId}/${newsId}`, // Correct URL format
+        `${ip.address}/api/news/api/updatenews/${userId}/${newsId}`, // Correct URL format
         formData,
         { headers: { "Content-Type": "multipart/form-data" } }
       );

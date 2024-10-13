@@ -25,7 +25,7 @@ const CreateStaffModal = ({ show, handleClose, user, onComplete }) => {
 
     try {
       // Make the request to change the password
-      await axios.put(`${ip.address}/medicalsecretary/api/change-password/${user._id}`, {
+      await axios.put(`${ip.address}/api/medicalsecretary/api/change-password/${user._id}`, {
         oldPassword,
         newPassword,
         confirmNewPassword,

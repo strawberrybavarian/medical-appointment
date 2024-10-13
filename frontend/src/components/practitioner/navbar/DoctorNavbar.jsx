@@ -13,7 +13,7 @@ function DoctorNavbar({doctor_image, did}) {
     const {msid} = useParams();
 
     useEffect(()=> {
-        axios.get(`${ip.address}/doctor/one/${did}`)
+        axios.get(`${ip.address}/api/doctor/one/${did}`)
         .then((res) => {
             const name = res.data.doctor.dr_firstName + " " + res.data.doctor.dr_middleInitial + ". " + res.data.doctor.dr_lastName;
             setFullName(name);

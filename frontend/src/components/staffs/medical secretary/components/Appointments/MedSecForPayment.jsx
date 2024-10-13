@@ -21,7 +21,7 @@ const MedSecForPayment = ({ allAppointments, setAllAppointments }) => {
   const [selectedAccountStatus, setSelectedAccountStatus] = useState("");
 
   useEffect(() => {
-    axios.get(`${ip.address}/doctor/api/alldoctor`)
+    axios.get(`${ip.address}/api/doctor/api/alldoctor`)
       .then((result) => {
         setAllDoctors(result.data.theDoctor);
       })
@@ -85,7 +85,7 @@ const MedSecForPayment = ({ allAppointments, setAllAppointments }) => {
       time: selectedTime,
     };
   
-    axios.put(`${ip.address}/api/appointment/${selectedAppointment._id}/assign`, updatedAppointment)
+    axios.put(`${ip.address}/api/api/appointment/${selectedAppointment._id}/assign`, updatedAppointment)
       .then(() => {
         setAllAppointments(prevAppointments =>
           prevAppointments.map(appointment =>
@@ -103,7 +103,7 @@ const MedSecForPayment = ({ allAppointments, setAllAppointments }) => {
 
   // Function to update the appointment status to 'Completed'
   const handleUpdateStatus = (appointmentId, newStatus) => {
-    axios.put(`${ip.address}/appointments/${appointmentId}/status`, { status: newStatus })
+    axios.put(`${ip.address}/api/appointments/${appointmentId}/status`, { status: newStatus })
       .then((response) => {
         setAllAppointments(prevAppointments =>
           prevAppointments.map(appointment =>

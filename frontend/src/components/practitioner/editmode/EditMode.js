@@ -19,7 +19,7 @@ function EditMode() {
   const [post, setPost] = useState([""]);
 
   const [theName, setTheName] =useState("");
-  axios.get(`${ip.address}/doctor/api/finduser/`+uid)
+  axios.get(`${ip.address}/api/doctor/api/finduser/`+uid)
   .then((res) => {
 
     setTheName(res.data.theDoctor.dr_firstName)
@@ -29,7 +29,7 @@ function EditMode() {
   });
 
   useEffect(()=>{
-    axios.get("${ip.address}/doctor/api/finduser/"+uid)
+    axios.get(`${ip.address}/api/doctor/api/finduser/`+uid)
     .then((res)=>{
         console.log(index);
         console.log(uid);
@@ -47,7 +47,7 @@ function EditMode() {
       content:post,
     }
     navigate('/dashboard/'+uid);
-    axios.put(`${ip.address}/doctor/api/post/updatepost/${uid}/${index}`,newPost)
+    axios.put(`${ip.address}/api/doctor/api/post/updatepost/${uid}/${index}`,newPost)
     .then((response)=>{
       console.log(response.data);
       window.location.reload();

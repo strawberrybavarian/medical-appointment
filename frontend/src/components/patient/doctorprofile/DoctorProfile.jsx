@@ -25,7 +25,7 @@ function DoctorProfile() {
 
     useEffect(() => {
         if (doctorId) {
-            axios.get(`${ip.address}/doctor/api/finduser/${doctorId}`)
+            axios.get(`${ip.address}/api/doctor/api/finduser/${doctorId}`)
                 .then((res) => {
                     const doctor = res.data.theDoctor;
                     setTheDoctor(doctor);

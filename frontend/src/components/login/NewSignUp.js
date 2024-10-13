@@ -120,7 +120,7 @@ const NewSignUp = () => {
                 dr_gender: uGender,
                 dr_licenseNo: dr_licenseNo,  // Practitioner-specific field
             };
-            axios.post(`${ip.address}/doctor/api/signup`, doctorUser)
+            axios.post(`${ip.address}/api/doctor/api/signup`, doctorUser)
                 .then((response) => {
                     console.log(response);
                     window.alert("Successfully registered Practitioner");
@@ -146,7 +146,7 @@ const NewSignUp = () => {
                 patient_civilstatus: patientCivilStatus,
             };
             console.log(patientUser);
-            axios.post(`${ip.address}/patient/api/signup`, patientUser)
+            axios.post(`${ip.address}/api/patient/api/signup`, patientUser)
                 .then((response) => {
                     console.log(response);
                     window.alert("Successfully registered Patient");

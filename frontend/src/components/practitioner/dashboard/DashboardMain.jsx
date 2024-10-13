@@ -30,7 +30,7 @@ function DashboardMain() {
   useEffect(() => {
 
 
-    axios.get(`${ip.address}/doctor/api/finduser/${did}`)
+    axios.get(`${ip.address}/api/doctor/api/finduser/${did}`)
       .then((res) => {
         const { _id, dr_firstName, dr_lastName, dr_middleInitial ,dr_image } = res.data.theDoctor;
         const fullName = dr_firstName + " " + dr_middleInitial + ". " + dr_lastName;

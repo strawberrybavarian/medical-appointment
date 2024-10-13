@@ -133,7 +133,7 @@ const CreatePatientForms = () => {
                 }
             };
 
-            axios.post(`${ip.address}/patient/api/unregistered`, patientUser)
+            axios.post(`${ip.address}/api/patient/api/unregistered`, patientUser)
                 .then((response) => {
                     console.log(response);
                     window.alert("Successfully registered Patient");

@@ -32,7 +32,7 @@ function MedSecMain() {
   }, [location.search]); 
 
   useEffect(() => {
-    axios.get(`${ip.address}/medicalsecretary/api/allappointments`)
+    axios.get(`${ip.address}/api/medicalsecretary/api/allappointments`)
       .then((result) => {
         setallappointments(result.data.Appointments);
       })

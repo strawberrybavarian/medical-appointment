@@ -15,7 +15,7 @@ function StaffsManagement() {
 
   useEffect(() => {
     // Fetch all staff members (Admins and Medical Secretaries)
-    axios.get(`${ip.address}/admin/api/staff/all`)
+    axios.get(`${ip.address}/api/admin/api/staff/all`)
       .then((result) => {
         setStaff(result.data.staff);
         console.log(result.data.staff);
@@ -40,7 +40,7 @@ function StaffsManagement() {
     const status = modalAction === 'register' ? 'Registered' : 'Deactivated';
     const role = selectedStaff.role === 'Admin' ? 'admin' : 'medicalSecretary'; // Assuming 'role' determines the type
 
-    axios.put(`${ip.address}/admin/api/staff/account-status/${selectedStaff._id}`, { status, role })
+    axios.put(`${ip.address}/api/admin/api/staff/account-status/${selectedStaff._id}`, { status, role })
       .then(() => {
         setStaff(staff.map(stf => stf._id === selectedStaff._id ? { ...stf, accountStatus: status } : stf));
         handleCloseModal();

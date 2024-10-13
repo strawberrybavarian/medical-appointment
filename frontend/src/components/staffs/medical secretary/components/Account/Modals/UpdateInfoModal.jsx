@@ -35,7 +35,7 @@ const UpdateInfoModal = ({ show, handleClose, currentData = {} }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    axios.put(`${ip.address}/medicalsecretary/api/${currentData._id}/update`, updatedData)
+    axios.put(`${ip.address}/api/medicalsecretary/api/${currentData._id}/update`, updatedData)
       .then(response => {
         handleClose(updatedData); // Pass the updated data back to the form
       })

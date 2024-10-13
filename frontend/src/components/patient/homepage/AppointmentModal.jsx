@@ -10,7 +10,7 @@ function AppointmentModal({ show, handleClose, serviceId, pid }) {
     // Fetch the service details based on the serviceId 
     useEffect(() => {
         if (serviceId) {
-            axios.get(`${ip.address}/admin/services/${serviceId}`)
+            axios.get(`${ip.address}/api/admin/services/${serviceId}`)
                 .then((response) => {
                     console.log(response.data);
                     setService(response.data); // Set the fetched service details
@@ -41,7 +41,7 @@ function AppointmentModal({ show, handleClose, serviceId, pid }) {
             reason,
         };
     
-        axios.post(`${ip.address}/patient/api/${pid}/createappointment`, formData)
+        axios.post(`${ip.address}/api/patient/api/${pid}/createappointment`, formData)
             .then(() => {
                 window.alert("Created an appointment!");
                 window.location.reload();

@@ -19,7 +19,7 @@ function MedSecMainDashboard() {
     
     useEffect(() => {
         if (userId) {
-            axios.get(`${ip.address}/medicalsecretary/api/findone/${userId}`)
+            axios.get(`${ip.address}/api/medicalsecretary/api/findone/${userId}`)
             .then((res) => {
                 const medsec = res.data.theMedSec;
                 setMedSecData(medsec); 

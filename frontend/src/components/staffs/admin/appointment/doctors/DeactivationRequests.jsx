@@ -6,14 +6,14 @@ function DeactivationRequests() {
     const [requests, setRequests] = useState([]);
 
     useEffect(() => {
-        axios.get(`${ip.address}/admin/deactivation-requests`)
+        axios.get(`${ip.address}/api/admin/deactivation-requests`)
             .then(res => setRequests(res.data))
             .catch(err => console.log(err));
     }, []);
 
     const handleConfirm = (doctorId, confirm) => {
         axios
-            .post(`${ip.address}/admin/confirm-deactivation/${doctorId}`, { confirm })
+            .post(`${ip.address}/api/admin/confirm-deactivation/${doctorId}`, { confirm })
             .then((res) => {
                 alert(res.data.message);
                 setRequests(requests.filter(request => request._id !== doctorId)); // Remove handled request

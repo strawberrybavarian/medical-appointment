@@ -20,7 +20,7 @@ const TodaysAppointment = () => {
 
   useEffect(() => {
     axios
-    .get(`${ip.address}/doctor/appointments/${did}`)
+    .get(`${ip.address}/api/doctor/appointments/${did}`)
     .then((res) => {
       setAllAppointments(res.data);
     })
@@ -31,7 +31,7 @@ const TodaysAppointment = () => {
   }, [did]);
 
   const updateAppointmentStatus = (appointmentID, newStatus) => {
-    axios.put(`${ip.address}/appointments/${appointmentID}/status`, { status: newStatus })
+    axios.put(`${ip.address}/api/appointments/${appointmentID}/status`, { status: newStatus })
       .then(() => {
         setAllAppointments(prevAppointments =>
           prevAppointments.map(appointment =>
@@ -47,7 +47,7 @@ const TodaysAppointment = () => {
       rescheduledReason: rescheduledReason,
       status: 'Rescheduled'
     };
-    axios.put(`${ip.address}/doctor/${selectedAppointment._id}/rescheduledstatus`, newStatus)
+    axios.put(`${ip.address}/api/doctor/${selectedAppointment._id}/rescheduledstatus`, newStatus)
       .then(() => {
         setAllAppointments(prevAppointments =>
           prevAppointments.map(appointment =>

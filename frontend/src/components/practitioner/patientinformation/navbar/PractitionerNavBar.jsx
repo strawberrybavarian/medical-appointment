@@ -21,7 +21,7 @@ function PractitionerNavBar({ pid, did, apid }) {
     useEffect(() => {
         const fetchPatientData = async () => {
             try {
-                await axios.get(`${ip.address}/patient/api/onepatient/${pid}`);
+                await axios.get(`${ip.address}/api/patient/api/onepatient/${pid}`);
             } catch (error) {
                 console.error('Error fetching patient data', error);
             }

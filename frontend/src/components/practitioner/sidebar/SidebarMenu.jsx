@@ -21,7 +21,7 @@ const SidebarMenu = (props) => {
 
     const confirmLogout = () => {
         // Call the backend to set the doctor to offline and then navigate
-        axios.put(`${ip.address}/doctor/api/${props.did}/logout`)
+        axios.put(`${ip.address}/api/doctor/api/${props.did}/logout`)
             .then(res => {
                 console.log('Doctor status updated to Offline');
                 setShowLogoutModal(false);

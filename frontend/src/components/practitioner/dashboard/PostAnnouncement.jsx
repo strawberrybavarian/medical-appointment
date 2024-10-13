@@ -21,7 +21,7 @@ function PostAnnouncement({ doctor_image, doctor_name, did }) {
 
   useEffect(() => {
     axios
-      .get(`${ip.address}/doctor/api/post/getallpost/${did}`)
+      .get(`${ip.address}/api/doctor/api/post/getallpost/${did}`)
       .then((res) => {
         const posts = res.data.posts.reverse();
         setThePosts(posts);
@@ -46,7 +46,7 @@ function PostAnnouncement({ doctor_image, doctor_name, did }) {
     });
 
     axios
-      .post(`${ip.address}/doctor/api/addpost/${did}`, formData, {
+      .post(`${ip.address}/api/doctor/api/addpost/${did}`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       })
       .then((res) => {
@@ -78,7 +78,7 @@ function PostAnnouncement({ doctor_image, doctor_name, did }) {
 
   const deletePost = (index) => {
     axios
-      .delete(`${ip.address}/doctor/api/post/deletepost/${did}/${index}`)
+      .delete(`${ip.address}/api/doctor/api/post/deletepost/${did}/${index}`)
       .then(() => setThePosts(thePosts.filter((_, i) => i !== index)))
       .catch((err) => {
         console.log("Error deleting post:", err.response ? err.response.data : err.message);

@@ -13,7 +13,7 @@ function DoctorAnnouncements({ doctorId, theImage, theName }) {
 
   useEffect(() => {
     // Fetch doctor posts
-    axios.get(`${ip.address}/doctor/api/post/getallpost/${doctorId}`)
+    axios.get(`${ip.address}/api/doctor/api/post/getallpost/${doctorId}`)
       .then((res) => {
         const fetchedPosts = res.data.posts.reverse();
         setPosts(fetchedPosts);

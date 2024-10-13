@@ -24,7 +24,7 @@ const PatientMedicalRecord = ({pid}) => {
     };
 
     useEffect(() => {
-        axios.get(`${ip.address}/patient/api/onepatient/${pid}`)
+        axios.get(`${ip.address}/api/patient/api/onepatient/${pid}`)
             .then((res) => {
                 console.log(res.data);  // Log the entire response to understand its structure
                 if (res.data && res.data.thePatient && Array.isArray(res.data.thePatient.patient_appointments)) {

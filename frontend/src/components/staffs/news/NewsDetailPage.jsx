@@ -9,7 +9,7 @@ function NewsDetailPage() {
   useEffect(() => {
     // Fetch the news details by ID
     axios
-      .get(`${ip.address}/news/api/getnews/${id}`)
+      .get(`${ip.address}/api/news/api/getnews/${id}`)
       .then((res) => setNews(res.data.news))
       .catch((err) => console.log(err));
   }, [id]);

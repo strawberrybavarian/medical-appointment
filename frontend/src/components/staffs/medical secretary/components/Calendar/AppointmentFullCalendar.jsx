@@ -27,7 +27,7 @@ function AppointmentFullCalendar() {
 
   useEffect(() => {
     axios
-      .get(`${ip.address}/medicalsecretary/api/allappointments`)
+      .get(`${ip.address}/api/medicalsecretary/api/allappointments`)
       .then((result) => {
         setAllappointments(result.data.Appointments);
       })

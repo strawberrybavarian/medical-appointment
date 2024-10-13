@@ -20,7 +20,7 @@ function ManageSpecialty({ aid }) {
   // Fetch all specialties from the server
   const fetchSpecialties = async () => {
     try {
-      const res = await axios.get(`${ip.address}/admin/specialties`);
+      const res = await axios.get(`${ip.address}/api/admin/specialties`);
       setSpecialties(res.data);
     } catch (err) {
       console.error('Error fetching specialties:', err);
@@ -41,10 +41,10 @@ function ManageSpecialty({ aid }) {
     e.preventDefault();
     try {
       if (editSpecialtyId) {
-        await axios.put(`${ip.address}/admin/specialty/update`, { specialtyId: editSpecialtyId, ...newSpecialty });
+        await axios.put(`${ip.address}/api/admin/specialty/update`, { specialtyId: editSpecialtyId, ...newSpecialty });
         setSpecialties(specialties.map(specialty => (specialty._id === editSpecialtyId ? { ...specialty, ...newSpecialty } : specialty)));
       } else {
-        const res = await axios.post(`${ip.address}/admin/specialty/add`, { ...newSpecialty, adminId: aid });
+        const res = await axios.post(`${ip.address}/api/admin/specialty/add`, { ...newSpecialty, adminId: aid });
         setSpecialties([...specialties, res.data.specialty]);
       }
       setNewSpecialty({ name: '', description: '' });
@@ -58,7 +58,7 @@ function ManageSpecialty({ aid }) {
   // Handle delete specialty
   const handleDeleteSpecialty = async (id) => {
     try {
-      await axios.delete(`${ip.address}/admin/specialty/delete/${id}`);
+      await axios.delete(`${ip.address}/api/admin/specialty/delete/${id}`);
       setSpecialties(specialties.filter(specialty => specialty._id !== id));
     } catch (err) {
       console.error('Error deleting specialty:', err);

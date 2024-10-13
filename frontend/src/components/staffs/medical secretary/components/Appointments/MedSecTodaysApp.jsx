@@ -17,7 +17,7 @@ function MedSecTodaysApp({ allAppointments, setAllAppointments }) {
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [error, setError] = useState("");
   useEffect(() => {
-    axios.get(`${ip.address}/doctor/api/alldoctor`)
+    axios.get(`${ip.address}/api/doctor/api/alldoctor`)
       .then((result) => {
         setalldoctors(result.data.theDoctor);
       })
@@ -31,7 +31,7 @@ function MedSecTodaysApp({ allAppointments, setAllAppointments }) {
       rescheduledReason: rescheduledReason,
       status: 'Rescheduled'
     };
-    axios.put(`${ip.address}/doctor/${selectedAppointment._id}/rescheduledstatus`, newStatus)
+    axios.put(`${ip.address}/api/doctor/${selectedAppointment._id}/rescheduledstatus`, newStatus)
       .then(() => {
         setAllAppointments(prevAppointments =>
           prevAppointments.map(appointment =>
@@ -56,7 +56,7 @@ function MedSecTodaysApp({ allAppointments, setAllAppointments }) {
   const todayDate = getTodayDate();
 
   const handleUpdateStatus = (appointmentId, newStatus) => {
-    axios.put(`${ip.address}/appointments/${appointmentId}/status`, { status: newStatus })
+    axios.put(`${ip.address}/api/appointments/${appointmentId}/status`, { status: newStatus })
       .then((response) => {
         setAllAppointments(prevAppointments =>
           prevAppointments.map(appointment =>

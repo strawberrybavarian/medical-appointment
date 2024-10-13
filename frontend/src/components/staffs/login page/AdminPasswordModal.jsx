@@ -25,7 +25,7 @@ const AdminPasswordModal = ({ show, handleClose, user, onComplete }) => {
 
     try {
       // Make the request to change the admin password
-      await axios.put(`${ip.address}/admin/api/change-password/${user._id}`, {
+      await axios.put(`${ip.address}/api/admin/api/change-password/${user._id}`, {
         oldPassword,
         newPassword,
         confirmNewPassword,

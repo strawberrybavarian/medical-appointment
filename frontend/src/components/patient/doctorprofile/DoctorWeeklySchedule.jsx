@@ -7,7 +7,7 @@ const DoctorWeeklySchedule = ({ did }) => {
     const [availability, setAvailability] = useState({});
     useEffect(() => {
         axios
-            .get(`${ip.address}/doctor/${did}/available`)
+            .get(`${ip.address}/api/doctor/${did}/available`)
             .then((res) => {
                 setAvailability(res.data.availability);
             })

@@ -40,7 +40,7 @@ function PatientInformation({ pid }) {
   };
 
   useEffect(() => {
-    axios.get(`${ip.address}/patient/api/onepatient/${pid}`)
+    axios.get(`${ip.address}/api/patient/api/onepatient/${pid}`)
       .then((res) => {
         const patientData = res.data.thePatient;
         setThePatient(patientData);

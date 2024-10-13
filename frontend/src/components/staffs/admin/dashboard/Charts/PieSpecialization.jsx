@@ -11,7 +11,7 @@ function PieSpecialization() {
 
   useEffect(() => {
     // Fetch doctor specialty stats from the backend
-    axios.get(`${ip.address}/api/doctor-specialty-stats`)
+    axios.get(`${ip.address}/api/api/doctor-specialty-stats`)
       .then(response => {
         const data = response.data;
         const labels = data.map(item => item.specialty);

@@ -18,7 +18,7 @@ function AssignAppointmentModal({ show, handleClose, appointmentId }) {
 
     // Fetch all doctors
     useEffect(() => {
-        axios.get(`${ip.address}/doctor/api/alldoctor`)
+        axios.get(`${ip.address}/api/doctor/api/alldoctor`)
             .then((response) => {
                 const doctorOptions = response.data.theDoctor.map((doctor) => ({
                     value: doctor._id,
@@ -34,7 +34,7 @@ function AssignAppointmentModal({ show, handleClose, appointmentId }) {
     // Fetch doctor's availability and services based on the selected doctor
     useEffect(() => {
         if (selectedDoctor) {
-            axios.get(`${ip.address}/doctor/${selectedDoctor.value}`)
+            axios.get(`${ip.address}/api/doctor/${selectedDoctor.value}`)
                 .then((response) => {
                     const doctor = response.data.doctor;
                     setDoctorName(`${doctor.dr_firstName} ${doctor.dr_middleInitial}. ${doctor.dr_lastName}`);
@@ -46,7 +46,7 @@ function AssignAppointmentModal({ show, handleClose, appointmentId }) {
                 });
         } else {
             // Fetch all services if no doctor is selected
-            axios.get(`${ip.address}/admin/getall/services`)
+            axios.get(`${ip.address}/api/admin/getall/services`)
                 .then((response) => {
                     setServices(response.data); // Fetch all available services
                 })

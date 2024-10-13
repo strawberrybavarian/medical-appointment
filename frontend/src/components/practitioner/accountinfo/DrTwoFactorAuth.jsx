@@ -14,7 +14,7 @@ function DrTwoFactorAuth() {
 
     const setupTwoFactor = async (userId, regenerate = false) => {
         try {
-            const response = await axios.post(`${ip.address}/doctor/api/setup-2fa/${userId}`, { regenerate });
+            const response = await axios.post(`${ip.address}/api/doctor/api/setup-2fa/${userId}`, { regenerate });
             if (response.data.qrCode && response.data.secret) {
                 setQrCode(response.data.qrCode);
                 setSecretKey(response.data.secret);

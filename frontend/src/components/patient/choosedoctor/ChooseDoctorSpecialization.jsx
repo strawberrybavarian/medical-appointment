@@ -13,7 +13,7 @@ function ChooseDoctorSpecialization({ did }) {
     const { patient } = usePatient();
     const { setDoctorId } = usePatient();
     useEffect(() => {
-        axios.get(`${ip.address}/doctor/api/alldoctor`)
+        axios.get(`${ip.address}/api/doctor/api/alldoctor`)
             .then((res) => {
                 const filteredDoctors = res.data.theDoctor.filter(doctor => 
                     doctor.dr_specialty && doctor.dr_specialty.toLowerCase() === specialty.toLowerCase()

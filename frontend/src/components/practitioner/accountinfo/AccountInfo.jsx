@@ -32,7 +32,7 @@ const AccountInfo = () => {
   const [biographyCollapseOpen, setBiographyCollapseOpen] = useState(false);
 
   useEffect(() => {
-    axios.get(`${ip.address}/doctor/api/finduser/${did}`)
+    axios.get(`${ip.address}/api/doctor/api/finduser/${did}`)
       .then((res) => {
         const data = res.data.theDoctor;
         setDoctorData({
@@ -70,7 +70,7 @@ const AccountInfo = () => {
   };
 
   const handleUpdate = (updatedData) => {
-    axios.put(`${ip.address}/doctor/api/${did}/updateDetails`, updatedData)
+    axios.put(`${ip.address}/api/doctor/api/${did}/updateDetails`, updatedData)
       .then((response) => {
         const data = response.data.updatedDoctor;
         setDoctorData({

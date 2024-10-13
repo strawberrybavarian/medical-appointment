@@ -19,7 +19,7 @@ function DoctorMain() {
 
 
     useEffect(() => {
-        axios.get(`${ip.address}/admin/api/doctors/count`)
+        axios.get(`${ip.address}/api/admin/api/doctors/count`)
             .then(response => {
                 setTotalDoctors(response.data.totalDoctors);
             })
@@ -27,7 +27,7 @@ function DoctorMain() {
                 console.error('Error fetching total doctors:', error);
             });
 
-        axios.get(`${ip.address}/admin/api/doctors/registered/count`)
+        axios.get(`${ip.address}/api/admin/api/doctors/registered/count`)
             .then(response => {
                 setRegisteredDoctors(response.data.registeredDoctors);
             })
@@ -35,7 +35,7 @@ function DoctorMain() {
                 console.error('Error fetching registered doctors:', error);
             });
 
-        axios.get(`${ip.address}/admin/api/doctors/reviewed/count`)
+        axios.get(`${ip.address}/api/admin/api/doctors/reviewed/count`)
             .then(response => {
                 setReviewedDoctors(response.data.reviewedDoctors);
             })

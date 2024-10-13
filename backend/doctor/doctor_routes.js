@@ -40,60 +40,60 @@ const upload = multer({
 
 module.exports = app => {
   //Biography
-  app.put('/doctor/:id/updatebiography', DoctorController.updateDoctorBiography);  // Update Biography
-  app.get('/doctor/:id/getbiography', DoctorController.getDoctorBiography);      // Get Biography
-  app.delete('/doctor/:id/deletebiography', DoctorController.deleteDoctorBiography); // Delete Biography
+  app.put('/api/doctor/api/:id/updatebiography', DoctorController.updateDoctorBiography);  // Update Biography
+  app.get('/api/doctor/:id/getbiography', DoctorController.getDoctorBiography);      // Get Biography
+  app.delete('/api/doctor/:id/deletebiography', DoctorController.deleteDoctorBiography); // Delete Biography
   // Uploading Image
-  app.post('/doctor/api/:id/updateimage', upload.single('image'), DoctorController.updateDoctorImage);
-  app.get('/doctor/:id', DoctorController.findOneDoctor);
+  app.post('/api/doctor/api/:id/updateimage', upload.single('image'), DoctorController.updateDoctorImage);
+  app.get('/api/doctor/:id', DoctorController.findOneDoctor);
   //Activity Status
-  app.put('/doctor/api/:id/logout', DoctorController.offlineActivityStatus);
-  app.put('/doctor/:id/status', DoctorController.updateDoctorStatus);
+  app.put('/api/doctor/api/:id/logout', DoctorController.offlineActivityStatus);
+  app.put('/api/doctor/:id/status', DoctorController.updateDoctorStatus);
 
-  app.get('/doctor/api/test', (req, res) => { res.json({ message: "the api is working" }) });
+  app.get('/api/doctor/api/test', (req, res) => { res.json({ message: "the api is working" }) });
   // For Registration
-  app.post('/doctor/api/signup', DoctorController.NewDoctorSignUp);
-  app.get('/doctor/one/:id', DoctorController.findOneDoctor )
+  app.post('/api/doctor/api/signup', DoctorController.NewDoctorSignUp);
+  app.get('/api/doctor/one/:id', DoctorController.findOneDoctor )
   // For LogIn
   
-  app.post('/doctor/api/forgot-password', DoctorController.forgotPassword);
-  app.post('/doctor/api/reset-password/:token', DoctorController.resetPassword);
+  app.post('/api/doctor/api/forgot-password', DoctorController.forgotPassword);
+  app.post('/api/doctor/api/reset-password/:token', DoctorController.resetPassword);
 
   app.post('/api/doctor/session', DoctorController.createDoctorSession);
-  app.post('/doctor/api/login', DoctorController.loginDoctor);
-  app.get('/doctor/api/alldoctor', DoctorController.findAllDoctors);
-  app.post('/doctor/api/setup-2fa/:id', DoctorController.setupTwoFactorForDoctor);
-  app.post('/doctor/api/verify-2fa', DoctorController.verifyTwoFactor);
+  app.post('/api/doctor/api/login', DoctorController.loginDoctor);
+  app.get('/api/doctor/api/alldoctor', DoctorController.findAllDoctors);
+  app.post('/api/doctor/api/setup-2fa/:id', DoctorController.setupTwoFactorForDoctor);
+  app.post('/api/doctor/api/verify-2fa', DoctorController.verifyTwoFactor);
   
   //Specialties
-  app.get('/doctor/api/specialties', DoctorController.findUniqueSpecialties);
+  app.get('/api/doctor/api/specialties', DoctorController.findUniqueSpecialties);
   //Email OTP
-  app.post('/doctor/send-otp', DoctorController.sendOTP);
-  app.post('/doctor/verify-otp', DoctorController.verifyOTP);
+  app.post('/api/doctor/send-otp', DoctorController.sendOTP);
+  app.post('/api/doctor/verify-otp', DoctorController.verifyOTP);
   //Update Information Details
-  app.put('/doctor/api/:id/updateDetails', DoctorController.updateDoctorDetails);
+  app.put('/api/doctor/api/:id/updateDetails', DoctorController.updateDoctorDetails);
 
 
   // For Appointments
-  app.put('/doctor/api/:uid/acceptpatient', DoctorController.acceptPatient)
-  app.get('/doctor/appointments/:doctorId', DoctorController.getAllAppointments);
-  app.put('/doctor/api/:appointmentID/completeappointment', DoctorController.completeAppointment)
-  app.put('/doctor/:doctorId/availability', DoctorController.doctorAvailability)
-  app.put('/doctor/:doctorId/appointmentstatus', DoctorController.updateAvailability);
-  app.post('/doctor/:doctorId/request-deactivation', DoctorController.requestDeactivation);
+  app.put('/api/doctor/api/:uid/acceptpatient', DoctorController.acceptPatient)
+  app.get('/api/doctor/appointments/:doctorId', DoctorController.getAllAppointments);
+  app.put('/api/doctor/api/:appointmentID/completeappointment', DoctorController.completeAppointment)
+  app.put('/api/doctor/:doctorId/availability', DoctorController.doctorAvailability)
+  app.put('/api/doctor/:doctorId/appointmentstatus', DoctorController.updateAvailability);
+  app.post('/api/doctor/:doctorId/request-deactivation', DoctorController.requestDeactivation);
 
-  app.get('/doctor/:doctorId/available', DoctorController.getAvailability);
-  app.put('/doctor/:uid/rescheduleappointment', DoctorController.rescheduleAppointment);
-  app.get('/doctor/:doctorId/appointments', DoctorController.specificAppointmentsforDoctor)
-  app.put('/doctor/:uid/rescheduledstatus', DoctorController.rescheduledStatus);
+  app.get('/api/doctor/:doctorId/available', DoctorController.getAvailability);
+  app.put('/api/doctor/:uid/rescheduleappointment', DoctorController.rescheduleAppointment);
+  app.get('/api/doctor/:doctorId/appointments', DoctorController.specificAppointmentsforDoctor)
+  app.put('/api/doctor/:uid/rescheduledstatus', DoctorController.rescheduledStatus);
   
   
   //For Prescription
   // app.post('/doctor/api/createPrescription/:patientId/:appointmentId', DoctorController.createPrescription);
-  app.get('/doctor/api/getPrescriptions/:doctorId', DoctorController.getPrescriptionsByDoctor);
-  app.get('/doctor/api/getPrescriptions/:patiendId/:doctorId', DoctorController.getPrescriptions);
+  app.get('/api/doctor/api/getPrescriptions/:doctorId', DoctorController.getPrescriptionsByDoctor);
+  app.get('/api/doctor/api/getPrescriptions/:patiendId/:doctorId', DoctorController.getPrescriptions);
 
   //Getting All Patients
-  app.get('/doctor/api/getallpatients/:doctorId', DoctorController.getPatientsByDoctor);
+  app.get('/api/doctor/api/getallpatients/:doctorId', DoctorController.getPatientsByDoctor);
 
 };

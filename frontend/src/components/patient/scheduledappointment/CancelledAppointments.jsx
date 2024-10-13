@@ -25,7 +25,7 @@ function CancelledAppointments({ appointments, setAppointments }) {
     const handleConfirmCancellation = (cancelReason) => {
         if (!selectedAppointment) return;
 
-        axios.put(`${ip.address}/patient/api/${selectedAppointment._id}/updateappointment`, { cancelReason: cancelReason })
+        axios.put(`${ip.address}/api/patient/api/${selectedAppointment._id}/updateappointment`, { cancelReason: cancelReason })
             .then((response) => {
                 console.log(response.data);
                 setAppointments(prevAppointments => 

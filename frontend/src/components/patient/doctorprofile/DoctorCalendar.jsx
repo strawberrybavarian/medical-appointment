@@ -15,7 +15,7 @@ const DoctorCalendar = ({did}) => {
   useEffect(() => {
     // Fetch the doctor's appointments
     axios
-      .get(`${ip.address}/doctor/${did}`)
+      .get(`${ip.address}/api/doctor/${did}`)
       .then((res) => {
         const appointments = res.data.doctor.dr_appointments;
         setDoctorAppointments(appointments);

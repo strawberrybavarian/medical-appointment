@@ -42,7 +42,7 @@ function RescheduledAppointment({appointments, setAppointments}) {
         if (!selectedAppointment) return;
     
         const rescheduleData = { newDate, newTime };
-        axios.put(`${ip.address}/doctor/${selectedAppointment._id}/rescheduleappointment`, rescheduleData)
+        axios.put(`${ip.address}/api/doctor/${selectedAppointment._id}/rescheduleappointment`, rescheduleData)
           .then((response) => {
             setAppointments(prevAppointments =>
               prevAppointments.map(appointment =>

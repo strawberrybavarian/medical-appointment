@@ -29,7 +29,7 @@ function ChooseDoctor() {
 
     // Fetch all doctors and populate specializations
     useEffect(() => {
-        axios.get(`${ip.address}/doctor/api/alldoctor`)
+        axios.get(`${ip.address}/api/doctor/api/alldoctor`)
             .then((res) => {
                 const doctorsData = res.data.theDoctor;
                 setDoctors(doctorsData);

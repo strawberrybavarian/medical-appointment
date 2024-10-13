@@ -13,7 +13,7 @@ function DoctorManagement() {
   const [searchTerm, setSearchTerm] = useState("");
   const { aid } = useParams();
   useEffect(() => {
-    axios.get(`${ip.address}/doctor/api/alldoctor`)
+    axios.get(`${ip.address}/api/doctor/api/alldoctor`)
       .then((result) => {
         setDoctors(result.data.theDoctor);
       })
@@ -35,7 +35,7 @@ function DoctorManagement() {
 
   const handleAction = () => {
     const status = modalAction === 'register' ? 'Registered' : 'Deactivated';
-    axios.put(`${ip.address}/admin/api/doctor/account-status/${selectedDoctor._id}`, { status })
+    axios.put(`${ip.address}/api/admin/api/doctor/account-status/${selectedDoctor._id}`, { status })
       .then(() => {
         setDoctors(doctors.map(doc => doc._id === selectedDoctor._id ? { ...doc, accountStatus: status } : doc));
         handleCloseModal();

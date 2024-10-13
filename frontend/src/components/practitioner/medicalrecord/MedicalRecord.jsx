@@ -10,7 +10,7 @@ const MedicalRecord = ({ onViewRecord }) => {
 
     useEffect(() => {
       axios
-        .get(`${ip.address}/patient/api/allpatient`)
+        .get(`${ip.address}/api/patient/api/allpatient`)
         .then((res) => {
           setAllPatient(res.data.thePatient);
         })

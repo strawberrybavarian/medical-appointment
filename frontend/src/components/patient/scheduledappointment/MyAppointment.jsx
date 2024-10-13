@@ -22,7 +22,7 @@ function MyAppointment() {
     console.log('MyAPpointment',pid);
     
     useEffect(() => {
-        axios.get(`${ip.address}/patient/api/onepatient/${pid}`)
+        axios.get(`${ip.address}/api/patient/api/onepatient/${pid}`)
             .then((res) => {
                 setAppointments(res.data.thePatient.patient_appointments);
             })

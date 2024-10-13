@@ -34,7 +34,7 @@ function CreateAppointmentModal({ show, handleClose, pid, did, doctorName }) {
             payment: payment,
         };
     
-        axios.post(`${ip.address}/patient/api/${pid}/createappointment`, appointmentField)
+        axios.post(`${ip.address}/api/patient/api/${pid}/createappointment`, appointmentField)
             .then((response) => {
                 window.alert("Created an appointment!");
                 window.location.reload()

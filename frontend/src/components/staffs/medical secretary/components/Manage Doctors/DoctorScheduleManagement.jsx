@@ -30,10 +30,10 @@ function DoctorScheduleManagement() {
     useEffect(() => {
         const fetchDoctorData = async () => {
             try {
-                const res = await axios.get(`${ip.address}/doctor/one/${did}`);
+                const res = await axios.get(`${ip.address}/api/doctor/one/${did}`);
                 setDocInfo(res.data.doctor);  // Set the doctor info state
                 
-                const availabilityRes = await axios.get(`${ip.address}/doctor/${did}/available`);
+                const availabilityRes = await axios.get(`${ip.address}/api/doctor/${did}/available`);
                 const { availability, activeAppointmentStatus } = availabilityRes.data;
                 setAvailability(availability || initialAvailability);
                 setActiveAppointmentStatus(activeAppointmentStatus);
@@ -102,7 +102,7 @@ function DoctorScheduleManagement() {
         setShowToast(false); // Hide toast if no error
 
         try {
-            await axios.put(`${ip.address}/doctor/${did}/availability`, { availability });
+            await axios.put(`${ip.address}/api/doctor/${did}/availability`, { availability });
             alert('Availability updated successfully');
         } catch (err) {
             console.error('Error updating availability:', err);
@@ -111,7 +111,7 @@ function DoctorScheduleManagement() {
 
     const handleStatusChange = async () => {
         try {
-            await axios.put(`${ip.address}/doctor/${did}/appointmentstatus`, { activeAppointmentStatus: !activeAppointmentStatus });
+            await axios.put(`${ip.address}/api/doctor/${did}/appointmentstatus`, { activeAppointmentStatus: !activeAppointmentStatus });
             setActiveAppointmentStatus(!activeAppointmentStatus);
         } catch (err) {
             console.error('Error updating appointment status:', err);

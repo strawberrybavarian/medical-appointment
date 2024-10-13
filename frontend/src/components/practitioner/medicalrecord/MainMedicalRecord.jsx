@@ -18,7 +18,7 @@ const MainMedicalRecord = () => {
 
     useEffect(() => {
       axios
-        .get(`${ip.address}/doctor/api/finduser/` + did)
+        .get(`${ip.address}/api/doctor/api/finduser/` + did)
         .then((res) => {
           setTheId(res.data.theDoctor._id);
           setTheName(res.data.theDoctor.dr_firstName);

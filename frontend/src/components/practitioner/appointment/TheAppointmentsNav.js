@@ -31,7 +31,7 @@ const TheAppointmentsNav = () => {
   
 
     axios
-      .get(`${ip.address}/doctor/api/finduser/${did}`)
+      .get(`${ip.address}/api/doctor/api/finduser/${did}`)
       .then((res) => {
         setTheId(res.data.theDoctor._id);
         setTheName(res.data.theDoctor.dr_firstName);
@@ -42,7 +42,7 @@ const TheAppointmentsNav = () => {
       });
 
     axios
-      .get(`${ip.address}/doctor/appointments/${did}`)
+      .get(`${ip.address}/api/doctor/appointments/${did}`)
       .then((res) => {
         setAllAppointments(res.data);
       })

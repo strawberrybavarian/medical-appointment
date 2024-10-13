@@ -42,7 +42,7 @@ const ChangePasswordModal = ({ show, handleClose, msid, password }) => {
 
         // Make API call to change password
         try {
-            const response = await axios.post(`${ip.address}/medicalsecretary/api/change-password/${msid}`, {
+            const response = await axios.post(`${ip.address}/api/medicalsecretary/api/change-password/${msid}`, {
                 email,
                 oldPassword,
                 newPassword,

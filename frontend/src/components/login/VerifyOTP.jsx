@@ -10,7 +10,7 @@ const VerifyOTP = () => {
     const email = location.state.email;
 
     const verifyOTP = () => {
-        const apiUrl = email.includes("@doctor") ? `${ip.address}/doctor/verify-otp` : `${ip.address}/patient/verify-otp`;
+        const apiUrl = email.includes("@doctor") ? `${ip.address}/api/doctor/api/verify-otp` : `${ip.address}/api/patient/api/verify-otp`;
 
         axios.post(apiUrl, { otp, email })
             .then((response) => {

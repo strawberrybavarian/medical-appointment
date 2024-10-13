@@ -24,7 +24,7 @@ function PatientManagement() {
   const tableRef = useRef();
 
   useEffect(() => {
-    axios.get(`${ip.address}/patient/api/allpatient`)
+    axios.get(`${ip.address}/api/patient/api/allpatient`)
       .then((result) => {
         setPatients(result.data.thePatient);
       })
@@ -46,7 +46,7 @@ function PatientManagement() {
 
   const handleAction = () => {
     const status = modalAction === 'register' ? 'Registered' : 'Deactivated';
-    axios.put(`${ip.address}/admin/patient/account-status/${selectedPatient._id}`, { status })
+    axios.put(`${ip.address}/api/admin/patient/account-status/${selectedPatient._id}`, { status })
       .then(() => {
         setPatients(patients.map(pat => pat._id === selectedPatient._id ? { ...pat, accountStatus: status } : pat));
         handleCloseModal();

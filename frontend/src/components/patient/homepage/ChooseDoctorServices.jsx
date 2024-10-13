@@ -15,7 +15,7 @@ function ChooseDoctorServices() {
 
     useEffect(() => {
         // Fetch all doctors
-        axios.get(`${ip.address}/doctor/api/alldoctor`)
+        axios.get(`${ip.address}/api/doctor/api/alldoctor`)
             .then((res) => {
                 console.log('Fetched doctors:', res.data.theDoctor); // Log the response to see if doctors are fetched
                 // Filter doctors who provide the selected service by name

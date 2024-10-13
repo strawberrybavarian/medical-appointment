@@ -18,7 +18,7 @@ function MedSecNavbar({msid}) {
     const [error, setError] = useState('');
 
     useEffect(() => {
-        axios.get(`${ip.address}/medicalsecretary/api/findone/${msid}`)
+        axios.get(`${ip.address}/api/medicalsecretary/api/findone/${msid}`)
         .then((res) => {
             const medsec = res.data.theMedSec;
 

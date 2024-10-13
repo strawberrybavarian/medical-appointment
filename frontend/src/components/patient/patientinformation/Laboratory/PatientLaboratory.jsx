@@ -28,7 +28,7 @@ const PatientLaboratory = ({ laboratoryResults }) => {
     // Handle file download
     const handleDownload = async (filePath, fileName) => {
         try {
-            const fullUrl = `${ip.address}/${filePath}`;
+            const fullUrl = `${ip.address}/api/${filePath}`;
             console.log(`Attempting to download from URL: ${fullUrl}`);
     
             const response = await axios.get(fullUrl, {

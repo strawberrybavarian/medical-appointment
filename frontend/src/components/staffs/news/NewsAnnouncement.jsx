@@ -23,7 +23,7 @@ function NewsAnnouncement({ user_image, user_name, user_id, role }) {
   // Fetch all news
   useEffect(() => {
     axios
-      .get(`${ip.address}/news/api/getallnews/${user_id}/${role}`)
+      .get(`${ip.address}/api/news/api/getallnews/${user_id}/${role}`)
       .then((res) => {
         const news = res.data.news.reverse();
         setTheNewsList(news);
@@ -52,7 +52,7 @@ function NewsAnnouncement({ user_image, user_name, user_id, role }) {
     });
   
     axios
-      .post(`${ip.address}/news/api/addnews/${user_id}`, formData, {
+      .post(`${ip.address}/api/news/api/addnews/${user_id}`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       })
       .then(() => {
@@ -92,7 +92,7 @@ function NewsAnnouncement({ user_image, user_name, user_id, role }) {
   // Delete news from the list
   const deleteNews = (index) => {
     axios
-      .delete(`${ip.address}/news/api/delete/${user_id}/${index}`)
+      .delete(`${ip.address}/api/news/api/delete/${user_id}/${index}`)
       .then(() => {
         setTheNewsList(theNewsList.filter((_, i) => i !== index));
       })

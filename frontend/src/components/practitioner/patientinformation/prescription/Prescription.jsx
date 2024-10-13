@@ -27,7 +27,7 @@ function Prescription({ patientId, appointmentId, doctorId }) {
     const fetchPrescription = async () => {
       console.log("Fetching prescription for appointmentId:", appointmentId); // Log the appointmentId
       try {
-        const response = await axios.get(`${ip.address}/getfindings/${appointmentId}`);
+        const response = await axios.get(`${ip.address}/api/getfindings/${appointmentId}`);
         if (response.data && response.data.prescription) {
           console.log("Prescription found:", response.data.prescription);
           setMedications(response.data.prescription.medications);
@@ -108,7 +108,7 @@ function Prescription({ patientId, appointmentId, doctorId }) {
   
     try {
       const response = await axios.post(
-        `${ip.address}/doctor/api/createPrescription/${patientId}/${appointmentId}`,
+        `${ip.address}/api/doctor/api/createPrescription/${patientId}/${appointmentId}`,
         formData,
         {
           headers: {

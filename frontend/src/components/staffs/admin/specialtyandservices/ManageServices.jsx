@@ -22,7 +22,7 @@ function ManageServices() {
 
   const fetchServices = async () => {
     try {
-      const response = await axios.get(`${ip.address}/admin/getall/services`);
+      const response = await axios.get(`${ip.address}/api/admin/getall/services`);
       setServices(response.data);
     } catch (error) {
       console.error('Error fetching services:', error);
@@ -43,9 +43,9 @@ function ManageServices() {
     e.preventDefault();
     try {
       if (editingService) {
-        await axios.put(`${ip.address}/admin/update/services/${editingService._id}`, newService);
+        await axios.put(`${ip.address}/api/admin/update/services/${editingService._id}`, newService);
       } else {
-        await axios.post(`${ip.address}/admin/add/services`, newService);
+        await axios.post(`${ip.address}/api/admin/add/services`, newService);
       }
       setNewService({ name: '', description: '', category: '', availability: 'Available', requirements: '', doctors: [] });
       setEditingService(null);
@@ -59,7 +59,7 @@ function ManageServices() {
   // Handle delete service
   const handleDeleteService = async (id) => {
     try {
-      await axios.delete(`${ip.address}/admin/delete/services/${id}`);
+      await axios.delete(`${ip.address}/api/admin/delete/services/${id}`);
       fetchServices(); // Refresh the list
     } catch (error) {
       console.error('Error deleting service:', error);

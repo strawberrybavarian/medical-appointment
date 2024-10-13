@@ -16,7 +16,7 @@ function DoctorCarousel({ pid }) {
   // Fetch all the doctors when the component loads
   useEffect(() => {
     axios
-      .get(`${ip.address}/doctor/api/alldoctor`)
+      .get(`${ip.address}/api/doctor/api/alldoctor`)
       .then((res) => {
         setDoctors(res.data.theDoctor);
       })

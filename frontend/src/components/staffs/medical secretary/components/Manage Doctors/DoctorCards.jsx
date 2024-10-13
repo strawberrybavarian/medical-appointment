@@ -15,7 +15,7 @@ function DoctorCards({msid}) {
 
 
   useEffect(() => {
-    axios.get(`${ip.address}/doctor/api/alldoctor`)
+    axios.get(`${ip.address}/api/doctor/api/alldoctor`)
       .then(res => {
         setDoctors(res.data.theDoctor);
       })

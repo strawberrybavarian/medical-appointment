@@ -24,7 +24,7 @@ const MyPatientsNav = () => {
 
   useEffect(() => {
     axios
-      .get(`${ip.address}/doctor/appointments/${did}`)
+      .get(`${ip.address}/api/doctor/appointments/${did}`)
       .then((res) => {
         setAllAppointments(res.data);
       })

@@ -21,7 +21,7 @@ const UpdatePatientInfoModal = ({ show, handleClose, thePatient, pid }) => {
 
     const handleSaveChanges = async () => {
         try {
-            const response = await axios.put(`${ip.address}/patient/api/updateinfo/${pid}`, {
+            const response = await axios.put(`${ip.address}/api/patient/api/updateinfo/${pid}`, {
                 patient_firstName: firstName,
                 patient_lastName: lastName,
                 patient_middleInitial: middleInitial,

@@ -18,7 +18,7 @@ function SpecificDoctorAppointments({ did }) {
 
   // Fetch appointments for the doctor
   const fetchAppointments = () => {
-    axios.get(`${ip.address}/doctor/${did}/appointments`)
+    axios.get(`${ip.address}/api/doctor/${did}/appointments`)
       .then(res => {
         setAppointments(res.data);
         setFilteredAppointments(res.data);  // Set filteredAppointments only once
@@ -115,7 +115,7 @@ const renderSortArrow = (column) => {
 
   // Update the status of the appointment and refetch the appointments
   const updateAppointmentStatus = (appointmentID, newStatus) => {
-    axios.put(`${ip.address}/appointments/${appointmentID}/status`, { status: newStatus })
+    axios.put(`${ip.address}/api/appointments/${appointmentID}/status`, { status: newStatus })
       .then(() => {
         fetchAppointments(); // Refetch the updated list of appointments
       })
@@ -129,7 +129,7 @@ const renderSortArrow = (column) => {
       status: 'Rescheduled'
     };
 
-    axios.put(`${ip.address}/doctor/${selectedAppointment._id}/rescheduledstatus`, newStatus)
+    axios.put(`${ip.address}/api/doctor/${selectedAppointment._id}/rescheduledstatus`, newStatus)
       .then(() => {
         fetchAppointments(); // Refetch the appointments after rescheduling
         setShowRescheduleModal(false); // Close the modal after success

@@ -9,7 +9,7 @@ const PatientRecord = ({ patientId, onClose }) => {
 
     useEffect(() => {
         axios
-            .get(`${ip.address}/patient/api/onepatient/${patientId}`)
+            .get(`${ip.address}/api/patient/api/onepatient/${patientId}`)
             .then((res) => {
                 console.log(res.data.thePatient);
                 setPatient(res.data.thePatient);

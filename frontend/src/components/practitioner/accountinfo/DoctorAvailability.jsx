@@ -22,7 +22,7 @@ function DoctorAvailability({ doctorId }) {
     const [showModal, setShowModal] = useState(false); // To control modal visibility
 
     useEffect(() => {
-        axios.get(`${ip.address}/doctor/${doctorId}/available`)
+        axios.get(`${ip.address}/api/doctor/${doctorId}/available`)
             .then(res => {
                 const { availability, activeAppointmentStatus } = res.data;
                 setAvailability(availability || initialAvailability); // Set default if undefined
@@ -58,7 +58,7 @@ function DoctorAvailability({ doctorId }) {
     };
 
     const handleSubmit = () => {
-        axios.put(`${ip.address}/doctor/${doctorId}/availability`, { availability })
+        axios.put(`${ip.address}/api/doctor/${doctorId}/availability`, { availability })
             .then(res => {
                 alert('Availability updated successfully');
             })
@@ -70,7 +70,7 @@ function DoctorAvailability({ doctorId }) {
             setShowModal(true); // Show modal for deactivation
         } else {
             axios
-                .put(`${ip.address}/doctor/${doctorId}/appointmentstatus`, {
+                .put(`${ip.address}/api/doctor/${doctorId}/appointmentstatus`, {
                     activeAppointmentStatus: !activeAppointmentStatus
                 })
                 .then((res) => {
@@ -82,7 +82,7 @@ function DoctorAvailability({ doctorId }) {
 
     const handleModalConfirm = (reason) => {
         axios
-            .post(`${ip.address}/doctor/${doctorId}/request-deactivation`, { reason })
+            .post(`${ip.address}/api/doctor/${doctorId}/request-deactivation`, { reason })
             .then((res) => {
                 setShowModal(false);
                 alert('Deactivation request sent. Awaiting confirmation.');

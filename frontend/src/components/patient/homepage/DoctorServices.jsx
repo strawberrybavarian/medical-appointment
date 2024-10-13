@@ -14,7 +14,7 @@ function DoctorServices({ pid, did }) {
 
     useEffect(() => {
         // Fetch the list of services from the backend
-        axios.get(`${ip.address}/admin/getall/services`)
+        axios.get(`${ip.address}/api/admin/getall/services`)
             .then((res) => {
                 setServices(res.data || []); // Ensure services is always an array
             })

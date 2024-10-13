@@ -21,9 +21,9 @@ const StaffLogIn = () => {
             try {
                 let response;
                 if (userRole === "Medical Secretary") {
-                    response = await axios.get(`${ip.address}/medicalsecretary/api/allmedicalsecretary`);
+                    response = await axios.get(`${ip.address}/api/medicalsecretary/api/allmedicalsecretary`);
                 } else if (userRole === "Admin") {
-                    response = await axios.get(`${ip.address}/admin/api/alladmin`);
+                    response = await axios.get(`${ip.address}/api/admin/api/alladmin`);
                 }
 
                 if (response && response.data) {

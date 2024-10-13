@@ -13,7 +13,7 @@ function DoctorSpecialty({ pid, did }) {
     console.log(`hello`, pid, did);
 
     useEffect(() => {
-        axios.get(`${ip.address}/doctor/api/specialties`)
+        axios.get(`${ip.address}/api/doctor/api/specialties`)
             .then((res) => {
                 setSpecialties(res.data.specialties);
             })

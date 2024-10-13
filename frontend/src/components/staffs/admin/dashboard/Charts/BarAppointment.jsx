@@ -11,7 +11,7 @@ function BarAppointment() {
 
   useEffect(() => {
     // Fetch appointment stats from the backend
-    axios.get(`${ip.address}/admin/api/appointments/stats`)
+    axios.get(`${ip.address}/api/admin/api/appointments/stats`)
       .then(response => {
         const data = response.data;
 

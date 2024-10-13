@@ -25,7 +25,7 @@ function EditPostModal({ show, handleClose, postContent, setPostContent, postIma
     try {
       setLoading(true);
       const response = await axios.put(
-        `${ip.address}/doctor/api/post/updatepost/${did}/${postId}`,
+        `${ip.address}/api/doctor/api/post/updatepost/${did}/${postId}`,
         formData,
         { headers: { "Content-Type": "multipart/form-data" } }
       );

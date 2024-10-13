@@ -17,7 +17,7 @@ function PatientNavBar({pid}) {
 
     const defaultImage = `${ip.address}/images/014ef2f860e8e56b27d4a3267e0a193a.jpg`;
     useEffect(() => {
-        axios.get(`${ip.address}/patient/api/onepatient/${pid}`)
+        axios.get(`${ip.address}/api/patient/api/onepatient/${pid}`)
           .then((res) => {
             const patientData = res.data.thePatient;
 

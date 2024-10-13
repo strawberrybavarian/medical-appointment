@@ -16,7 +16,7 @@ const UploadImage = ({did}) => {
         formData.append('image', selectedFile);
 
         try {
-            const response = await axios.post(`${ip.address}/doctor/api/${did}/updateimage`, formData, {
+            const response = await axios.post(`${ip.address}/api/doctor/api/${did}/updateimage`, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data'
                 }

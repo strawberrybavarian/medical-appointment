@@ -31,7 +31,7 @@ const MedSecPending = ({ allAppointments, setAllAppointments }) => {
         status: 'Rescheduled'
       };
       
-      axios.put(`${ip.address}/doctor/${selectedAppointment._id}/rescheduledstatus`, newStatus)
+      axios.put(`${ip.address}/api/doctor/${selectedAppointment._id}/rescheduledstatus`, newStatus)
         .then(() => {
           // Update the state of appointments in real-time
           setAllAppointments(prevAppointments =>
@@ -71,7 +71,7 @@ const convertTo12HourFormat = (time) => {
 
 
   useEffect(() => {
-    axios.get(`${ip.address}/doctor/api/alldoctor`)
+    axios.get(`${ip.address}/api/doctor/api/alldoctor`)
       .then((result) => {
         setAllDoctors(result.data.theDoctor);
       })
@@ -165,7 +165,7 @@ const convertTo12HourFormat = (time) => {
   };
 
   const handleUpdateStatus = (appointmentId, newStatus) => {
-    axios.put(`${ip.address}/appointments/${appointmentId}/status`, { status: newStatus })
+    axios.put(`${ip.address}/api/appointments/${appointmentId}/status`, { status: newStatus })
       .then((response) => {
         setAllAppointments(prevAppointments =>
           prevAppointments.map(appointment =>

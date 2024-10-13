@@ -22,7 +22,7 @@ function MainInformation() {
     const defaultImage = "images/014ef2f860e8e56b27d4a3267e0a193a.jpg";
 
     useEffect(() => {
-        axios.get(`${ip.address}/doctor/api/finduser/${did}`)
+        axios.get(`${ip.address}/api/doctor/api/finduser/${did}`)
             .then((res) => {
                 setTheId(res.data.theDoctor._id);
                 setTheName(res.data.theDoctor.dr_firstName);

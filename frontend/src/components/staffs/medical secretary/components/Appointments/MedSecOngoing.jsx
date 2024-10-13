@@ -12,7 +12,7 @@ function MedSecOngoing({ allAppointments, setAllAppointments }) {
   const [selectedAccountStatus, setSelectedAccountStatus] = useState("");
 
   useEffect(() => {
-    axios.get(`${ip.address}/doctor/api/alldoctor`)
+    axios.get(`${ip.address}/api/doctor/api/alldoctor`)
       .then((result) => {
         setalldoctors(result.data.theDoctor);
       })
@@ -23,7 +23,7 @@ function MedSecOngoing({ allAppointments, setAllAppointments }) {
 
   const ongoingAppointment = (appointmentID) => {
     const newStatus = { status: 'Ongoing' };
-    axios.put(`${ip.address}/medicalsecretary/api/${appointmentID}/ongoing`, newStatus)
+    axios.put(`${ip.address}/api/medicalsecretary/api/${appointmentID}/ongoing`, newStatus)
       .then((response) => {
         setAllAppointments(prevAppointments =>
           prevAppointments.map(appointment =>

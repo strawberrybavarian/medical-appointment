@@ -28,10 +28,10 @@ const fileFilter = (req, file, cb) => {
 const upload = multer({ storage: storage, fileFilter: fileFilter });
 
 module.exports = app => {
-    app.post('/patient/api/:uid/createappointment', upload.single('proofOfPayment'), AppointmentController.createAppointment);
-    app.put('/appointments/:id/status', AppointmentController.updateAppointmentStatus);
-    app.get('/appointments/:id', AppointmentController.getAppointmentById);
-    app.put('/appointments/:appointmentId/assign', AppointmentController.updateAppointmentDetails);
+    app.post('/api/patient/api/:uid/createappointment', upload.single('proofOfPayment'), AppointmentController.createAppointment);
+    app.put('/api/appointments/:id/status', AppointmentController.updateAppointmentStatus);
+    app.get('/api/appointments/:id', AppointmentController.getAppointmentById);
+    app.put('/api/appointments/:appointmentId/assign', AppointmentController.updateAppointmentDetails);
     // app.put('/appointments/:id/payment-status', AppointmentController.updatePaymentStatus);
 
 };
