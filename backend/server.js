@@ -5,7 +5,11 @@ const path = require('path');
 const fs = require('fs');
 const session = require('express-session');
 const { ensurePatientSession, ensureDoctorSession } = require('./SessionMiddleware');
+app.use(express.static(path.join(__dirname, '../frontend/build')));
 
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../frontend/build', 'index.html'));
+});
 require('dotenv').config();
 
 app.use(session({
