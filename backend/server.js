@@ -5,22 +5,18 @@ const path = require('path');
 const fs = require('fs');
 const session = require('express-session');
 const { ensurePatientSession, ensureDoctorSession } = require('./SessionMiddleware');
-// app.use(express.static(path.join(__dirname, '../frontend/build')));
 
-// app.get('*', (req, res) => {
-//     res.sendFile(path.join(__dirname, '../frontend/build', 'index.html'));
-// });
 require('dotenv').config();
 
 app.use(session({
-    secret: 'your_secret_key', // Replace with a strong secret key
+    secret: 'your_secret_key', 
     resave: false,
     saveUninitialized: true,
     cookie: {
-        maxAge: 24 * 60 * 60 * 1000 // 1 day
+        maxAge: 24 * 60 * 60 * 1000 
     }
 }));
-// Database and environment setup
+
 require("./config/mongoose");
 require('dotenv').config();
 
@@ -36,7 +32,7 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
- // Adjust the path as needed
+
 
 
 // Static file serving for images
@@ -54,14 +50,13 @@ app.use('/uploads', cors({
     credentials: true
 }), express.static(path.join(__dirname, 'public/uploads')));
 
-// Generic route for serving files from /uploads, including PDFs
+
 app.get('/uploads/:filename', (req, res) => {
     const fileName = req.params.filename;
     const filePath = path.join(__dirname, 'public/uploads', fileName);
 
-    // Check if the file exists
     if (fs.existsSync(filePath)) {
-        // Set Content-Type for PDF and inline disposition for in-browser viewing
+
         res.setHeader('Content-Type', 'application/pdf');
         res.setHeader('Content-Disposition', `inline; filename="${fileName}"`);
 
@@ -72,9 +67,9 @@ app.get('/uploads/:filename', (req, res) => {
         res.status(404).send('File not found.');
     }
 });
-// app.use(express.static(path.join(__dirname, '../frontend/public')));
-app.use(express.static(path.join(__dirname, '../frontend/public')));
-// Routes for your other resources (appointments, etc.)
+
+app.use(express.static(path.join(__dirname, '../public')));
+
 const DoctorRoutes = require("./doctor/doctor_routes");
 DoctorRoutes(app);
 const PatientRoutes = require("./patient/patient_routes");
@@ -104,11 +99,9 @@ const SpecialtyRoutes = require('./specialty/specialty_routes');
 SpecialtyRoutes(app);
 const ServiceRoutes = require('./services/service_routes');
 ServiceRoutes(app);
-// app.get('*', (req, res) => {
-//     res.sendFile(path.join(__dirname, '../frontend/public', 'index.html'));
-// });
+
 app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../frontend/public', 'index.html'));
+    res.sendFile(path.join(__dirname, '../public', 'index.html'));
 });
 
 // Start the server
