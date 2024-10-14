@@ -41,6 +41,9 @@ app.use('/images', express.static(path.join(__dirname, 'patient', 'images')));
 app.use('/images', express.static(path.join(__dirname, 'prescription', 'images')));
 app.use('/images', express.static(path.join(__dirname, 'appointments', 'images')));
 app.use('/images', express.static(path.join(__dirname, 'payment', 'images')));
+app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
+// Static file serving for uploaded PDFs
+
 
 // Static file serving for uploaded PDFs
 app.use('/uploads', cors({
@@ -99,7 +102,8 @@ const SpecialtyRoutes = require('./specialty/specialty_routes');
 SpecialtyRoutes(app);
 const ServiceRoutes = require('./services/service_routes');
 ServiceRoutes(app);
-
+const HmoRoutes = require('./hmo/hmo_routes');
+HmoRoutes(app);
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, '../frontend/public', 'index.html'));
 });

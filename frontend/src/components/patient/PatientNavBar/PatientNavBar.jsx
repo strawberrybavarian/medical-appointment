@@ -134,9 +134,9 @@ function PatientNavBar({pid}) {
                                         <p className="m-0" style={{ fontSize: '12px', color: 'gray', textAlign: 'end' }}>Patient</p>
                                     </div>
                                     <img
-                                        src={`${ip.address}/${theImage}` || defaultImage}
+                                        src={theImage ? `${ip.address}/${theImage}` : defaultImage}
                                         alt="Profile"
-                                        style={{ objectFit: 'cover' }}
+                                        style={{ objectFit: 'cover', height: '40px', width: '40px', borderRadius: '50%' }}
                                         className="profile-image ms-3"
                                     />
                                 </div>

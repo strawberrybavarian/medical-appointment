@@ -40,6 +40,7 @@ const upload = multer({
 
 module.exports = app => {
   //Biography
+  app.get('/api/doctor/:id/gethmo', DoctorController.getDoctorHmo);
   app.put('/api/doctor/api/:id/updatebiography', DoctorController.updateDoctorBiography);  // Update Biography
   app.get('/api/doctor/:id/getbiography', DoctorController.getDoctorBiography);      // Get Biography
   app.delete('/api/doctor/:id/deletebiography', DoctorController.deleteDoctorBiography); // Delete Biography
@@ -56,8 +57,8 @@ module.exports = app => {
   app.get('/api/doctor/one/:id', DoctorController.findOneDoctor )
   // For LogIn
   
-  app.post('/api/doctor/api/forgot-password', DoctorController.forgotPassword);
-  app.post('/api/doctor/api/reset-password/:token', DoctorController.resetPassword);
+  app.post('/api/doctor/forgot-password', DoctorController.forgotPassword);
+  app.post('/api/doctor/reset-password/:token', DoctorController.resetPassword);
 
   app.post('/api/doctor/session', DoctorController.createDoctorSession);
   app.post('/api/doctor/api/login', DoctorController.loginDoctor);

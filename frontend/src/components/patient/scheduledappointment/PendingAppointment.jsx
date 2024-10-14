@@ -5,10 +5,11 @@ import CancelModal from "../scheduledappointment/Modal/CancelModal";
 import './Appointment.css';
 import { PeopleFill, ClockFill, PersonFill, PencilFill } from 'react-bootstrap-icons';
 import { ip } from '../../../ContentExport';
+
 function PendingAppointments({ appointments, setAppointments }) {
     const [showModal, setShowModal] = useState(false);
     const [selectedAppointment, setSelectedAppointment] = useState(null);
-    
+
     const defaultImage = "images/014ef2f860e8e56b27d4a3267e0a193a.jpg";
     console.log(appointments);
 
@@ -24,8 +25,11 @@ function PendingAppointments({ appointments, setAppointments }) {
 
     const handleConfirmCancellation = (cancelReason) => {
         if (!selectedAppointment) return;
-
-        axios.put(`${ip.address}/api/patient/api/${selectedAppointment._id}/updateappointment`, { cancelReason: cancelReason })
+    
+        // Ensure selectedAppointment._id exists
+        console.log("Selected Appointment:", selectedAppointment);
+    
+        axios.put(`${ip.address}/api/patient/${selectedAppointment._id}/updateappointment`, { cancelReason: cancelReason })
             .then((response) => {
                 console.log(response.data);
                 setAppointments(prevAppointments => 
@@ -39,6 +43,7 @@ function PendingAppointments({ appointments, setAppointments }) {
                 console.log(err);
             });
     };
+    
 
     // Helper function to format the date
     const formatDate = (dateString) => {

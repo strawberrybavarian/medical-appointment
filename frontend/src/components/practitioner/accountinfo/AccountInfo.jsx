@@ -180,12 +180,7 @@ const AccountInfo = () => {
                   <Form.Control value={doctorData.cnumber} disabled /> 
                 </Form.Group>
               </Row>
-              <Row>
-                <Form.Group as={Col} controlId="exampleForm.ControlInput1">
-                  <Form.Label>Password:</Form.Label>
-                  <Form.Control type="password" value={doctorData.password} disabled /> 
-                </Form.Group>
-              </Row>
+            
               <Row>
                 <Form.Group as={Col} controlId="exampleForm.ControlInput1">
                   <Form.Label>Specialty:</Form.Label>

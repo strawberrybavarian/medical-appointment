@@ -22,8 +22,8 @@ const ResetPassword = () => {
         try {
             // Determine the API endpoint based on the user role (Patient or Doctor)
             const resetEndpoint = role === 'doctor' 
-                ? `${ip.address}/api/doctor/api/reset-password/${token}` 
-                : `${ip.address}/api/patient/api/reset-password/${token}`;
+                ? `${ip.address}/api/doctor/reset-password/${token}` 
+                : `${ip.address}/api/patient/reset-password/${token}`;
 
             const response = await axios.post(resetEndpoint, { password });
             setMessage(response.data.message);

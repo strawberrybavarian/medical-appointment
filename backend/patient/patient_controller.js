@@ -288,12 +288,10 @@ const updatePatientInfo = async (req, res) => {
 
 
 const createUnregisteredPatient = async (req, res) => {
-  const { patient_email, accountStatus, ...rest } = req.body;
+  const { patient_email, ...rest } = req.body;
 
-  // Include accountStatus and conditionally include patient_email
-  const patientData = accountStatus === 'Unregistered'
-    ? { ...rest, accountStatus }
-    : { ...rest, patient_email, accountStatus };
+  // Always include patient_email and set accountStatus to 'Unregistered'
+  const patientData = { ...rest, patient_email, accountStatus: 'Unregistered' };
 
   try {
       const newPatient = await Patient.create(patientData);
@@ -302,6 +300,8 @@ const createUnregisteredPatient = async (req, res) => {
       res.status(400).json({ message: 'Something went wrong. Please try again.', error: err });
   }
 };
+
+
 
 const findAllPatient = (req, res) => {
     Patient.find()
@@ -433,24 +433,59 @@ const bookedSlots = async (req, res) => {
 const cancelAppointment = async (req, res) => {
   try {
     const { cancelReason } = req.body;
-    const appointmentId = req.params.uid; // Appointment ID from URL parameter
+    const appointmentId = req.params.appointmentId; // Appointment ID from URL parameter
 
-    // Find the appointment and update its cancelReason and status
+    console.log('Cancelling appointment with ID:', appointmentId);
+
+    // Find the appointment before updating (to know the current doctor, date, and time)
+    const appointment = await Appointment.findById(appointmentId);
+
+    if (!appointment) {
+      console.log('Appointment not found');
+      return res.status(404).json({ message: "Appointment not found" });
+    }
+
+    console.log('Appointment found:', appointment);
+
+    // Update the cancelReason and status to 'Cancelled'
     const updatedAppointment = await Appointment.findByIdAndUpdate(
       appointmentId,
       { $set: { cancelReason: cancelReason, status: 'Cancelled' } }, // Update cancelReason and status
       { new: true }
     );
 
-    if (!updatedAppointment) {
-      return res.status(404).json({ message: "Appointment not found" });
+    console.log('Updated appointment:', updatedAppointment);
+
+    // If the appointment has a doctor assigned, we need to update the available slots
+    if (appointment.doctor) {
+      console.log('Updating slots for doctor:', appointment.doctor);
+
+      const timePeriod = parseInt(appointment.time.split(":")[0]) < 12 ? 'morning' : 'afternoon';
+
+      console.log('Time period:', timePeriod);
+
+      // Increment the maxPatients slot by 1 for the doctor
+      const doctorUpdateResult = await Doctor.findByIdAndUpdate(
+        appointment.doctor,
+        {
+          $inc: {
+            [`availability.${new Date(appointment.date).toLocaleString('en-US', { weekday: 'long' }).toLowerCase()}.${timePeriod}.maxPatients`]: 1
+          }
+        },
+        { new: true } // Return the updated doctor record
+      );
+
+      console.log('Doctor availability updated:', doctorUpdateResult);
     }
 
     res.status(200).json(updatedAppointment);
   } catch (error) {
+    console.error('Error cancelling appointment:', error);
     res.status(400).json({ message: error.message });
   }
 };
+
+
 
 const updatePatientImage = async (req, res) => {
   try {
@@ -516,7 +551,8 @@ const forgotPassword = async (req, res) => {
       }
     });
 
-    const resetLink = `${ip.address}/reset-password/patient/${token}`;
+    // const resetLink = `${ip.address}/reset-password/patient/${token}`;
+    const resetLink = `${req.protocol}://${req.get('host')}/reset-password/patient/${token}`;
     const mailOptions = {
       to: patient.patient_email,
       from: staff_email.user,

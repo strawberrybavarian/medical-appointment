@@ -8,7 +8,8 @@ const timeSlotSchema = new mongoose.Schema({
     startTime: String,
     endTime: String,
     interval: Number,
-    available: { type: Boolean, default: false }
+    available: { type: Boolean, default: false },
+    maxPatients: { type: Number, default: 0 }  // Add maxPatients to time slot schema
 });
 
 // Define dailyAvailabilitySchema using timeSlotSchema for morning and afternoon availability
@@ -157,6 +158,10 @@ const DoctorSchema = new Schema({
     dr_services: [{
         type: Schema.Types.ObjectId,
         ref: 'Service' // Reference to the services the doctor offers
+    }],
+    dr_hmo: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Hmo' 
     }],
 }, { timestamps: true });
 

@@ -4,7 +4,7 @@ import { Form, Button, Row, Col } from 'react-bootstrap';
 import DeactivationModal from './modal/DeactivationModal';
 import { ip } from '../../../ContentExport';
 
-const initialTimeSlot = { startTime: '', endTime: '', interval: 30, available: false };
+const initialTimeSlot = { startTime: '', endTime: '', available: false, maxPatients: 0 }; // Removed interval and added maxPatients
 
 const initialAvailability = {
     monday: { morning: { ...initialTimeSlot }, afternoon: { ...initialTimeSlot } },
@@ -52,6 +52,20 @@ function DoctorAvailability({ doctorId }) {
                 [period]: {
                     ...prev[day][period],
                     available: value
+                }
+            }
+        }));
+    };
+
+    // New function to handle maxPatients input
+    const handleMaxPatientsChange = (day, period, value) => {
+        setAvailability(prev => ({
+            ...prev,
+            [day]: {
+                ...prev[day],
+                [period]: {
+                    ...prev[day][period],
+                    maxPatients: value // Update the maxPatients for each period (morning or afternoon)
                 }
             }
         }));
@@ -133,12 +147,12 @@ function DoctorAvailability({ doctorId }) {
                                         </Form.Group>
                                     </Col>
                                     <Col>
-                                        <Form.Group controlId={`${day}MorningInterval`}>
-                                            <Form.Label>Morning Interval (minutes)</Form.Label>
+                                        <Form.Group controlId={`${day}MorningMaxPatients`}>
+                                            <Form.Label>Max Patients (Morning)</Form.Label>
                                             <Form.Control
                                                 type="number"
-                                                value={availability[day]?.morning?.interval || 30}
-                                                onChange={(e) => handleTimeChange(day, 'morning', 'interval', e.target.value)}
+                                                value={availability[day]?.morning?.maxPatients || 0}
+                                                onChange={(e) => handleMaxPatientsChange(day, 'morning', e.target.value)}
                                             />
                                         </Form.Group>
                                     </Col>
@@ -179,12 +193,12 @@ function DoctorAvailability({ doctorId }) {
                                         </Form.Group>
                                     </Col>
                                     <Col>
-                                        <Form.Group controlId={`${day}AfternoonInterval`}>
-                                            <Form.Label>Afternoon Interval (minutes)</Form.Label>
+                                        <Form.Group controlId={`${day}AfternoonMaxPatients`}>
+                                            <Form.Label>Max Patients (Afternoon)</Form.Label>
                                             <Form.Control
                                                 type="number"
-                                                value={availability[day]?.afternoon?.interval || 30}
-                                                onChange={(e) => handleTimeChange(day, 'afternoon', 'interval', e.target.value)}
+                                                value={availability[day]?.afternoon?.maxPatients || 0}
+                                                onChange={(e) => handleMaxPatientsChange(day, 'afternoon', e.target.value)}
                                             />
                                         </Form.Group>
                                     </Col>

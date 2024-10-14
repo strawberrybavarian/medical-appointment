@@ -117,7 +117,7 @@ function RescheduledAppointment({appointments, setAppointments}) {
                                     fontSize: '1rem',
                                     color: isAppointmentToday ? '#E03900' : '#575859'
                                 };
-                                const doctorImage = appointment?.doctor.dr_image || defaultImage;
+                               
                                 return (
                                     <Container className='d-flex justify-content-start subContainer shadow-sm' key={i}>
                                         <div className='aaContainer'>
@@ -136,8 +136,7 @@ function RescheduledAppointment({appointments, setAppointments}) {
                                                 <p style={{ fontSize: '1rem' }}> <PeopleFill className='font-gray' size={20} style={{ marginRight: '0.7rem' }} /> {appointment.medium}</p>
                                             </div>
                                             <div className='pa-cont3'>
-                                                {/* <p><PencilFill className='font-gray' size={20} style={{ marginRight: '0.7rem' }} /> Primary Concern :  </p>
-                                                <p style={{ fontSize: '1rem' }}> • {appointment.reason}</p> */}
+                                               
                                                 {appointment.status === 'Rescheduled' && (
                                                     <p style={{ fontSize: '1rem', color: 'red' }}>Reason for Rescheduling: {appointment.rescheduledReason}</p>
                                                 )}

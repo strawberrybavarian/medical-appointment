@@ -32,6 +32,7 @@ module.exports = app => {
     app.put('/api/appointments/:id/status', AppointmentController.updateAppointmentStatus);
     app.get('/api/appointments/:id', AppointmentController.getAppointmentById);
     app.put('/api/appointments/:appointmentId/assign', AppointmentController.updateAppointmentDetails);
+    app.get('/api/appointments/:doctorId/count', AppointmentController.countBookedPatients);
     // app.put('/appointments/:id/payment-status', AppointmentController.updatePaymentStatus);
 
 };

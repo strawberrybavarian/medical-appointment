@@ -7,3 +7,36 @@
     object-fit: cover;
     width: 100%;
 }
+/* Make the dropdown look like a button */
+.login-button {
+  background-color: #007bff;
+  border: none;
+  color: white;
+  padding: 0.375rem 0.75rem;
+  border-radius: 0.25rem;
+  cursor: pointer;
+}
+
+/* Ensure the Log In dropdown looks like a button with white text */
+.login-button .nav-link {
+    color: white !important;
+    background-color: #007bff; /* Button background color */
+    padding: 0.375rem 0.75rem; /* Adjust padding to make it button-like */
+    border-radius: 0.25rem; /* Rounded corners */
+    border: 1px solid transparent;
+  }
+  
+  /* Hover and focus states for the button */
+  .login-button .nav-link:hover,
+  .login-button .nav-link:focus {
+    color: white !important; /* Keep text white on hover */
+    background-color: #0056b3; /* Darken button background on hover */
+    text-decoration: none; /* Remove underline */
+  }
+  
+  /* Show the dropdown on hover */
+  .login-button:hover .dropdown-menu {
+    display: block; /* Show the dropdown when hovering */
+    margin-top: 0; /* Ensure dropdown aligns properly */
+  }
+  

@@ -935,7 +935,7 @@ const deleteDoctorBiography = async (req, res) => {
       });
   
       // Construct the password reset link
-      const resetLink = `${req.protocol}://${req.get('host')}/reset-password/${token}`;
+      const resetLink = `${req.protocol}://${req.get('host')}/reset-password/doctor/${token}`;
       // const resetLink = `http://localhost:3000/reset-password/doctor/${token}`;
       const mailOptions = {
         to: doctor.dr_email,
@@ -986,6 +986,26 @@ const deleteDoctorBiography = async (req, res) => {
           res.status(500).json({ message: 'Error in resetting password', error });
       }
   };
+
+
+  const getDoctorHmo = async (req, res) => {
+    try {
+      const { id } = req.params;
+  
+      // Find the doctor by ID and populate the dr_hmo field
+      const doctor = await Doctors.findById(id).populate('dr_hmo');
+      if (!doctor) {
+        return res.status(404).json({ message: 'Doctor not found' });
+      }
+  
+      // Return the populated dr_hmo array
+      res.status(200).json({ dr_hmo: doctor.dr_hmo });
+    } catch (error) {
+      res.status(500).json({ message: 'Error fetching HMOs', error });
+    }
+  };
+  
+  
 module.exports = {
     NewDoctorSignUp,
     findAllDoctors,
@@ -1024,6 +1044,7 @@ module.exports = {
     deleteDoctorBiography,
     loginDoctor,
     createDoctorSession,
-    resetPassword, forgotPassword
+    resetPassword, forgotPassword, 
+    getDoctorHmo
 
 };

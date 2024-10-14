@@ -12,6 +12,7 @@ import Footer from "../../Footer";
 import { ChevronLeft } from "react-bootstrap-icons";
 import './AccountInfo.css';
 import { ip } from "../../../ContentExport";
+import DoctorHMO from "./DoctorManageHMO";
 function DoctorInformation() {
     const location = useLocation();
     const { did } = location.state || {};
@@ -90,6 +91,12 @@ function DoctorInformation() {
                                     >
                                         Services
                                     </a>
+                                    <a
+                                        onClick={() => setActiveTab("hmo")}
+                                        className={activeTab === "hmo" ? "active" : ""}
+                                    >
+                                        HMO
+                                    </a>
                                 </div> 
                             </Container>
                        
@@ -98,6 +105,7 @@ function DoctorInformation() {
                                 {activeTab === 'DrTwoFactorAuth' && <DrTwoFactorAuth setId={did} />}
                                 {activeTab === 'availability' && <DoctorAvailability doctorId={did} />} 
                                 {activeTab === 'services' && <DoctorManageServices doctorId={did} />}
+                                {activeTab === 'hmo' && <DoctorHMO doctorId={did} />}
                             </Container>
                         </div>
 

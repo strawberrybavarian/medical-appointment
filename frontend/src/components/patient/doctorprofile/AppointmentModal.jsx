@@ -13,7 +13,7 @@ function AppointmentModal({ show, handleClose, pid, did, doctorName }) {
     const [selectedServices, setSelectedServices] = useState([]); 
 
     const doctorId = did;
-    console.log(doctorId)
+
     // Reset modal state when the modal is closed or the doctor changes
     useEffect(() => {
         if (!show) {
@@ -71,7 +71,7 @@ function AppointmentModal({ show, handleClose, pid, did, doctorName }) {
             return;
         }
     
-        console.log("Doctor ID:", doctorId); // Check if doctorId is present
+   
     
         const formData = {
             doctor: doctorId || null, // Ensure the doctor ID is included in the formData

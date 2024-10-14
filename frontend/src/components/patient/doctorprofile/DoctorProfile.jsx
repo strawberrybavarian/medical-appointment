@@ -8,16 +8,18 @@ import DoctorWeeklySchedule from './DoctorWeeklySchedule';
 import AppointmentForm from './AppointmentForm';
 import './DoctorProfile.css';
 import DoctorAnnouncements from "./DoctorAnnouncements";
-import DoctorCalendar from "./DoctorCalendar";
+
 import { usePatient } from "../PatientContext";
 import Footer from "../../Footer";
 import DoctorBiography from "./DoctorBiography";
+import DoctorHMO from "./DoctorHMO";
 
 function DoctorProfile() {
     const [theDoctor, setTheDoctor] = useState(null); 
     const [theImage, setTheImage] = useState("");
     const [FullName, setFullName] = useState("");
     const [biography, setBiography] = useState({});
+    const [theHmo, setTheHmo] = useState([]);
     const [openProfile, setOpenProfile] = useState(false); 
     const [openAnnouncements, setOpenAnnouncements] = useState(false);
     const [openCalendar, setOpenCalendar] = useState(false);
@@ -53,6 +55,23 @@ function DoctorProfile() {
     
         fetchBiography();
       }, [doctorId]);
+
+
+      useEffect(() => {
+        const fetchHmo = async () => {
+          try {
+            const response = await axios.get(`${ip.address}/api/doctor/${doctorId}/gethmo`);
+      
+            setTheHmo(response.data.dr_hmo || []);
+          } catch (error) {
+            console.error('Error fetching HMOs:', error);
+          }
+        };
+      
+        fetchHmo();
+      }, [doctorId]);
+      
+      
 
     if (!doctorId) {
         return <p>Please select a doctor.</p>;
@@ -133,7 +152,7 @@ function DoctorProfile() {
                             <Container className="announcement-container white-background align-items-center mt-3 mb-3 shadow-sm">
                                 <div className="d-flex align-items-center">
                                     <div className="w-100 d-flex align-items-center">
-                                        <p className="m-0" style={{ fontWeight: 'bold' }}>Doctor Calendar</p>
+                                        <p className="m-0" style={{ fontWeight: 'bold' }}>HMO Accreditation</p>
                                     </div>
 
                                     <div className="w-100 d-flex justify-content-end align-items-center">
@@ -151,7 +170,7 @@ function DoctorProfile() {
 
                                 <Collapse in={openCalendar}>
                                     <div id="calendar-collapse">
-                                        <DoctorCalendar did={doctorId} />
+                                        <DoctorHMO did={doctorId} theHmo={theHmo} />
                                     </div>
                                 </Collapse>
                             </Container>

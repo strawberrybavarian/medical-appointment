@@ -75,17 +75,21 @@ body {
 }
 
 
-.iaHJyQ {
-    background: rgba(152, 160, 168, 0.048) !important;
-    color: rgb(255, 255, 255);
-    height: 100vh;
-    border-right: 2px solid rgba(0, 0, 0, 0.082) !important;
-    width: 270px;
-    min-width: 270px;
-    text-align: left;
-    transition: width 0s ease 0s, left 0s ease 0s, right 0s ease 0s, all 0.3s ease 0s;
-    position: relative;
-    z-index: 1009;
+
+
+.pisb-sidebar{
+   
+        background: rgba(152, 160, 168, 0.048) !important;
+        color: rgb(255, 255, 255) !important;
+        height: 100vh;
+        border-right: 2px solid rgba(0, 0, 0, 0.082) !important;
+        width: 270px;
+        min-width: 270px;
+        text-align: left;
+        transition: width 0s ease 0s, left 0s ease 0s, right 0s ease 0s, all 0.3s ease 0s;
+        position: relative;
+        z-index: 1009;
+  
 }
 
 .pisb-sidebarcontainer {

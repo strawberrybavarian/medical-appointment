@@ -56,6 +56,40 @@ function AssignAppointmentModal({ show, handleClose, appointmentId }) {
         }
     }, [selectedDoctor]);
 
+    // Fetch existing appointment details when the modal is opened
+    useEffect(() => {
+        if (show && appointmentId) {
+            axios.get(`${ip.address}/api/appointments/${appointmentId}`)
+                .then((response) => {
+                    const appointment = response.data;
+
+                    // Pre-fill the form fields with appointment details
+                    if (appointment.doctor) {
+                        setSelectedDoctor({
+                            value: appointment.doctor._id,
+                            label: `${appointment.doctor.dr_firstName} ${appointment.doctor.dr_middleInitial}. ${appointment.doctor.dr_lastName}`
+                        });
+                    }
+                    if (appointment.appointment_type) {
+                        setSelectedService({
+                            value: appointment.appointment_type._id,
+                            label: appointment.appointment_type.appointment_type,
+                            category: appointment.appointment_type.category
+                        });
+                    }
+                    if (appointment.date) {
+                        setDate(new Date(appointment.date).toISOString().split('T')[0]); // Format date for the input
+                    }
+                    if (appointment.time) {
+                        setTime(appointment.time); // Assuming time is in AM/PM format
+                    }
+                })
+                .catch((err) => {
+                    console.log(err);
+                });
+        }
+    }, [show, appointmentId]);
+
     // Function to generate time range in 12-hour format with AM/PM for display
     const generateTimeRange = (start, end) => {
         const startTime = new Date(`1970-01-01T${start}`).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
@@ -117,22 +151,19 @@ function AssignAppointmentModal({ show, handleClose, appointmentId }) {
             return;
         }
 
-        // Ensure the appointment_type is structured correctly (appointment_type and category)
         const appointmentType = {
-            appointment_type: selectedService.label,  // Assuming `label` is the name of the service
-            category: selectedService.category || 'General'  // Add the category if available, or default to 'General'
+            appointment_type: selectedService.label,
+            category: selectedService.category || 'General'
         };
 
         const formData = {
             doctor: selectedDoctor ? selectedDoctor.value : null,
-            appointment_type: appointmentType,  // Pass the structured object
+            appointment_type: appointmentType,
             date,
-            time, // Time is now stored in AM/PM format
+            time,
         };
 
-        console.log('FormData being sent:', formData);  // Check the form data being sent
-
-        axios.put(`${ip.address}/appointments/${appointmentId}/assign`, formData)
+        axios.put(`${ip.address}/api/appointments/${appointmentId}/assign`, formData)
             .then(() => {
                 window.alert("Appointment updated successfully!");
                 window.location.reload();
@@ -164,7 +195,6 @@ function AssignAppointmentModal({ show, handleClose, appointmentId }) {
                           onChange={(selected) => {
                               setSelectedDoctor(selected);
                               if (!selected) {
-                                  // Reset all relevant states when doctor selection is cleared
                                   setSelectedService(null);
                                   setDoctorName("");
                                   setDate("");
@@ -187,13 +217,12 @@ function AssignAppointmentModal({ show, handleClose, appointmentId }) {
                               value: service._id,
                               label: service.name,
                               category: service.category  // Assuming the category field is available
-                          }))} // Display services
+                          }))}
                           value={selectedService}
                           onChange={(selected) => setSelectedService(selected)}
                           placeholder="Select a service"
                           isClearable={true}
                       />
-
                     </Form.Group>
 
                     {/* Date Selection */}
@@ -232,7 +261,7 @@ function AssignAppointmentModal({ show, handleClose, appointmentId }) {
                         {!morningTimeRange && !afternoonTimeRange && (
                             <Form.Control
                                 type="time"
-                                value={time} // Keep time in 12-hour format for input
+                                value={time}
                                 onChange={(e) => setTime(e.target.value)}
                                 placeholder="Enter time"
                                 required

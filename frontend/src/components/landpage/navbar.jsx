@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
-import { Container, Button, Navbar, Nav } from 'react-bootstrap';
+import { Container, Button, Navbar, Nav, NavDropdown } from 'react-bootstrap';
 import "./Landing.css";
-import { image } from '../../ContentExport'
+import { image } from '../../ContentExport';
 
 function LandingPage() {
   const navigate = useNavigate();
@@ -10,8 +10,12 @@ function LandingPage() {
     navigate("/medapp/signup");
   };
 
-  const onLogInClick = () => {
+  const onMemberLoginClick = () => {
     navigate("/medapp/login");
+  };
+
+  const onStaffLoginClick = () => {
+    navigate("/staffs");
   };
 
   return (
@@ -25,7 +29,10 @@ function LandingPage() {
               <Nav className="me-auto"></Nav>
               <Nav>
                 <Button className="button1" onClick={onSignUpClick}>Sign Up</Button>
-                <Button className="button1" onClick={onLogInClick}>Log In</Button>
+                <NavDropdown title="Log In" id="login-dropdown" className="login-button">
+                  <NavDropdown.Item onClick={onMemberLoginClick}>Member</NavDropdown.Item>
+                  <NavDropdown.Item onClick={onStaffLoginClick}>Staffs</NavDropdown.Item>
+                </NavDropdown>
               </Nav>
             </Navbar.Collapse>
           </Container>

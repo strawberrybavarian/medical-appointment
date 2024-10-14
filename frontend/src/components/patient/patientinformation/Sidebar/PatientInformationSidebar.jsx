@@ -25,7 +25,7 @@ function PatientInformationSidebar({pid}) {
 
     return (
         <div className='pisb-sidebarcontainer'>
-            <CDBSidebar textColor="#fff" backgroundColor="#333" minWidth="250px">
+            <CDBSidebar className='pisb-sidebar' textColor="#fff" backgroundColor="#333" minWidth="250px">
                 <CDBSidebarHeader className="pisb-newheader head-div">
                 </CDBSidebarHeader>
 
