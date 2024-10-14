@@ -14,7 +14,7 @@ const VerifyOTP = () => {
 
         axios.post(apiUrl, { otp, email })
             .then((response) => {
-                console.log(response);
+   
                 window.alert("OTP verified successfully");
                 navigate('/medapp/login');
             })

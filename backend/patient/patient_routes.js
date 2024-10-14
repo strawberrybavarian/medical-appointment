@@ -35,8 +35,8 @@ module.exports = app => {
     //For Logging In
     app.post('/api/patient/api/login', PatientController.loginPatient);
     //ResetPassword Forgot Password
-    app.post('/api/patient/api/forgot-password', PatientController.forgotPassword);
-    app.post('/api/patient/api/reset-password/:token', PatientController.resetPassword);
+    app.post('/api/patient/forgot-password', PatientController.forgotPassword);
+    app.post('/api/patient/reset-password/:token', PatientController.resetPassword);
     
     //New Patient Sign Up with BCRYPT
     app.post('/api/patient/api/signup', PatientController.NewPatientSignUp);
@@ -71,7 +71,7 @@ module.exports = app => {
     // Appointment
     app.get('/api/doctor/:doctorId/booked-slots', PatientController.bookedSlots)
     // app.post('/patient/api/:uid/createappointment', PatientController.createAppointment);
-    app.put('/api/patient/api/:uid/updateappointment', PatientController.cancelAppointment)
+    app.put('/api/patient/:appointmentId/updateappointment', PatientController.cancelAppointment)
         // app.put('patient/api/:uid/rescheduleappointment', PatientController.resche)
 
 

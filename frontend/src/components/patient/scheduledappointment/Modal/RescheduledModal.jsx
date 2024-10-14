@@ -59,7 +59,7 @@ const RescheduleModal = ({ show, handleClose, appointment, onSubmit }) => {
 
   useEffect(() => {
     if (appointment) {
-      axios.get(`${ip.address}/doctor/${appointment.doctor._id}/available`)
+      axios.get(`${ip.address}/api/doctor/${appointment.doctor._id}/available`)
         .then((response) => {
           console.log("Doctor availability fetched:", response.data);
           const { availability } = response.data;
@@ -81,7 +81,7 @@ const RescheduleModal = ({ show, handleClose, appointment, onSubmit }) => {
       setAvailableTimes(times);
 
       // Fetch already booked times for the selected date and doctor
-      axios.get(`${ip.address}/doctor/${appointment.doctor._id}/booked-slots?date=${newDate}`)
+      axios.get(`${ip.address}/api//doctor/${appointment.doctor._id}/booked-slots?date=${newDate}`)
         .then((response) => {
           const bookedSlots = response.data.bookedSlots;
           setBookedTimes(bookedSlots);

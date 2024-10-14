@@ -12,17 +12,18 @@ const CreatePatientForms = () => {
     const [uMiddleInitial, setMiddleInitial] = useState("");
     const [uBirth, setBirth] = useState("");
     const [uNumber, setNumber] = useState("");
+    const [uEmail, setEmail] = useState(""); // Added email state
     const [uGender, setGender] = useState("Male");
     const [uAge, setAge] = useState(0);
     const [accountStatus, setAccountStatus] = useState('Unregistered');
-    
+
     // Address state fields
     const [street, setStreet] = useState("");
     const [city, setCity] = useState("");
     const [state, setState] = useState("");
     const [zipCode, setZipCode] = useState("");
     const [country, setCountry] = useState("");
-    
+
     const [errors, setErrors] = useState({});
     const [formSubmitted, setFormSubmitted] = useState(false);
 
@@ -37,6 +38,12 @@ const CreatePatientForms = () => {
     };
     const validateMiddleInitial = (initial) => {
         if (initial.length > 1) return "Middle initial must be 1 character";
+        return "";
+    };
+    const validateEmail = (email) => {
+        if (!email) return "Email is required";
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) return "Enter a valid email address";
         return "";
     };
     const validateZipCode = (zip) => !zip ? "Zip code is required" : "";
@@ -63,6 +70,9 @@ const CreatePatientForms = () => {
                 break;
             case "number":
                 error = validateNumber(value);
+                break;
+            case "email": // Added email case
+                error = validateEmail(value);
                 break;
             case "street":
                 error = validateStreet(value);
@@ -103,6 +113,7 @@ const CreatePatientForms = () => {
             middleInitial: validateMiddleInitial(uMiddleInitial),
             birth: validateBirth(uBirth),
             number: validateNumber(uNumber),
+            email: validateEmail(uEmail), // Added email validation
             street: validateStreet(street),
             city: validateCity(city),
             state: validateState(state),
@@ -122,6 +133,7 @@ const CreatePatientForms = () => {
                 patient_dob: uBirth,
                 patient_age: uAge,
                 patient_contactNumber: uNumber,
+                patient_email: uEmail, // Added email field
                 patient_gender: uGender,
                 accountStatus: accountStatus,
                 patient_address: {
@@ -237,6 +249,24 @@ const CreatePatientForms = () => {
                                     isInvalid={formSubmitted && errors.number !== ""}
                                 />
                                 <Form.Control.Feedback type="invalid">{errors.number}</Form.Control.Feedback>
+                            </Form.Group>
+                        </Row>
+                        {/* Added Email Section */}
+                        <Row>
+                            <Form.Group as={Col} controlId="formEmail">
+                                <Form.Label>Email</Form.Label>
+                                <Form.Control
+                                    type="email"
+                                    placeholder="Enter Email"
+                                    onBlur={(e) => handleBlur("email", e.target.value)}
+                                    onChange={(e) => {
+                                        setEmail(e.target.value);
+                                        if (formSubmitted) handleBlur("email", e.target.value);
+                                    }}
+                                    isValid={formSubmitted && errors.email === "" && uEmail !== ""}
+                                    isInvalid={formSubmitted && errors.email !== ""}
+                                />
+                                <Form.Control.Feedback type="invalid">{errors.email}</Form.Control.Feedback>
                             </Form.Group>
                         </Row>
                         {/* Address Section */}

@@ -42,7 +42,7 @@ function ChooseDoctorSpecialization({ did }) {
     
     <div className="cd-containergrid">
         {theDoctors.map((doctor, index) => {
-            console.log(doctor.dr_image);
+    
             const doctorImage = doctor.dr_image || defaultImage
             return (
                 <>

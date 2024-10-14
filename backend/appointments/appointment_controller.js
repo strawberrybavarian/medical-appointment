@@ -10,12 +10,12 @@ const Payment = require('../payments/payment_model');
 
 const createAppointment = async (req, res) => {
   try {
-    const { doctor, date, time, reason, medium, appointment_type } = req.body; 
+    const { doctor, date, time, reason, medium, appointment_type } = req.body;
     const patientId = req.params.uid;
 
     // Validate essential data
-    if (!date || !reason || !appointment_type) {
-      return res.status(400).json({ message: 'Date, reason, and appointment type are required.' });
+    if (!date || !reason) {
+      return res.status(400).json({ message: 'Date and Primary Concern are required' });
     }
 
     // Create a new appointment object
@@ -25,10 +25,9 @@ const createAppointment = async (req, res) => {
       time,
       reason,
       medium,
-      appointment_type 
+      appointment_type,
     });
 
-    // Attach the doctor if provided
     if (doctor) {
       newAppointment.doctor = new mongoose.Types.ObjectId(doctor);
     }
@@ -38,12 +37,22 @@ const createAppointment = async (req, res) => {
 
     // Update doctor and patient records concurrently
     const updateTasks = [
-      Patient.findByIdAndUpdate(patientId, { $push: { patient_appointments: savedAppointment._id } })
+      Patient.findByIdAndUpdate(patientId, { $push: { patient_appointments: savedAppointment._id } }),
     ];
 
     if (doctor) {
+      // Determine if the appointment is in the morning or afternoon
+      const timePeriod = parseInt(time.split(":")[0]) < 12 ? 'morning' : 'afternoon';
+      
+      // Decrease the available slots for the doctor
       updateTasks.push(
-        Doctors.findByIdAndUpdate(doctor, { $push: { dr_appointments: savedAppointment._id } })
+        Doctors.findByIdAndUpdate(
+          doctor,
+          {
+            $inc: { [`availability.${new Date(date).toLocaleString('en-US', { weekday: 'long' }).toLowerCase()}.${timePeriod}.maxPatients`]: -1 },
+            $push: { dr_appointments: savedAppointment._id },
+          }
+        )
       );
     }
 
@@ -58,7 +67,7 @@ const createAppointment = async (req, res) => {
       notifications.push({
         message: `You have a new pending appointment scheduled with a patient on ${date} at ${time}.`,
         recipient: doctor,
-        type: 'Doctor'
+        type: 'Doctor',
       });
     }
 
@@ -67,7 +76,7 @@ const createAppointment = async (req, res) => {
       const newNotification = new Notification({
         message: notification.message,
         recipient: new mongoose.Types.ObjectId(notification.recipient),
-        recipientType: notification.type
+        recipientType: notification.type,
       });
 
       const savedNotification = await newNotification.save();
@@ -111,24 +120,39 @@ const getAppointmentById = async (req, res) => {
 
 const updateAppointmentStatus = async (req, res) => {
   try {
-    const { status } = req.body;  // Extract status from the request body
-    const appointmentId = req.params.id;  // Get appointment ID from the request parameters
+    const { status } = req.body;
+    const appointmentId = req.params.id;
 
-    // Ensure status is valid (excluding 'Rescheduled')
+    // Ensure status is valid
     const validStatuses = ['Pending', 'Scheduled', 'Completed', 'Cancelled', 'Ongoing', 'Missed', 'For Payment'];
     if (!validStatuses.includes(status)) {
       return res.status(400).json({ message: 'Invalid status update' });
     }
 
+    // Find the appointment before updating (to know the current doctor and time)
+    const appointment = await Appointment.findById(appointmentId);
+
+    if (!appointment) {
+      return res.status(404).json({ message: 'Appointment not found' });
+    }
+
     // Update the status of the appointment
     const updatedAppointment = await Appointment.findByIdAndUpdate(
       appointmentId,
-      { status },  // Only update the status field
-      { new: true }  // Return the updated document
+      { status },
+      { new: true }
     );
 
-    if (!updatedAppointment) {
-      return res.status(404).json({ message: 'Appointment not found' });
+    if (status === 'Cancelled' && appointment.doctor) {
+      const timePeriod = parseInt(appointment.time.split(":")[0]) < 12 ? 'morning' : 'afternoon';
+
+      // Increment the maxPatients slot by 1 for the doctor
+      await Doctors.findByIdAndUpdate(
+        appointment.doctor,
+        {
+          $inc: { [`availability.${new Date(appointment.date).toLocaleString('en-US', { weekday: 'long' }).toLowerCase()}.${timePeriod}.maxPatients`]: 1 },
+        }
+      );
     }
 
     res.status(200).json(updatedAppointment);
@@ -137,6 +161,7 @@ const updateAppointmentStatus = async (req, res) => {
     res.status(500).json({ message: `Failed to update appointment status: ${error.message}` });
   }
 };
+
 
 // Your updated controller for updating appointment with time in "AM/PM" format
 const updateAppointmentDetails = async (req, res) => {
@@ -162,11 +187,37 @@ const updateAppointmentDetails = async (req, res) => {
   }
 };
 
+const countBookedPatients = async (req, res) => {
+  const { doctorId } = req.params;
+  const { date } = req.query;
+
+  try {
+      // Count appointments for the doctor on the given date, grouped by morning and afternoon
+      const morningCount = await Appointment.countDocuments({
+          doctor: doctorId,
+          date: new Date(date),
+          time: { $gte: "06:00", $lt: "12:00" } // Morning times
+      });
+
+      const afternoonCount = await Appointment.countDocuments({
+          doctor: doctorId,
+          date: new Date(date),
+          time: { $gte: "12:00", $lt: "18:00" } // Afternoon times
+      });
+
+      res.json({ morning: morningCount, afternoon: afternoonCount });
+  } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: 'Error counting booked patients' });
+  }
+};
+
 
 module.exports = {
   createAppointment,
   updateAppointmentStatus,
   getAppointmentById,
   updateAppointmentDetails,
+  countBookedPatients
 
 };

@@ -90,19 +90,23 @@ const LogInUser = () => {
 
     if (modalRole === "Patient") {
       try {
-        const response = await axios.post(`${ip.address}/patient/api/forgot-password`, { email: modalEmail });
+        const response = await axios.post(`${ip.address}/api/patient/forgot-password`, { email: modalEmail });
         setModalMessage(response.data.message);
+        navigate('/medapp/login');
       } catch (err) {
         console.error('Error in forgot password:', err);
         setModalMessage(err.response?.data?.message || 'An error occurred.');
+        navigate('/medapp/login');
       }
     } else if (modalRole === "Physician") {
       try {
-        const response = await axios.post(`${ip.address}/doctor/api/forgot-password`, { email: modalEmail });
+        const response = await axios.post(`${ip.address}/api/doctor/forgot-password`, { email: modalEmail });
         setModalMessage(response.data.message);
+        navigate('/medapp/login');
       } catch (err) {
         console.error('Error in forgot password:', err);
         setModalMessage(err.response?.data?.message || 'An error occurred.');
+        navigate('/medapp/login');
       }
     }
   };

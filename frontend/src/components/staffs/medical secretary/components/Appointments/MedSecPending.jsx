@@ -315,14 +315,14 @@ const convertTo12HourFormat = (time) => {
                           </Dropdown.Toggle>
 
                           <Dropdown.Menu style={{zIndex:'99999'}}>
-                            {(!appointment.doctor || !appointment.date || !appointment.time || !appointmentTypes || !categoryTypes) && (
+                            {/* {(  !appointment.date || !appointment.time || !appointmentTypes || !categoryTypes) && ( */}
                               <Dropdown.Item
                                 onClick={() => handleAssignDetails(appointment)}
                                 className="action-item"
                               >
                                 Assign Details
                               </Dropdown.Item>
-                            )}
+                            {/* )} */}
                             
                             {appointment.patient.accountStatus === "Unregistered" && (
                               <>

@@ -60,7 +60,7 @@ const DoctorBiography = ({ did }) => {
   // Handle saving biography
   const handleSave = async () => {
     try {
-      const response = await axios.put(`${ip.address}/api/doctor/${did}/updatebiography`, { biography });
+      const response = await axios.put(`${ip.address}/api/doctor/api/${did}/updatebiography`, { biography });
       setBiography(response.data.biography); // Update with the new biography
       setIsEditing(false);
     } catch (error) {

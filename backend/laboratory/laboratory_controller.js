@@ -107,7 +107,7 @@ const createLaboratoryResult = async (req, res) => {
 
 
   
-  const downloadLaboratoryFile = async (req, res) => {
+const downloadLaboratoryFile = async (req, res) => {
     const { resultId } = req.params;
 
     try {

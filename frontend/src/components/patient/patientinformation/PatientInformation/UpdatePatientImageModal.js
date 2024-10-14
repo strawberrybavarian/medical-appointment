@@ -43,7 +43,7 @@ const UpdatePatientImageModal = ({ show, handleClose, pid, onImageUpload }) => {
     }
 
     try {
-      const response = await axios.post(`${ip.address}/patient/api/${pid}/updateimage`, formData, {
+      const response = await axios.post(`${ip.address}/api/patient/api/${pid}/updateimage`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },

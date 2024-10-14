@@ -23,14 +23,17 @@ function HomePagePatient() {
   return (
     <>
       <PatientNavBar pid={patient._id} />
-      <Container className='cont-fluid-no-gutter' fluid style={{overflowY: 'scroll', height: '100vh', paddingBottom: '100px', paddingTop: '1.5rem'}}>
+      <Container className='cont-fluid-no-gutter' fluid style={{overflowY: 'scroll', height: '100vh', paddingBottom: '100px'}}>
      
 
   
         <div className="maincolor-container">
           {/* Main Content Area */}
-          <div className="content-area">
-            <DoctorCarousel fluid className='w-100' pid={patient._id} />
+          <div className="content-area p-0 m-0">
+            <div fluid className='background-hpp'>
+              <DoctorCarousel fluid className='w-100' pid={patient._id} />
+            </div>
+           
             <DoctorSpecialty fluid className='w-100' pid={patient._id} />
             <DoctorServices fluid className='w-100' pid={patient._id}/>
 

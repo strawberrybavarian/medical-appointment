@@ -122,7 +122,7 @@ const NewSignUp = () => {
             };
             axios.post(`${ip.address}/api/doctor/api/signup`, doctorUser)
                 .then((response) => {
-                    console.log(response);
+               
                     window.alert("Successfully registered Practitioner");
                     navigate('/medapp/login');
                 })
@@ -145,10 +145,10 @@ const NewSignUp = () => {
                 patient_nationality: patientNationality,
                 patient_civilstatus: patientCivilStatus,
             };
-            console.log(patientUser);
+  
             axios.post(`${ip.address}/api/patient/api/signup`, patientUser)
                 .then((response) => {
-                    console.log(response);
+              
                     window.alert("Successfully registered Patient");
                     navigate('/medapp/login');
                 })

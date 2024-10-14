@@ -77,7 +77,7 @@ function DoctorCarousel({ pid }) {
           <div className="doctor-carousel" ref={scrollRef}>
             {doctors.slice(0, doctors.length).map((doctor) => {
               const doctorImage = doctor.dr_image || defaultImage;
-
+          
               // Define the status color based on the activity status
               const statusColor =
                 doctor.activityStatus === "Online"
