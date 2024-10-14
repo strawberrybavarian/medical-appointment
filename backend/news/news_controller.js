@@ -97,8 +97,9 @@ const getAllNewsByUserId = (req, res) => {
 };
 
 // Delete news by index
-const deleteNewsByIndex = async (req, res) => {
-    const newsIndex = req.params.index;
+// Delete news by its _id
+const deleteNewsById = async (req, res) => {
+    const newsId = req.params.newsId;
     const userId = req.params.id;
     const role = req.body.role;
 
@@ -110,26 +111,22 @@ const deleteNewsByIndex = async (req, res) => {
             return res.status(404).json({ message: `${role} not found` });
         }
 
-        if (newsIndex < 0 || newsIndex >= user.news.length) {
-            return res.status(400).json({ message: 'Invalid news index' });
-        }
-
-        const newsIdToDelete = user.news[newsIndex];
-
-        const deletedNews = await News.findByIdAndDelete(newsIdToDelete);
-        if (!deletedNews) {
+        const newsToDelete = await News.findByIdAndDelete(newsId);
+        if (!newsToDelete) {
             return res.status(404).json({ message: 'News not found' });
         }
 
-        user.news.splice(newsIndex, 1);
+        // Remove the deleted news from the user's news array
+        user.news = user.news.filter(id => id.toString() !== newsId);
         const updatedUser = await user.save();
 
         res.json({ updatedUser, message: 'News deleted successfully' });
     } catch (error) {
-        console.error('Error:', error);
+        console.error('Error deleting news:', error);
         res.status(500).json({ message: 'Error deleting news', error });
     }
 };
+
 
 // Update news at specific index
 const updateNewsAtIndex = async (req, res) => {
@@ -209,7 +206,7 @@ const getNewsById = async (req, res) => {
 module.exports = {
   addNewNewsByUserId,
   getAllNewsByUserId,
-  deleteNewsByIndex,
+  deleteNewsById,
   updateNewsAtIndex,
   findNewsByUserId,
   getGeneralNews,

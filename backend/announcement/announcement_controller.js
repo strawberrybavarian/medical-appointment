@@ -77,59 +77,43 @@ const getAllPostbyId = (req, res) => {
 };
 
 const findPostByIdDelete = async (req, res) => {
-    const postIndex = parseInt(req.params.index, 10);  // Parse the index as an integer
-    const doctorId = req.params.id;
-
-    console.log("Received Doctor ID:", doctorId);   // Log doctor ID
-    console.log("Received Post Index:", postIndex); // Log post index
+    const postId = req.params.postId;  // Capture the post ID from the request parameters
+    const doctorId = req.params.id;    // Doctor's ID
 
     try {
         // Find the doctor document
         const doctor = await Doctors.findById(doctorId);
 
         if (!doctor) {
-            console.log("Doctor not found for ID:", doctorId); // Log if doctor not found
             return res.status(404).json({ message: 'Doctor not found' });
         }
 
-        // Log the entire posts array to debug it
-        console.log("Doctor's posts array:", doctor.dr_posts);
-
-        // Ensure that the postIndex is a valid index in the dr_posts array
-        if (postIndex < 0 || postIndex >= doctor.dr_posts.length) {
-            console.log("Invalid Post Index:", postIndex); // Log invalid index
-            return res.status(400).json({ message: 'Invalid post index' });
-        }
-
-        // Extract the post ID to be deleted
-        const postIdToDelete = doctor.dr_posts[postIndex];
-        console.log("Post ID to delete:", postIdToDelete);  // Log the ID at index 0
-
-        if (!postIdToDelete) {
-            console.log("Post ID is undefined at index:", postIndex); // Log undefined post ID
-            return res.status(404).json({ message: 'Post not found' });
+        // Ensure the postId exists in the doctor's post array
+        if (!doctor.dr_posts.includes(postId)) {
+            return res.status(404).json({ message: 'Post not found in doctor posts' });
         }
 
         // Delete the post from the Post collection
-        const deletedPost = await Post.findByIdAndDelete(postIdToDelete);
+        const deletedPost = await Post.findByIdAndDelete(postId);
 
         if (!deletedPost) {
-            console.log("Post not found for ID:", postIdToDelete); // Log post not found
-            return res.status(404).json({ message: 'Post not found' });
+            return res.status(404).json({ message: 'Post not found in the database' });
         }
 
-        // Remove the post reference from the doctor's dr_posts array
-        doctor.dr_posts.splice(postIndex, 1);  // This will correctly handle index 0
+        // Remove the post ID from the doctor's dr_posts array
+        doctor.dr_posts = doctor.dr_posts.filter((id) => id.toString() !== postId);
 
         // Save the updated doctor document
         const updatedDoctor = await doctor.save();
 
         res.json({ updatedDoctor, message: 'Post deleted successfully' });
     } catch (error) {
-        console.error('Error deleting post:', error);  // Log the error
+        console.error('Error deleting post:', error);
         res.status(500).json({ message: 'Error deleting post', error });
     }
 };
+
+
 
   
 

@@ -7,11 +7,11 @@ const AppointmentSchema = new Schema({
         {
             appointment_type: {
                 type: String, // Store the name of the service
-                required: true,
+        
             },
             category: {
                 type: String, // Store the category of the service
-                required: true,
+        
             }
         }
     ],
@@ -44,7 +44,7 @@ const AppointmentSchema = new Schema({
     },
     status: {
         type: String,
-        enum: ['Pending', 'Scheduled', 'Completed', 'Cancelled', 'Missed', 'Rescheduled', 'Ongoing', 'For Payment' ],
+        
         default: 'Pending'
     },
     medium: {

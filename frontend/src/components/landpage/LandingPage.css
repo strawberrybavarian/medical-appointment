@@ -315,3 +315,46 @@
   
   margin-right: 15px !important;
 }
+
+/* Toggle Button Styles */
+.navbar-toggler {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  margin-left: auto;
+  color: #000; /* Change to desired color */
+}
+
+/* Collapsed state styles for navigation links */
+.collapse {
+  display: none;
+}
+
+/* Show links when the navbar is not collapsed */
+.nav-links-container {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  width: 100%;
+}
+
+/* Links in collapsed mode for small screens */
+@media (max-width: 768px) {
+  .nav-links-container {
+      flex-direction: column;
+      align-items: flex-start;
+      background: #ffffff; /* Adjust color if necessary */
+      width: 100%;
+      position: absolute;
+      top: 60px; /* Adjust top to position the dropdown below navbar */
+      left: 0;
+      z-index: 1000;
+      padding: 1rem;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  }
+
+  .collapse {
+      display: none; /* Hide by default */
+  }
+}

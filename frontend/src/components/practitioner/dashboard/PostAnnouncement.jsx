@@ -76,14 +76,20 @@ function PostAnnouncement({ doctor_image, doctor_name, did }) {
     setThePost("");
   };
 
-  const deletePost = (index) => {
+  const deletePost = (postId) => {
     axios
-      .delete(`${ip.address}/api/doctor/api/post/deletepost/${did}/${index}`)
-      .then(() => setThePosts(thePosts.filter((_, i) => i !== index)))
-      .catch((err) => {
-        console.log("Error deleting post:", err.response ? err.response.data : err.message);
-      });
-  };
+        .delete(`${ip.address}/api/doctor/api/post/deletepost/${did}/${postId}`, {
+          
+        })
+        .then(() => {
+            setThePosts(thePosts.filter(post => post._id !== postId));  // Filter out the deleted post from state
+        })
+        .catch((err) => {
+            console.log("Error deleting post:", err.response ? err.response.data : err.message);
+        });
+};
+
+
 
   // Handler for navigating to the previous image for a specific post
   const handlePreviousImage = (postId, images) => {
@@ -178,7 +184,7 @@ function PostAnnouncement({ doctor_image, doctor_name, did }) {
                         <Dropdown.Item onClick={() => openEditPostModal(post._id, post.content, post.images)}>
                           Edit
                         </Dropdown.Item>
-                        <Dropdown.Item onClick={() => deletePost(index)}>  {/* Pass index instead of postId */}
+                        <Dropdown.Item onClick={() => deletePost(post._id)}>  {/* Pass index instead of postId */}
                           Delete
                         </Dropdown.Item>
                       </Dropdown.Menu>

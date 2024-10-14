@@ -72,19 +72,51 @@ const MedSecToSend = ({ allAppointments, setAllAppointments }) => {
 
   // Handle sending the laboratory result
   const handleSendLabResult = async () => {
+    if (!file) {
+        setError('Please select a file before submitting.');
+        return;
+    }
+
     const labData = new FormData();
     labData.append('file', file);
 
+    // Log the form data before sending
+    console.log('Sending file:', file);
+
     try {
-      await axios.post(`${ip.address}/api/doctor/api/createLaboratoryResult/${selectedAppointment.patient._id}/${selectedAppointment._id}`, labData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
-      setShowToast(true);  // Show success toast
-      setFile(null);  // Reset file after upload
-      setShowSendModal(false);  // Close modal after successful upload
+        const response = await axios.post(
+            `${ip.address}/api/doctor/api/createLaboratoryResult/${selectedAppointment.patient._id}/${selectedAppointment._id}`,
+            labData,
+            {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            }
+        );
+        
+        console.log('Response from server:', response.data); // Log the response from the server
+        
+        setShowToast(true);  // Show success toast
+        setFile(null);  // Reset file after upload
+        setShowSendModal(false);  // Close modal after successful upload
     } catch (err) {
-      setError('Failed to send laboratory result');
+        setError('Failed to send laboratory result');
+        console.error('Error during file upload:', err.response?.data || err.message);
     }
+};
+
+
+  const handleUpdateStatus = (appointmentId, newStatus) => {
+    axios.put(`${ip.address}/api/appointments/${appointmentId}/status`, { status: newStatus })
+      .then((response) => {
+        setAllAppointments(prevAppointments =>
+          prevAppointments.map(appointment =>
+            appointment._id === appointmentId ? { ...appointment, status: newStatus } : appointment
+          )
+        );
+      })
+      .catch((err) => {
+        console.error("Error updating status:", err);
+        setError("Failed to update the appointment status.");
+      });
   };
 
   return (
@@ -141,6 +173,12 @@ const MedSecToSend = ({ allAppointments, setAllAppointments }) => {
                       <Dropdown.Item onClick={() => { setSelectedAppointment(appointment); setShowSendModal(true); }}>
                         Send Laboratory
                       </Dropdown.Item>
+                      <Dropdown.Item
+                                onClick={() => handleUpdateStatus(appointment._id, "Completed")}
+                                className="action-item"
+                              >
+                                Complete
+                              </Dropdown.Item>
                     </Dropdown.Menu>
                   </Dropdown>
                 </td>

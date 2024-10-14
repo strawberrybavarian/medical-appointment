@@ -124,7 +124,7 @@ const updateAppointmentStatus = async (req, res) => {
     const appointmentId = req.params.id;
 
     // Ensure status is valid
-    const validStatuses = ['Pending', 'Scheduled', 'Completed', 'Cancelled', 'Ongoing', 'Missed', 'For Payment'];
+    const validStatuses = ['Pending', 'Scheduled', 'Completed', 'Cancelled', 'Ongoing', 'Missed', 'For Payment', 'To-send'];
     if (!validStatuses.includes(status)) {
       return res.status(400).json({ message: 'Invalid status update' });
     }

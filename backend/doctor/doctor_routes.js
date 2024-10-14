@@ -96,5 +96,7 @@ module.exports = app => {
 
   //Getting All Patients
   app.get('/api/doctor/api/getallpatients/:doctorId', DoctorController.getPatientsByDoctor);
-  app.get('/api/doctor/api/getallemails', DoctorController.getAllDoctorEmails); 
+  app.get('/api/doctor/getallemails', DoctorController.getAllDoctorEmails); 
+  app.get('/api/doctors/getallemails', DoctorController.getAllDoctorEmailse); 
+  app.get('/api/doctors/getcontactnumbers', DoctorController.getAllContactNumbers);
 };

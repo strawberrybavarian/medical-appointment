@@ -82,24 +82,10 @@ const LaboratoryHistory = ({ pid }) => {
                     </Card.Header>
                     <Collapse in={openRecords[result._id]}>
                         <Card.Body>
-                            {/* <p><strong>Appointment ID:</strong> {result.appointment}</p> */}
-                            {/* <p><strong>Doctor ID:</strong> {result.doctor}</p> */}
-                            <p><strong>Interpretation:</strong> {result.interpretation || "None"}</p>
-                            <p><strong>Recommendations:</strong> {result.recommendations || "None"}</p>
+                           
+                           
 
-                            {/* {result.testResults && result.testResults.length > 0 && (
-                                <>
-                                    <p><strong>Test Results:</strong></p>
-                                    <ul>
-                                        {result.testResults.map((test, index) => (
-                                            <li key={index}>
-                                                {test.name}: {test.value} {test.unit} (Range: {test.referenceRange.lower} - {test.referenceRange.upper}) - Status: {test.status}
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </>
-                            )} */}
-
+                           
 
                             <p><strong>File:</strong> {result.file?.filename || "No file uploaded"}</p>
                             {result.file && (

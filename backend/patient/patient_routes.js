@@ -33,6 +33,8 @@ const storage = multer.diskStorage({
 
 module.exports = app => { 
     //For Logging In
+    app.get('/api/patient/getallemails', PatientController.getAllPatientEmails); 
+    app.get('/api/patient/getcontactnumber', PatientController.getAllContactNumbers); 
     app.post('/api/patient/api/login', PatientController.loginPatient);
     //ResetPassword Forgot Password
     app.post('/api/patient/forgot-password', PatientController.forgotPassword);

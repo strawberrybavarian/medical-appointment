@@ -43,8 +43,8 @@ import MedSecMainDashboard from './components/staffs/medical secretary/component
 import ManageDoctorMain from './components/staffs/medical secretary/components/Manage Doctors/ManageDoctorMain';
 import AllDoctors from './components/staffs/medical secretary/components/Manage Doctors/AllDoctors';
 
-//Cashier
-import CashierMain from './components/staffs/cashier/main page/CashierMain';
+
+
 
 //Admin
 
@@ -110,8 +110,7 @@ function App() {
           <Route path={"/medsec/doctors/schedule"} element={<ManageDoctorMain />} />
           <Route path={"/medsec/account"} element={<MedSecAccInfo />} />
         
-        {/* Cashier Routes */}
-          <Route path={"/cashier/:cid"} element={<CashierMain />}/>
+
 
         {/* Admin Routes */}
           <Route path={"/admin/dashboard/patient/:aid"} element={<PatientMain />}/>

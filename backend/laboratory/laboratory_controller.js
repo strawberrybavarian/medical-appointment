@@ -31,7 +31,7 @@ const createLaboratoryResult = async (req, res) => {
         let laboratoryResult = await Laboratory.findOne({ appointment: appointmentId });
 
         if (laboratoryResult) {
-            // If it exists, update the existing laboratory result
+            // Update the existing laboratory result
             laboratoryResult.testResults = parsedTestResults;
             laboratoryResult.interpretation = interpretation;
             laboratoryResult.recommendations = recommendations;
@@ -51,39 +51,47 @@ const createLaboratoryResult = async (req, res) => {
             });
         }
 
-        // If no existing result, create a new laboratory result
+        // Create a new laboratory result
         laboratoryResult = new Laboratory({
             patient: patientId,
             appointment: appointmentId,
             doctor: req.body.doctorId,
-            testResults: parsedTestResults, // Will be an empty array if not passed
+            testResults: parsedTestResults, 
             interpretation: interpretation,
             recommendations: recommendations,
             file: {
-                path: fileUrl, // Store the relative URL
+                path: fileUrl,
                 filename: req.file.originalname
             },
             interpretationDate: new Date(),
             remarks: req.body.remarks || ''
         });
 
+        // Save the new laboratory result
         await laboratoryResult.save();
 
-        // Update the appointment with this lab result
+        // Update the appointment with the new lab result
         const appointment = await Appointment.findById(appointmentId);
         if (!appointment) {
             return res.status(404).json({ message: 'Appointment not found.' });
         }
-        appointment.laboratoryResults.push(laboratoryResult._id);
-        await appointment.save();
 
-        // Update the patient with this lab result
+        if (!appointment.laboratoryResults.includes(laboratoryResult._id)) {
+            appointment.laboratoryResults.push(laboratoryResult._id);
+            await appointment.save();
+        }
+
+        // Update the patient with the new lab result
         const patient = await Patient.findById(patientId);
         if (!patient) {
             return res.status(404).json({ message: 'Patient not found.' });
         }
-        patient.laboratoryResults.push(laboratoryResult._id);
-        await patient.save();
+
+        // Check if the laboratory result is already in the patient's array
+        if (!patient.laboratoryResults.includes(laboratoryResult._id)) {
+            patient.laboratoryResults.push(laboratoryResult._id);  // Add the lab result ID to the patient's laboratoryResults array
+            await patient.save();  // Save the patient with the updated laboratoryResults field
+        }
 
         res.status(201).json({
             message: 'Laboratory result created successfully and associated with appointment and patient.',
@@ -98,6 +106,7 @@ const createLaboratoryResult = async (req, res) => {
         });
     }
 };
+
 
 
 

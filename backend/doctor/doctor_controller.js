@@ -231,6 +231,11 @@ const NewDoctorSignUp = async (req, res) => {
         return res.status(404).json({ message: 'No doctor with that email found' });
       }
   
+      // Check if the doctor's account status is "Review"
+      if (doctor.accountStatus === 'Review') {
+        return res.status(403).json({ message: 'Your account is currently under review. Please wait for approval.' });
+      }
+  
       const isMatch = await bcrypt.compare(password, doctor.dr_password);
   
       if (!isMatch) {
@@ -255,6 +260,7 @@ const NewDoctorSignUp = async (req, res) => {
       res.status(500).json({ message: 'Error logging in', error });
     }
   };
+  
 
 
 const updateDoctorDetails = (req, res) => {
@@ -1006,16 +1012,63 @@ const deleteDoctorBiography = async (req, res) => {
   };
   
   const getAllDoctorEmails = (req, res) => {
+    console.log("Fetching doctor emails...");
     Doctors.find({}, 'dr_email')
         .then((doctors) => {
+            console.log("Fetched doctors:", doctors);
             const emails = doctors.map(doctor => doctor.dr_email);
-            res.json(emails); // Send raw doctors data for inspection
+            res.json(emails);
         })
         .catch((err) => {
             console.error('Error fetching doctor emails:', err);
             res.status(500).json({ message: 'Something went wrong', error: err });
         });
 };
+
+const getAllDoctorEmailse = async (req, res) => {
+
+
+  try {
+      const doctors = await Doctors.find({}, 'dr_email').lean(); // Using lean() for better performance
+
+      
+      // Filtering out any null or undefined values in dr_email field
+      const emails = doctors
+          .map(doctor => doctor.dr_email)
+          .filter(email => email !== null && email !== undefined);
+
+      res.status(200).json(emails);
+  } catch (err) {
+      console.error('Error fetching doctor emails:', err);
+      res.status(500).json({ message: 'Something went wrong', error: err.message });
+  }
+};
+
+const getAllContactNumbers = async (req, res) => {
+  try {
+    console.log("Fetching doctor contact numbers...");
+
+    // Fetch only the `dr_contactNumber` field for all doctors, using lean for performance
+    const doctors = await Doctors.find({}, 'dr_contactNumber').lean();
+
+    if (!doctors.length) {
+      return res.status(404).json({ message: 'No doctors found' });
+    }
+
+    console.log("Fetched doctors:", doctors);
+
+    // Map through the doctors to get only the contact numbers
+    const contactNumbers = doctors.map(doctor => doctor.dr_contactNumber);
+
+    // Return the contact numbers as JSON
+    res.status(200).json(contactNumbers);
+  } catch (error) {
+    console.error('Error fetching doctor contact numbers:', error);
+    res.status(500).json({ message: 'Something went wrong', error });
+  }
+};
+
+
   
 module.exports = {
     NewDoctorSignUp,
@@ -1057,6 +1110,6 @@ module.exports = {
     createDoctorSession,
     resetPassword, forgotPassword, 
     getDoctorHmo,
-    getAllDoctorEmails
+    getAllDoctorEmails, getAllDoctorEmailse, getAllContactNumbers
 
 };

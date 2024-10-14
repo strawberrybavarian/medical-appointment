@@ -21,22 +21,6 @@ const LaboratorySchema = new Schema({
         
     },
 
-    testResults: [{
-        name: { type: String,  },
-        value: { type: String,  },
-        unit: { type: String,  },
-        referenceRange: {
-            lower: { type: Number,},
-            upper: { type: Number, }
-        },
-        status: { type: String, enum: ['Normal', 'Abnormal', 'Critical'], default: 'Normal' },
-        notes: { type: String, default: '' }
-    }],
-    interpretation: { type: String,  },
-    recommendations: { type: String, },
-  
-    interpretationDate: { type: Date, default: Date.now },
-    remarks: { type: String, default: '' },
 
    
     file: {

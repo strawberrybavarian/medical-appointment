@@ -3,10 +3,10 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { Row, Form, Col, Button, Container, Modal, Card } from 'react-bootstrap';
 import './LogIn.css'; // Optional: Add custom styles here
-import NavigationalBar from '../landpage/navbar';
 import { image, ip } from '../../ContentExport';
 import { usePatient } from '../patient/PatientContext';
 import { useDoctor } from '../practitioner/DoctorContext';
+import ForLoginAndSignupNavbar from '../landpage/ForLoginAndSignupNavbar';
 
 const LogInUser = () => {
   const navigate = useNavigate();
@@ -24,26 +24,26 @@ const LogInUser = () => {
 
   const loginuser = async (e) => {
     e.preventDefault();
-
+  
     if (userRole === "Patient") {
       try {
         const response = await axios.post(`${ip.address}/api/patient/api/login`, {
           email,
           password,
         });
-
+  
         if (response.data.patientData) {
           const patientData = response.data.patientData;
-
+  
           if (rememberMe) {
             localStorage.setItem('patient', JSON.stringify(patientData));
           } else {
             sessionStorage.setItem('patient', JSON.stringify(patientData));
           }
-
+  
           setPatient(patientData); // Update context with patient data
           window.alert("Successfully logged in");
-
+  
           // Navigate to homepage
           await axios.post(`${ip.address}/api/patient/session`, { userId: patientData._id, role: userRole });
           navigate('/homepage');
@@ -52,7 +52,8 @@ const LogInUser = () => {
         }
       } catch (err) {
         console.error('Error logging in:', err);
-        window.alert("An error occurred while logging in.");
+        // Alert the actual error message returned from the server
+        window.alert(err.response?.data?.message || "An error occurred while logging in.");
       }
     } else if (userRole === "Physician") {
       try {
@@ -60,19 +61,26 @@ const LogInUser = () => {
           email,
           password,
         });
-
+  
         if (response.data.doctorData) {
           const doctorData = response.data.doctorData;
-
+  
+          // Check if the doctor's account is under review
+          if (doctorData.accountStatus === 'Review') {
+            window.alert('Your account is currently under review. You cannot log in at this time.');
+            return;
+          }
+  
           if (rememberMe) {
             localStorage.setItem('doctor', JSON.stringify(doctorData));
           } else {
             sessionStorage.setItem('doctor', JSON.stringify(doctorData));
           }
-
-          setDoctor(doctorData);
+  
+          setDoctor(doctorData); // Update context with doctor data
           window.alert("Successfully logged in");
-
+  
+          // Create a session for the doctor and navigate to the dashboard
           await axios.post(`${ip.address}/api/doctor/session`, { userId: doctorData._id, role: userRole });
           navigate('/dashboard');
         } else {
@@ -80,10 +88,14 @@ const LogInUser = () => {
         }
       } catch (err) {
         console.error('Error logging in:', err);
-        window.alert("An error occurred while logging in.");
+        // Alert the actual error message returned from the server
+        window.alert(err.response?.data?.message || "An error occurred while logging in.");
       }
     }
   };
+  
+  
+  
 
   const handleForgotPassword = async (e) => {
     e.preventDefault();
@@ -113,11 +125,11 @@ const LogInUser = () => {
 
   return (
     <>
-      <NavigationalBar />
+      <ForLoginAndSignupNavbar/>
       <div
         className="login-background"
         style={{
-        //   backgroundImage: `url(${ip.address}/images/Background-Login.png)`, // Dynamically load the image URL
+          backgroundImage: `url(${ip.address}/images/Background-Login1.png)`, // Dynamically load the image URL
           backgroundSize: 'cover',
           backgroundPosition: 'center',
         }}
@@ -127,16 +139,16 @@ const LogInUser = () => {
 
         <div className="login-overlay"></div>
         <div className="login-page">
-            <Container>
-            <Row className="justify-content-center">
-                <Col md={6} lg={5}>
+            <Container className=''>
+            <Row className="justify-content-start">
+                <Col md={9} lg={5}>
                 <Card className="shadow p-4">
                     <Card.Body>
                     <div className="text-center">
                         <img src={image.logo}
                             style={{ 
-                                width: '11rem',
-                                height: '5.5rem', 
+                                width: '15rem',
+                                height: '7.5rem', 
 
 
                             }}

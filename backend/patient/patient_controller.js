@@ -162,18 +162,20 @@ const NewPatientSignUp = async (req, res) => {
   const { patient_email, patient_password, ...otherFields } = req.body;
 
   try {
-      const newPatient = new Patient({
-          patient_email,
-          patient_password,
-          ...otherFields,
-      });
+    const newPatient = new Patient({
+      patient_email,
+      patient_password,
+      ...otherFields,
+    });
 
-      await newPatient.save();
-      res.status(201).json({ message: 'Patient registered successfully' });
+    await newPatient.save();
+    res.status(201).json({ message: 'Patient registered successfully' });
   } catch (error) {
-      res.status(500).json({ message: 'Error registering patient', error });
+    console.error("Error while saving patient:", error); // This will log the exact error to the server logs
+    res.status(500).json({ message: 'Error registering patient', error });
   }
 };
+
 
 
 const loginPatient = async (req, res) => {
@@ -606,6 +608,30 @@ const forgotPassword = async (req, res) => {
         res.status(500).json({ message: 'Error in resetting password', error });
     }
 };
+
+const getAllPatientEmails = (req, res) => {
+  Patient.find({}, 'patient_email')
+      .then((patient) => {
+          const emails = patient.map(patient => patient.patient_email);
+          res.json(emails); // Send raw doctors data for inspection
+      })
+      .catch((err) => {
+          console.error('Error fetching patient emails:', err);
+          res.status(500).json({ message: 'Something went wrong', error: err });
+      });
+};
+
+const getAllContactNumbers = (req, res) => {
+  Patient.find({}, 'patient_contactNumber')
+  .then((patient) => {
+      const contactNumbers = patient.map(patient => patient.patient_contactNumber);
+      res.json(contactNumbers); // Send raw doctors data for inspection
+  } )
+  .catch((err) => { 
+      console.error('Error fetching patient contact numbers:', err);
+      res.status(500).json({ message: 'Something went wrong', error: err });
+  } );
+}
 module.exports = {
     NewPatientSignUp,
     findAllPatient,
@@ -623,5 +649,5 @@ module.exports = {
     createUnregisteredPatient,
     updatePatientImage,
     createPatientSession,
-    forgotPassword, resetPassword, loginPatient
+    forgotPassword, resetPassword, loginPatient, getAllPatientEmails, getAllContactNumbers
 }
