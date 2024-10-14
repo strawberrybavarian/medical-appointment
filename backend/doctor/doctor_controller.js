@@ -1005,6 +1005,17 @@ const deleteDoctorBiography = async (req, res) => {
     }
   };
   
+  const getAllDoctorEmails = (req, res) => {
+    Doctors.find({}, 'dr_email')
+        .then((doctors) => {
+            const emails = doctors.map(doctor => doctor.dr_email);
+            res.json(emails); // Send raw doctors data for inspection
+        })
+        .catch((err) => {
+            console.error('Error fetching doctor emails:', err);
+            res.status(500).json({ message: 'Something went wrong', error: err });
+        });
+};
   
 module.exports = {
     NewDoctorSignUp,
@@ -1045,6 +1056,7 @@ module.exports = {
     loginDoctor,
     createDoctorSession,
     resetPassword, forgotPassword, 
-    getDoctorHmo
+    getDoctorHmo,
+    getAllDoctorEmails
 
 };
