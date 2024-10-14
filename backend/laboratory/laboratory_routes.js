@@ -30,6 +30,6 @@ const upload = multer({ storage: storage, fileFilter: fileFilter });
 
 // Export routes for file upload
 module.exports = app => {
-  app.post('/doctor/api/createLaboratoryResult/:patientId/:appointmentId', upload.single('file'), LaboratoryController.createLaboratoryResult);
-  app.get('/doctor/api/laboratoryResult/download/:resultId', LaboratoryController.downloadLaboratoryFile);
+  app.post('/api/doctor/api/createLaboratoryResult/:patientId/:appointmentId', upload.single('file'), LaboratoryController.createLaboratoryResult);
+  app.get('/api/doctor/api/laboratoryResult/download/:resultId', LaboratoryController.downloadLaboratoryFile);
 };

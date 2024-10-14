@@ -4,9 +4,9 @@ console.log("Findings routes connected");
 
 
 module.exports = app => {
-    app.post('/createfindings', FindingsController.createFindings)
-    app.get('/getfindings/:id', FindingsController.getOneFindings)
-    app.put('/updatefindings/:id', FindingsController.updateFindings)
-    app.delete('/deletefindings/:id', FindingsController.deleteFindings)
+    app.post('/api/createfindings', FindingsController.createFindings)
+    app.get('/api/getfindings/:id', FindingsController.getOneFindings)
+    app.put('/api/updatefindings/:id', FindingsController.updateFindings)
+    app.delete('/api/deletefindings/:id', FindingsController.deleteFindings)
 
 };

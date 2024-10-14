@@ -32,38 +32,46 @@ const storage = multer.diskStorage({
 
 
 module.exports = app => { 
-    app.post('/patient/api/:id/updateimage', upload.single('image'), PatientController.updatePatientImage);
-    app.get('/patient/api/test',(req,res)=>{res.json({message:"the api is working"})});
-    app.post('/api/patient/session', PatientController.createPatientSession);
-    //New Patient Sign Up
-    app.post('/patient/api/signup', PatientController.NewPatientSignUp);
-    //
-    app.post(`/patient/api/unregistered`, PatientController.createUnregisteredPatient);
+    //For Logging In
+    app.post('/api/patient/api/login', PatientController.loginPatient);
+    //ResetPassword Forgot Password
+    app.post('/api/patient/api/forgot-password', PatientController.forgotPassword);
+    app.post('/api/patient/api/reset-password/:token', PatientController.resetPassword);
     
-    app.put('/patient/api/update/:pid', PatientController.updatePatientStatus);
-    app.post('/patient/api/change-password/:pid', PatientController.changePatientPassword);
-    app.put('/patient/api/updateinfo/:pid', PatientController.updatePatientInfo);
+    //New Patient Sign Up with BCRYPT
+    app.post('/api/patient/api/signup', PatientController.NewPatientSignUp);
+    
+    app.post('/api/patient/api/:id/updateimage', upload.single('image'), PatientController.updatePatientImage);
+    app.get('/api/patient/api/test',(req,res)=>{res.json({message:"the api is working"})});
+    app.post('/api/patient/session', PatientController.createPatientSession);
+    
+    //
+    app.post(`/api/patient/api/unregistered`, PatientController.createUnregisteredPatient);
+    
+    app.put('/api/patient/api/update/:pid', PatientController.updatePatientStatus);
+    app.post('/api/patient/api/change-password/:pid', PatientController.changePatientPassword);
+    app.put('/api/patient/api/updateinfo/:pid', PatientController.updatePatientInfo);
 
 
-    app.post('/patient/api/setup-2fa/:id', PatientController.setupTwoFactor);
-    app.post('/patient/api/verify-2fa', PatientController.verifyTwoFactor);
+    app.post('/api/patient/api/setup-2fa/:id', PatientController.setupTwoFactor);
+    app.post('/api/patient/api/verify-2fa', PatientController.verifyTwoFactor);
 
     
         //For Email OTP
-    app.post('/patient/send-otp', PatientController.sendOTP);
-    app.post('/patient/verify-otp', PatientController.verifyOTP);
+    app.post('/api/patient/api/send-otp', PatientController.sendOTP);
+    app.post('/api/patient/api/verify-otp', PatientController.verifyOTP);
 
     //Patient Log In
-    app.get('/patient/api/allpatient', PatientController.findAllPatient);
+    app.get('/api/patient/api/allpatient', PatientController.findAllPatient);
 
     //Finding One Patient and Notifications
-    app.get('/patient/api/onepatient/:uid', PatientController.findPatientById)
+    app.get('/api/patient/api/onepatient/:uid', PatientController.findPatientById)
     
     
     // Appointment
-    app.get('/doctor/:doctorId/booked-slots', PatientController.bookedSlots)
+    app.get('/api/doctor/:doctorId/booked-slots', PatientController.bookedSlots)
     // app.post('/patient/api/:uid/createappointment', PatientController.createAppointment);
-    app.put('/patient/api/:uid/updateappointment', PatientController.cancelAppointment)
+    app.put('/api/patient/api/:uid/updateappointment', PatientController.cancelAppointment)
         // app.put('patient/api/:uid/rescheduleappointment', PatientController.resche)
 
 

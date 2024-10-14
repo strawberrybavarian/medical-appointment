@@ -1,53 +1,58 @@
 const mongoose = require('mongoose');
 
+// mongoose.connect('mongodb+srv://mern:mern@cluster0.6mdyfjt.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0',
+mongoose.connect('mongodb://127.0.0.1:27017/PIMSdb', 
+{
 
-mongoose.connect('mongodb://127.0.0.1:27017/PIMSdb', {
 
 });
 
 
 mongoose.connection.once('open', async () => {
   try {
-    const collection = mongoose.connection.db.collection('patients');
+    // Check if 'patients' collection exists
+    const collections = await mongoose.connection.db.listCollections().toArray();
+    const patientsCollectionExists = collections.some(col => col.name === 'patients');
 
-    // Get the list of indexes
-    const indexes = await collection.indexes();
-    const indexExists = indexes.some(index => index.name === 'patient_email_1');
+    if (patientsCollectionExists) {
+      const patientsCollection = mongoose.connection.db.collection('patients');
+      const patientIndexes = await patientsCollection.indexes();
+      const patientIndexExists = patientIndexes.some(index => index.name === 'patient_email_1');
 
-    if (indexExists) {
-      console.log('Index found. Dropping the existing index...');
-      await collection.dropIndex('patient_email_1');  // Drop the existing index
-      console.log('Index dropped.');
+      if (patientIndexExists) {
+        console.log('Index "patient_email_1" found. Dropping the existing index...');
+        await patientsCollection.dropIndex('patient_email_1');
+        console.log('Index "patient_email_1" dropped.');
+      } else {
+        console.log('Index "patient_email_1" not found. Skipping drop index.');
+      }
+
+      await patientsCollection.createIndex({ patient_email: 1 }, { unique: true, sparse: true });
+      console.log('New index "patient_email_1" created.');
     } else {
-      console.log('Index not found. Skipping drop index.');
+      console.log('Patients collection does not exist. Cannot create or drop indexes.');
     }
 
-    // Create the new index
-    await collection.createIndex({ patient_email: 1 }, { unique: true, sparse: true });
-    console.log('New index created.');
+    // Check if 'appointments' collection exists
+    const appointmentsCollectionExists = collections.some(col => col.name === 'appointments');
+
+    if (appointmentsCollectionExists) {
+      const appointmentsCollection = mongoose.connection.db.collection('appointments');
+      const appointmentIndexes = await appointmentsCollection.indexes();
+      const appointmentIndexExists = appointmentIndexes.some(index => index.name === 'appointment_ID_1');
+
+      if (appointmentIndexExists) {
+        console.log('Index "appointment_ID_1" found. Dropping the existing index...');
+        await appointmentsCollection.dropIndex('appointment_ID_1');
+        console.log('Index "appointment_ID_1" dropped.');
+      } else {
+        console.log('Index "appointment_ID_1" not found. Skipping drop index.');
+      }
+    } else {
+      console.log('Appointments collection does not exist. Cannot create or drop indexes.');
+    }
   } catch (error) {
     console.error('Error handling indexes:', error);
   }
 });
 
-//For Appointment_ID
-mongoose.connection.once('open', async () => {
-  try {
-    const collection = mongoose.connection.db.collection('appointments');
-
-    // Get the list of indexes
-    const indexes = await collection.indexes();
-    const indexExists = indexes.some(index => index.name === 'appointment_ID_1');
-
-    if (indexExists) {
-      console.log('Index "appointment_ID_1" found. Dropping the existing index...');
-      await collection.dropIndex('appointment_ID_1');
-      console.log('Index "appointment_ID_1" dropped.');
-    } else {
-      console.log('Index "appointment_ID_1" not found. Skipping drop index.');
-    }
-
-  } catch (error) {
-    console.error('Error handling indexes:', error);
-  }
-});

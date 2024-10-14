@@ -40,12 +40,12 @@ const upload = multer({
 
 // News routes with file uploads and CRUD operations
 module.exports = app => {
-    app.get('/news/api/getnews/:id', NewsController.getNewsById);
+    app.get('/api/news/api/getnews/:id', NewsController.getNewsById);
 
-    app.get('/news/api/getgeneralnews', NewsController.getGeneralNews);
-    app.post('/news/api/addnews/:id', upload.array('images', 10), NewsController.addNewNewsByUserId);
-    app.get('/news/api/finduser/:id/:role', NewsController.findNewsByUserId);
-    app.get('/news/api/getallnews/:id/:role', NewsController.getAllNewsByUserId);
-    app.delete('/news/api/deletenews/:id/:index', NewsController.deleteNewsByIndex);
-    app.put('/news/api/updatenews/:userId/:newsId', upload.array('images'), NewsController.updateNewsAtIndex);
+    app.get('/api/news/api/getgeneralnews', NewsController.getGeneralNews);
+    app.post('/api/news/api/addnews/:id', upload.array('images', 10), NewsController.addNewNewsByUserId);
+    app.get('/api/news/api/finduser/:id/:role', NewsController.findNewsByUserId);
+    app.get('/api/news/api/getallnews/:id/:role', NewsController.getAllNewsByUserId);
+    app.delete('/api/news/api/deletenews/:id/:index', NewsController.deleteNewsByIndex);
+    app.put('/api/news/api/updatenews/:userId/:newsId', upload.array('images'), NewsController.updateNewsAtIndex);
 }

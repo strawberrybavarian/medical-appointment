@@ -42,12 +42,12 @@ const upload = multer({
 
 
 module.exports = app => {
-    app.post('/doctor/api/addpost/:id', upload.array('images', 10), AnnouncementController.addNewPostById);
+    app.post('/api/doctor/api/addpost/:id', upload.array('images', 10), AnnouncementController.addNewPostById);
 
-  app.get('/doctor/api/finduser/:id', AnnouncementController.findDoctorById);
-  app.get('/doctor/api/post/getallpost/:id', AnnouncementController.getAllPostbyId);
-  app.delete('/doctor/api/post/deletepost/:id/:index', AnnouncementController.findPostByIdDelete);
+  app.get('/api/doctor/api/finduser/:id', AnnouncementController.findDoctorById);
+  app.get('/api/doctor/api/post/getallpost/:id', AnnouncementController.getAllPostbyId);
+  app.delete('/api/doctor/api/post/deletepost/:id/:index', AnnouncementController.findPostByIdDelete);
 
-  app.put('/doctor/api/post/updatepost/:doctorId/:postId', upload.array('images'), AnnouncementController.updatePostAtIndex);
+  app.put('/api/doctor/api/post/updatepost/:doctorId/:postId', upload.array('images'), AnnouncementController.updatePostAtIndex);
 
 };

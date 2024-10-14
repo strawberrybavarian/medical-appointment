@@ -31,23 +31,23 @@ const storage = multer.diskStorage({
   
 module.exports = app => { 
 
-    app.put('/medicalsecretary/api/:msid/update', upload.single('image'), MSController.updateMedicalSecretary);
-    app.get('/medicalsecretary/api/test',(req,res)=>{res.json({message:"the api is working"})});
-    app.post('/medicalsecretary/api/change-password/:msid', MSController.changePassword);
+    app.put('/api/medicalsecretary/api/:msid/update', upload.single('image'), MSController.updateMedicalSecretary);
+    app.get('/api/medicalsecretary/api/test',(req,res)=>{res.json({message:"the api is working"})});
+    app.put('/api/medicalsecretary/api/change-password/:msid', MSController.changePassword);
     //For Registration
-    app.post('/medicalsecretary/api/signup', MSController.NewMedicalSecretaryignUp);
+    app.post('/api/medicalsecretary/api/signup', MSController.NewMedicalSecretarySignUp);
  
     //For LogIn
-    app.get('/medicalsecretary/api/allmedicalsecretary', MSController.findAllMedicalSecretary);
+    app.get('/api/medicalsecretary/api/allmedicalsecretary', MSController.findAllMedicalSecretary);
 
     //Get All Appointment
-    app.get('/medicalsecretary/api/allappointments', MSController.getAllAppointments);
-    app.put('/medicalsecretary/api/:uid/ongoing', MSController.ongoingAppointment);
-    app.put('/api/appointment/:id/assign', MSController.assignAppointment);
+    app.get('/api/medicalsecretary/api/allappointments', MSController.getAllAppointments);
+    app.put('/api/medicalsecretary/api/:uid/ongoing', MSController.ongoingAppointment);
+    app.put('/api/api/appointment/:id/assign', MSController.assignAppointment);
 
     //Patient Statistic
-    app.get('/medicalsecretary/api/patient-stats', MSController.getPatientStats);
-    app.get('/medicalsecretary/api/findone/:msid', MSController.findMedSecById)
+    app.get('/api/medicalsecretary/api/patient-stats', MSController.getPatientStats);
+    app.get('/api/medicalsecretary/api/findone/:msid', MSController.findMedSecById)
 
 
 

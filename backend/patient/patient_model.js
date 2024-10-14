@@ -1,9 +1,15 @@
 const mongoose = require('mongoose');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const { Schema, model } = mongoose;
 
 const PatientSchema = new Schema({
     // Personal info
+    resetPasswordToken: {
+        type: String,
+    },
+    resetPasswordExpires: {
+        type: Date,
+    },
     patient_ID: {
         type: String,
         unique: true
@@ -122,7 +128,18 @@ const PatientSchema = new Schema({
         default: Date.now
     }
 }, { timestamps: true }); // Keep timestamps for `createdAt` and `updatedAt`
-
+PatientSchema.pre('save', async function (next) {
+    if (!this.isModified('patient_password')) {
+        return next();
+    }
+    try {
+        const salt = await bcrypt.genSalt(10);
+        this.patient_password = await bcrypt.hash(this.patient_password, salt);
+        next();
+    } catch (error) {
+        next(error);
+    }
+});
 // Pre-save hook for generating the patient ID
 PatientSchema.pre('save', async function (next) {
     if (!this.isNew) {

@@ -28,6 +28,10 @@ const AdminSchema = new mongoose.Schema({
         type: String,
         default: 'Admin',
     },
+    status:{
+        type: String,
+        default: 'pending'
+    },
     notifications: [{
         type: Schema.Types.ObjectId,
         ref: 'Notification',
