@@ -46,7 +46,11 @@ const MedicalSecretarySchema = new Schema({
     news: [{
         type: Schema.Types.ObjectId,
         ref: 'News'  // Refers to the 'News' model
-      }]
+      }],
+      audits: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Audit'
+    }],
 }, { timestamps: true });
 
 const MedicalSecretary = model('MedicalSecretary', MedicalSecretarySchema);

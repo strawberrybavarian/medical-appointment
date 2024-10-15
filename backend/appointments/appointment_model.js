@@ -73,6 +73,7 @@ const AppointmentSchema = new Schema({
           ref: 'Laboratory'
         }
       ],
+    
 }, { timestamps: true });
 
 const Appointment = model('Appointment', AppointmentSchema);

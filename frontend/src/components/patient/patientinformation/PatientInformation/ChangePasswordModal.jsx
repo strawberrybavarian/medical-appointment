@@ -21,50 +21,51 @@ const ChangePasswordModal = ({ show, handleClose, pid, email: propsEmail, passwo
         setEmailError("");
         setPasswordError("");
         setOldPasswordError("");
-
+    
         // Validate emails match
         if (email !== confirmEmail) {
             setEmailError("Emails do not match!");
             return;
         }
-
-        // Validate emails with propsEmail (the registered email)
-        if (email !== propsEmail) {
-            setEmailError("Email does not match the registered email!");
+    
+        // No need to validate email against propsEmail here (server-side should handle this)
+        
+        // Ensure old password is entered
+        if (!oldPassword) {
+            setOldPasswordError("Old password is required!");
             return;
         }
-
-        // Validate old password matches the provided password (propsPassword)
-        if (oldPassword !== propsPassword) {
-            setOldPasswordError("Old password is incorrect!");
-            return;
-        }
-
+    
         // Validate new passwords match
         if (newPassword !== confirmNewPassword) {
             setPasswordError("New passwords do not match!");
             return;
         }
-
+    
         // Make API call to change password
         try {
             const response = await axios.post(`${ip.address}/api/patient/api/change-password/${pid}`, {
-                email,
-                oldPassword,
-                newPassword,
+                oldPassword,  // Send old password for comparison server-side
+                newPassword,  // Send new password for hashing and saving
             });
-
-            if (response.data.success) {
+    
+            if (response.status === 200) {
                 alert("Password updated successfully");
                 handleClose(); // Close modal after success
             } else {
-                alert(response.data.message);
+                alert(response.data.message || "Failed to update password.");
             }
         } catch (error) {
-            console.error(error);
-            alert("Failed to update password");
+            // Enhanced error handling
+            console.error('Error:', error);
+            if (error.response && error.response.data && error.response.data.message) {
+                alert(`Error: ${error.response.data.message}`);
+            } else {
+                alert("An unknown error occurred. Please try again.");
+            }
         }
     };
+    
 
     return (
         <Modal show={show} onHide={handleClose}>

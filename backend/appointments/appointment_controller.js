@@ -6,6 +6,8 @@ const MedicalSecretary = require('../medicalsecretary/medicalsecretary_model');
 const Notification = require('../notifications/notifications_model');
 const mongoose = require('mongoose');
 const Payment = require('../payments/payment_model');
+const Audit = require('../audit/audit_model');
+const Admin = require('../admin/admin_model');
 
 
 const createAppointment = async (req, res) => {
@@ -18,9 +20,63 @@ const createAppointment = async (req, res) => {
       return res.status(400).json({ message: 'Date and Primary Concern are required' });
     }
 
+    // Fetch the patient's details (first and last name)
+    const patientData = await Patient.findById(patientId).select('patient_firstName patient_lastName');
+    if (!patientData) {
+      return res.status(404).json({ message: 'Patient not found' });
+    }
+
+    // Fetch the doctor's details (first and last name)
+    const doctorData = await Doctors.findById(doctor).select('dr_firstName dr_lastName availability bookedSlots');
+    if (!doctorData) {
+      return res.status(404).json({ message: 'Doctor not found' });
+    }
+
+    // Parse the selected date and determine the day of the week
+    const selectedDate = new Date(date);
+    const dayOfWeek = selectedDate.toLocaleString('en-US', { weekday: 'long' }).toLowerCase(); // e.g., 'monday'
+
+    // Check the doctor's availability for the selected day of the week (morning/afternoon)
+    const availability = doctorData.availability[dayOfWeek];
+    const selectedHour = parseInt(time.split(":")[0]);
+    const timePeriod = selectedHour < 12 ? 'morning' : 'afternoon';
+
+    if (!availability || !availability[timePeriod] || !availability[timePeriod].available) {
+      return res.status(400).json({ message: `No available slots for ${timePeriod} on ${dayOfWeek}.` });
+    }
+
+    // Check if the selected date is already in the bookedSlots array
+    let bookedSlot = doctorData.bookedSlots.find(slot => 
+      slot.date.toISOString().split('T')[0] === selectedDate.toISOString().split('T')[0]
+    );
+
+    if (!bookedSlot) {
+      // Create a new bookedSlot entry for the selected date
+      bookedSlot = { date: selectedDate, morning: 0, afternoon: 0 };
+      doctorData.bookedSlots.push(bookedSlot);
+    }
+
+    const maxPatients = availability[timePeriod].maxPatients;
+    const bookedCount = timePeriod === 'morning' ? bookedSlot.morning : bookedSlot.afternoon;
+
+    if (bookedCount >= maxPatients) {
+      return res.status(400).json({ message: `No available slots for ${timePeriod} on ${dayOfWeek}.` });
+    }
+
+    // Increment the booked count for the time period
+    if (timePeriod === 'morning') {
+      bookedSlot.morning++;
+    } else {
+      bookedSlot.afternoon++;
+    }
+
+    // Save the updated doctor data with the new booked slot count
+    await doctorData.save();
+
     // Create a new appointment object
     const newAppointment = new Appointment({
       patient: new mongoose.Types.ObjectId(patientId),
+      doctor: new mongoose.Types.ObjectId(doctor),
       date,
       time,
       reason,
@@ -28,75 +84,47 @@ const createAppointment = async (req, res) => {
       appointment_type,
     });
 
-    if (doctor) {
-      newAppointment.doctor = new mongoose.Types.ObjectId(doctor);
-    }
-
     // Save the new appointment
     const savedAppointment = await newAppointment.save();
 
-    // Update doctor and patient records concurrently
-    const updateTasks = [
+    // Update the patient's and doctor's appointment arrays
+    await Promise.all([
       Patient.findByIdAndUpdate(patientId, { $push: { patient_appointments: savedAppointment._id } }),
-    ];
+      Doctors.findByIdAndUpdate(doctor, { $push: { dr_appointments: savedAppointment._id } })
+    ]);
 
-    if (doctor) {
-      // Determine if the appointment is in the morning or afternoon
-      const timePeriod = parseInt(time.split(":")[0]) < 12 ? 'morning' : 'afternoon';
-      
-      // Decrease the available slots for the doctor
-      updateTasks.push(
-        Doctors.findByIdAndUpdate(
-          doctor,
-          {
-            $inc: { [`availability.${new Date(date).toLocaleString('en-US', { weekday: 'long' }).toLowerCase()}.${timePeriod}.maxPatients`]: -1 },
-            $push: { dr_appointments: savedAppointment._id },
-          }
-        )
-      );
-    }
+    // Audit log for the created appointment
+    const patientFullName = `${patientData.patient_firstName} ${patientData.patient_lastName}`;
+    const doctorFullName = `Dr. ${doctorData.dr_firstName} ${doctorData.dr_lastName}`;
 
-    await Promise.all(updateTasks);
+    const auditData = {
+      user: patientId,  // Assuming the patient is the one creating the appointment
+      userType: 'Patient',
+      action: 'Create Appointment',
+      description: `Appointment created for patient: ${patientFullName} with ${doctorFullName} on ${date} at ${time}. Reason: ${reason}`,
+      ipAddress: req.ip,  
+      userAgent: req.get('User-Agent'),
+    };
 
-    // Prepare notifications
-    const notifications = [
-      { message: `You have a pending appointment scheduled on ${date} at ${time}.`, recipient: patientId, type: 'Patient' },
-    ];
+    const audit = new Audit(auditData);
+    await audit.save();
 
-    if (doctor) {
-      notifications.push({
-        message: `You have a new pending appointment scheduled with a patient on ${date} at ${time}.`,
-        recipient: doctor,
-        type: 'Doctor',
-      });
-    }
+    // Push the audit to the patient's audits array
+    await Patient.findByIdAndUpdate(patientId, { $push: { audits: audit._id } });
 
-    // Save notifications concurrently
-    const notificationTasks = notifications.map(async (notification) => {
-      const newNotification = new Notification({
-        message: notification.message,
-        recipient: new mongoose.Types.ObjectId(notification.recipient),
-        recipientType: notification.type,
-      });
-
-      const savedNotification = await newNotification.save();
-
-      if (notification.type === 'Patient') {
-        return Patient.findByIdAndUpdate(notification.recipient, { $push: { notifications: savedNotification._id } });
-      } else if (notification.type === 'Doctor') {
-        return Doctors.findByIdAndUpdate(notification.recipient, { $push: { notifications: savedNotification._id } });
-      }
-    });
-
-    await Promise.all(notificationTasks);
-
-    // Return the saved appointment as a response
+    // Return the saved appointment as the response
     res.status(201).json(savedAppointment);
+
   } catch (error) {
     console.error('Error creating appointment:', error);
     res.status(500).json({ message: `Failed to create appointment: ${error.message}` });
   }
 };
+
+
+
+
+
 
 
 const getAppointmentById = async (req, res) => {

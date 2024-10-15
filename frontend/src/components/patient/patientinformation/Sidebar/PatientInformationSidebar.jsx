@@ -8,6 +8,7 @@ import TwoFactorAuth from '../TwoFactorAuth/TwoFactorAuth';
 import { Container } from "react-bootstrap";
 import PatientMedicalRecord from '../Medical Record/PatientMedicalRecord';
 import Footer from '../../../Footer';
+import AuditPatient from '../Audit/AuditPatient';
 
 function PatientInformationSidebar({pid}) {
     const navigate = useNavigate();
@@ -38,16 +39,25 @@ function PatientInformationSidebar({pid}) {
                         </Link>
 
                         <Link  onClick={() => handleTabClick('records')}>
-                            <CDBSidebarMenuItem icon="file-alt" className="pisb-name">
+                            <CDBSidebarMenuItem icon="file" className="pisb-name">
                                 My Medical Record
                             </CDBSidebarMenuItem>
                         </Link>
+
+                        
 
                         <Link onClick={() => handleTabClick('twofactor')}>
                             <CDBSidebarMenuItem icon="lock" className="pisb-name">
                                 Two Factor
                             </CDBSidebarMenuItem>
                         </Link>
+
+                        <Link onClick={() => handleTabClick('audit')}>
+                            <CDBSidebarMenuItem icon="file-alt" className="pisb-name">
+                                Activity Log 
+                            </CDBSidebarMenuItem>
+                        </Link>
+
                     </CDBSidebarMenu>
                 </CDBSidebarContent>
 
@@ -65,9 +75,10 @@ function PatientInformationSidebar({pid}) {
                         {activeTab === 'profile' && <PatientInformation pid={pid} />}
                         {activeTab === 'records' && <PatientMedicalRecord pid={pid} />}
                         {activeTab === 'twofactor' && <TwoFactorAuth pid={pid} />}
+                        {activeTab === 'audit' && <AuditPatient pid={pid} />}
                     </div>
 
-                    <Container fluid className="footer-container cont-fluid-no-gutter w-100">
+                <Container fluid className="footer-container cont-fluid-no-gutter w-100">
                         <Footer />
                 </Container>
                 </div>

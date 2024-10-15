@@ -643,9 +643,11 @@ h6 {
 --------------------------------------------------------------*/
 .footer {
   color: var(--default-color);
-  background-color: var(--background-color);
+  background-color: white;
   font-size: 14px;
   position: relative;
+    width: 100%;
+    
 }
 
 .footer .footer-top {

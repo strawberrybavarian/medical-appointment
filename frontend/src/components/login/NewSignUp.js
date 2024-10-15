@@ -228,12 +228,12 @@ const NewSignUp = () => {
                     backgroundSize: 'cover',
                     backgroundPosition: 'center',
                     width: '100%', paddingBottom: '1.5rem',
-                    paddingTop:'5rem'
+                    paddingTop:'20rem'
                 }}
             >
                 <div className="d-flex justify-content-center align-items-center flex-column" style={{ minHeight: '100vh', }}>
                     <Container className="d-flex justify-content-center align-items-center " style={{ minHeight: '100vh',  }}>
-                        <Row className="justify-content-start">
+                        <Row className="justify-content-start mt-5">
                             <Col>
                                 <Card className="shadow p-4" style={{ zIndex: 2, width:'100%', marginTop: '40rem'}}>
                                     <Card.Body>

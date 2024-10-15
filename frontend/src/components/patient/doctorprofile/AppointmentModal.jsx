@@ -2,6 +2,7 @@ import axios from "axios";
 import { useState, useEffect } from "react";
 import { Row, Col, Button, Form, Modal } from 'react-bootstrap';
 import { ip } from "../../../ContentExport";
+
 function AppointmentModal({ show, handleClose, pid, did, doctorName }) {
     const [date, setDate] = useState("");
     const [time, setTime] = useState("");
@@ -9,8 +10,7 @@ function AppointmentModal({ show, handleClose, pid, did, doctorName }) {
     const [availableTimes, setAvailableTimes] = useState([]);
     const [availability, setAvailability] = useState({});
     const [activeAppointmentStatus, setActiveAppointmentStatus] = useState(true);
-    const [doctorServices, setDoctorServices] = useState([]); 
-    const [selectedServices, setSelectedServices] = useState([]); 
+    const [bookedPatients, setBookedPatients] = useState({ morning: 0, afternoon: 0 });
 
     const doctorId = did;
 
@@ -22,47 +22,113 @@ function AppointmentModal({ show, handleClose, pid, did, doctorName }) {
             setTime("");
             setReason("");
             setAvailableTimes([]);
-            setDoctorServices([]);
-            setSelectedServices([]);
         }
     }, [show]);
 
     useEffect(() => {
         if (did) {
-            // If a doctor ID is provided, fetch the doctor's specific services
-            axios.get(`${ip.address}/api/api/doctor/${did}`)
+            // If a doctor ID is provided, fetch the doctor's availability
+            axios.get(`${ip.address}/api/doctor/${did}`)
                 .then((response) => {
                     const doctor = response.data.doctor;
-                    setDoctorServices(doctor.dr_services || []); 
+                    console.log("Doctor Availability:", doctor.availability); // Add this log
                     setAvailability(doctor.availability || {});
                     setActiveAppointmentStatus(doctor.activeAppointmentStatus);
                 })
                 .catch((err) => {
                     console.log(err);
                 });
-        } else {
-            // If no doctor ID, fetch all services
-            axios.get(`${ip.address}/api/admin/getall/services`)
+        }
+    }, [did]);
+    
+
+    useEffect(() => {
+        if (date) {
+            // Fetch number of patients already booked for the selected date
+            axios.get(`${ip.address}/api/appointments/${did}/count?date=${date}`)
                 .then((response) => {
-                    setDoctorServices(response.data); 
-                    setActiveAppointmentStatus(true); 
+                    console.log("Response Data from API:", response.data); // Log the response data
+                    const { morning, afternoon } = response.data;
+                    setBookedPatients({ morning, afternoon });
                 })
                 .catch((err) => {
                     console.log(err);
                 });
+        } else {
+            setAvailableTimes([]);
         }
-    }, [did]);
+    }, [date]);
+    
+    
 
-    const handleServiceChange = (service) => {
-        setSelectedServices((prevSelected) => {
-            const isSelected = prevSelected.some(s => s.appointment_type === service.name);
-            
-            if (isSelected) {
-                return prevSelected.filter((s) => s.appointment_type !== service.name);
-            } else {
-                return [...prevSelected, { appointment_type: service.name, category: service.category }];
+    useEffect(() => {
+        if (date && availability) {
+            const selectedDate = new Date(date);
+            const daysOfWeek = [
+                "sunday",
+                "monday",
+                "tuesday",
+                "wednesday",
+                "thursday",
+                "friday",
+                "saturday"
+            ];
+            const day = daysOfWeek[selectedDate.getDay()];
+            console.log("Selected Day:", day); // Log the selected day
+            setAvailableTimes(getAvailableTimes(day));
+        }
+    }, [date, availability, bookedPatients]);
+    
+
+    const getAvailableTimes = (day) => {
+        const dayAvailability = availability[day];
+        if (!dayAvailability) {
+            console.log("No availability for this day:", day); // Log when no availability is found
+            return [];
+        }
+    
+        let times = [];
+        if (dayAvailability.morning?.available) {
+            const startTime = formatTime(dayAvailability.morning.startTime);
+            const endTime = formatTime(dayAvailability.morning.endTime);
+            const availableSlots = dayAvailability.morning.maxPatients - bookedPatients.morning;
+            console.log("Morning Slots:", availableSlots); // Log available slots
+    
+            if (availableSlots > 0) {
+                times.push({
+                    label: "Morning",
+                    timeRange: `${startTime} - ${endTime}`,
+                    availableSlots,
+                });
             }
-        });
+        }
+    
+        if (dayAvailability.afternoon?.available) {
+            const startTime = formatTime(dayAvailability.afternoon.startTime);
+            const endTime = formatTime(dayAvailability.afternoon.endTime);
+            const availableSlots = dayAvailability.afternoon.maxPatients - bookedPatients.afternoon;
+            console.log("Afternoon Slots:", availableSlots); // Log available slots
+    
+            if (availableSlots > 0) {
+                times.push({
+                    label: "Afternoon",
+                    timeRange: `${startTime} - ${endTime}`,
+                    availableSlots,
+                });
+            }
+        }
+    
+        return times;
+    };
+    
+
+    const formatTime = (timeString) => {
+        const [hours, minutes] = timeString.split(":");
+        const time = new Date();
+        time.setHours(hours);
+        time.setMinutes(minutes);
+
+        return time.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true });
     };
 
     const createAppointment = () => {
@@ -70,17 +136,14 @@ function AppointmentModal({ show, handleClose, pid, did, doctorName }) {
             window.alert("Please select a valid date for the appointment.");
             return;
         }
-    
-   
-    
+
         const formData = {
             doctor: doctorId || null, // Ensure the doctor ID is included in the formData
             date,
             time: time || null,
-            reason,
-            appointment_type: selectedServices, 
+            reason
         };
-    
+
         axios.post(`${ip.address}/api/patient/api/${pid}/createappointment`, formData)
             .then(() => {
                 window.alert("Created an appointment!");
@@ -96,47 +159,8 @@ function AppointmentModal({ show, handleClose, pid, did, doctorName }) {
                 }
             });
     };
-    
-    
 
-    const getTodayDate = () => {
-        const today = new Date();
-        const year = today.getFullYear();
-        const month = String(today.getMonth() + 1).padStart(2, '0');
-        const day = String(today.getDate()).padStart(2, '0');
-        return `${year}-${month}-${day}`;
-    };
-
-    const getAvailableTimes = (day) => {
-        const dayAvailability = availability[day];
-        if (!dayAvailability) return [];
-
-        let times = [];
-        if (dayAvailability.morning?.available) {
-            const morningTime = `${new Date(`1970-01-01T${dayAvailability.morning.startTime}`).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${new Date(`1970-01-01T${dayAvailability.morning.endTime}`).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
-            times.push({ label: "Morning", timeRange: morningTime });
-        }
-
-        if (dayAvailability.afternoon?.available) {
-            const afternoonTime = `${new Date(`1970-01-01T${dayAvailability.afternoon.startTime}`).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${new Date(`1970-01-01T${dayAvailability.afternoon.endTime}`).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
-            times.push({ label: "Afternoon", timeRange: afternoonTime });
-        }
-
-        return times;
-    };
-
-    useEffect(() => {
-        if (date) {
-            const selectedDate = new Date(date);
-            const daysOfWeek = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
-            const day = daysOfWeek[selectedDate.getDay()];
-            setAvailableTimes(getAvailableTimes(day));
-        } else {
-            setAvailableTimes([]);
-        }
-    }, [date, did, availability]);
-
-    const todayDate = getTodayDate();
+    const todayDate = new Date().toISOString().split("T")[0];
 
     return (
         <Modal show={show} onHide={handleClose} className='am-overlay'>
@@ -161,25 +185,34 @@ function AppointmentModal({ show, handleClose, pid, did, doctorName }) {
                                 </Form.Group>
                             </Row>
 
-                            {availableTimes.length > 0 && (
-                                <Row>
-                                    <Form.Group as={Col} className="mb-3">
-                                        <Form.Label>Time (Optional)</Form.Label>
-                                        <div>
-                                            {availableTimes.map((timeSlot, index) => (
-                                                <Button
-                                                    key={index}
-                                                    variant={time === timeSlot.timeRange ? "secondary" : "outline-primary"}
-                                                    onClick={() => setTime(timeSlot.timeRange)}
-                                                    className="m-1"
-                                                >
-                                                    {timeSlot.label}: {timeSlot.timeRange}
-                                                </Button>
-                                            ))}
-                                        </div>
-                                    </Form.Group>
-                                </Row>
-                            )}
+                            {availableTimes.length > 0 ? (
+    <Row>
+        <Form.Group as={Col} className="mb-3">
+            <Form.Label>Time (Optional)</Form.Label>
+            <div>
+                {availableTimes.map((timeSlot, index) => (
+                    <Button
+                        key={index}
+                        variant={time === timeSlot.timeRange ? "secondary" : "outline-primary"}
+                        onClick={() => setTime(timeSlot.timeRange)}
+                        className="m-1"
+                    >
+                        {timeSlot.label}: {timeSlot.timeRange} <br />
+                        Slots left: {timeSlot.availableSlots}
+                    </Button>
+                ))}
+            </div>
+        </Form.Group>
+    </Row>
+) : (
+    <Row>
+        <Form.Group as={Col} className="mb-3">
+            <Form.Label>Time</Form.Label>
+            <p>No available appointments for this day.</p>
+        </Form.Group>
+    </Row>
+)}
+
 
                             <Row>
                                 <Form.Group as={Col} className="mb-3">
@@ -189,24 +222,6 @@ function AppointmentModal({ show, handleClose, pid, did, doctorName }) {
                                         value={reason}
                                         onChange={(e) => setReason(e.target.value)}
                                     />
-                                </Form.Group>
-                            </Row>
-
-                            <Row>
-                                <Form.Group as={Col} className="mb-3">
-                                    <Form.Label>Select Services (Appointment Type)</Form.Label>
-                                    <div>
-                                        {doctorServices.map(service => (
-                                            <Form.Check
-                                                key={service._id}
-                                                type="checkbox"
-                                                label={service.name}
-                                                onChange={() => handleServiceChange(service)}
-                                                checked={selectedServices.some(s => s.appointment_type === service.name)}
-                                                disabled={service.availability === 'Not Available' || service.availability === 'Coming Soon'}
-                                            />
-                                        ))}
-                                    </div>
                                 </Form.Group>
                             </Row>
                         </Form>

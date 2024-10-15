@@ -1069,7 +1069,41 @@ const getAllContactNumbers = async (req, res) => {
 };
 
 
-  
+
+
+// Get all slots for a doctor
+const getDoctorSlots = async (req, res) => {
+  try {
+    const doctor = await Doctors.findById(req.params.doctorId).select('slots');
+    if (!doctor) {
+      return res.status(404).json({ message: 'Doctor not found' });
+    }
+    res.status(200).json({ slots: doctor.slots });
+  } catch (err) {
+    res.status(500).json({ message: 'Error retrieving slots', error: err });
+  }
+};
+
+// Update slots for a doctor
+const updateDoctorSlots = async (req, res) => {
+  try {
+    const { slots } = req.body;
+    const doctor = await Doctors.findByIdAndUpdate(
+      req.params.doctorId,
+      { slots },
+      { new: true, runValidators: true }
+    );
+    if (!doctor) {
+      return res.status(404).json({ message: 'Doctor not found' });
+    }
+    res.status(200).json({ message: 'Slots updated successfully', slots: doctor.slots });
+  } catch (err) {
+    res.status(500).json({ message: 'Error updating slots', error: err });
+  }
+};
+
+
+
 module.exports = {
     NewDoctorSignUp,
     findAllDoctors,
@@ -1110,6 +1144,7 @@ module.exports = {
     createDoctorSession,
     resetPassword, forgotPassword, 
     getDoctorHmo,
-    getAllDoctorEmails, getAllDoctorEmailse, getAllContactNumbers
+    getAllDoctorEmails, getAllDoctorEmailse, getAllContactNumbers,
+    getDoctorSlots, updateDoctorSlots
 
 };

@@ -29,12 +29,17 @@ function PendingAppointments({ appointments, setAppointments }) {
         // Ensure selectedAppointment._id exists
         console.log("Selected Appointment:", selectedAppointment);
     
+        // Disable the cancel button to avoid multiple requests
+        setShowModal(false);
+    
         axios.put(`${ip.address}/api/patient/${selectedAppointment._id}/updateappointment`, { cancelReason: cancelReason })
             .then((response) => {
                 console.log(response.data);
                 setAppointments(prevAppointments => 
                     prevAppointments.map(appointment => 
-                        appointment._id === selectedAppointment._id ? { ...appointment, status: 'Cancelled', cancelReason: cancelReason } : appointment
+                        appointment._id === selectedAppointment._id 
+                        ? { ...appointment, status: 'Cancelled', cancelReason: cancelReason } 
+                        : appointment
                     )
                 );
                 handleCloseModal();
@@ -43,6 +48,8 @@ function PendingAppointments({ appointments, setAppointments }) {
                 console.log(err);
             });
     };
+    
+    
     
 
     // Helper function to format the date

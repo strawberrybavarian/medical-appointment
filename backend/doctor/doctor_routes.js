@@ -99,4 +99,6 @@ module.exports = app => {
   app.get('/api/doctor/getallemails', DoctorController.getAllDoctorEmails); 
   app.get('/api/doctors/getallemails', DoctorController.getAllDoctorEmailse); 
   app.get('/api/doctors/getcontactnumbers', DoctorController.getAllContactNumbers);
+  app.get('/api/doctor/:doctorId/slots', DoctorController.getDoctorSlots);
+  app.put('/api/doctor/:doctorId/uslots', DoctorController.updateDoctorSlots);
 };

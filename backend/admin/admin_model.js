@@ -48,6 +48,10 @@ const AdminSchema = new mongoose.Schema({
         type: Schema.Types.ObjectId,
         ref: 'Service',
     }],
+    audits: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Audit'
+    }],
 }, { timestamps: true });
 
 const Admin = mongoose.model('Admin', AdminSchema);
