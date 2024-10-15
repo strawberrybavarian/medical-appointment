@@ -18,6 +18,7 @@ function NewsAnnouncement({ user_image, user_name, user_id, role }) {
   const [headline, setHeadline] = useState(""); // Headline state
   const [currentImageIndexes, setCurrentImageIndexes] = useState({}); // Store individual image indexes for each news
 
+  
   const defaultImage = "images/014ef2f860e8e56b27d4a3267e0a193a.jpg";
   
   // Fetch all news
@@ -52,7 +53,7 @@ function NewsAnnouncement({ user_image, user_name, user_id, role }) {
     });
   
     axios
-      .post(`${ip.address}/api/addnews/${user_id}`, formData, {
+      .post(`${ip.address}/api/news/api/addnews/${user_id}`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       })
       .then(() => {
@@ -202,7 +203,7 @@ const deleteNews = (newsId) => {
               {newsItem.images && newsItem.images.length > 0 && (
                 <div className="w-100 position-relative">
                   <img
-                    src={newsItem.images[currentImageIndexes[newsItem._id]]}
+                    src={`${ip.address}/${newsItem.images[currentImageIndexes[newsItem._id]]}`}
                     alt="News"
                     style={{ maxWidth: "100%", height: "auto", cursor: "pointer" }}
                   />

@@ -33,5 +33,8 @@ module.exports = app => {
     app.get('/api/appointments/:id', AppointmentController.getAppointmentById);
     app.put('/api/appointments/:appointmentId/assign', AppointmentController.updateAppointmentDetails);
     // app.put('/appointments/:id/payment-status', AppointmentController.updatePaymentStatus);
+    app.get('/api/appointments/doctor/:doctorId/count', AppointmentController.countBookedPatients);
+    app.post('/api/patient/api/:uid/createserviceappointment', AppointmentController.createServiceAppointment);
+    app.put('/api/appointments/:id/followup', AppointmentController.updateFollowUpStatus);
 
 };

@@ -787,6 +787,19 @@ const getPatientWithAudits = async (req, res) => {
   }
 };
 
+const getPatientByPatientID = async (req, res) => {
+  try {
+    const patientID = req.params.patientID;
+    const patient = await Patient.findOne({ patient_ID: patientID });
+    if (!patient) {
+      return res.status(404).json({ message: "Patient not found" });
+    }
+    res.status(200).json({ patient });
+  } catch (error) {
+    console.error("Error fetching patient:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
 module.exports = {
     NewPatientSignUp,
     findAllPatient,
@@ -804,5 +817,6 @@ module.exports = {
     createUnregisteredPatient,
     updatePatientImage,
     createPatientSession,
-    forgotPassword, resetPassword, loginPatient, getAllPatientEmails, getAllContactNumbers, getPatientWithAudits
+    forgotPassword, resetPassword, loginPatient, getAllPatientEmails, getAllContactNumbers, getPatientWithAudits,
+    getPatientByPatientID
 }

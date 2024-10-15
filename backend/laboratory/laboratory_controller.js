@@ -6,6 +6,21 @@ const Laboratory = require('./laboratory_model')
 const path = require('path');
 const fs = require('fs');
 
+const getLaboratoryByAppointmentID = async (req, res) => {
+    try {
+      const appointmentID = req.params.appointmentID;
+      const laboratory = await Laboratory.findOne({ appointment: appointmentID });
+      if (!laboratory) {
+        return res.status(404).json({ message: "Laboratory result not found" });
+      }
+      res.status(200).json({ laboratory });
+    } catch (error) {
+      console.error("Error fetching laboratory result:", error);
+      res.status(500).json({ message: "Server error" });
+    }
+  };
+
+
 const createLaboratoryResult = async (req, res) => {
     const { patientId, appointmentId } = req.params;
     const { interpretation, recommendations, testResults = '[]' } = req.body;
@@ -25,7 +40,7 @@ const createLaboratoryResult = async (req, res) => {
         }
 
         // Generate the relative URL to be stored in the database
-        const fileUrl = `/uploads/${req.file.filename}`;
+        const fileUrl = `uploads/${req.file.filename}`;
 
         // Check if a laboratory result already exists for the given appointmentId
         let laboratoryResult = await Laboratory.findOne({ appointment: appointmentId });
@@ -155,6 +170,7 @@ const downloadLaboratoryFile = async (req, res) => {
   
 module.exports = {
     createLaboratoryResult,
-    downloadLaboratoryFile
+    downloadLaboratoryFile,
+    getLaboratoryByAppointmentID
 
 };

@@ -6,19 +6,18 @@ import {
   Button,
   Card,
   Form,
-  Table,
 } from "react-bootstrap";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import "./PatientFindings.css";
 import PatientHistory from "./PatientHistory";
 import { ip } from "../../../../ContentExport";
+
 function PatientFindings({ patientId, appointmentId, doctorId }) {
   const [fname, setFname] = useState("");
   const [lname, setLname] = useState("");
   const [age, setAge] = useState("");
   const [email, setEmail] = useState("");
-  console.log(patientId);
   const [reason, setReason] = useState("");
   const [findings, setFindings] = useState({
     bloodPressure: { systole: "", diastole: "" },
@@ -36,6 +35,7 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
       smoking: false,
       alcoholConsumption: false,
       physicalActivity: "",
+      others: [], // Initialize others as an empty array
     },
     familyHistory: [{ relation: "", condition: "" }],
     socialHistory: {
@@ -60,6 +60,7 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
   const [error, setError] = useState(null);
 
   const navigate = useNavigate();
+
   useEffect(() => {
     axios
       .get(`${ip.address}/api/appointments/${appointmentId}`)
@@ -93,7 +94,15 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
         setEmail(patientRes.data.thePatient.patient_email);
 
         if (findingsRes.data && findingsRes.data.findings) {
-          setFindings(findingsRes.data.findings);
+          setFindings((prevState) => ({
+            ...prevState,
+            ...findingsRes.data.findings,
+            lifestyle: {
+              ...prevState.lifestyle,
+              ...findingsRes.data.findings.lifestyle,
+              others: findingsRes.data.findings.lifestyle?.others || [], // Ensure others is an array
+            },
+          }));
         }
 
         if (appointmentRes.data && appointmentRes.data.appointment) {
@@ -112,7 +121,8 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
   }, [patientId, appointmentId]);
 
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
+    const { name, value, type, checked, dataset } = e.target;
+
     if (name.includes("systole") || name.includes("diastole")) {
       setFindings((prevState) => ({
         ...prevState,
@@ -158,16 +168,19 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
           [name]: checked,
         },
       }));
-    } else if (name === 'others') {
-        const updatedOthers = [...findings.lifestyle.others];
-        updatedOthers[e.target.dataset.index] = value;
-        setFindings((prevState) => ({
-            ...prevState,
-            lifestyle: { 
-                ...prevState.lifestyle, 
-                others: updatedOthers 
-            }
-        }));
+    } else if (name === "others") {
+      const index = e.target.dataset.index;
+      const updatedOthers = findings.lifestyle.others
+        ? [...findings.lifestyle.others]
+        : [];
+      updatedOthers[index] = value;
+      setFindings((prevState) => ({
+        ...prevState,
+        lifestyle: {
+          ...prevState.lifestyle,
+          others: updatedOthers,
+        },
+      }));
     } else {
       setFindings((prevState) => ({
         ...prevState,
@@ -272,178 +285,107 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
               </h4>
             </Card.Header>
             <Card.Body>
-              <h4>History of Present Illness</h4>
-              <hr />
-              {/* History of Present Illness */}
-              <Form.Group className="mb-3">
-                <Form.Label>Chief Complaint:</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="chiefComplaint"
-                  value={
-                    findings?.historyOfPresentIllness?.chiefComplaint || ""
-                  }
-                  onChange={(e) => {
-                    setFindings({
-                      ...findings,
-                      historyOfPresentIllness: {
-                        ...findings.historyOfPresentIllness,
-                        chiefComplaint: e.target.value,
-                      },
-                    });
-                  }}
-                />
-              </Form.Group>
-
-              <Form.Group className="mb-3">
-  <Form.Label>Current Symptoms: </Form.Label>
-  {findings.historyOfPresentIllness?.currentSymptoms?.map(
-    (symptom, index) => (
-      <Row key={index} className="mb-2 align-items-center">
-        <Col>
-          <Form.Control
-            type="text"
-            value={symptom || ""}
-            onChange={(e) => {
-              const updatedSymptoms = [
-                ...findings.historyOfPresentIllness.currentSymptoms,
-              ];
-              updatedSymptoms[index] = e.target.value;
-              setFindings({
-                ...findings,
-                historyOfPresentIllness: {
-                  ...findings.historyOfPresentIllness,
-                  currentSymptoms: updatedSymptoms,
-                },
-              });
-            }}
-          />
-        </Col>
-        <Col xs="auto">
-          <Button
-            variant="danger"
-            onClick={() => {
-              const updatedSymptoms =
-                findings.historyOfPresentIllness.currentSymptoms.filter(
-                  (_, i) => i !== index
-                );
-              setFindings({
-                ...findings,
-                historyOfPresentIllness: {
-                  ...findings.historyOfPresentIllness,
-                  currentSymptoms: updatedSymptoms,
-                },
-              });
-            }}
-          >
-            X
-          </Button>
-        </Col>
-      </Row>
-    )
-  ) || []}
-
-  {/* Add Symptom Button */}
-  <Button
-    className="mt-2"
-    variant="secondary"
-    onClick={() => {
-      setFindings((prevState) => ({
-        ...prevState,
-        historyOfPresentIllness: {
-          ...prevState.historyOfPresentIllness,
-          currentSymptoms: [
-            ...prevState.historyOfPresentIllness.currentSymptoms,
-            "", // Add an empty string for a new symptom
-          ],
-        },
-      }));
-    }}
-  >
-    Add Symptom
-  </Button>
-</Form.Group>
-
-
-
-              <hr />
-
-              <h4>Vitals</h4>
-              <hr />
               <Form onSubmit={handleSubmit}>
-                {/* Vitals */}
-                <Row className="mb-2">
-                  <Form.Group as={Col} className="mb-3">
-                    <Form.Label>Blood Pressure (Systole):</Form.Label>
-                    <Form.Control
-                      type="number"
-                      name="systole"
-                      value={findings?.bloodPressure?.systole || ""}
-                      onChange={handleChange}
-                    />
-                  </Form.Group>
-                  <Form.Group as={Col} className="mb-3">
-                    <Form.Label>Blood Pressure (Diastole):</Form.Label>
-                    <Form.Control
-                      type="number"
-                      name="diastole"
-                      value={findings?.bloodPressure?.diastole || ""}
-                      onChange={handleChange}
-                    />
-                  </Form.Group>
-                </Row>
+                <h4>History of Present Illness</h4>
+                <hr />
+                {/* History of Present Illness */}
+                <Form.Group className="mb-3">
+                  <Form.Label>Chief Complaint:</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="chiefComplaint"
+                    value={
+                      findings?.historyOfPresentIllness?.chiefComplaint || ""
+                    }
+                    onChange={(e) => {
+                      setFindings({
+                        ...findings,
+                        historyOfPresentIllness: {
+                          ...findings.historyOfPresentIllness,
+                          chiefComplaint: e.target.value,
+                        },
+                      });
+                    }}
+                  />
+                </Form.Group>
 
-                {/* Vitals */}
-                <Row className="mb-2">
-                  <Form.Group as={Col} className="mb-3">
-                    <Form.Label>Respiratory Rate:</Form.Label>
-                    <Form.Control
-                      type="number"
-                      name="respiratoryRate"
-                      value={findings?.respiratoryRate || ""}
-                      onChange={handleChange}
-                    />
-                  </Form.Group>
-                  <Form.Group as={Col} className="mb-3">
-                    <Form.Label>Pulse Rate:</Form.Label>
-                    <Form.Control
-                      type="number"
-                      name="pulseRate"
-                      value={findings?.pulseRate || ""}
-                      onChange={handleChange}
-                    />
-                  </Form.Group>
-                  <Form.Group as={Col} className="mb-3">
-                    <Form.Label>Temperature (°C):</Form.Label>
-                    <Form.Control
-                      type="number"
-                      name="temperature"
-                      value={findings?.temperature || ""}
-                      onChange={handleChange}
-                    />
-                  </Form.Group>
-                </Row>
+                <Form.Group className="mb-3">
+                  <Form.Label>Current Symptoms: </Form.Label>
+                  {findings.historyOfPresentIllness?.currentSymptoms?.map(
+                    (symptom, index) => (
+                      <Row key={index} className="mb-2 align-items-center">
+                        <Col>
+                          <Form.Control
+                            type="text"
+                            value={symptom || ""}
+                            onChange={(e) => {
+                              const updatedSymptoms = [
+                                ...findings.historyOfPresentIllness
+                                  .currentSymptoms,
+                              ];
+                              updatedSymptoms[index] = e.target.value;
+                              setFindings({
+                                ...findings,
+                                historyOfPresentIllness: {
+                                  ...findings.historyOfPresentIllness,
+                                  currentSymptoms: updatedSymptoms,
+                                },
+                              });
+                            }}
+                          />
+                        </Col>
+                        <Col xs="auto">
+                          <Button
+                            variant="danger"
+                            onClick={() => {
+                              const updatedSymptoms =
+                                findings.historyOfPresentIllness.currentSymptoms.filter(
+                                  (_, i) => i !== index
+                                );
+                              setFindings({
+                                ...findings,
+                                historyOfPresentIllness: {
+                                  ...findings.historyOfPresentIllness,
+                                  currentSymptoms: updatedSymptoms,
+                                },
+                              });
+                            }}
+                          >
+                            X
+                          </Button>
+                        </Col>
+                      </Row>
+                    )
+                  )}
 
-                <Row className="mb-2">
-                  <Form.Group as={Col} className="mb-3">
-                    <Form.Label>Weight (kg):</Form.Label>
-                    <Form.Control
-                      type="number"
-                      name="weight"
-                      value={findings?.weight || ""}
-                      onChange={handleChange}
-                    />
-                  </Form.Group>
-                  <Form.Group as={Col} className="mb-3">
-                    <Form.Label>Height (cm):</Form.Label>
-                    <Form.Control
-                      type="number"
-                      name="height"
-                      value={findings?.height || ""}
-                      onChange={handleChange}
-                    />
-                  </Form.Group>
-                </Row>
+                  {/* Add Symptom Button */}
+                  <Button
+                    className="mt-2"
+                    variant="secondary"
+                    onClick={() => {
+                      setFindings((prevState) => ({
+                        ...prevState,
+                        historyOfPresentIllness: {
+                          ...prevState.historyOfPresentIllness,
+                          currentSymptoms: [
+                            ...prevState.historyOfPresentIllness
+                              .currentSymptoms,
+                            "", // Add an empty string for a new symptom
+                          ],
+                        },
+                      }));
+                    }}
+                  >
+                    Add Symptom
+                  </Button>
+                </Form.Group>
+
+                <hr />
+
+                <h4>Vitals</h4>
+                <hr />
+                {/* Vitals */}
+                {/* ... Your existing Vitals form fields ... */}
 
                 <hr />
                 <h4>Lifestyle</h4>
@@ -468,64 +410,56 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
                   </Form.Group>
 
                   {/* Dynamic "Others" Section */}
-                  {/* Dynamic "Others" Section */}
-<Form.Group className="mb-3">
-  <Form.Label>Other Lifestyle Activities:</Form.Label>
-  {findings.lifestyle?.others?.map((activity, index) => (
-    <Row key={index} className="mb-2">
-      <Col>
-        <Form.Control
-          type="text"
-          value={activity || ""}
-          onChange={(e) => {
-            const updatedOthers = [...findings.lifestyle.others];
-            updatedOthers[index] = e.target.value;
-            setFindings((prevState) => ({
-              ...prevState,
-              lifestyle: {
-                ...prevState.lifestyle,
-                others: updatedOthers,
-              },
-            }));
-          }}
-        />
-      </Col>
-      <Col xs="auto">
-        <Button
-          variant="danger"
-          onClick={() => {
-            const updatedOthers =
-              findings.lifestyle.others.filter((_, i) => i !== index);
-            setFindings((prevState) => ({
-              ...prevState,
-              lifestyle: {
-                ...prevState.lifestyle,
-                others: updatedOthers,
-              },
-            }));
-          }}
-        >
-          X
-        </Button>
-      </Col>
-    </Row>
-  )) || []}
-  <Button
-    variant="secondary"
-    onClick={() => {
-      setFindings((prevState) => ({
-        ...prevState,
-        lifestyle: {
-          ...prevState.lifestyle,
-          others: [...prevState.lifestyle.others, ""],
-        },
-      }));
-    }}
-  >
-    Add Other Lifestyle Activity
-  </Button>
-</Form.Group>
-
+                  <Form.Group className="mb-3">
+                    <Form.Label>Other Lifestyle Activities:</Form.Label>
+                    {findings.lifestyle?.others?.map((activity, index) => (
+                      <Row key={index} className="mb-2">
+                        <Col>
+                          <Form.Control
+                            type="text"
+                            name="others"
+                            data-index={index}
+                            value={activity || ""}
+                            onChange={handleChange}
+                          />
+                        </Col>
+                        <Col xs="auto">
+                          <Button
+                            variant="danger"
+                            onClick={() => {
+                              const updatedOthers =
+                                findings.lifestyle.others.filter(
+                                  (_, i) => i !== index
+                                );
+                              setFindings((prevState) => ({
+                                ...prevState,
+                                lifestyle: {
+                                  ...prevState.lifestyle,
+                                  others: updatedOthers,
+                                },
+                              }));
+                            }}
+                          >
+                            X
+                          </Button>
+                        </Col>
+                      </Row>
+                    ))}
+                    <Button
+                      variant="secondary"
+                      onClick={() => {
+                        setFindings((prevState) => ({
+                          ...prevState,
+                          lifestyle: {
+                            ...prevState.lifestyle,
+                            others: [...prevState.lifestyle.others, ""],
+                          },
+                        }));
+                      }}
+                    >
+                      Add Other Lifestyle Activity
+                    </Button>
+                  </Form.Group>
                 </Row>
 
                 {/* Family History */}

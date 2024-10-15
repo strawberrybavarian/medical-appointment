@@ -38,15 +38,12 @@ const addNewNewsByUserId = async (req, res) => {
     try {
         let imagePaths = [];
 
-        // Handle file uploads and convert them to base64
+        // Handle file uploads and store file paths
         if (req.files && req.files.length > 0) {
             imagePaths = req.files.map(file => {
-                const imageBuffer = fs.readFileSync(file.path);
-                const base64Image = `data:${file.mimetype};base64,${imageBuffer.toString('base64')}`;
-                
-                // Optionally delete the file after encoding
-                fs.unlinkSync(file.path);
-                return base64Image;
+                // Save file path as images/$filename
+                const imagePath = `images/${file.filename}`;
+                return imagePath;
             });
         }
 
@@ -58,11 +55,13 @@ const addNewNewsByUserId = async (req, res) => {
             headline: headline,  // Include the headline
             posted_by: req.params.id,
             role: req.body.role,  // Either 'MedicalSecretary' or 'Admin'
-            images: imagePaths,  // Store image paths
+            images: imagePaths,  // Store image paths instead of base64
         });
 
         // Save the new news entry
         const savedNews = await newNews.save();
+
+        // Choose the correct model based on the user's role
         const UserModel = req.body.role === 'Medical Secretary' ? MedicalSecretary : Admin;
 
         const updatedUser = await UserModel.findByIdAndUpdate(
@@ -77,6 +76,7 @@ const addNewNewsByUserId = async (req, res) => {
         res.status(500).json({ message: 'Error adding news', error });
     }
 };
+
 
 // Retrieve all news
 const getAllNewsByUserId = (req, res) => {
@@ -137,9 +137,9 @@ const updateNewsAtIndex = async (req, res) => {
     console.log("userId:", userId);
     console.log("newsId:", newsId);
     console.log("role:", role);
-  
 
     try {
+        // Choose the correct user model based on the role
         const UserModel = role === 'Medical Secretary' ? MedicalSecretary : Admin;
         const user = await UserModel.findById(userId);
 
@@ -147,7 +147,7 @@ const updateNewsAtIndex = async (req, res) => {
             return res.status(404).json({ message: `${role} not found` });
         }
 
-        // Find the news by its newsId directly
+        // Find the news by its newsId
         const news = await News.findById(newsId);
         if (!news) {
             return res.status(404).json({ message: 'News not found' });
@@ -157,11 +157,9 @@ const updateNewsAtIndex = async (req, res) => {
         let imagePaths = [];
         if (req.files && req.files.length > 0) {
             imagePaths = req.files.map(file => {
-                const imageBuffer = fs.readFileSync(file.path);
-                const base64Image = `data:${file.mimetype};base64,${imageBuffer.toString('base64')}`;
-                
-                fs.unlinkSync(file.path); // Optionally delete the file after processing
-                return base64Image;
+                // Save file path as images/$filename
+                const imagePath = `images/${file.filename}`;
+                return imagePath;
             });
         }
 
@@ -169,6 +167,7 @@ const updateNewsAtIndex = async (req, res) => {
         let deletedImages = [];
         if (req.body.deletedImages) {
             deletedImages = JSON.parse(req.body.deletedImages);
+            // Remove the images listed in deletedImages from the news' images array
             news.images = news.images.filter(image => !deletedImages.includes(image));
         }
 
@@ -180,6 +179,7 @@ const updateNewsAtIndex = async (req, res) => {
         // Update the content
         news.content = req.body.content || news.content;
 
+        // Save the updated news
         const updatedNews = await news.save();
 
         res.json({ updatedNews, message: 'News updated successfully' });
@@ -188,6 +188,7 @@ const updateNewsAtIndex = async (req, res) => {
         res.status(500).json({ message: 'Error updating news', error });
     }
 };
+
 
 const getNewsById = async (req, res) => {
     try {

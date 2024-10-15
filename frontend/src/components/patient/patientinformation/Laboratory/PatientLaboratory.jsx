@@ -22,14 +22,14 @@ const PatientLaboratory = ({ laboratoryResults }) => {
   };
 
   const handleViewPDF = (filePath) => {
-    const fullUrl = `${ip.address}${filePath}`;
+    const fullUrl = `${ip.address}/${filePath}`;
     window.open(fullUrl, "_blank"); // Open PDF in new tab
   };
 
   // Handle file download
   const handleDownload = async (filePath, fileName) => {
     try {
-      const fullUrl = `${ip.address}${filePath}`; // Ensure filePath starts with `/uploads/...`
+      const fullUrl = `${ip.address}/${filePath}`; // Ensure filePath starts with `/uploads/...`
 
       const response = await axios.get(fullUrl, {
         responseType: "blob", // Important for downloading binary files

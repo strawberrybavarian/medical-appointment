@@ -13,6 +13,21 @@ const TodaysAppointment = ({ allAppointments, setAllAppointments }) => {
   const [expandedRow, setExpandedRow] = useState(null); // State to track the expanded row
   const defaultImage = "images/014ef2f860e8e56b27d4a3267e0a193a.jpg";
 
+  const handleFollowUpChange = (appointmentId, checked) => {
+    axios.put(`${ip.address}/api/appointments/${appointmentId}/followup`, { followUp: checked })
+      .then(() => {
+        setAllAppointments(prevAppointments =>
+          prevAppointments.map(appointment =>
+            appointment._id === appointmentId ? { ...appointment, followUp: checked } : appointment
+          )
+        );
+      })
+      .catch((err) => {
+        console.error("Error updating follow-up:", err);
+      });
+  };
+
+
   const getTodayDate = () => {
     const today = new Date();
     const year = today.getFullYear();
@@ -121,6 +136,7 @@ const TodaysAppointment = ({ allAppointments, setAllAppointments }) => {
               <th>Date</th>
               <th>Time</th>
               <th>Status</th>
+              <th>Follow Up</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -155,6 +171,17 @@ const TodaysAppointment = ({ allAppointments, setAllAppointments }) => {
                       </div>
                     </td>
                     <td>
+                      <Form.Check
+                      type="checkbox"
+                      disabled={true}
+                      checked={appointment.followUp || false}
+                      onChange={(e) => {
+                        e.stopPropagation();
+                        handleFollowUpChange(appointment._id, e.target.checked);
+                      }}
+                    />
+                    </td>
+                    <td>
                       {/* Ongoing Button */}
                       <button
                         style={{ color: 'green', background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
@@ -167,7 +194,7 @@ const TodaysAppointment = ({ allAppointments, setAllAppointments }) => {
 
                   {/* Collapsible row for "Reason" */}
                   <tr>
-                    <td colSpan="6" style={{ padding: 0 }}>
+                    <td colSpan="7" style={{ padding: 0 }}>
                       <Collapse in={expandedRow === appointment._id}>
                         <div style={{ padding: '10px', backgroundColor: '#f8f9fa', transition: 'height 0.35s ease'}}>
                           <strong>Reason:</strong> {appointment.reason}

@@ -32,6 +32,8 @@ const storage = multer.diskStorage({
 
 
 module.exports = app => { 
+  //Laboratory Results
+    app.get("/api/patient/getpatientbyid/:patientID", PatientController.getPatientByPatientID);
     //For Logging In
     app.get('/api/patient/getallemails', PatientController.getAllPatientEmails); 
     app.get('/api/patient/getcontactnumber', PatientController.getAllContactNumbers); 

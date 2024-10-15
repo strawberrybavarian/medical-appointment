@@ -3,8 +3,9 @@ import { Button, Container } from 'react-bootstrap';
 import axios from "axios";
 import CancelModal from "../scheduledappointment/Modal/CancelModal";
 import './Appointment.css';
-import { PeopleFill, ClockFill, PersonFill, PencilFill } from 'react-bootstrap-icons';
+import { PeopleFill, ClockFill, PersonFill } from 'react-bootstrap-icons';
 import { ip } from '../../../ContentExport';
+
 function Appointments({ appointments, setAppointments }) {
     const [showModal, setShowModal] = useState(false);
     const [selectedAppointment, setSelectedAppointment] = useState(null);
@@ -25,12 +26,18 @@ function Appointments({ appointments, setAppointments }) {
     const handleConfirmCancellation = (cancelReason) => {
         if (!selectedAppointment) return;
 
-        axios.put(`${ip.address}/api/patient/api/${selectedAppointment._id}/updateappointment`, { cancelReason: cancelReason })
+        console.log("Selected Appointment:", selectedAppointment);
+
+        setShowModal(false);
+
+        axios.put(`${ip.address}/api/patient/${selectedAppointment._id}/updateappointment`, { cancelReason: cancelReason })
             .then((response) => {
                 console.log(response.data);
                 setAppointments(prevAppointments => 
                     prevAppointments.map(appointment => 
-                        appointment._id === selectedAppointment._id ? { ...appointment, status: 'Cancelled', cancelReason: cancelReason } : appointment
+                        appointment._id === selectedAppointment._id 
+                        ? { ...appointment, status: 'Cancelled', cancelReason: cancelReason } 
+                        : appointment
                     )
                 );
                 handleCloseModal();
@@ -60,23 +67,37 @@ function Appointments({ appointments, setAppointments }) {
                date.getFullYear() === today.getFullYear();
     };
 
-    // Group and sort appointments by month (sorted in descending order)
-    const groupedAppointments = appointments
+    // Sort by today's appointments first, then by approaching dates in ascending order
+    const sortedAppointments = appointments
         .filter(appointment => appointment.status === 'Scheduled')
-        .sort((a, b) => new Date(b.date) - new Date(a.date))  // Sort by date in descending order
-        .reduce((groups, appointment) => {
-            const { month, year } = formatDate(appointment.date);
-            const groupKey = `${month}-${year}`; // Use month and year as a group key
-            if (!groups[groupKey]) {
-                groups[groupKey] = {
-                    month,
-                    year,
-                    appointments: []
-                };
-            }
-            groups[groupKey].appointments.push(appointment);
-            return groups;
-        }, {});
+        .sort((a, b) => {
+            const dateA = new Date(a.date);
+            const dateB = new Date(b.date);
+            const isTodayA = isToday(dateA);
+            const isTodayB = isToday(dateB);
+
+            // Prioritize today's appointments
+            if (isTodayA && !isTodayB) return -1;
+            if (!isTodayA && isTodayB) return 1;
+
+            // If both are not today or both are today, sort by approaching dates (ascending order)
+            return dateA - dateB;
+        });
+
+    // Group and sort appointments by month (sorted in ascending order)
+    const groupedAppointments = sortedAppointments.reduce((groups, appointment) => {
+        const { month, year } = formatDate(appointment.date);
+        const groupKey = `${month}-${year}`; // Use month and year as a group key
+        if (!groups[groupKey]) {
+            groups[groupKey] = {
+                month,
+                year,
+                appointments: []
+            };
+        }
+        groups[groupKey].appointments.push(appointment);
+        return groups;
+    }, {});
 
     return (
         <>
@@ -125,16 +146,7 @@ function Appointments({ appointments, setAppointments }) {
                                                     {appointment.time}
                                                 </p>
                                             </div>
-                                            <div className='pa-cont2'>
-                                                <p style={{ fontSize: '1rem' }}>
-                                                    <PeopleFill className='font-gray' size={20} style={{ marginRight: '0.7rem' }} />
-                                                    {appointment.medium}
-                                                </p>
-                                                <p>
-                                                    <PencilFill className='font-gray' size={20} style={{ marginRight: '0.7rem' }} />
-                                                    Primary Concern: {appointment.reason}
-                                                </p>
-                                            </div>
+                                            
                                         </Container>
                                         <div className="bContainer">
                                             <Button onClick={() => handleCancelClick(appointment)}>Cancel</Button>

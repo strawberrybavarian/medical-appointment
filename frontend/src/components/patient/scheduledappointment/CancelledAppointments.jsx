@@ -106,7 +106,7 @@ function CancelledAppointments({ appointments, setAppointments }) {
                                         <div className='aaContainer'>
                                             <p style={{ textAlign: 'center' }}>
                                                 <span style={dayOfWeekStyle} >{dayOfWeek}</span>
-                                                <span style={dayStyle} >{day}</span>
+                                                <span style={dayStyle} className='font-weight-bold'>{day}</span>
                                             </p>
                                         </div>
                                         <Container className="d-flex justify-content-start">

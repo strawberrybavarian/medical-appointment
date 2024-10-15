@@ -1,35 +1,36 @@
 const mongoose = require('mongoose');
 const { Schema, model } = mongoose;
 
-const AuditSchema = new Schema({
+const AuditSchema = new mongoose.Schema({
     user: {
-        type: Schema.Types.ObjectId, 
-        refPath: 'userType',  
-        required: true
+        type: Schema.Types.ObjectId,
+        required: true,
+        refPath: 'userType',
     },
     userType: {
         type: String,
-        required: true
+        required: true,
+        enum: ['Patient', 'Admin', 'Medical Secretary'],
     },
     action: {
-        type: String,  // Action performed (e.g., login, profile update, etc.)
-        required: true
+        type: String,
+        required: true,
     },
     description: {
-        type: String,  // Optional detailed description of the action
+        type: String,
     },
     ipAddress: {
-        type: String,  // Capture the IP address from which the action was performed
+        type: String,
     },
     userAgent: {
-        type: String,  // Capture the user agent (browser/device info)
+        type: String,
     },
     createdAt: {
         type: Date,
-        default: Date.now  // Timestamp when the action occurred
-    }
-}, { timestamps: true });  // `createdAt` and `updatedAt` fields will automatically be generated
+        default: Date.now,
+    },
+});
 
-const Audit = model('Audit', AuditSchema);
-
+const Audit = mongoose.model('Audit', AuditSchema);
 module.exports = Audit;
+

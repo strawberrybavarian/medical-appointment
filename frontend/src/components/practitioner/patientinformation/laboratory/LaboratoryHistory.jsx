@@ -40,32 +40,32 @@ const LaboratoryHistory = ({ pid }) => {
     };
 
     const handleViewPDF = (filePath) => {
-        const fullUrl = `${ip.address}${filePath}`;
+        const fullUrl = `${ip.address}/${filePath}`;
         window.open(fullUrl, '_blank');  // Open PDF in new tab
     };
     
     const handleDownload = async (filePath, fileName) => {
         try {
-            const fullUrl = `${ip.address}${filePath}`;
-            console.log(`Attempting to download from URL: ${fullUrl}`);
+          const fullUrl = `${ip.address}/${filePath}`; // Ensure filePath starts with `/uploads/...`
     
-            const response = await axios.get(fullUrl, {
-                responseType: 'blob', // Important for downloading binary files
-                withCredentials: true // Include this line
-            });
+          const response = await axios.get(fullUrl, {
+            responseType: "blob", // Important for downloading binary files
+          });
     
-            // Create a new Blob object using the response data
-            const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
-            const link = document.createElement('a');
-            link.href = url;
-            link.setAttribute('download', fileName); // Filename for the download
-            document.body.appendChild(link);
-            link.click();
-            link.remove();
+          // Create a new Blob object using the response data
+          const url = window.URL.createObjectURL(
+            new Blob([response.data], { type: "application/pdf" })
+          );
+          const link = document.createElement("a");
+          link.href = url;
+          link.setAttribute("download", fileName); // Filename for the download
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
         } catch (error) {
-            console.error('Error downloading the file:', error);
+          console.error("Error downloading the file:", error);
         }
-    };
+      };
     return (
         <Container>
             {sortedLabResults.map((result) => (

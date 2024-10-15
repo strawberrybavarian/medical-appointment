@@ -179,6 +179,20 @@ const convertTo12HourFormat = (time) => {
       });
   };
 
+  const handleFollowUpChange = (appointmentId, checked) => {
+    axios.put(`${ip.address}/api/appointments/${appointmentId}/followup`, { followUp: checked })
+      .then(() => {
+        setAllAppointments(prevAppointments =>
+          prevAppointments.map(appointment =>
+            appointment._id === appointmentId ? { ...appointment, followUp: checked } : appointment
+          )
+        );
+      })
+      .catch((err) => {
+        console.error("Error updating follow-up:", err);
+      });
+  };
+
   return (
     <>
       <Container fluid className="w-100">
@@ -271,6 +285,7 @@ const convertTo12HourFormat = (time) => {
                 </th>
                 <th>Account Status</th>
                 <th>Appointment Status</th>
+                <th>Follow Up</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -306,6 +321,18 @@ const convertTo12HourFormat = (time) => {
                             {appointment.status}
                       </div>
                       </div>
+                    </td>
+
+                    <td>
+                      <Form.Check
+                      type="checkbox"
+                      disabled={true}
+                      checked={appointment.followUp || false}
+                      onChange={(e) => {
+                        e.stopPropagation();
+                        handleFollowUpChange(appointment._id, e.target.checked);
+                      }}
+                    />
                     </td>
                     <td>
                       <div className="d-flex justify-content-around flex-wrap">

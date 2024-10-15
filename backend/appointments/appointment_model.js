@@ -15,6 +15,10 @@ const AppointmentSchema = new Schema({
             }
         }
     ],
+    followUp: {
+        type: Boolean,
+        default: false,
+    },
     patient: {
         type: Schema.Types.ObjectId,
         ref: 'Patient',
