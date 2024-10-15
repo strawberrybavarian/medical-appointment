@@ -383,9 +383,86 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
                 <hr />
 
                 <h4>Vitals</h4>
-                <hr />
-                {/* Vitals */}
-                {/* ... Your existing Vitals form fields ... */}
+                            <hr/>
+                            <Form onSubmit={handleSubmit}>
+                                            {/* Vitals */}
+                                            <Row className="mb-2">
+                                                <Form.Group as={Col} className="mb-3">
+                                                    <Form.Label>Blood Pressure (Systole):</Form.Label>
+                                                    <Form.Control
+                                                        type="number"
+                                                        name="systole"
+                                                        value={findings?.bloodPressure?.systole || ''}
+                                                        onChange={handleChange}
+                                                    />
+                                                </Form.Group>
+                                                <Form.Group as={Col} className="mb-3">
+                                                    <Form.Label>Blood Pressure (Diastole):</Form.Label>
+                                                    <Form.Control
+                                                        type="number"
+                                                        name="diastole"
+                                                        value={findings?.bloodPressure?.diastole || ''}
+                                                        onChange={handleChange}
+                                                    />
+                                                </Form.Group>
+                                            </Row>
+                            </Form>
+
+
+                             
+
+                                {/* Vitals */}
+                                <Row className="mb-2">
+                                    <Form.Group as={Col} className="mb-3">
+                                        <Form.Label>Respiratory Rate:</Form.Label>
+                                        <Form.Control
+                                            type="number"
+                                            name="respiratoryRate"
+                                            value={findings?.respiratoryRate || ''}
+                                            onChange={handleChange}
+                                        />
+                                    </Form.Group>
+                                    <Form.Group as={Col} className="mb-3">
+                                        <Form.Label>Pulse Rate:</Form.Label>
+                                        <Form.Control
+                                            type="number"
+                                            name="pulseRate"
+                                            value={findings?.pulseRate || ''}
+                                            onChange={handleChange}
+                                        />
+                                    </Form.Group>
+                                    <Form.Group as={Col} className="mb-3">
+                                        <Form.Label>Temperature (°C):</Form.Label>
+                                        <Form.Control
+                                            type="number"
+                                            name="temperature"
+                                            value={findings?.temperature || ''}
+                                            onChange={handleChange}
+                                        />
+                                    </Form.Group>
+                                </Row>
+
+                                <Row className="mb-2">
+                                    <Form.Group as={Col} className="mb-3">
+                                        <Form.Label>Weight (kg):</Form.Label>
+                                        <Form.Control
+                                            type="number"
+                                            name="weight"
+                                            value={findings?.weight || ''}
+                                            onChange={handleChange}
+                                        />
+                                    </Form.Group>
+                                    <Form.Group as={Col} className="mb-3">
+                                        <Form.Label>Height (cm):</Form.Label>
+                                        <Form.Control
+                                            type="number"
+                                            name="height"
+                                            value={findings?.height || ''}
+                                            onChange={handleChange}
+                                        />
+                                    </Form.Group>
+                                </Row>
+
 
                 <hr />
                 <h4>Lifestyle</h4>

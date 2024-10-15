@@ -1,11 +1,11 @@
 const image = {
-    logo: "http://13.214.60.24/images/Molino-Polyclinic-Logo.png",
-    // logo: "http://localhost:8000/images/Molino-Polyclinic-Logo.png",
+    // logo: "http://13.214.60.24/images/Molino-Polyclinic-Logo.png",
+    logo: "http://localhost:8000/images/Molino-Polyclinic-Logo.png",
 };
 
 const ip ={
-    address: 'http://13.214.60.24',
-    // address: 'http://localhost:8000'
+    // address: 'http://13.214.60.24',
+    address: 'http://localhost:8000'
 
 };
 
