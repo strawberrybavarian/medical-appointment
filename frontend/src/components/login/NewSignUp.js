@@ -1,3 +1,5 @@
+// File: NewSignUp.js
+
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
@@ -25,12 +27,15 @@ const NewSignUp = () => {
 
     // Practitioner-specific fields
     const [dr_licenseNo, setLicenseNo] = useState("");
+    const [dr_specialty, setSpecialty] = useState("");
+    const [specialties, setSpecialties] = useState([]); // Store fetched specialties
 
     // Patient-specific fields
     const [patientAddress, setPatientAddress] = useState({
         street: "",
         city: "",
-        state: "",
+        province: "",
+        region: "",
         zipCode: "",
         country: "",
     });
@@ -47,6 +52,8 @@ const NewSignUp = () => {
         number: "",
         gender: "",
         role: "",
+        licenseNo: "",
+        specialty: "",
     });
 
     const [existingEmails, setExistingEmails] = useState([]);
@@ -72,7 +79,22 @@ const NewSignUp = () => {
                 console.error("Error fetching existing emails or contact numbers:", err);
             }
         };
+
+        // Fetch specialties from services
+        const fetchSpecialties = async () => {
+            try {
+                const response = await axios.get(`${ip.address}/api/admin/getall/services`);
+                const services = response.data;
+                // Extract unique categories
+                const categories = [...new Set(services.map(service => service.category))];
+                setSpecialties(categories);
+            } catch (error) {
+                console.error("Error fetching specialties:", error);
+            }
+        };
+
         fetchData();
+        fetchSpecialties();
     }, []);
 
     const validateForm = () => {
@@ -94,6 +116,12 @@ const NewSignUp = () => {
         }
         if (!uGender) newErrors.gender = "Gender is required";
         if (!urole) newErrors.role = "Role is required";
+
+        // Practitioner-specific validations
+        if (urole === "Practitioner") {
+            if (!dr_licenseNo) newErrors.licenseNo = "License Number is required";
+            if (!dr_specialty) newErrors.specialty = "Specialty is required";
+        }
 
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
@@ -137,6 +165,16 @@ const NewSignUp = () => {
             case "role":
                 error = !value ? "Role is required" : "";
                 break;
+            case "licenseNo":
+                if (urole === "Practitioner") {
+                    error = !value ? "License Number is required" : "";
+                }
+                break;
+            case "specialty":
+                if (urole === "Practitioner") {
+                    error = !value ? "Specialty is required" : "";
+                }
+                break;
             default:
                 break;
         }
@@ -160,6 +198,7 @@ const NewSignUp = () => {
                 dr_contactNumber: uNumber,
                 dr_gender: uGender,
                 dr_licenseNo: dr_licenseNo,
+                dr_specialty: dr_specialty, // Include dr_specialty in the doctorUser object
             };
             axios.post(`${ip.address}/api/doctor/api/signup`, doctorUser)
                 .then((response) => {
@@ -217,8 +256,8 @@ const NewSignUp = () => {
 
     return (
         <>
-           <ForLoginAndSignupNavbar />
-           <Container
+            <ForLoginAndSignupNavbar />
+            <Container
                 fluid
                 className="p-0 d-flex flex-column justify-content-center"
                 style={{
@@ -228,24 +267,24 @@ const NewSignUp = () => {
                     backgroundSize: 'cover',
                     backgroundPosition: 'center',
                     width: '100%', paddingBottom: '1.5rem',
-                    paddingTop:'20rem'
+                    paddingTop: '20rem'
                 }}
             >
                 <div className="d-flex justify-content-center align-items-center flex-column" style={{ minHeight: '100vh', }}>
-                    <Container className="d-flex justify-content-center align-items-center " style={{ minHeight: '100vh',  }}>
+                    <Container className="d-flex justify-content-center align-items-center " style={{ minHeight: '100vh', }}>
                         <Row className="justify-content-start mt-5">
-                            <Col>
-                                <Card className="shadow p-4" style={{ zIndex: 2, width:'100%', marginTop: '40rem'}}>
+                            <Col >
+                                <Card className="shadow p-4" style={{ zIndex: 2, width: '100%', marginTop: '40rem' }}>
                                     <Card.Body>
-                                    <div className="text-center">
-                                        <img src={image.logo}
-                                                style={{ 
+                                        <div className="text-center">
+                                            <img src={image.logo}
+                                                style={{
                                                     width: '15rem',
-                                                    height: '7.5rem', 
+                                                    height: '7.5rem',
                                                 }}
                                             />
-                                    </div>
-                                       
+                                        </div>
+
                                         <h4 className="text-center mb-4">Sign Up</h4>
                                         <Form>
                                             <Form.Group controlId="formChoose" className="mb-3">
@@ -374,16 +413,53 @@ const NewSignUp = () => {
                                                                 onChange={(e) => setPatientAddress({ ...patientAddress, street: e.target.value })}
                                                             />
                                                         </Form.Group>
+                                                    </Row>
+                                                    <Row className="mb-3">
                                                         <Form.Group as={Col}>
-                                                            <Form.Label>City</Form.Label>
+                                                            <Form.Label>Region</Form.Label>
                                                             <Form.Control
                                                                 type="text"
-                                                                placeholder="Enter City"
-                                                                onChange={(e) => setPatientAddress({ ...patientAddress, city: e.target.value })}
+                                                                placeholder="Enter Region"
+                                                                onChange={(e) => setPatientAddress({ ...patientAddress, region: e.target.value })}
+                                                            />
+                                                        </Form.Group>
+                                                        <Form.Group as={Col}>
+                                                            <Form.Label>Province</Form.Label>
+                                                            <Form.Control
+                                                                type="text"
+                                                                placeholder="Enter Province"
+                                                                onChange={(e) => setPatientAddress({ ...patientAddress, province: e.target.value })}
                                                             />
                                                         </Form.Group>
                                                     </Row>
-
+                                                    <Row className="mb-3">
+                                                        <Form.Group as={Col}>
+                                                            <Form.Label>City/Municipality</Form.Label>
+                                                            <Form.Control
+                                                                type="text"
+                                                                placeholder="Enter City/Municipality"
+                                                                onChange={(e) => setPatientAddress({ ...patientAddress, city: e.target.value })}
+                                                            />
+                                                        </Form.Group>
+                                                        <Form.Group as={Col}>
+                                                            <Form.Label>Zip Code</Form.Label>
+                                                            <Form.Control
+                                                                type="text"
+                                                                placeholder="Enter Zip Code"
+                                                                onChange={(e) => setPatientAddress({ ...patientAddress, zipCode: e.target.value })}
+                                                            />
+                                                        </Form.Group>
+                                                    </Row>
+                                                    <Row className="mb-3">
+                                                        <Form.Group as={Col}>
+                                                            <Form.Label>Country</Form.Label>
+                                                            <Form.Control
+                                                                type="text"
+                                                                placeholder="Enter Country"
+                                                                onChange={(e) => setPatientAddress({ ...patientAddress, country: e.target.value })}
+                                                            />
+                                                        </Form.Group>
+                                                    </Row>
                                                     <Row className="mb-3">
                                                         <Form.Group as={Col}>
                                                             <Form.Label>Nationality</Form.Label>
@@ -407,16 +483,36 @@ const NewSignUp = () => {
 
                                             {/* Practitioner-Specific Fields */}
                                             {urole === "Practitioner" && (
-                                                <Row className="mb-3">
-                                                    <Form.Group as={Col}>
-                                                        <Form.Label>License Number</Form.Label>
-                                                        <Form.Control
-                                                            type="text"
-                                                            placeholder="Enter License Number"
-                                                            onChange={(e) => setLicenseNo(e.target.value)}
-                                                        />
-                                                    </Form.Group>
-                                                </Row>
+                                                <>
+                                                    <Row className="mb-3">
+                                                        <Form.Group as={Col}>
+                                                            <Form.Label>License Number</Form.Label>
+                                                            <Form.Control
+                                                                type="text"
+                                                                placeholder="Enter License Number"
+                                                                onBlur={(e) => handleBlur("licenseNo", e.target.value)}
+                                                                onChange={(e) => setLicenseNo(e.target.value)}
+                                                            />
+                                                            {errors.licenseNo && <Form.Text className="text-danger">{errors.licenseNo}</Form.Text>}
+                                                        </Form.Group>
+                                                    </Row>
+                                                    <Row className="mb-3">
+                                                        <Form.Group as={Col}>
+                                                            <Form.Label>Specialty</Form.Label>
+                                                            <Form.Control
+                                                                as="select"
+                                                                onBlur={(e) => handleBlur("specialty", e.target.value)}
+                                                                onChange={(e) => setSpecialty(e.target.value)}
+                                                            >
+                                                                <option value="">Select Specialty</option>
+                                                                {specialties.map((specialty, index) => (
+                                                                    <option key={index} value={specialty}>{specialty}</option>
+                                                                ))}
+                                                            </Form.Control>
+                                                            {errors.specialty && <Form.Text className="text-danger">{errors.specialty}</Form.Text>}
+                                                        </Form.Group>
+                                                    </Row>
+                                                </>
                                             )}
 
                                             {/* Gender */}
@@ -427,7 +523,7 @@ const NewSignUp = () => {
                                                         onBlur={(e) => handleBlur("gender", e.target.value)}
                                                         onChange={(e) => setGender(e.target.value)}
                                                     >
-                                                        <option value="" disabled>Select Gender</option>
+                                                        <option value="">Select Gender</option>
                                                         <option value="Male">Male</option>
                                                         <option value="Female">Female</option>
                                                         <option value="Other">Other</option>
@@ -447,8 +543,8 @@ const NewSignUp = () => {
                                         </Form>
                                     </Card.Body>
                                 </Card>
-                                <div className="p-5" style={{padding:'10rem'}}></div>
-                                <div className="p-5" style={{padding:'1rem'}}></div>
+                                <div className="p-5" style={{ padding: '10rem' }}></div>
+                                <div className="p-5" style={{ padding: '1rem' }}></div>
                             </Col>
                         </Row>
                     </Container>

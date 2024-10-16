@@ -136,7 +136,6 @@ const createAppointment = async (req, res) => {
     res.status(500).json({ message: `Failed to create appointment: ${error.message}` });
   }
 };
-
 const createServiceAppointment = async (req, res) => {
   try {
     const { date, reason, appointment_type, serviceId } = req.body;
@@ -208,12 +207,6 @@ const createServiceAppointment = async (req, res) => {
     res.status(500).json({ message: `Failed to create service appointment: ${error.message}` });
   }
 };
-
-
-
-
-
-
 const getAppointmentById = async (req, res) => {
   try {
     const appointmentId = req.params.id;
@@ -232,7 +225,6 @@ const getAppointmentById = async (req, res) => {
     res.status(500).json({ message: `Failed to fetch appointment: ${error.message}` });
   }
 };
-
 const updateAppointmentStatus = async (req, res) => {
   try {
     const { status } = req.body;
@@ -258,17 +250,7 @@ const updateAppointmentStatus = async (req, res) => {
       { new: true }
     );
 
-    if (status === 'Cancelled' && appointment.doctor) {
-      const timePeriod = parseInt(appointment.time.split(":")[0]) < 12 ? 'morning' : 'afternoon';
-
-      // Increment the maxPatients slot by 1 for the doctor
-      await Doctors.findByIdAndUpdate(
-        appointment.doctor,
-        {
-          $inc: { [`availability.${new Date(appointment.date).toLocaleString('en-US', { weekday: 'long' }).toLowerCase()}.${timePeriod}.maxPatients`]: 1 },
-        }
-      );
-    }
+    // Removed the block that increments the doctor's maxPatients slots
 
     res.status(200).json(updatedAppointment);
   } catch (error) {
@@ -276,7 +258,6 @@ const updateAppointmentStatus = async (req, res) => {
     res.status(500).json({ message: `Failed to update appointment status: ${error.message}` });
   }
 };
-
 
 // Your updated controller for updating appointment with time in "AM/PM" format
 const updateAppointmentDetails = async (req, res) => {
@@ -386,6 +367,90 @@ const countBookedPatients = async (req, res) => {
 };
 
 
+const updatePatientAppointmentDetails = async (req, res) => {
+  try {
+    const { doctor, date, time, appointment_type, reason, findings, cancelReason } = req.body;
+    const oldAppointmentId = req.params.appointmentId;
+
+    // Find the old appointment
+    const oldAppointment = await Appointment.findById(oldAppointmentId);
+    if (!oldAppointment) {
+      return res.status(404).json({ message: 'Original appointment not found' });
+    }
+
+    // Update the old appointment's status to 'Archived' and set followUp to false
+    oldAppointment.status = 'Archived';
+    oldAppointment.followUp = false; // Update according to your logic
+    await oldAppointment.save();
+
+    // Create a new appointment with the provided details
+    const newAppointmentData = {
+      patient: oldAppointment.patient,
+      doctor: doctor,
+      date: date,
+      time: time,
+      reason: reason,
+      appointment_type: appointment_type,
+      status: 'Pending',
+      followUp: true,
+      findings: findings, // Set to false unless you have logic to set it to true
+    };
+
+    const newAppointment = new Appointment(newAppointmentData);
+    const savedAppointment = await newAppointment.save();
+
+    // Update the patient's and doctor's appointments arrays using Promise.all
+    await Promise.all([
+      Patient.findByIdAndUpdate(oldAppointment.patient, { $push: { patient_appointments: savedAppointment._id } }),
+      Doctors.findByIdAndUpdate(doctor, { $push: { dr_appointments: savedAppointment._id } })
+    ]);
+
+    // Perform auditing for follow-up appointments
+   
+
+
+
+    
+    // Perform auditing for appointment cancellation if `cancelReason` is provided
+      const doctorsapp = await Doctors.findById(oldAppointment.doctor);
+      const auditData = {
+        user: oldAppointment.patient._id, // Assuming the patient is cancelling the appointment
+        userType: 'Patient', // Specify the user type
+        action: 'Scheduled Follow Up Appointment',
+        description: ` You have been follow up your appointment with ${doctorsapp.dr_firstName} ${doctorsapp.dr_lastName}  ${oldAppointment.date.toLocaleDateString()} at ${oldAppointment.time} was cancelled. Reason: ${cancelReason}`,
+        ipAddress: req.ip,  // Get the IP address from the request
+        userAgent: req.get('User-Agent'),  // Get the User-Agent (browser/device info)
+      };
+
+      console.log(auditData)
+      // Save the audit record
+      const audit = await new Audit(auditData).save();
+
+      // Add the audit ID to the patient's `audits` array
+      const patient = await Patient.findById(oldAppointment.patient);
+      if (patient) {
+       
+        if (!Array.isArray(patient.audits)) {
+          patient.audits = [];
+        }
+
+    
+        patient.audits.push(audit._id);
+
+    
+        await patient.save();
+      }
+
+
+    res.status(201).json(newAppointment);
+  } catch (error) {
+    console.error('Error scheduling follow-up appointment:', error.message);
+    res.status(500).json({ message: `Failed to schedule follow-up appointment: ${error.message}` });
+  }
+};
+
+
+
 module.exports = {
   createAppointment,
   updateAppointmentStatus,
@@ -393,6 +458,7 @@ module.exports = {
   updateAppointmentDetails,
   countBookedPatients, 
   createServiceAppointment,
-  updateFollowUpStatus
+  updateFollowUpStatus,
+  updatePatientAppointmentDetails
 
 };

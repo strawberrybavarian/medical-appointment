@@ -5,7 +5,7 @@ import "./Landing.css";
 import { image } from "../../ContentExport";
 import LabResultModal from "./LabResultModal"; // Import the LabResultModal component
 
-function NavigationalBar({ scrollToServices, scrollToAbout }) {
+function NavigationalBar({ scrollToServices, scrollToAbout, scrollToNews }) {
   const navigate = useNavigate();
   const [showLabModal, setShowLabModal] = useState(false); // State to control modal visibility
 
@@ -31,6 +31,11 @@ function NavigationalBar({ scrollToServices, scrollToAbout }) {
     scrollToAbout();
   };
 
+  const handleNewsClick = (e) => {
+    e.preventDefault();
+    scrollToNews();
+  };
+
   const handleLabResultClick = () => {
     setShowLabModal(true);
   };
@@ -51,13 +56,13 @@ function NavigationalBar({ scrollToServices, scrollToAbout }) {
           <Navbar.Collapse id="navbarNav">
             <Nav className="ms-auto align-items-center">
               <Nav.Link href="/">Home</Nav.Link>
-              <Nav.Link href="#about" onClick={scrollToAbout}>
+              <Nav.Link href="#about" onClick={handleAboutClick}>
                 About
               </Nav.Link>
               <Nav.Link href="#services" onClick={handleServicesClick}>
                 Services
               </Nav.Link>
-              <Nav.Link href="#contact">News</Nav.Link>
+              <Nav.Link href="#news" onClick={handleServicesClick}>News</Nav.Link>
               <Nav.Link href="#departments">Departments</Nav.Link>
               <Nav.Link href="#doctors">Doctors</Nav.Link>
               <Nav.Link href="#contact">Contact</Nav.Link>

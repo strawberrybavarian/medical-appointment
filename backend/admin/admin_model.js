@@ -54,5 +54,8 @@ const AdminSchema = new mongoose.Schema({
     }],
 }, { timestamps: true });
 
+AdminSchema.virtual('name').get(function () {
+    return `${this.firstName} ${this.lastName}`;
+  });
 const Admin = mongoose.model('Admin', AdminSchema);
 module.exports = Admin;

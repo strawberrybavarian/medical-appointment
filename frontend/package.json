@@ -41,6 +41,7 @@
     "react-bootstrap": "^2.10.2",
     "react-bootstrap-icons": "^1.10.3",
     "react-calendar": "^5.0.0",
+    "react-data-table-component": "^7.6.2",
     "react-dom": "^18.2.0",
     "react-easy-crop": "^5.0.8",
     "react-helmet": "^6.1.0",
@@ -60,8 +61,12 @@
     "react-time-picker": "^7.0.0",
     "react-toastify": "^10.0.5",
     "react-zoom-pan-pinch": "^3.4.4",
+    "shallowequal": "^1.1.0",
     "slick-carousel": "^1.8.1",
+    "styled-components": "^6.1.13",
+    "stylis": "^4.3.4",
     "tippy.js": "^6.3.7",
+    "tslib": "^2.8.0",
     "update": "^0.7.4",
     "web-vitals": "^2.1.4"
   },
@@ -95,7 +100,5 @@
     "html-webpack-plugin": "^5.6.0",
     "tailwindcss": "^3.4.10"
   },
-  
-      "proxy": "http://localhost:8000"
-  
+  "proxy": "http://localhost:8000"
 }

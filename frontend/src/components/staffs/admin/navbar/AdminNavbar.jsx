@@ -3,24 +3,13 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Container, Navbar, Nav, NavDropdown } from 'react-bootstrap';
 import {  ChevronDown } from 'react-bootstrap-icons';
 
-import { image } from '../../../../ContentExport';
+import { image, ip } from '../../../../ContentExport';
 import './AdminNavbar.css'
 
-function AdminNavbar() {
-
+function AdminNavbar({userId, userName, role}) {
+    const defaultImage = "images/014ef2f860e8e56b27d4a3267e0a193a.jpg";
     const navigate = useNavigate();
-    const {msid} = useParams();
 
-    const onNavigateAppoinments = () => {
-        navigate(`/medsec/${msid}`)
-    }
-    const onNavigateCreatePatient = () => {
-        navigate(`/medsec/createpatient/${msid}`)
-    }
-    
-    const onButtonContainer1Click = () => {
-        navigate("/");
-    };
   return (
     <>
     
@@ -31,7 +20,7 @@ function AdminNavbar() {
                            
                             <img className="molino-logo" src={image.logo} alt="Logo" />
                             <div className='msn-container'>    
-                                <h6>Molino Polyclinic</h6>
+                          
                             </div>
                            
          
@@ -46,10 +35,22 @@ function AdminNavbar() {
                         </Nav>
 
                         <Nav>
-                            <NavDropdown title={<span>Account <ChevronDown /></span>} id="basic-nav-dropdown" className="pnb-nav-link1">
-                                
-                                <NavDropdown.Item className="pnb-nav-link" onClick={onButtonContainer1Click}>Logout</NavDropdown.Item>
-                            </NavDropdown>
+                                <div className="d-flex align-items-center justify-content-end ">
+                                        
+                                        <div className="ms-2 ">
+                                      
+                                                <p className="m-0" style={{ fontSize: '14px', fontWeight: 'bold' }}>{userName}</p>
+                                                <p  className="m-0" style={{ fontSize: '12px', color: 'gray', textAlign: 'end' }}>Admin</p>
+                                           
+                                            
+                                        </div>
+                                        <img
+                                            src={  `${ip.address}/${defaultImage}`}
+                                            alt="Profile"
+                                            className="profile-image ms-3"
+                                            style={{objectFit: 'cover'}}
+                                        />
+                                    </div>
                         </Nav>
                         
                     </Navbar.Collapse>

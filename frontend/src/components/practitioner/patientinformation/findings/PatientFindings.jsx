@@ -1,12 +1,7 @@
+// PatientFindings.jsx
+
 import { useNavigate, useParams, Link } from "react-router-dom";
-import {
-  Container,
-  Row,
-  Col,
-  Button,
-  Card,
-  Form,
-} from "react-bootstrap";
+import { Container, Row, Col, Button, Card, Form } from "react-bootstrap";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import "./PatientFindings.css";
@@ -18,7 +13,9 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
   const [lname, setLname] = useState("");
   const [age, setAge] = useState("");
   const [email, setEmail] = useState("");
+  const [appointmentDate, setAppointmentDate] = useState("");
   const [reason, setReason] = useState("");
+  const [followup, setFollowup] = useState("");
   const [findings, setFindings] = useState({
     bloodPressure: { systole: "", diastole: "" },
     respiratoryRate: "",
@@ -58,20 +55,9 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [canEdit, setCanEdit] = useState(false);
 
   const navigate = useNavigate();
-
-  useEffect(() => {
-    axios
-      .get(`${ip.address}/api/appointments/${appointmentId}`)
-      .then((res) => {
-        setReason(res.data.reason);
-      })
-      .catch((err) => {
-        console.error("Error fetching appointment:", err);
-        setError("Failed to load appointment data. Please try again later.");
-      });
-  }, [appointmentId]);
 
   useEffect(() => {
     if (!patientId || !appointmentId) {
@@ -79,19 +65,35 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
       return;
     }
 
-    const fetchPatientAndFindings = async () => {
+    const fetchData = async () => {
       setLoading(true);
       try {
-        const [patientRes, findingsRes, appointmentRes] = await Promise.all([
+        const [patientRes, appointmentRes] = await Promise.all([
           axios.get(`${ip.address}/api/patient/api/onepatient/${patientId}`),
-          axios.get(`${ip.address}/api/getfindings/${appointmentId}`),
           axios.get(`${ip.address}/api/appointments/${appointmentId}`),
         ]);
+        const patientData = patientRes.data.thePatient;
+        const appointmentData = appointmentRes.data;
 
-        setFname(patientRes.data.thePatient.patient_firstName);
-        setLname(patientRes.data.thePatient.patient_lastName);
-        setAge(patientRes.data.thePatient.patient_age);
-        setEmail(patientRes.data.thePatient.patient_email);
+        setFname(patientData.patient_firstName);
+        setLname(patientData.patient_lastName);
+        setAge(patientData.patient_age);
+        setEmail(patientData.patient_email);
+
+        setReason(appointmentData.reason);
+        setFollowup(appointmentData.followUp);
+        setAppointmentDate(appointmentData.date);
+
+        // Check if the appointment date is today
+        // const appointmentDateOnly = new Date(appointmentData.date).toISOString().split('T')[0];
+        // const currentDateOnly = new Date().toISOString().split('T')[0];
+
+        // setCanEdit(appointmentDateOnly === currentDateOnly);
+
+        // Fetch findings for this appointment
+        const findingsRes = await axios.get(
+          `${ip.address}/api/getfindings/${appointmentId}`
+        );
 
         if (findingsRes.data && findingsRes.data.findings) {
           setFindings((prevState) => ({
@@ -100,13 +102,50 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
             lifestyle: {
               ...prevState.lifestyle,
               ...findingsRes.data.findings.lifestyle,
-              others: findingsRes.data.findings.lifestyle?.others || [], // Ensure others is an array
+              others: findingsRes.data.findings.lifestyle?.others || [],
             },
           }));
-        }
-
-        if (appointmentRes.data && appointmentRes.data.appointment) {
-          setReason(appointmentRes.data.appointment.reason);
+        } else {
+          // If no findings exist, reset findings to initial state
+          setFindings({
+            bloodPressure: { systole: "", diastole: "" },
+            respiratoryRate: "",
+            pulseRate: "",
+            temperature: "",
+            weight: "",
+            height: "",
+            historyOfPresentIllness: {
+              chiefComplaint: "",
+              currentSymptoms: [""],
+            },
+            bloodSugar: { fasting: "", random: "" },
+            cholesterol: { total: "", ldl: "", hdl: "", triglycerides: "" },
+            oxygenSaturation: "",
+            generalCondition: "Stable",
+            lifestyle: {
+              smoking: false,
+              alcoholConsumption: false,
+              physicalActivity: "",
+              others: [], // Initialize others as an empty array
+            },
+            familyHistory: [{ relation: "", condition: "" }],
+            socialHistory: {
+              employmentStatus: "",
+              livingSituation: "",
+              socialSupport: true,
+            },
+            mentalHealth: { mood: "", anxietyLevel: "", depressionLevel: "" },
+            skinCondition: [], // Ensure this is an array
+            allergy: [], // Ensure this is an array
+            neurologicalFindings: "",
+            gastrointestinalSymptoms: "",
+            cardiovascularSymptoms: "",
+            reproductiveHealth: "",
+            remarks: "",
+            interpretation: "",
+            recommendations: "",
+            assessment: "",
+          });
         }
 
         setLoading(false);
@@ -117,7 +156,7 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
       }
     };
 
-    fetchPatientAndFindings();
+    fetchData();
   }, [patientId, appointmentId]);
 
   const handleChange = (e) => {
@@ -169,7 +208,7 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
         },
       }));
     } else if (name === "others") {
-      const index = e.target.dataset.index;
+      const index = dataset.index;
       const updatedOthers = findings.lifestyle.others
         ? [...findings.lifestyle.others]
         : [];
@@ -191,6 +230,11 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // if (!canEdit) {
+    //   alert("You cannot edit findings for appointments on a different date.");
+    //   return;
+    // }
 
     // Validation for Chief Complaint and Current Symptoms
     if (!findings.historyOfPresentIllness.chiefComplaint.trim()) {
@@ -271,6 +315,9 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
               <Card.Text>
                 <strong>Primary Concern:</strong> {reason}
               </Card.Text>
+              <Card.Text>
+                <strong>Follow Up?:</strong> {followup ? "Yes" : "No"}
+              </Card.Text>
             </Card.Body>
           </Card>
 
@@ -285,6 +332,13 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
               </h4>
             </Card.Header>
             <Card.Body>
+
+              {/* {!canEdit && (
+                <div className="alert alert-warning">
+                  You cannot edit findings for appointments on a different date.
+                </div>
+              )} */}
+
               <Form onSubmit={handleSubmit}>
                 <h4>History of Present Illness</h4>
                 <hr />
@@ -383,86 +437,82 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
                 <hr />
 
                 <h4>Vitals</h4>
-                            <hr/>
-                            <Form onSubmit={handleSubmit}>
-                                            {/* Vitals */}
-                                            <Row className="mb-2">
-                                                <Form.Group as={Col} className="mb-3">
-                                                    <Form.Label>Blood Pressure (Systole):</Form.Label>
-                                                    <Form.Control
-                                                        type="number"
-                                                        name="systole"
-                                                        value={findings?.bloodPressure?.systole || ''}
-                                                        onChange={handleChange}
-                                                    />
-                                                </Form.Group>
-                                                <Form.Group as={Col} className="mb-3">
-                                                    <Form.Label>Blood Pressure (Diastole):</Form.Label>
-                                                    <Form.Control
-                                                        type="number"
-                                                        name="diastole"
-                                                        value={findings?.bloodPressure?.diastole || ''}
-                                                        onChange={handleChange}
-                                                    />
-                                                </Form.Group>
-                                            </Row>
-                            </Form>
+                <hr />
+                <Form onSubmit={handleSubmit}>
+                  {/* Vitals */}
+                  <Row className="mb-2">
+                    <Form.Group as={Col} className="mb-3">
+                      <Form.Label>Blood Pressure (Systole):</Form.Label>
+                      <Form.Control
+                        type="number"
+                        name="systole"
+                        value={findings?.bloodPressure?.systole || ""}
+                        onChange={handleChange}
+                      />
+                    </Form.Group>
+                    <Form.Group as={Col} className="mb-3">
+                      <Form.Label>Blood Pressure (Diastole):</Form.Label>
+                      <Form.Control
+                        type="number"
+                        name="diastole"
+                        value={findings?.bloodPressure?.diastole || ""}
+                        onChange={handleChange}
+                      />
+                    </Form.Group>
+                  </Row>
+                </Form>
 
+                {/* Vitals */}
+                <Row className="mb-2">
+                  <Form.Group as={Col} className="mb-3">
+                    <Form.Label>Respiratory Rate:</Form.Label>
+                    <Form.Control
+                      type="number"
+                      name="respiratoryRate"
+                      value={findings?.respiratoryRate || ""}
+                      onChange={handleChange}
+                    />
+                  </Form.Group>
+                  <Form.Group as={Col} className="mb-3">
+                    <Form.Label>Pulse Rate:</Form.Label>
+                    <Form.Control
+                      type="number"
+                      name="pulseRate"
+                      value={findings?.pulseRate || ""}
+                      onChange={handleChange}
+                    />
+                  </Form.Group>
+                  <Form.Group as={Col} className="mb-3">
+                    <Form.Label>Temperature (°C):</Form.Label>
+                    <Form.Control
+                      type="number"
+                      name="temperature"
+                      value={findings?.temperature || ""}
+                      onChange={handleChange}
+                    />
+                  </Form.Group>
+                </Row>
 
-                             
-
-                                {/* Vitals */}
-                                <Row className="mb-2">
-                                    <Form.Group as={Col} className="mb-3">
-                                        <Form.Label>Respiratory Rate:</Form.Label>
-                                        <Form.Control
-                                            type="number"
-                                            name="respiratoryRate"
-                                            value={findings?.respiratoryRate || ''}
-                                            onChange={handleChange}
-                                        />
-                                    </Form.Group>
-                                    <Form.Group as={Col} className="mb-3">
-                                        <Form.Label>Pulse Rate:</Form.Label>
-                                        <Form.Control
-                                            type="number"
-                                            name="pulseRate"
-                                            value={findings?.pulseRate || ''}
-                                            onChange={handleChange}
-                                        />
-                                    </Form.Group>
-                                    <Form.Group as={Col} className="mb-3">
-                                        <Form.Label>Temperature (°C):</Form.Label>
-                                        <Form.Control
-                                            type="number"
-                                            name="temperature"
-                                            value={findings?.temperature || ''}
-                                            onChange={handleChange}
-                                        />
-                                    </Form.Group>
-                                </Row>
-
-                                <Row className="mb-2">
-                                    <Form.Group as={Col} className="mb-3">
-                                        <Form.Label>Weight (kg):</Form.Label>
-                                        <Form.Control
-                                            type="number"
-                                            name="weight"
-                                            value={findings?.weight || ''}
-                                            onChange={handleChange}
-                                        />
-                                    </Form.Group>
-                                    <Form.Group as={Col} className="mb-3">
-                                        <Form.Label>Height (cm):</Form.Label>
-                                        <Form.Control
-                                            type="number"
-                                            name="height"
-                                            value={findings?.height || ''}
-                                            onChange={handleChange}
-                                        />
-                                    </Form.Group>
-                                </Row>
-
+                <Row className="mb-2">
+                  <Form.Group as={Col} className="mb-3">
+                    <Form.Label>Weight (kg):</Form.Label>
+                    <Form.Control
+                      type="number"
+                      name="weight"
+                      value={findings?.weight || ""}
+                      onChange={handleChange}
+                    />
+                  </Form.Group>
+                  <Form.Group as={Col} className="mb-3">
+                    <Form.Label>Height (cm):</Form.Label>
+                    <Form.Control
+                      type="number"
+                      name="height"
+                      value={findings?.height || ""}
+                      onChange={handleChange}
+                    />
+                  </Form.Group>
+                </Row>
 
                 <hr />
                 <h4>Lifestyle</h4>
@@ -544,64 +594,72 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
                 <h4>Family History</h4>
                 <hr />
                 <Form.Group className="mb-3">
-  <Form.Label>Family History (Relation/Condition):</Form.Label>
-  {findings.familyHistory?.map((history, index) => (
-    <Row key={index} className="mb-2">
-      <Col>
-        <Form.Control
-          as="select"
-          value={history.relation || ""}
-          style={{ fontSize: "14px", padding: "1px 10px" }}
-          onChange={(e) => {
-            const updatedFamilyHistory = [...findings.familyHistory];
-            updatedFamilyHistory[index].relation = e.target.value;
-            setFindings({
-              ...findings,
-              familyHistory: updatedFamilyHistory,
-            });
-          }}
-        >
-          <option value="">Select Relation</option>
-          <option value="Father">Father</option>
-          <option value="Mother">Mother</option>
-          <option value="Brother">Brother</option>
-          <option value="Sister">Sister</option>
-          <option value="Grandfather">Grandfather</option>
-          <option value="Grandmother">Grandmother</option>
-          <option value="Uncle">Uncle</option>
-          <option value="Aunt">Aunt</option>
-          <option value="Other">Other</option>
-        </Form.Control>
-      </Col>
-      <Col md={6}>
-        <Form.Control
-          type="text"
-          value={history.condition || ""}
-          onChange={(e) => {
-            const updatedFamilyHistory = [...findings.familyHistory];
-            updatedFamilyHistory[index].condition = e.target.value;
-            setFindings({
-              ...findings,
-              familyHistory: updatedFamilyHistory,
-            });
-          }}
-        />
-      </Col>
-    </Row>
-  )) || []}
-  <Button
-    variant="secondary"
-    onClick={() => {
-      setFindings({
-        ...findings,
-        familyHistory: [...findings.familyHistory, { relation: "", condition: "" }],
-      });
-    }}
-  >
-    Add Family History
-  </Button>
-</Form.Group>
-
+                  <Form.Label>Family History (Relation/Condition):</Form.Label>
+                  {findings.familyHistory?.map((history, index) => (
+                    <Row key={index} className="mb-2">
+                      <Col>
+                        <Form.Control
+                          as="select"
+                          value={history.relation || ""}
+                          style={{ fontSize: "14px", padding: "1px 10px" }}
+                          onChange={(e) => {
+                            const updatedFamilyHistory = [
+                              ...findings.familyHistory,
+                            ];
+                            updatedFamilyHistory[index].relation =
+                              e.target.value;
+                            setFindings({
+                              ...findings,
+                              familyHistory: updatedFamilyHistory,
+                            });
+                          }}
+                        >
+                          <option value="">Select Relation</option>
+                          <option value="Father">Father</option>
+                          <option value="Mother">Mother</option>
+                          <option value="Brother">Brother</option>
+                          <option value="Sister">Sister</option>
+                          <option value="Grandfather">Grandfather</option>
+                          <option value="Grandmother">Grandmother</option>
+                          <option value="Uncle">Uncle</option>
+                          <option value="Aunt">Aunt</option>
+                          <option value="Other">Other</option>
+                        </Form.Control>
+                      </Col>
+                      <Col md={6}>
+                        <Form.Control
+                          type="text"
+                          value={history.condition || ""}
+                          onChange={(e) => {
+                            const updatedFamilyHistory = [
+                              ...findings.familyHistory,
+                            ];
+                            updatedFamilyHistory[index].condition =
+                              e.target.value;
+                            setFindings({
+                              ...findings,
+                              familyHistory: updatedFamilyHistory,
+                            });
+                          }}
+                        />
+                      </Col>
+                    </Row>
+                  )) || []}
+                  <Button
+                    variant="secondary"
+                    onClick={() => {
+                      setFindings({
+                        ...findings,
+                        familyHistory: [
+                          ...findings.familyHistory,
+                          { relation: "", condition: "" },
+                        ],
+                      });
+                    }}
+                  >
+                    Add Family History
+                  </Button>
+                </Form.Group>
 
                 {/* Skin Condition */}
 

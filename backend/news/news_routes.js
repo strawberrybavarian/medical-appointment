@@ -4,6 +4,7 @@ const path = require('path');
 const fs = require('fs');
 const NewsController = require('./news_controller');
 
+console.log('News Routes connected')
 // Use the same storage setup from announcements
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {

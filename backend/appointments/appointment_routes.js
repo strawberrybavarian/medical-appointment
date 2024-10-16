@@ -36,5 +36,5 @@ module.exports = app => {
     app.get('/api/appointments/doctor/:doctorId/count', AppointmentController.countBookedPatients);
     app.post('/api/patient/api/:uid/createserviceappointment', AppointmentController.createServiceAppointment);
     app.put('/api/appointments/:id/followup', AppointmentController.updateFollowUpStatus);
-
+    app.post('/api/appointments/:appointmentId/schedulefollowup', AppointmentController.updatePatientAppointmentDetails);
 };

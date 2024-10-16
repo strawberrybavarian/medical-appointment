@@ -14,7 +14,7 @@ import Footer from "../../Footer";
 import DoctorBiography from "./DoctorBiography";
 import DoctorHMO from "./DoctorHMO";
 
-function DoctorProfile() {
+function DoctorProfile({}) {
     const [theDoctor, setTheDoctor] = useState(null); 
     const [theImage, setTheImage] = useState("");
     const [FullName, setFullName] = useState("");
@@ -24,7 +24,7 @@ function DoctorProfile() {
     const [openAnnouncements, setOpenAnnouncements] = useState(false);
     const [openCalendar, setOpenCalendar] = useState(false);
     const { doctorId, patient } = usePatient();
-
+    console.log(doctorId);
     useEffect(() => {
         if (doctorId) {
             axios.get(`${ip.address}/api/doctor/api/finduser/${doctorId}`)
@@ -46,7 +46,8 @@ function DoctorProfile() {
     useEffect(() => {
         const fetchBiography = async () => {
           try {
-            const response = await axios.get(`${ip.address}/doctor/${doctorId}/getbiography`);
+            const response = await axios.get(`${ip.address}/api/doctor/${doctorId}/getbiography`);
+
             setBiography(response.data.biography || {});
           } catch (error) {
             console.error('Error fetching biography:', error);

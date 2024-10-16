@@ -21,6 +21,7 @@ const PatientSchema = new Schema({
     },
     patient_image: {   
         type: String,
+        default: 'images/014ef2f860e8e56b27d4a3267e0a193a.jpg'
     },
     patient_firstName: {
         type: String,
@@ -47,7 +48,7 @@ const PatientSchema = new Schema({
     },
     accountStatus: {
         type: String,
-        enum: ['Registered', 'Unregistered', 'Deactivated', 'Deleted'],
+        
         default: 'Registered'
     },
     patient_contactNumber: {

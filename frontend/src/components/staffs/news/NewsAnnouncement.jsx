@@ -191,7 +191,7 @@ const deleteNews = (newsId) => {
             {/* News Headline */}
             {newsItem.headline && (
               <h5 className="mt-2" style={{ fontWeight: "bold" }}>
-                <Link to={`/news/${newsItem._id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                <Link to={`/news/${newsItem.news_ID}`} style={{ textDecoration: 'none', color: 'inherit' }}>
                   {newsItem.headline}
                 </Link>
               </h5>

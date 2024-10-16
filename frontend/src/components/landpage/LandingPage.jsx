@@ -1,14 +1,16 @@
+// src/components/LandingPage.jsx
 import React, { useRef } from "react";
 import NavigationalBar from "./navbar";
 import './Landing.css';
-import { ip, image } from "../../ContentExport";
 import Footer from "../Footer";
+import NewsSection from "../staffs/news/NewsSection";
+import { ip } from "../../ContentExport";
 
 function LandingPage() {
-  // Create a reference to the Services section
+  // Create references to sections
   const servicesRef = useRef(null);
   const aboutRef = useRef(null);
-  // Function to scroll to the Services section
+  const newsRef = useRef(null);
   const scrollToServices = () => {
     if (servicesRef.current) {
       servicesRef.current.scrollIntoView({ behavior: "smooth" });
@@ -21,11 +23,21 @@ function LandingPage() {
     }
   };
 
+  const scrollToNews = () => {
+    if (newsRef.current) {
+      newsRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
   return (
     <>
       {/* Navbar */}
-      <div className="w-100">
-        <NavigationalBar scrollToServices={scrollToServices} scrollToAbout={scrollToAbout} />
+      <div>
+        <NavigationalBar 
+        scrollToServices={scrollToServices} 
+        scrollToAbout={scrollToAbout} 
+        scrollToNews={scrollToNews} />
+        
       </div>
 
       {/* Content Section */}
@@ -46,17 +58,15 @@ function LandingPage() {
                   alt=""
                   style={{
                     objectFit: "cover",
-                    width: "100%",  // Ensure it fits the container
+                    width: "100%",
                     height: "800px",
-                    maxWidth: "100vw",  // Prevent overflow from large images
+                    maxWidth: "100vw",
                   }}
                 />
                 <div className="hero-absolute">
-                  
                   <h2 className="display-4 text-white fw-bold mb-4">
                     Welcome to Molino Care App
                   </h2>
-                  
                   <p className="lead text-white mb-4">
                     Medical Functional is most focused in helping you <br />
                     discover your most beautiful smile.
@@ -75,11 +85,12 @@ function LandingPage() {
             ref={aboutRef}
             style={{ padding: "50px", backgroundColor: "#f7f7f7" }}
           >
-            <div class="container section-title" data-aos="fade-up">
+            <div className="container section-title" data-aos="fade-up">
               <h2>About Us<br/></h2>
               <p>Necessitatibus eius consequatur ex aliquid fuga eum quidem sint consectetur velit</p>
             </div>
-          </section>         
+          </section>
+
           {/* Services Section */}
           <section
             id="services"
@@ -90,6 +101,13 @@ function LandingPage() {
             <p>Here are the services we offer...</p>
           </section>
 
+          <section
+            id="news"
+            ref={newsRef}
+            style={{ padding: "50px", backgroundColor: "#f7f7f7" }}
+          >
+          <NewsSection />
+          </section>
           {/* Footer */}
           <Footer />
         </div>

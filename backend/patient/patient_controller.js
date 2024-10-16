@@ -306,6 +306,7 @@ const updatePatientInfo = async (req, res) => {
 
     // Capture changes before updating
     const changes = [];
+
     if (updatedInfo.patient_firstName && updatedInfo.patient_firstName !== patient.patient_firstName) {
       changes.push(`First Name changed from "${patient.patient_firstName}" to "${updatedInfo.patient_firstName}"`);
     }
@@ -318,12 +319,18 @@ const updatePatientInfo = async (req, res) => {
     if (updatedInfo.patient_contactNumber && updatedInfo.patient_contactNumber !== patient.patient_contactNumber) {
       changes.push(`Contact Number changed from "${patient.patient_contactNumber}" to "${updatedInfo.patient_contactNumber}"`);
     }
+    if (updatedInfo.patient_email && updatedInfo.patient_email !== patient.patient_email) {
+      changes.push(`Email changed from "${patient.patient_email}" to "${updatedInfo.patient_email}"`);
+    }
+    // Add other fields as necessary, ensuring they are optional
 
     // Update the patient information
     patient.patient_firstName = updatedInfo.patient_firstName || patient.patient_firstName;
     patient.patient_lastName = updatedInfo.patient_lastName || patient.patient_lastName;
     patient.patient_middleInitial = updatedInfo.patient_middleInitial || patient.patient_middleInitial;
     patient.patient_contactNumber = updatedInfo.patient_contactNumber || patient.patient_contactNumber;
+    patient.patient_email = updatedInfo.patient_email || patient.patient_email;
+    // Update other fields similarly
 
     // Create the audit description based on changes
     const auditDescription = changes.length > 0 ? changes.join(', ') : 'No significant changes made.';

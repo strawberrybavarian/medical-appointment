@@ -61,10 +61,9 @@ import ChooseDoctorServices from './components/patient/homepage/ChooseDoctorServ
 import MedSecAccInfo from './components/staffs/medical secretary/components/Account/MedSecAccInfo';
 import ResetPassword from './components/login/ResetPassword';
 
-
 import { PatientProvider } from './components/patient/PatientContext';
 import { DoctorProvider } from './components/practitioner/DoctorContext';
-
+import AdminNewsManagement from './components/staffs/admin/news/AdminNewsManagement';
 function App() {
 
   return (
@@ -113,14 +112,14 @@ function App() {
 
 
         {/* Admin Routes */}
-          <Route path={"/admin/dashboard/patient/:aid"} element={<PatientMain />}/>
-          <Route path={"/admin/dashboard/doctor/:aid"} element={<DoctorMain />}/>
-          <Route path={"/admin/account/doctor/:aid"} element={<DoctorManagement />}/>
-          <Route path={"/admin/account/staffs/:aid"} element={<StaffsManagement />}/>
-          <Route path={"/admin/account/patient/:aid"} element={<PatientManagement />}/>
-          <Route path={"/admin/appointments/:aid"} element={<AdminAppointmentMain />}/>
-          <Route path={"/admin/sas/:aid"} element={<SasMain />}/>
-
+          <Route path={"/admin/dashboard/patient"} element={<PatientMain />}/>
+          <Route path={"/admin/dashboard/doctor/"} element={<DoctorMain />}/>
+          <Route path={"/admin/account/doctor/"} element={<DoctorManagement />}/>
+          <Route path={"/admin/account/staffs/"} element={<StaffsManagement />}/>
+          <Route path={"/admin/account/patient/"} element={<PatientManagement />}/>
+          <Route path={"/admin/appointments/"} element={<AdminAppointmentMain />}/>
+          <Route path={"/admin/sas/"} element={<SasMain />}/>
+          <Route path={"/admin/news-management"} element={<AdminNewsManagement />}/>
       </Routes>
     </BrowserRouter>
 

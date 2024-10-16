@@ -59,16 +59,23 @@ const StaffLogIn = () => {
             window.alert("Successfully logged in");
     
             if (userRole === "Medical Secretary") {
-              navigate('/medsec/dashboard', {
-                state: {
-                  userId: user._id,
-                  userName: `${user.ms_firstName} ${user.ms_lastName}`,
-                  role: userRole
-                }
-              });
-            } else if (userRole === "Admin") {
-              navigate(`/admin/dashboard/patient/${user._id}`);
-            }
+                navigate('/medsec/dashboard', {
+                  state: {
+                    userId: user._id,
+                    userName: `${user.ms_firstName} ${user.ms_lastName}`,
+                    role: userRole,
+                  },
+                });
+              } else if (userRole === "Admin") {
+                navigate('/admin/dashboard/patient', {
+                  state: {
+                    userId: user._id,
+                    userName: `${user.firstName} ${user.lastName}`,
+                    role: userRole,
+                  },
+                });
+              }
+              
           }
         } else {
           setErrorMessage("Invalid email or password. Please try again.");

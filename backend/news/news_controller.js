@@ -1,6 +1,6 @@
 const MedicalSecretary = require('../medicalsecretary/medicalsecretary_model');
 const Admin = require('../admin/admin_model');
-const News = require('./news_model');
+const News = require('./news_model')
 const fs = require('fs');
 const path = require('path');
 
@@ -9,14 +9,51 @@ const path = require('path');
 
 const getGeneralNews = async (req, res) => {
     try {
-      // Find all news posts and populate the `posted_by` field
-      const newsPosts = await News.find().populate('posted_by', 'name'); // Populate 'posted_by' with the name of the user
-      res.json({ news: newsPosts });
+        const newsPosts = await News.aggregate([
+            {
+                $lookup: {
+                    from: 'medicalsecretaries',  // The collection name in MongoDB
+                    localField: 'posted_by',     // The field in News that stores the Medical Secretary/Admin _id
+                    foreignField: '_id',         // The field in the Medical Secretary collection that matches
+                    as: 'medicalSecretaryInfo'   // The field to hold the Medical Secretary details
+                }
+            },
+            {
+                $lookup: {
+                    from: 'admins',              // The Admin collection
+                    localField: 'posted_by',     // The field in News that stores the Admin _id
+                    foreignField: '_id',         // The field in the Admin collection that matches
+                    as: 'adminInfo'              // The field to hold the Admin details
+                }
+            },
+            {
+                $project: {
+                    news_ID: 1,
+                    content: 1,
+                    headline: 1,
+                    images: 1,
+                    role: 1,
+                    posted_by: 1,
+                    postedByInfo: {
+                        $cond: {
+                            if: { $eq: ['$role', 'Medical Secretary'] }, 
+                            then: { $arrayElemAt: ['$medicalSecretaryInfo', 0] }, 
+                            else: { $arrayElemAt: ['$adminInfo', 0] }
+                        }
+                    }
+                }
+            }
+        ]);
+
+        res.json({ news: newsPosts });
     } catch (error) {
-      console.error('Error fetching general news posts:', error);
-      res.status(500).json({ message: 'Error fetching general news posts', error });
+        console.error('Error fetching general news posts:', error);
+        res.status(500).json({ message: 'Error fetching general news posts', error });
     }
-  };
+};
+
+
+
   
 const findNewsByUserId = (req, res) => {
     const { id, role } = req.params;
@@ -190,9 +227,11 @@ const updateNewsAtIndex = async (req, res) => {
 };
 
 
+
 const getNewsById = async (req, res) => {
     try {
-      const news = await News.findById(req.params.id);
+      const news = await News.findOne({ news_ID: req.params.id });
+
       if (!news) {
         return res.status(404).json({ message: "News not found" });
       }
@@ -201,6 +240,7 @@ const getNewsById = async (req, res) => {
       res.status(500).json({ error: err.message });
     }
   };
+  
   
 
 

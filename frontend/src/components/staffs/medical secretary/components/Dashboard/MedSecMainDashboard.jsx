@@ -67,12 +67,13 @@ function MedSecMainDashboard() {
                                             <AppointmentFullCalendar msid={userId} />
                                         </Col>
                                         <Col md={4} className="mb-3 mt-3">
-                                            <BarAppointment />
-                                            <LineCompletedAppointments />
+                                        <NewsAnnouncement role={role} user_id={userId} user_name={userName} /> {/* News announcements */}
+                                           
                                            
                                         </Col>
                                             <Col md={4} className="mb-3 mt-1">
-                                            <NewsAnnouncement role={role} user_id={userId} user_name={userName} /> {/* News announcements */}
+                                            <BarAppointment />
+                                            <LineCompletedAppointments />
                                         </Col>
                                     </Row>
                                 </Container>

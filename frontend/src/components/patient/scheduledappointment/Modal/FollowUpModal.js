@@ -11,10 +11,8 @@ function FollowUpModal({ show, handleClose, appointment, pid, setAppointments })
     const [afternoonTimeRange, setAfternoonTimeRange] = useState("");
     const [availableSlots, setAvailableSlots] = useState({ morning: 0, afternoon: 0 });
     const [reason, setReason] = useState(appointment.reason || '');
-    // const [updateFollowUp, setUpdateFollowUp] = useState(false); // Uncomment if you want to make it optional
 
     const doctorId = appointment.doctor._id;
-
     const todayDate = new Date().toISOString().split('T')[0]; // Today's date
 
     useEffect(() => {
@@ -130,7 +128,7 @@ function FollowUpModal({ show, handleClose, appointment, pid, setAppointments })
             period = 'custom';
         }
 
-        const rescheduleData = {
+        const followUpData = {
             doctor: doctorId,
             date,
             time,
@@ -138,11 +136,13 @@ function FollowUpModal({ show, handleClose, appointment, pid, setAppointments })
             appointment_type: appointment.appointment_type,
         };
 
-        axios.put(`${ip.address}/api/appointments/${appointment._id}/assign`, rescheduleData)
-            .then(() => {
+        // Send a POST request to schedule a follow-up
+        axios.post(`${ip.address}/api/appointments/${appointment._id}/schedulefollowup`, followUpData)
+            .then((response) => {
+                const newAppointment = response.data;
                 alert('Follow-up appointment scheduled successfully.');
 
-                // Decrease the available slots after successful rescheduling
+                // Decrease the available slots after successful scheduling
                 if (period === 'morning' || period === 'afternoon') {
                     setAvailableSlots(prevSlots => ({
                         ...prevSlots,
@@ -150,21 +150,10 @@ function FollowUpModal({ show, handleClose, appointment, pid, setAppointments })
                     }));
                 }
 
-                // Optionally, update the appointment's followUp field
-                // If you want to update the followUp field, uncomment the following code
-                /*
-                axios.put(`${ip.address}/api/appointments/${appointment._id}/followup`, { followUp: false })
-                    .then(() => {
-                        // Update the appointments state
-                        setAppointments(prevAppointments => prevAppointments.map(appt => {
-                            if (appt._id === appointment._id) {
-                                return { ...appt, followUp: false };
-                            }
-                            return appt;
-                        }));
-                    })
-                    .catch(err => console.error(err));
-                */
+                // Optionally, update the appointments state
+                if (setAppointments) {
+                    setAppointments(prevAppointments => [...prevAppointments, newAppointment]);
+                }
 
                 handleClose();
             })

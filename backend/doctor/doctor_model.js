@@ -46,7 +46,7 @@ const DoctorSchema = new Schema({
   },
   dr_image: {
     type: String,
-    default: '' // Default image path if needed
+    default: 'images/014ef2f860e8e56b27d4a3267e0a193a.jpg' 
   },
   dr_firstName: {
     type: String,
