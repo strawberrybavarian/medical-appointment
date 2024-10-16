@@ -17,6 +17,7 @@ function MedSecMain() {
   
   const location = useLocation(); 
   const { userId, userName, role } = location.state || {};
+
   const [allappointments, setallappointments] = useState([]);
   const [selectedDoctor, setSelectedDoctor] = useState("");
   const [activeTab, setActiveTab] = useState("pending");
@@ -186,7 +187,7 @@ function MedSecMain() {
                         </Button>
                       </Container>
                       <MedSecToSend
-
+                        msid={userId}
                         allAppointments={allappointments}
                         setAllAppointments={setallappointments}
                         selectedDoctor={selectedDoctor}

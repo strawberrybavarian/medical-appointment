@@ -4,7 +4,7 @@ import axios from "axios";
 import { useParams } from "react-router-dom";
 import UploadLabResultsModal from "./modal/UploadLabResultsModal";
 import { ip } from "../../../../../ContentExport";
-const MedSecToSend = ({ allAppointments, setAllAppointments }) => {
+const MedSecToSend = ({ allAppointments, setAllAppointments, msid }) => {
   const { did } = useParams();
   const [error, setError] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -16,7 +16,7 @@ const MedSecToSend = ({ allAppointments, setAllAppointments }) => {
   const [showToast, setShowToast] = useState(false);  // Success toast state
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [alldoctors, setAllDoctors] = useState([]);  // State for doctors
-
+  console.log(msid)
   useEffect(() => {
     axios.get(`${ip.address}/api/doctor/api/alldoctor`)
       .then((result) => {
@@ -85,7 +85,7 @@ const MedSecToSend = ({ allAppointments, setAllAppointments }) => {
 
     try {
         const response = await axios.post(
-            `${ip.address}/api/doctor/api/createLaboratoryResult/${selectedAppointment.patient._id}/${selectedAppointment._id}`,
+            `${ip.address}/api/medsec/${msid}/api/createLaboratoryResult/${selectedAppointment.patient._id}/${selectedAppointment._id}`,
             labData,
             {
                 headers: { 'Content-Type': 'multipart/form-data' }
@@ -148,6 +148,7 @@ const MedSecToSend = ({ allAppointments, setAllAppointments }) => {
             <th>Date</th>
             <th>Time</th>
             <th>Status</th>
+            <th>Account Status</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -163,6 +164,7 @@ const MedSecToSend = ({ allAppointments, setAllAppointments }) => {
                 <td>{appointment.date ? new Date(appointment.date).toLocaleDateString() : "Not Assigned"}</td>
                 <td>{appointment.time || "Not Assigned"}</td>
                 <td>{appointment.status}</td>
+                <td>{appointment.patient.accountStatus}</td>
                 <td>
                   <Dropdown>
                     <Dropdown.Toggle variant="secondary" id="dropdown-basic">
