@@ -7,6 +7,7 @@ const Prescription = require('../prescription/prescription_model');
 const Notification = require('../notifications/notifications_model')
 const DoctorService = require('../doctor/doctor_service')
 const mongoose = require('mongoose');
+const Specialty = require('../specialty/specialty_model');
 const QRCode = require('qrcode');
 const speakeasy = require('speakeasy');
 const bcrypt = require('bcryptjs');
@@ -312,14 +313,18 @@ const findOneDoctor = (req, res) => {
 };
 ;
 
-const findUniqueSpecialties = (req, res) => {
-    Doctors.distinct('dr_specialty')
-        .then((specialties) => {
-            res.json({ specialties });
-        })
-        .catch((err) => {
-            res.json({ message: 'Something went wrong', error: err });
-        });
+const findUniqueSpecialties = async (req, res) => {
+  try {
+      // Step 1: Get the list of unique specialties from the Doctors collection
+      const specialtyNames = await Doctors.distinct('dr_specialty');
+
+      // Step 2: Fetch specialty details from the Specialty collection
+      const specialties = await Specialty.find({ name: { $in: specialtyNames } });
+
+      res.json({ specialties });
+  } catch (err) {
+      res.status(500).json({ message: 'Something went wrong', error: err });
+  }
 };
 const updateDoctorImage = async (req, res) => {
     try {
@@ -1101,7 +1106,38 @@ const updateDoctorSlots = async (req, res) => {
     res.status(500).json({ message: 'Error updating slots', error: err });
   }
 };
+const changeDoctorPassword = async (req, res) => {
+  try {
+    const doctorId = req.params.id;
+    const { dr_email, oldPassword, newPassword } = req.body;
 
+    // Find the doctor by ID
+    const doctor = await Doctors.findById(doctorId);
+    if (!doctor) {
+      return res.status(404).json({ message: 'Doctor not found.' });
+    }
+
+    // Verify that the email matches
+    if (doctor.dr_email !== dr_email) {
+      return res.status(400).json({ message: 'Email does not match.' });
+    }
+
+    // Check if the old password is correct
+    const isMatch = await bcrypt.compare(oldPassword, doctor.dr_password);
+    if (!isMatch) {
+      return res.status(400).json({ message: 'Incorrect current password.' });
+    }
+
+    // Update the password (it will be hashed in the pre-save hook)
+    doctor.dr_password = newPassword;
+    await doctor.save();
+
+    res.status(200).json({ message: 'Password changed successfully.' });
+  } catch (error) {
+    console.error('Error changing password:', error);
+    res.status(500).json({ message: 'Server error. Please try again later.' });
+  }
+};
 
 
 module.exports = {
@@ -1145,6 +1181,6 @@ module.exports = {
     resetPassword, forgotPassword, 
     getDoctorHmo,
     getAllDoctorEmails, getAllDoctorEmailse, getAllContactNumbers,
-    getDoctorSlots, updateDoctorSlots
+    getDoctorSlots, updateDoctorSlots, changeDoctorPassword
 
 };

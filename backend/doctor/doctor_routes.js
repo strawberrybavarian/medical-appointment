@@ -101,4 +101,5 @@ module.exports = app => {
   app.get('/api/doctors/getcontactnumbers', DoctorController.getAllContactNumbers);
   app.get('/api/doctor/:doctorId/slots', DoctorController.getDoctorSlots);
   app.put('/api/doctor/:doctorId/uslots', DoctorController.updateDoctorSlots);
+  app.put('/api/doctor/api/:id/changePassword', DoctorController.changeDoctorPassword);
 };

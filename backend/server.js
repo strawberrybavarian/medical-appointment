@@ -43,6 +43,8 @@ app.use('/images', express.static(path.join(__dirname, 'appointments', 'images')
 app.use('/images', express.static(path.join(__dirname, 'payment', 'images')));
 app.use('/images', express.static(path.join(__dirname, 'announcement', 'images')));
 app.use('/images', express.static(path.join(__dirname, 'news', 'images')));
+app.use('/images', express.static(path.join(__dirname, 'specialty', 'images')));
+app.use('/images', express.static(path.join(__dirname, 'services', 'images')));
 
 app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 // Static file serving for uploaded PDFs

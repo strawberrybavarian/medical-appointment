@@ -7,8 +7,8 @@ import { Row, Col, Button, Form, Container, Card } from "react-bootstrap";
 import PasswordValidation from "./PasswordValidation";
 import "./SignUp.css";
 import { image, ip } from "../../ContentExport";
-import Footer from "../Footer";
 import ForLoginAndSignupNavbar from "../landpage/ForLoginAndSignupNavbar";
+import TermsAndConditionsModal from './TermsAndConditionsModal';
 
 const NewSignUp = () => {
     const navigate = useNavigate();
@@ -37,7 +37,6 @@ const NewSignUp = () => {
         province: "",
         region: "",
         zipCode: "",
-        country: "",
     });
     const [patientNationality, setPatientNationality] = useState("");
     const [patientCivilStatus, setPatientCivilStatus] = useState("");
@@ -58,6 +57,21 @@ const NewSignUp = () => {
 
     const [existingEmails, setExistingEmails] = useState([]);
     const [existingContactNumbers, setExistingContactNumbers] = useState([]);
+
+    const [showTermsModal, setShowTermsModal] = useState(false);
+
+    const handleShowTermsModal = () => {
+        if (validateForm()) {
+            setShowTermsModal(true);
+        }
+    };
+    const handleCloseTermsModal = () => setShowTermsModal(false);
+
+    const handleAcceptTerms = () => {
+        setShowTermsModal(false);
+        // Proceed to register the user
+        registerUser();
+    };
 
     useEffect(() => {
         // Fetch all existing emails and contact numbers for validation
@@ -83,10 +97,10 @@ const NewSignUp = () => {
         // Fetch specialties from services
         const fetchSpecialties = async () => {
             try {
-                const response = await axios.get(`${ip.address}/api/admin/getall/services`);
+                const response = await axios.get(`${ip.address}/api/admin/specialties`);
                 const services = response.data;
                 // Extract unique categories
-                const categories = [...new Set(services.map(service => service.category))];
+                const categories = [...new Set(services.map(service => service.name))];
                 setSpecialties(categories);
             } catch (error) {
                 console.error("Error fetching specialties:", error);
@@ -198,7 +212,7 @@ const NewSignUp = () => {
                 dr_contactNumber: uNumber,
                 dr_gender: uGender,
                 dr_licenseNo: dr_licenseNo,
-                dr_specialty: dr_specialty, // Include dr_specialty in the doctorUser object
+                dr_specialty: dr_specialty,
             };
             axios.post(`${ip.address}/api/doctor/api/signup`, doctorUser)
                 .then((response) => {
@@ -452,16 +466,6 @@ const NewSignUp = () => {
                                                     </Row>
                                                     <Row className="mb-3">
                                                         <Form.Group as={Col}>
-                                                            <Form.Label>Country</Form.Label>
-                                                            <Form.Control
-                                                                type="text"
-                                                                placeholder="Enter Country"
-                                                                onChange={(e) => setPatientAddress({ ...patientAddress, country: e.target.value })}
-                                                            />
-                                                        </Form.Group>
-                                                    </Row>
-                                                    <Row className="mb-3">
-                                                        <Form.Group as={Col}>
                                                             <Form.Label>Nationality</Form.Label>
                                                             <Form.Control
                                                                 type="text"
@@ -533,7 +537,7 @@ const NewSignUp = () => {
                                             </Row>
 
                                             <div className="d-lg-flex justify-content-between align-items-center mt-3">
-                                                <Button onClick={registerUser} variant="primary" type="button">
+                                                <Button onClick={handleShowTermsModal} variant="primary" type="button">
                                                     Submit
                                                 </Button>
                                                 <div className="mb-0">
@@ -549,6 +553,12 @@ const NewSignUp = () => {
                         </Row>
                     </Container>
                 </div>
+                {/* Include the Terms and Conditions Modal */}
+                <TermsAndConditionsModal
+                    show={showTermsModal}
+                    handleClose={handleCloseTermsModal}
+                    handleAccept={handleAcceptTerms}
+                />
             </Container>
         </>
     );

@@ -369,7 +369,7 @@ const countBookedPatients = async (req, res) => {
 
 const updatePatientAppointmentDetails = async (req, res) => {
   try {
-    const { doctor, date, time, appointment_type, reason, findings, cancelReason } = req.body;
+    const { doctor, date, time, appointment_type, reason, prescription, findings, cancelReason } = req.body;
     const oldAppointmentId = req.params.appointmentId;
 
     // Find the old appointment
@@ -383,6 +383,12 @@ const updatePatientAppointmentDetails = async (req, res) => {
     oldAppointment.followUp = false; // Update according to your logic
     await oldAppointment.save();
 
+    // Get the old prescription
+    const oldPrescription = oldAppointment.prescription;
+
+    // Decide what prescription to use: new one from request or old one
+    const newPrescription = prescription || oldPrescription;
+
     // Create a new appointment with the provided details
     const newAppointmentData = {
       patient: oldAppointment.patient,
@@ -393,7 +399,8 @@ const updatePatientAppointmentDetails = async (req, res) => {
       appointment_type: appointment_type,
       status: 'Pending',
       followUp: true,
-      findings: findings, // Set to false unless you have logic to set it to true
+      findings: findings,
+      prescription: newPrescription, // Use the new or old prescription
     };
 
     const newAppointment = new Appointment(newAppointmentData);
@@ -406,48 +413,40 @@ const updatePatientAppointmentDetails = async (req, res) => {
     ]);
 
     // Perform auditing for follow-up appointments
-   
+    // ... (rest of your auditing code remains the same)
 
-
-
-    
     // Perform auditing for appointment cancellation if `cancelReason` is provided
-      const doctorsapp = await Doctors.findById(oldAppointment.doctor);
-      const auditData = {
-        user: oldAppointment.patient._id, // Assuming the patient is cancelling the appointment
-        userType: 'Patient', // Specify the user type
-        action: 'Scheduled Follow Up Appointment',
-        description: ` You have been follow up your appointment with ${doctorsapp.dr_firstName} ${doctorsapp.dr_lastName}  ${oldAppointment.date.toLocaleDateString()} at ${oldAppointment.time} was cancelled. Reason: ${cancelReason}`,
-        ipAddress: req.ip,  // Get the IP address from the request
-        userAgent: req.get('User-Agent'),  // Get the User-Agent (browser/device info)
-      };
+    const doctorsapp = await Doctors.findById(oldAppointment.doctor);
+    const auditData = {
+      user: oldAppointment.patient._id, // Assuming the patient is cancelling the appointment
+      userType: 'Patient', // Specify the user type
+      action: 'Scheduled Follow Up Appointment',
+      description: `You have scheduled a follow-up appointment with Dr. ${doctorsapp.dr_firstName} ${doctorsapp.dr_lastName} on ${oldAppointment.date.toLocaleDateString()} at ${oldAppointment.time}. The previous appointment was cancelled. Reason: ${cancelReason}`,
+      ipAddress: req.ip,  // Get the IP address from the request
+      userAgent: req.get('User-Agent'),  // Get the User-Agent (browser/device info)
+    };
 
-      console.log(auditData)
-      // Save the audit record
-      const audit = await new Audit(auditData).save();
+    console.log(auditData);
+    // Save the audit record
+    const audit = await new Audit(auditData).save();
 
-      // Add the audit ID to the patient's `audits` array
-      const patient = await Patient.findById(oldAppointment.patient);
-      if (patient) {
-       
-        if (!Array.isArray(patient.audits)) {
-          patient.audits = [];
-        }
-
-    
-        patient.audits.push(audit._id);
-
-    
-        await patient.save();
+    // Add the audit ID to the patient's `audits` array
+    const patient = await Patient.findById(oldAppointment.patient);
+    if (patient) {
+      if (!Array.isArray(patient.audits)) {
+        patient.audits = [];
       }
+      patient.audits.push(audit._id);
+      await patient.save();
+    }
 
-
-    res.status(201).json(newAppointment);
+    res.status(201).json(savedAppointment);
   } catch (error) {
     console.error('Error scheduling follow-up appointment:', error.message);
     res.status(500).json({ message: `Failed to schedule follow-up appointment: ${error.message}` });
   }
 };
+
 
 
 

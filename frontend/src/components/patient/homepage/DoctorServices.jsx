@@ -16,6 +16,7 @@ function DoctorServices({ pid, did }) {
         // Fetch the list of services from the backend
         axios.get(`${ip.address}/api/admin/getall/services`)
             .then((res) => {
+
                 setServices(res.data || []); // Ensure services is always an array
             })
             .catch((err) => {
@@ -54,7 +55,7 @@ function DoctorServices({ pid, did }) {
                             onClick={() => handleShowModal(service)} // Open modal on service click
                         >
                             <div className="ds-imgcontainer">
-                                <img src={getImage(service.name)} alt={service.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                <img src={`${ip.address}/${service.imageUrl}`} alt={service.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                             </div>
                             <div>
                                 <p style={{ fontWeight: '600', textAlign: 'center' }}>{service.name}</p>

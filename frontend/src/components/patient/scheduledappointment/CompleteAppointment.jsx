@@ -7,20 +7,17 @@ import { useParams } from 'react-router-dom';
 import FollowUpModal from './Modal/FollowUpModal';
 
 function CompleteAppointment({ appointments, setAppointments }) {
-
     const { pid } = useParams(); 
     const defaultImage = "images/014ef2f860e8e56b27d4a3267e0a193a.jpg";
     const [showModal, setShowModal] = useState(false);
     const [selectedAppointment, setSelectedAppointment] = useState(null);
     const [showFollowUpModal, setShowFollowUpModal] = useState(false);
-    
-    
+
     const handleFollowUp = (appointment) => {
         setSelectedAppointment(appointment);
         setShowFollowUpModal(true);
     };
 
-    // Close Follow-Up modal
     const handleCloseFollowUpModal = () => {
         setShowFollowUpModal(false);
         setSelectedAppointment(null);
@@ -36,19 +33,15 @@ function CompleteAppointment({ appointments, setAppointments }) {
         setShowModal(true);
     };
 
-    // Helper function to format the date
     const formatDate = (dateString) => {
         const date = new Date(dateString);
-
-        const day = String(date.getDate()).padStart(2, '0');  // Get day
-        const month = date.toLocaleString('default', { month: 'long' });  // Get month abbreviation
-        const dayOfWeek = date.toLocaleString('default', { weekday: 'short' });  // Get weekday abbreviation
-        const year = date.getFullYear(); // Get year
-
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = date.toLocaleString('default', { month: 'long' });
+        const dayOfWeek = date.toLocaleString('default', { weekday: 'short' });
+        const year = date.getFullYear();
         return { day, month, dayOfWeek, year, fullDate: date };
     };
 
-    // Helper function to check if the date is today
     const isToday = (date) => {
         const today = new Date();
         return date.getDate() === today.getDate() &&
@@ -56,19 +49,14 @@ function CompleteAppointment({ appointments, setAppointments }) {
                date.getFullYear() === today.getFullYear();
     };
 
-    // Sort appointments by date in descending order and group them by month and year
     const groupedAppointments = appointments
         .filter(appointment => appointment.status === 'Completed')
-        .sort((a, b) => new Date(b.date) - new Date(a.date))  // Sort by descending date (most recent first)
+        .sort((a, b) => new Date(b.date) - new Date(a.date))
         .reduce((groups, appointment) => {
             const { month, year } = formatDate(appointment.date);
-            const groupKey = `${month}-${year}`; // Use month and year as a group key
+            const groupKey = `${month}-${year}`;
             if (!groups[groupKey]) {
-                groups[groupKey] = {
-                    month,
-                    year,
-                    appointments: []
-                };
+                groups[groupKey] = { month, year, appointments: [] };
             }
             groups[groupKey].appointments.push(appointment);
             return groups;
@@ -84,10 +72,9 @@ function CompleteAppointment({ appointments, setAppointments }) {
                                 <h4 className='font-gray'>{groupedAppointments[groupKey].month} {groupedAppointments[groupKey].year}</h4>
                             </div>
                             {groupedAppointments[groupKey].appointments.map((appointment, i) => {
-                                const { day, month, dayOfWeek, fullDate } = formatDate(appointment.date); 
+                                const { day, month, dayOfWeek, fullDate } = formatDate(appointment.date);
                                 const isAppointmentToday = isToday(fullDate);
-                                
-                                // Styles for day and dayOfWeek
+
                                 const dayStyle = {
                                     display: 'block',
                                     fontSize: '3rem',
@@ -99,7 +86,12 @@ function CompleteAppointment({ appointments, setAppointments }) {
                                     color: isAppointmentToday ? '#E03900' : '#575859'
                                 };
 
-                                const doctorImage = appointment?.doctor?.dr_image || defaultImage; // Use default image if not provided
+                                const doctor = appointment?.doctor;
+                                const doctorImage = doctor?.dr_image || defaultImage;
+
+                                // Safely access the appointment_type array
+                                const appointmentType = appointment?.appointment_type?.[0]?.appointment_type || "N/A";
+                                const category = appointment?.appointment_type?.[0]?.category || "N/A";
 
                                 return (
                                     <Container className='d-flex justify-content-start subContainer shadow-sm' key={i}>
@@ -111,30 +103,41 @@ function CompleteAppointment({ appointments, setAppointments }) {
                                         </div>
                                         <Container className="d-flex justify-content-start">
                                             <div className='pa-cont1'>
-                                                {appointment?.doctor ? (
+                                                {doctor ? (
                                                     <>
-                                                        <p style={{ fontSize: '1rem' }}> 
-                                                            <PersonFill className='font-gray' size={20} style={{ marginRight: '0.7rem' }} /> 
-                                                            Dr. {appointment.doctor.dr_firstName} {appointment.doctor.dr_middleInitial}. {appointment.doctor.dr_lastName}
+                                                        <p style={{ fontSize: '1rem' }}>
+                                                            <PersonFill className='font-gray' size={20} style={{ marginRight: '0.7rem' }} />
+                                                            Dr. {doctor.dr_firstName} {doctor.dr_middleInitial}. {doctor.dr_lastName}
                                                         </p>
-                                                        <p style={{ fontSize: '1rem' }}> 
-                                                            <ClockFill className='font-gray' size={20} style={{ marginRight: '0.7rem' }} /> 
+                                                        <p style={{ fontSize: '1rem' }}>
+                                                            <ClockFill className='font-gray' size={20} style={{ marginRight: '0.7rem' }} />
                                                             {appointment.time}
                                                         </p>
                                                     </>
                                                 ) : (
-                                                    <p>No doctor assigned</p>
+                                                    <p style={{ fontSize: '1rem', color: '#999' }}>No doctor assigned</p>
                                                 )}
+                                            </div>
+                                            <div className='pa-cont1'>
+                                                <p style={{ fontSize: '1rem' }}>
+                                                    <PencilFill className='font-gray' size={20} style={{ marginRight: '0.7rem' }} />
+                                                    Appointment Type: {appointmentType}
+                                                </p>
+                                                <p style={{ fontSize: '1rem' }}>
+                                                    Category: {category}
+                                                </p>
                                             </div>
                                         </Container>
-                                        {appointment.status === 'Completed' && (
-                                            <div className="bContainer">
-                                                <Button onClick={() => handleNextModal(appointment)} className="me-2">View Prescription</Button>
-                                                {appointment.followUp && (
-                                                    <Button variant="success" onClick={() => handleFollowUp(appointment)}>Schedule Follow-Up</Button>
-                                                )}
-                                            </div>
-                                        )}
+                                        <div className="bContainer">
+                                            {/* <Button onClick={() => handleNextModal(appointment)} className="me-2">
+                                                View Prescription
+                                            </Button> */}
+                                            {appointment.followUp && (
+                                                <Button variant="success" onClick={() => handleFollowUp(appointment)}>
+                                                    Schedule Follow-Up
+                                                </Button>
+                                            )}
+                                        </div>
                                     </Container>
                                 );
                             })}
@@ -142,15 +145,15 @@ function CompleteAppointment({ appointments, setAppointments }) {
                     ))}
                 </Container>
             </div>
-            <PrescriptionPatientModal 
-                show={showModal} 
-                handleClose={handleCloseModal} 
+            <PrescriptionPatientModal
+                show={showModal}
+                handleClose={handleCloseModal}
                 appointment={selectedAppointment}
             />
             {selectedAppointment && (
-                <FollowUpModal 
-                    show={showFollowUpModal} 
-                    handleClose={handleCloseFollowUpModal} 
+                <FollowUpModal
+                    show={showFollowUpModal}
+                    handleClose={handleCloseFollowUpModal}
                     appointment={selectedAppointment}
                     pid={pid}
                     setAppointments={setAppointments}
