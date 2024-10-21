@@ -7,7 +7,8 @@ import './Styles.css';
 import { ThreeDots } from 'react-bootstrap-icons';
 import RescheduleModal from "../../../../practitioner/appointment/Reschedule Modal/RescheduleModal";
 import { ip } from "../../../../../ContentExport";
-
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 const MedSecPending = ({ allAppointments, setAllAppointments }) => {
   const { did } = useParams();
   const [error, setError] = useState("");
@@ -181,8 +182,35 @@ const MedSecPending = ({ allAppointments, setAllAppointments }) => {
   };
 
   const handleUpdateStatus = async (appointmentId, newStatus) => {
+    const appointment = allAppointments.find(app => app._id === appointmentId);
+  
+    // Check if the appointment has time and services assigned
+    const isValidAppointment =
+      appointment.time &&
+      appointment.time !== "Not Assigned" &&
+      appointment.appointment_type &&
+      appointment.appointment_type.length > 0 &&
+      appointment.appointment_type.some(type => type.appointment_type);
+  
+    if (!isValidAppointment) {
+      // Show a toast if required details are missing
+      toast.warning('To schedule an appointment, please assign a time and select the services.', {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
+      return;
+    }
+  
     try {
-      const response = await axios.put(`${ip.address}/api/appointments/${appointmentId}/status`, { status: newStatus });
+      const response = await axios.put(
+        `${ip.address}/api/appointments/${appointmentId}/status`,
+        { status: newStatus }
+      );
   
       if (response.status === 200 && response.data) {
         const updatedAppointment = response.data;
@@ -190,23 +218,26 @@ const MedSecPending = ({ allAppointments, setAllAppointments }) => {
         // Update the state with the new status
         setAllAppointments((prevAppointments) =>
           prevAppointments.map((appointment) =>
-            appointment._id === appointmentId ? { ...appointment, status: updatedAppointment.status } : appointment
+            appointment._id === appointmentId
+              ? { ...appointment, status: updatedAppointment.status }
+              : appointment
           )
         );
   
         console.log('Appointment status updated successfully:', updatedAppointment);
       } else {
-        throw new Error('Unexpected server response'); // Catch unexpected responses
+        throw new Error('Unexpected server response');
       }
     } catch (err) {
       console.error('Error updating status:', err);
   
-      // More detailed error handling to prevent false error alerts
-      const errorMessage = err.response?.data?.message || 'Failed to update the appointment status.';
-      setError(errorMessage); // Set the error state for UI display
-      alert(errorMessage); // Optional alert for user feedback
+      const errorMessage =
+        err.response?.data?.message || 'Failed to update the appointment status.';
+      setError(errorMessage);
+      alert(errorMessage);
     }
   };
+  
   
   
   
@@ -288,7 +319,7 @@ const MedSecPending = ({ allAppointments, setAllAppointments }) => {
               </Col>
             </Row>
           </div>
-
+          <p><em>*</em></p>
           <Table responsive striped variant="light" className="mt-3">
             <thead>
               <tr>
@@ -372,32 +403,9 @@ const MedSecPending = ({ allAppointments, setAllAppointments }) => {
                             
                             {appointment.patient.accountStatus === "Unregistered" && (
                               <>
-                               <Dropdown.Item
+                                <Dropdown.Item
                                   onClick={() => handleUpdateStatus(appointment._id, "Scheduled")}
                                   className="action-item"
-                                  disabled={
-                                    !appointment.time || 
-                                    appointment.time === "Not Assigned" || 
-                                    !appointment.appointment_type || 
-                                    !appointment.appointment_type.length || 
-                                    appointment.appointment_type.every(type => !type.appointment_type) // Check if all services are missing
-                                  }
-                                  style={{
-                                    color: (
-                                      !appointment.time || 
-                                      appointment.time === "Not Assigned" || 
-                                      !appointment.appointment_type || 
-                                      !appointment.appointment_type.length || 
-                                      appointment.appointment_type.every(type => !type.appointment_type)
-                                    ) ? "gray" : "black",
-                                    pointerEvents: (
-                                      !appointment.time || 
-                                      appointment.time === "Not Assigned" || 
-                                      !appointment.appointment_type || 
-                                      !appointment.appointment_type.length || 
-                                      appointment.appointment_type.every(type => !type.appointment_type)
-                                    ) ? "none" : "auto"
-                                  }}
                                 >
                                   Scheduled
                                 </Dropdown.Item>
@@ -416,29 +424,6 @@ const MedSecPending = ({ allAppointments, setAllAppointments }) => {
                                 <Dropdown.Item
                                   onClick={() => handleUpdateStatus(appointment._id, "Scheduled")}
                                   className="action-item"
-                                  disabled={
-                                    !appointment.time || 
-                                    appointment.time === "Not Assigned" || 
-                                    !appointment.appointment_type || 
-                                    !appointment.appointment_type.length || 
-                                    appointment.appointment_type.every(type => !type.appointment_type) // Check if all services are missing
-                                  }
-                                  style={{
-                                    color: (
-                                      !appointment.time || 
-                                      appointment.time === "Not Assigned" || 
-                                      !appointment.appointment_type || 
-                                      !appointment.appointment_type.length || 
-                                      appointment.appointment_type.every(type => !type.appointment_type)
-                                    ) ? "gray" : "black",
-                                    pointerEvents: (
-                                      !appointment.time || 
-                                      appointment.time === "Not Assigned" || 
-                                      !appointment.appointment_type || 
-                                      !appointment.appointment_type.length || 
-                                      appointment.appointment_type.every(type => !type.appointment_type)
-                                    ) ? "none" : "auto"
-                                  }}
                                 >
                                   Scheduled
                                 </Dropdown.Item>
@@ -524,7 +509,7 @@ const MedSecPending = ({ allAppointments, setAllAppointments }) => {
         )}
 
 
-       
+      <ToastContainer />
       </Container>
     </>
   );
