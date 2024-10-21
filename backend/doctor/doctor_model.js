@@ -26,6 +26,10 @@ const dailyAvailabilitySchema = new mongoose.Schema({
 
 // Define DoctorSchema
 const DoctorSchema = new Schema({
+  passwordChanged: {
+    type: Boolean,
+    default: false,
+  },
   resetPasswordToken: {
     type: String,
   },

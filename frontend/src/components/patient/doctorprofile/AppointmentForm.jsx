@@ -1,6 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Container, Row, Col, Button, Form, Alert, Spinner } from "react-bootstrap";
+import {
+  Container,
+  Row,
+  Col,
+  Button,
+  Form,
+  Alert,
+  Spinner,
+} from "react-bootstrap";
 import axios from "axios";
 import { PassFill, CheckAll } from "react-bootstrap-icons";
 import { Helmet } from "react-helmet";
@@ -15,7 +23,10 @@ function AppointmentForm({ pid, did }) {
   const [availableTimes, setAvailableTimes] = useState([]);
   const [availability, setAvailability] = useState({});
   const [doctorName, setDoctorName] = useState("");
-  const [bookedPatients, setBookedPatients] = useState({ morning: 0, afternoon: 0 });
+  const [bookedPatients, setBookedPatients] = useState({
+    morning: 0,
+    afternoon: 0,
+  });
   const [loading, setLoading] = useState(true); // Loading state
 
   const formatTicketDate = (dateString) => {
@@ -37,6 +48,8 @@ function AppointmentForm({ pid, did }) {
       .get(`${ip.address}/api/doctor/${did}`)
       .then((response) => {
         const doctor = response.data.doctor;
+        console.log("Doctor API bookedslots:", doctor.bookedSlots);
+        console.log("Doctor API availability:", doctor.availability);
         setDoctorName(`${doctor.dr_firstName} ${doctor.dr_lastName}`);
         setAvailability(doctor.availability || {});
       })
@@ -47,87 +60,92 @@ function AppointmentForm({ pid, did }) {
 
   useEffect(() => {
     if (date) {
-      const selectedDate = new Date(date);
-      const daysOfWeek = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
-      const day = daysOfWeek[selectedDate.getDay()];
-
-      setAvailableTimes(getAvailableTimes(day, selectedDate));
-
-      // Fetch number of patients already booked for the selected date
-      axios
-        .get(`${ip.address}/api/appointments/${did}/count?date=${date}`)
-        .then((response) => {
+      const fetchAppointments = async () => {
+        try {
+          setLoading(true); // Set loading before fetching data
+  
+          const selectedDate = new Date(date);
+          const daysOfWeek = [
+            "sunday",
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday",
+            "saturday",
+          ];
+          const day = daysOfWeek[selectedDate.getDay()];
+  
+          // Fetch booked patients for the selected date
+          const response = await axios.get(
+            `${ip.address}/api/appointments/doctor/${did}/count?date=${date}`
+          );
+  
+          console.log("Booked patients API response:", response.data, date);
           const { morning, afternoon } = response.data;
+  
           setBookedPatients({ morning, afternoon });
-        })
-        .catch((err) => {
-          console.log(err);
-        });
+  
+          // Once booked patients are set, update the available times
+          const updatedTimes = getAvailableTimes(day, morning, afternoon);
+          setAvailableTimes(updatedTimes);
+  
+        } catch (err) {
+          console.log("Error fetching appointments:", err);
+        } finally {
+          setLoading(false); // Always set loading to false after fetching
+        }
+      };
+  
+      fetchAppointments(); // Invoke the async function
     } else {
-      setAvailableTimes([]);
+      setAvailableTimes([]); // Reset if no date selected
+      setLoading(false); // Ensure loading state is set to false
     }
-  }, [date, availability]);
+  }, [date, availability, did]);
 
-  const getAvailableTimes = (day, selectedDate) => {
+  const getAvailableTimes = (day, morningCount = 0, afternoonCount = 0) => {
     const dayAvailability = availability[day];
     if (!dayAvailability) return [];
-
+  
     let times = [];
-    const selectedDateString = selectedDate.toISOString().split("T")[0];
-
-    // Set loading to true before fetching
-    setLoading(true);
-
-    // Fetch the booked slots for the selected date
-    axios
-      .get(`${ip.address}/api/doctor/${did}/booked-slots?date=${selectedDateString}`)
-      .then((response) => {
-        const bookedSlots = response.data.bookedSlots || [];
-
-        if (dayAvailability.morning?.available) {
-          const startTime = formatTime(dayAvailability.morning.startTime);
-          const endTime = formatTime(dayAvailability.morning.endTime);
-          const availableSlots = Math.max(
-            dayAvailability.morning.maxPatients - bookedSlots.filter((slot) => slot && parseInt(slot.split(":")[0]) < 12).length,
-            0
-          );
-
-          if (availableSlots > 0) {
-            times.push({
-              label: "Morning",
-              timeRange: `${startTime} - ${endTime}`,
-              availableSlots,
-              period: "morning",
-            });
-          }
-        }
-
-        if (dayAvailability.afternoon?.available) {
-          const startTime = formatTime(dayAvailability.afternoon.startTime);
-          const endTime = formatTime(dayAvailability.afternoon.endTime);
-          const availableSlots = Math.max(
-            dayAvailability.afternoon.maxPatients - bookedSlots.filter((slot) => slot && parseInt(slot.split(":")[0]) >= 12).length,
-            0
-          );
-
-          if (availableSlots > 0) {
-            times.push({
-              label: "Afternoon",
-              timeRange: `${startTime} - ${endTime}`,
-              availableSlots,
-              period: "afternoon",
-            });
-          }
-        }
-
-        setAvailableTimes(times); // Update availableTimes state
-        setLoading(false); // Set loading to false after fetching
-      })
-      .catch((err) => {
-        console.log(err);
-        setLoading(false); // Set loading to false even on error
-      });
-
+  
+    if (dayAvailability.morning?.available) {
+      const startTime = formatTime(dayAvailability.morning.startTime);
+      const endTime = formatTime(dayAvailability.morning.endTime);
+      const availableSlots = Math.max(
+        dayAvailability.morning.maxPatients - morningCount,
+        0
+      );
+  
+      if (availableSlots > 0) {
+        times.push({
+          label: "Morning",
+          timeRange: `${startTime} - ${endTime}`,
+          availableSlots,
+          period: "morning",
+        });
+      }
+    }
+  
+    if (dayAvailability.afternoon?.available) {
+      const startTime = formatTime(dayAvailability.afternoon.startTime);
+      const endTime = formatTime(dayAvailability.afternoon.endTime);
+      const availableSlots = Math.max(
+        dayAvailability.afternoon.maxPatients - afternoonCount,
+        0
+      );
+  
+      if (availableSlots > 0) {
+        times.push({
+          label: "Afternoon",
+          timeRange: `${startTime} - ${endTime}`,
+          availableSlots,
+          period: "afternoon",
+        });
+      }
+    }
+  
     return times;
   };
 
@@ -136,29 +154,42 @@ function AppointmentForm({ pid, did }) {
       window.alert("Please select a valid date and time for the appointment.");
       return;
     }
-
+  
     const formData = {
       doctor: did || null,
       date,
       time: time || null,
       reason,
+      appointment_type: {
+        appointment_type: "Consultation", // Default to Consultation
+        category: "General", // Optional category if required
+      },
     };
-
+  
     axios
       .post(`${ip.address}/api/patient/api/${pid}/createappointment`, formData)
       .then(() => {
         window.alert("Created an appointment!");
-
-        // After successful booking, reduce the available slots on the frontend
+  
+        // After successful booking, update available slots based on selected time
         const updatedAvailableTimes = availableTimes.map((slot) => {
           if (slot.timeRange === time) {
-            return { ...slot, availableSlots: slot.availableSlots - 1 }; // Decrease available slots
+            return { ...slot, availableSlots: slot.availableSlots - 1 };
           }
           return slot;
         });
-
-        setAvailableTimes(updatedAvailableTimes);
-
+  
+        setAvailableTimes(updatedAvailableTimes); // Update state with decreased slot
+  
+        // Update morning or afternoon bookedPatients count
+        const period = updatedAvailableTimes.find(
+          (slot) => slot.timeRange === time
+        )?.period;
+        setBookedPatients((prev) => ({
+          ...prev,
+          [period]: prev[period] + 1, // Increment the specific period's count
+        }));
+  
         navigate("/myappointment", { state: { pid } });
       })
       .catch((err) => {
@@ -184,10 +215,16 @@ function AppointmentForm({ pid, did }) {
         return;
       }
 
-      const selectedPeriod = availableTimes.find((timeSlot) => timeSlot.timeRange === time);
+      const selectedPeriod = availableTimes.find(
+        (timeSlot) => timeSlot.timeRange === time
+      );
 
       if (!selectedPeriod || selectedPeriod.availableSlots <= 0) {
-        window.alert(`No available slots for the ${selectedPeriod?.label || "selected"} period. Please choose another date or time.`);
+        window.alert(
+          `No available slots for the ${
+            selectedPeriod?.label || "selected"
+          } period. Please choose another date or time.`
+        );
         return;
       }
     }
@@ -205,7 +242,11 @@ function AppointmentForm({ pid, did }) {
     time.setHours(hours);
     time.setMinutes(minutes);
 
-    return time.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true });
+    return time.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
   };
 
   return (
@@ -215,21 +256,35 @@ function AppointmentForm({ pid, did }) {
       </Helmet>
       <Container className="appointment-form-container">
         <div className="d-flex">
-          <p className="m-0" style={{ fontWeight: "600", fontSize: "20px" }}>Book an Appointment</p>
+          <p className="m-0" style={{ fontWeight: "600", fontSize: "20px" }}>
+            Book an Appointment
+          </p>
         </div>
         <hr />
 
         <Container className="pt-2 pb-3">
           <div className="mt-3 steps d-flex flex-wrap flex-sm-nowrap justify-content-between padding-top-2x padding-bottom-1x">
-            <div className={`step ${step >= 1 ? "completed" : ""} ${step === 1 ? "active" : ""}`}>
+            <div
+              className={`step ${step >= 1 ? "completed" : ""} ${
+                step === 1 ? "active" : ""
+              }`}
+            >
               <div className="step-icon-wrap">
-                <div className="step-icon"><PassFill size={20} /></div>
+                <div className="step-icon">
+                  <PassFill size={20} />
+                </div>
               </div>
               <h4 className="step-title">Fill Out the Form</h4>
             </div>
-            <div className={`step ${step === 2 ? "completed" : ""} ${step === 2 ? "active" : ""}`}>
+            <div
+              className={`step ${step === 2 ? "completed" : ""} ${
+                step === 2 ? "active" : ""
+              }`}
+            >
               <div className="step-icon-wrap">
-                <div className="step-icon"><CheckAll size={20} /></div>
+                <div className="step-icon">
+                  <CheckAll size={20} />
+                </div>
               </div>
               <h4 className="step-title">Finalizing Information</h4>
             </div>
@@ -245,12 +300,14 @@ function AppointmentForm({ pid, did }) {
                 <Row>
                   <Col>
                     <Form.Group as={Col} className="mb-3">
-                      <Form.Label style={{ fontWeight: "600" }}>Date</Form.Label>
+                      <Form.Label style={{ fontWeight: "600" }}>
+                        Date
+                      </Form.Label>
                       <Form.Control
                         type="date"
                         placeholder="Enter Date"
                         min={getTodayDate()}
-                  
+                        value={date}
                         onChange={(e) => setDate(e.target.value)}
                         className="form-appointment"
                       />
@@ -260,39 +317,54 @@ function AppointmentForm({ pid, did }) {
 
                 {loading ? (
                   <Spinner animation="border" />
+                ) : availableTimes.length > 0 ? (
+                  <Row>
+                    <Form.Group as={Col} className="mb-5">
+                      <Form.Label style={{ fontWeight: "600" }} className="m-0">
+                        Time
+                      </Form.Label>{" "}
+                      <center>
+                        {" "}
+                        {availableTimes.map((timeSlot, index) => (
+                          <Button
+                            key={index}
+                            variant={
+                              time === timeSlot.timeRange
+                                ? "secondary"
+                                : "outline-primary"
+                            }
+                            onClick={() => setTime(timeSlot.timeRange)}
+                            className="m-1"
+                          >
+                            {" "}
+                            {timeSlot.label}: {timeSlot.timeRange} <br /> Slots
+                            left: {timeSlot.availableSlots}{" "}
+                          </Button>
+                        ))}{" "}
+                      </center>{" "}
+                    </Form.Group>{" "}
+                  </Row>
                 ) : (
-                  availableTimes.length > 0 ? (
-                    <Row>
-                      <Form.Group as={Col} className="mb-5">
-                        <Form.Label style={{ fontWeight: "600" }} className="m-0">Time</Form.Label>
-                        <center>
-                          {availableTimes.map((timeSlot, index) => (
-                            <Button
-                              key={index}
-                              variant={time === timeSlot.timeRange ? "secondary" : "outline-primary"}
-                              onClick={() => setTime(timeSlot.timeRange)}
-                              className="m-1"
-                            >
-                              {timeSlot.label}: {timeSlot.timeRange} <br />
-                              Slots left: {timeSlot.availableSlots}
-                            </Button>
-                          ))}
-                        </center>
-                      </Form.Group>
-                    </Row>
-                  ) : (
-                    <Row>
-                      <Form.Group as={Col} className="mb-3">
-                        <Form.Label style={{ fontWeight: "600" }}>Time</Form.Label>
-                        <Alert><h6 className="m-0">The doctor has no available appointments for this day.</h6></Alert>
-                      </Form.Group>
-                    </Row>
-                  )
+                  <Row>
+                    {" "}
+                    <Form.Group as={Col} className="mb-3">
+                      {" "}
+                      <Form.Label style={{ fontWeight: "600" }}>
+                        Time
+                      </Form.Label>{" "}
+                      <Alert>
+                        <h6 className="m-0">
+                          The doctor has no available appointments for this day.
+                        </h6>
+                      </Alert>{" "}
+                    </Form.Group>{" "}
+                  </Row>
                 )}
-
                 <Row>
                   <Form.Group as={Col} className="mb-3">
-                    <Form.Label style={{ fontWeight: "600" }}>Primary Concern</Form.Label>
+                    <Form.Label style={{ fontWeight: "600" }}>
+                      Primary Concern
+                    </Form.Label>
                     <Form.Control
                       as="textarea"
                       placeholder="Enter Reason"
@@ -316,9 +388,15 @@ function AppointmentForm({ pid, did }) {
                     {date && (
                       <>
                         <Container className="pt-4">
-                          <p className="ticket-month">{formatTicketDate(date).month}</p>
-                          <h2 className="ticket-num">{formatTicketDate(date).day}</h2>
-                          <p className="ticket-month">{formatTicketDate(date).dayOfWeek}</p>
+                          <p className="ticket-month">
+                            {formatTicketDate(date).month}
+                          </p>
+                          <h2 className="ticket-num">
+                            {formatTicketDate(date).day}
+                          </h2>
+                          <p className="ticket-month">
+                            {formatTicketDate(date).dayOfWeek}
+                          </p>
                         </Container>
                       </>
                     )}
@@ -332,13 +410,21 @@ function AppointmentForm({ pid, did }) {
                     </Container>
 
                     <Container className="d-flex align-items-center m-0 pb-3">
-                      <div className="ticket-icon"><i className="fa fa-table"></i></div>
-                      <p className="m-0 px-2">{formatTicketDate(date).month} {formatTicketDate(date).day}, {formatTicketDate(date).year} <br /> {time}</p>
+                      <div className="ticket-icon">
+                        <i className="fa fa-table"></i>
+                      </div>
+                      <p className="m-0 px-2">
+                        {formatTicketDate(date).month}{" "}
+                        {formatTicketDate(date).day},{" "}
+                        {formatTicketDate(date).year} <br /> {time}
+                      </p>
                     </Container>
 
                     <Container className="d-flex align-items-center m-0 pb-3">
-                      <div className="ticket-icon"><i className="fa fa-info-circle"></i></div>
-                      <p className="m-0 px-2 ">Primary Concern: {reason}</p>
+                      <div className="ticket-icon">
+                        <i className="fa fa-info-circle"></i>
+                      </div>
+                      <p className="m-0 px-2">Primary Concern: {reason}</p>
                     </Container>
 
                     <div className="fix"></div>
@@ -350,20 +436,30 @@ function AppointmentForm({ pid, did }) {
         )}
 
         <div className="d-flex justify-content-between mt-4">
-          {step > 1 && <Button variant="secondary" onClick={handlePrevStep}>Previous</Button>}
+          {step > 1 && (
+            <Button variant="secondary" onClick={handlePrevStep}>
+              Previous
+            </Button>
+          )}
           {step < 2 && (
             <div className="d-flex w-100 justify-content-end">
               <Button
                 variant="primary"
                 onClick={handleNextStep}
-                disabled={availableTimes.every((timeSlot) => timeSlot.availableSlots <= 0)}
+                disabled={availableTimes.every(
+                  (timeSlot) => timeSlot.availableSlots <= 0
+                )}
               >
                 Next
               </Button>
             </div>
           )}
 
-          {step === 2 && <Button variant="success" onClick={createAppointment}>Submit</Button>}
+          {step === 2 && (
+            <Button variant="success" onClick={createAppointment}>
+              Submit
+            </Button>
+          )}
         </div>
       </Container>
     </>

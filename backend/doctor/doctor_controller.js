@@ -193,6 +193,30 @@ const verifyTwoFactor = async (req, res) => {
     }
 };
 
+const updateDoctorPassword = async (req, res) => {
+  const { doctorId } = req.params;
+  const { newPassword } = req.body;
+
+  try {
+    const doctor = await Doctors.findById(doctorId);
+
+    if (!doctor) {
+      return res.status(404).json({ message: 'Doctor not found' });
+    }
+
+    // Assign the new password
+    doctor.dr_password = newPassword;
+    doctor.passwordChanged = true; 
+    await doctor.save();
+
+    res.json({ message: 'Password updated successfully' });
+  } catch (error) {
+    console.error('Error updating password:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+
 // const NewDoctorSignUp = (req, res) => {
 //     Doctors.create(req.body)
 //         .then((newDoctor) => {
@@ -203,64 +227,130 @@ const verifyTwoFactor = async (req, res) => {
 //         });
 // };
 
-
+const generateRandomPassword = () => {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let password = '';
+  for (let i = 0; i < 8; i++) {
+    password += chars[Math.floor(Math.random() * chars.length)];
+  }
+  return password;
+};
 const NewDoctorSignUp = async (req, res) => {
-    const { dr_email, dr_password, ...otherFields } = req.body;
-  
-    try {
-        const newDoctor = new Doctors({
-            dr_email,
-            dr_password,
-            ...otherFields,
-        });
-  
-        await newDoctor.save();
-        res.status(201).json({ message: 'Doctor registered successfully' });
-    } catch (error) {
-        res.status(500).json({ message: 'Error registering doctor', error });
+  const {
+    dr_firstName,
+    dr_lastName,
+    dr_middleInitial,
+    dr_email,
+    dr_contactNumber,
+    dr_dob,
+    dr_gender,
+    dr_licenseNo,
+    dr_specialty,
+    // Removed dr_password from req.body
+  } = req.body;
+
+  try {
+    // Check if email already exists
+    const existingDoctor = await Doctors.findOne({ dr_email });
+    if (existingDoctor) {
+      return res.status(400).json({ message: 'Email already registered' });
     }
-  };
+
+    // Generate a random password
+    const generatedPassword = generateRandomPassword();
+
+    // Create the new Doctor with the generated password
+    const newDoctor = new Doctors({
+      dr_firstName,
+      dr_lastName,
+      dr_middleInitial,
+      dr_email,
+      dr_contactNumber,
+      dr_dob,
+      dr_gender,
+      dr_licenseNo,
+      dr_specialty,
+      dr_password: generatedPassword, // Correctly assign generated password
+      accountStatus: 'Registered',
+    });
+
+    await newDoctor.save();
+
+    // Send email with the generated password
+    const transporter = nodemailer.createTransport({
+      service: 'gmail', // You can use other email services if needed
+      auth: {
+        user: staff_email.user, // Your email
+        pass: staff_email.pass, // Your email password
+      },
+    });
+
+    const mailOptions = {
+      from: staff_email.user,
+      to: dr_email,
+      subject: 'Your Doctor Account Password',
+      text: `Hello Dr. ${dr_firstName} ${dr_lastName},\n\nYour account has been created. Your password is: ${generatedPassword}\n\nPlease log in and change your password.\n\nBest Regards,\nYour Healthcare Team`,
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.error('Error sending email:', error);
+        return res.status(500).json({ message: 'Error sending email' });
+      }
+      console.log('Email sent: ' + info.response);
+    });
+
+    res.status(201).json({ message: 'Doctor registered successfully. Email sent with the password.' });
+
+  } catch (error) {
+    console.error('Error registering doctor:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
 
 
-  const loginDoctor = async (req, res) => {
-    const { email, password } = req.body;
-  
-    try {
-      const doctor = await Doctors.findOne({ dr_email: email });
-  
-      if (!doctor) {
-        return res.status(404).json({ message: 'No doctor with that email found' });
-      }
-  
-      // Check if the doctor's account status is "Review"
-      if (doctor.accountStatus === 'Review') {
-        return res.status(403).json({ message: 'Your account is currently under review. Please wait for approval.' });
-      }
-  
-      const isMatch = await bcrypt.compare(password, doctor.dr_password);
-  
-      if (!isMatch) {
-        return res.status(401).json({ message: 'Invalid email or password' });
-      }
-  
-      // Exclude sensitive information before sending
-      const doctorData = {
-        _id: doctor._id,
-        dr_email: doctor.dr_email,
-        dr_firstName: doctor.dr_firstName,
-        dr_lastName: doctor.dr_lastName,
-        // Include other necessary fields
-      };
-  
-      res.json({
-        message: 'Successfully logged in',
-        doctorId: doctor._id,
-        doctorData: doctorData,
-      });
-    } catch (error) {
-      res.status(500).json({ message: 'Error logging in', error });
+const loginDoctor = async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    const doctor = await Doctors.findOne({ dr_email: email });
+
+    if (!doctor) {
+      return res.status(404).json({ message: 'No doctor with that email found' });
     }
-  };
+
+    // Check if the doctor's account status is "Review"
+    if (doctor.accountStatus === 'Review') {
+      return res.status(403).json({ message: 'Your account is currently under review. Please wait for approval.' });
+    }
+
+    const isMatch = await bcrypt.compare(password, doctor.dr_password);
+
+    if (!isMatch) {
+      return res.status(401).json({ message: 'Invalid email or password' });
+    }
+
+    // Exclude sensitive information before sending
+    const doctorData = {
+      _id: doctor._id,
+      dr_email: doctor.dr_email,
+      dr_firstName: doctor.dr_firstName,
+      dr_lastName: doctor.dr_lastName,
+      // Include the passwordChanged field
+      passwordChanged: doctor.passwordChanged,
+      // Include other necessary fields
+    };
+
+    res.json({
+      message: 'Successfully logged in',
+      doctorId: doctor._id,
+      doctorData: doctorData,
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Error logging in', error });
+  }
+};
+
   
 
 
@@ -925,7 +1015,7 @@ const deleteDoctorBiography = async (req, res) => {
       const doctor = await Doctors.findOne({ dr_email: email });
   
       if (!doctor) {
-        return res.status(404).json({ message: 'No patient with that email found' });
+        return res.status(404).json({ message: 'No doctor with that email found' });
       }
   
       // Step 2: Generate a reset token and set the expiry
@@ -1181,6 +1271,6 @@ module.exports = {
     resetPassword, forgotPassword, 
     getDoctorHmo,
     getAllDoctorEmails, getAllDoctorEmailse, getAllContactNumbers,
-    getDoctorSlots, updateDoctorSlots, changeDoctorPassword
+    getDoctorSlots, updateDoctorSlots, changeDoctorPassword, updateDoctorPassword
 
 };

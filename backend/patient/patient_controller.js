@@ -480,50 +480,39 @@ const bookedSlots = async (req, res) => {
     const { doctorId } = req.params;
     const { date } = req.query;
 
-    // Parse the selected date
     const selectedDate = new Date(date);
-    const dayOfWeek = selectedDate.toLocaleString('en-US', { weekday: 'long' }).toLowerCase(); // e.g., 'monday'
 
-    // Fetch doctor's availability and active appointment status
-    const doctor = await Doctor.findById(doctorId).select(`activeAppointmentStatus availability.${dayOfWeek}`);
+    // Fetch the doctor with bookedSlots for the specific date
+    const doctor = await Doctor.findOne({
+      _id: doctorId,
+      'bookedSlots.date': selectedDate,
+    }).select('bookedSlots.$');
 
-    if (!doctor.activeAppointmentStatus) {
-      return res.status(400).json({ message: 'Doctor is not available for appointments.' });
+    if (!doctor) {
+      return res.status(404).json({ message: 'Doctor not found.' });
     }
 
-    const availability = doctor.availability[dayOfWeek];
-
-    // If no availability is set for the selected day, return an error
-    if (!availability) {
-      return res.status(400).json({ message: 'Doctor does not have availability for this day.' });
+    // Handle cases where no slots exist for the given date
+    let bookedSlot = doctor.bookedSlots[0];
+    if (!bookedSlot) {
+      bookedSlot = { date: selectedDate, morning: 0, afternoon: 0 };
     }
 
-    // Fetch booked slots for the selected date (excluding canceled appointments)
-    const bookedAppointments = await Appointment.find({
-      doctor: doctorId,
-      date: selectedDate,
-      status: { $ne: 'Cancelled' } // Exclude cancelled appointments
-    }).select('time -_id');
-
-    // Split booked appointments into morning and afternoon
-    const bookedMorning = bookedAppointments.filter(app => app.time && parseInt(app.time.split(":")[0]) < 12); // before 12:00 PM
-    const bookedAfternoon = bookedAppointments.filter(app => app.time && parseInt(app.time.split(":")[0]) >= 12); // 12:00 PM or later
-
-    // Calculate available slots by subtracting booked slots from maxPatients for morning and afternoon
-    const availableMorningSlots = Math.max(availability.morning.maxPatients - bookedMorning.length, 0);
-    const availableAfternoonSlots = Math.max(availability.afternoon.maxPatients - bookedAfternoon.length, 0);
-
-    // Return the available slots for both morning and afternoon
     res.status(200).json({
-      availableMorningSlots,
-      availableAfternoonSlots,
-      bookedSlots: bookedAppointments.map(slot => slot.time), // Optional, if you want to return booked times
+      morning: bookedSlot.morning,
+      afternoon: bookedSlot.afternoon,
     });
   } catch (error) {
     console.error('Error fetching booked slots:', error);
     res.status(400).json({ message: error.message });
   }
 };
+
+
+
+
+
+
 
 
 

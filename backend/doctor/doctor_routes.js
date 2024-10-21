@@ -102,4 +102,5 @@ module.exports = app => {
   app.get('/api/doctor/:doctorId/slots', DoctorController.getDoctorSlots);
   app.put('/api/doctor/:doctorId/uslots', DoctorController.updateDoctorSlots);
   app.put('/api/doctor/api/:id/changePassword', DoctorController.changeDoctorPassword);
+  app.put('/api/doctor/update-password/:doctorId', DoctorController.updateDoctorPassword);
 };

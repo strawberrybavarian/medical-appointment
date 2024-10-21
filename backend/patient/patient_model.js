@@ -73,13 +73,13 @@ const PatientSchema = new Schema({
         city: {
             type: String,
         },
-        state: {
+        barangay: {
             type: String,
         },
         zipCode: {
             type: String,
         },
-        country: {
+        region: {
             type: String,
         }
     },

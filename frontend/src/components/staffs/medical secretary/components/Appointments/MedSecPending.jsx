@@ -25,6 +25,31 @@ const MedSecPending = ({ allAppointments, setAllAppointments }) => {
   const [categoryFilter, setCategoryFilter] = useState("");
   const [showRescheduleModal, setShowRescheduleModal] = useState(false);
 
+  const convertTimeRangeTo12HourFormat = (timeRange) => {
+    // Check if the timeRange is missing or empty
+    if (!timeRange) return 'Not Assigned';
+  
+    const convertTo12Hour = (time) => {
+      // Handle single time values like "10:00"
+      if (!time) return '';
+  
+      let [hours, minutes] = time.split(':').map(Number);
+      const period = hours >= 12 ? 'PM' : 'AM';
+      hours = hours % 12 || 12; // Convert 0 or 12 to 12 in 12-hour format
+  
+      return `${hours}:${String(minutes).padStart(2, '0')} ${period}`;
+    };
+  
+    // Handle both single times and ranges
+    if (timeRange.includes(' - ')) {
+      const [startTime, endTime] = timeRange.split(' - ');
+      return `${convertTo12Hour(startTime)} - ${convertTo12Hour(endTime)}`;
+    } else {
+      return convertTo12Hour(timeRange); // Single time case
+    }
+  };
+  
+
     const handleConfirmReschedule = (rescheduledReason) => {
       const newStatus = {
         rescheduledReason: rescheduledReason,
@@ -58,16 +83,7 @@ const MedSecPending = ({ allAppointments, setAllAppointments }) => {
       setShowRescheduleModal(false);
       setSelectedAppointment(null);
     };
-const convertTo12HourFormat = (time) => {
-  if (!time) return 'Not Assigned'; 
-  if (time.includes('AM') || time.includes('PM')) {
-    return time; 
-  }
-  const [hours, minutes] = time.split(':');
-  const period = hours >= 12 ? 'PM' : 'AM';
-  const hour12 = hours % 12 || 12; 
-  return `${hour12}:${minutes} ${period}`;
-};
+
 
 
   useEffect(() => {
@@ -82,7 +98,7 @@ const convertTo12HourFormat = (time) => {
 
   const getUniqueCategories = () => {
     const categories = allAppointments.flatMap(appointment => 
-      appointment.appointment_type.map(typeObj => typeObj.category)
+      appointment.appointment_type.map(typeObj => typeObj.appointment_type)
     );
     return [...new Set(categories)];
   };
@@ -119,7 +135,7 @@ const convertTo12HourFormat = (time) => {
     .filter(appointment => selectedAccountStatus === "" || appointment.patient.accountStatus === selectedAccountStatus)
     .filter(appointment => 
       categoryFilter === "" || 
-      appointment.appointment_type.some(typeObj => typeObj.category === categoryFilter)
+      appointment.appointment_type.some(typeObj => typeObj.appointment_type === categoryFilter)
     );
 
   const indexOfLastAppointment = currentPage * entriesPerPage;
@@ -164,34 +180,37 @@ const convertTo12HourFormat = (time) => {
       });
   };
 
-  const handleUpdateStatus = (appointmentId, newStatus) => {
-    axios.put(`${ip.address}/api/appointments/${appointmentId}/status`, { status: newStatus })
-      .then((response) => {
-        setAllAppointments(prevAppointments =>
-          prevAppointments.map(appointment =>
-            appointment._id === appointmentId ? { ...appointment, status: newStatus } : appointment
+  const handleUpdateStatus = async (appointmentId, newStatus) => {
+    try {
+      const response = await axios.put(`${ip.address}/api/appointments/${appointmentId}/status`, { status: newStatus });
+  
+      if (response.status === 200 && response.data) {
+        const updatedAppointment = response.data;
+  
+        // Update the state with the new status
+        setAllAppointments((prevAppointments) =>
+          prevAppointments.map((appointment) =>
+            appointment._id === appointmentId ? { ...appointment, status: updatedAppointment.status } : appointment
           )
         );
-      })
-      .catch((err) => {
-        console.error("Error updating status:", err);
-        setError("Failed to update the appointment status.");
-      });
+  
+        console.log('Appointment status updated successfully:', updatedAppointment);
+      } else {
+        throw new Error('Unexpected server response'); // Catch unexpected responses
+      }
+    } catch (err) {
+      console.error('Error updating status:', err);
+  
+      // More detailed error handling to prevent false error alerts
+      const errorMessage = err.response?.data?.message || 'Failed to update the appointment status.';
+      setError(errorMessage); // Set the error state for UI display
+      alert(errorMessage); // Optional alert for user feedback
+    }
   };
+  
+  
+  
 
-  const handleFollowUpChange = (appointmentId, checked) => {
-    axios.put(`${ip.address}/api/appointments/${appointmentId}/followup`, { followUp: checked })
-      .then(() => {
-        setAllAppointments(prevAppointments =>
-          prevAppointments.map(appointment =>
-            appointment._id === appointmentId ? { ...appointment, followUp: checked } : appointment
-          )
-        );
-      })
-      .catch((err) => {
-        console.error("Error updating follow-up:", err);
-      });
-  };
 
   return (
     <>
@@ -275,7 +294,7 @@ const convertTo12HourFormat = (time) => {
               <tr>
                 <th>Patient Name</th>
                 <th>Doctor Name</th>
-                <th>Category</th>
+          
                 <th>Service</th>
                 <th onClick={() => handleSort('date')}>
                   Date {sortConfig.key === 'date' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
@@ -309,10 +328,13 @@ const convertTo12HourFormat = (time) => {
                   <tr key={appointment._id}>
                     <td style={{fontSize: '14px', fontWeight: '600'}}>{patientName}</td>
                     <td style={{fontSize: '14px'}}>{doctorName}</td>
-                    <td style={{fontSize: '14px'}}>{categoryTypes}</td>
+                
                     <td style={{fontSize: '14px'}}>{appointmentTypes}</td>
                     <td style={{fontSize: '14px'}}>{appointment.date ? new Date(appointment.date).toLocaleDateString() : "Not Assigned"}</td>
-                    <td style={{fontSize: '14px'}}>{convertTo12HourFormat(appointment.time) || "Not Assigned"}</td>
+                    <td style={{ fontSize: '14px' }}>
+                      {appointment.time ? convertTimeRangeTo12HourFormat(appointment.time) : 'Not Assigned'}
+                    </td>
+
 
                     <td style={{fontSize: '14px'}}>{appointment.patient.accountStatus}</td>
                     <td>
@@ -328,10 +350,7 @@ const convertTo12HourFormat = (time) => {
                       type="checkbox"
                       disabled={true}
                       checked={appointment.followUp || false}
-                      onChange={(e) => {
-                        e.stopPropagation();
-                        handleFollowUpChange(appointment._id, e.target.checked);
-                      }}
+                     
                     />
                     </td>
                     <td>
@@ -354,11 +373,35 @@ const convertTo12HourFormat = (time) => {
                             {appointment.patient.accountStatus === "Unregistered" && (
                               <>
                                <Dropdown.Item
-                                onClick={() => handleUpdateStatus(appointment._id, "Scheduled")}
-                                className="action-item"
-                              >
-                                Scheduled
-                              </Dropdown.Item>
+                                  onClick={() => handleUpdateStatus(appointment._id, "Scheduled")}
+                                  className="action-item"
+                                  disabled={
+                                    !appointment.time || 
+                                    appointment.time === "Not Assigned" || 
+                                    !appointment.appointment_type || 
+                                    !appointment.appointment_type.length || 
+                                    appointment.appointment_type.every(type => !type.appointment_type) // Check if all services are missing
+                                  }
+                                  style={{
+                                    color: (
+                                      !appointment.time || 
+                                      appointment.time === "Not Assigned" || 
+                                      !appointment.appointment_type || 
+                                      !appointment.appointment_type.length || 
+                                      appointment.appointment_type.every(type => !type.appointment_type)
+                                    ) ? "gray" : "black",
+                                    pointerEvents: (
+                                      !appointment.time || 
+                                      appointment.time === "Not Assigned" || 
+                                      !appointment.appointment_type || 
+                                      !appointment.appointment_type.length || 
+                                      appointment.appointment_type.every(type => !type.appointment_type)
+                                    ) ? "none" : "auto"
+                                  }}
+                                >
+                                  Scheduled
+                                </Dropdown.Item>
+
                               <Dropdown.Item
                                 onClick={() => handleAssignDetails(appointment)}
                                 className="action-item"
@@ -370,12 +413,36 @@ const convertTo12HourFormat = (time) => {
                             )}
                             {appointment.patient.accountStatus === "Registered" && (
                               <>
-                                                             <Dropdown.Item
-                                onClick={() => handleUpdateStatus(appointment._id, "Scheduled")}
-                                className="action-item"
-                              >
-                                Scheduled
-                              </Dropdown.Item>
+                                <Dropdown.Item
+                                  onClick={() => handleUpdateStatus(appointment._id, "Scheduled")}
+                                  className="action-item"
+                                  disabled={
+                                    !appointment.time || 
+                                    appointment.time === "Not Assigned" || 
+                                    !appointment.appointment_type || 
+                                    !appointment.appointment_type.length || 
+                                    appointment.appointment_type.every(type => !type.appointment_type) // Check if all services are missing
+                                  }
+                                  style={{
+                                    color: (
+                                      !appointment.time || 
+                                      appointment.time === "Not Assigned" || 
+                                      !appointment.appointment_type || 
+                                      !appointment.appointment_type.length || 
+                                      appointment.appointment_type.every(type => !type.appointment_type)
+                                    ) ? "gray" : "black",
+                                    pointerEvents: (
+                                      !appointment.time || 
+                                      appointment.time === "Not Assigned" || 
+                                      !appointment.appointment_type || 
+                                      !appointment.appointment_type.length || 
+                                      appointment.appointment_type.every(type => !type.appointment_type)
+                                    ) ? "none" : "auto"
+                                  }}
+                                >
+                                  Scheduled
+                                </Dropdown.Item>
+
                                 <Dropdown.Item
                                   onClick={() => handleReschedule(appointment)}
                                   className="action-item"

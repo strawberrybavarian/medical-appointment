@@ -7,17 +7,18 @@ import { ip } from '../../../../../ContentExport';
 import AdminNavbar from '../../navbar/AdminNavbar';
 import SidebarAdmin from '../../sidebar/SidebarAdmin';
 import DataTable from 'react-data-table-component';
-
+import AddDoctorModal from './patientmodal/AddDoctorModal';
 function DoctorManagement() {
   const [doctors, setDoctors] = useState([]);
   const [selectedDoctor, setSelectedDoctor] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [modalAction, setModalAction] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
-  
+  const [showAddDoctorModal, setShowAddDoctorModal] = useState(false); // State for Add Doctor Modal
   const location = useLocation();
   const { userId, userName, role } = location.state || {};
-
+  const handleShowAddDoctorModal = () => setShowAddDoctorModal(true);
+  const handleCloseAddDoctorModal = () => setShowAddDoctorModal(false);
   useEffect(() => {
     axios.get(`${ip.address}/api/doctor/api/alldoctor`)
       .then((result) => {
@@ -103,6 +104,10 @@ function DoctorManagement() {
         <AdminNavbar userId={userId} userName={userName} role={role} />
         <Container className="ad-container" style={{ height: 'calc(100vh - 56px)', overflowY: 'auto', padding: '20px' }}>
           <h1>Doctor Management</h1>
+
+          <Button variant="primary" onClick={handleShowAddDoctorModal} className="mb-3">
+            Add Doctor
+          </Button>
           <Form.Group controlId="formDoctorSearch">
             <Form.Control
               type="text"
@@ -120,7 +125,11 @@ function DoctorManagement() {
             striped
             responsive
           />
-
+            <AddDoctorModal
+            show={showAddDoctorModal}
+            handleClose={handleCloseAddDoctorModal}
+            setDoctors={setDoctors} // Pass setDoctors to update the list after adding a new doctor
+          />
           <Modal show={showModal} onHide={handleCloseModal}>
             <Modal.Header closeButton>
               <Modal.Title>Confirm Action</Modal.Title>

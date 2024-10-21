@@ -14,7 +14,13 @@ function FollowUpModal({ show, handleClose, appointment, pid, setAppointments })
 
     const doctorId = appointment.doctor._id;
     const todayDate = new Date().toISOString().split('T')[0]; // Today's date
-
+    const convertTo24HourFormat = (time) => {
+        const [hours, minutes, period] = time.match(/(\d+):(\d+) (AM|PM)/).slice(1);
+        let hour24 = parseInt(hours, 10);
+        if (period === 'PM' && hour24 !== 12) hour24 += 12;
+        if (period === 'AM' && hour24 === 12) hour24 = 0;
+        return `${String(hour24).padStart(2, '0')}:${minutes}`;
+      };
     useEffect(() => {
         if (appointment && doctorId) {
             // Fetch doctor's availability
@@ -105,63 +111,31 @@ function FollowUpModal({ show, handleClose, appointment, pid, setAppointments })
 
     const handleSubmit = () => {
         if (!date || !time) {
-            alert('Please select a date and time.');
-            return;
+          alert('Please select a date and time.');
+          return;
         }
-
-        // Determine the period based on the selected time
-        let period = '';
-        if (time === morningTimeRange) {
-            period = 'morning';
-            if (availableSlots.morning <= 0) {
-                window.alert('No available slots for the selected morning period.');
-                return;
-            }
-        } else if (time === afternoonTimeRange) {
-            period = 'afternoon';
-            if (availableSlots.afternoon <= 0) {
-                window.alert('No available slots for the selected afternoon period.');
-                return;
-            }
-        } else {
-            // Custom time
-            period = 'custom';
-        }
-
+      
+        const [startTime, endTime] = time.split(' - ').map(convertTo24HourFormat);
+      
         const followUpData = {
-            doctor: doctorId,
-            date,
-            time,
-            reason,
-            appointment_type: appointment.appointment_type,
+          doctor: doctorId,
+          date,
+          time: `${startTime} - ${endTime}`, // Store in 24-hour format
+          reason,
+          appointment_type: appointment.appointment_type,
         };
-
-        // Send a POST request to schedule a follow-up
+      
         axios.post(`${ip.address}/api/appointments/${appointment._id}/schedulefollowup`, followUpData)
-            .then((response) => {
-                const newAppointment = response.data;
-                alert('Follow-up appointment scheduled successfully.');
-
-                // Decrease the available slots after successful scheduling
-                if (period === 'morning' || period === 'afternoon') {
-                    setAvailableSlots(prevSlots => ({
-                        ...prevSlots,
-                        [period]: prevSlots[period] - 1
-                    }));
-                }
-
-                // Optionally, update the appointments state
-                if (setAppointments) {
-                    setAppointments(prevAppointments => [...prevAppointments, newAppointment]);
-                }
-
-                handleClose();
-            })
-            .catch((error) => {
-                console.error('Error scheduling follow-up appointment:', error.response ? error.response.data : error.message);
-                alert('Failed to schedule follow-up appointment.');
-            });
-    };
+          .then((response) => {
+            const newAppointment = response.data;
+            alert('Follow-up appointment scheduled successfully.');
+            handleClose();
+          })
+          .catch((error) => {
+            console.error('Error scheduling follow-up appointment:', error.response ? error.response.data : error.message);
+            alert('Failed to schedule follow-up appointment.');
+          });
+      };
 
     return (
         <Modal show={show} onHide={handleClose}>
