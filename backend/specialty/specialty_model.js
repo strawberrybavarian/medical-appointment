@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const {Schema, model} = mongoose;
+const { Schema, model } = mongoose;
 
 const SpecialtySchema = new Schema({
     name: {
@@ -7,6 +7,9 @@ const SpecialtySchema = new Schema({
         required: true,
     },
     description: {
+        type: String,
+    },
+    imageUrl: {
         type: String,
     },
 }, { timestamps: true });

@@ -3,7 +3,7 @@ import { Container, Button, Table, Card } from 'react-bootstrap';
 import axios from 'axios';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { ip } from '../../../../../ContentExport';
-import AppointmentModal from '../../../../patient/doctorprofile/AppointmentModal';
+import AppointmentModal from '../Add Patient/New Appointment/AppointmentModal';
 const defaultImage = "images/014ef2f860e8e56b27d4a3267e0a193a.jpg";
 function MSDoctorProfile() {
     const location = useLocation();

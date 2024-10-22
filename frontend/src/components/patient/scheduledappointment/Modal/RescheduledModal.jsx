@@ -1,161 +1,267 @@
-import { Modal, Button, Form } from 'react-bootstrap';
-import { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { Modal, Button, Form, Col } from 'react-bootstrap';
+import Select from 'react-select';
 import axios from 'axios';
 import { ip } from '../../../../ContentExport';
-const RescheduleModal = ({ show, handleClose, appointment, onSubmit }) => {
-  const [newDate, setNewDate] = useState('');
-  const [newTime, setNewTime] = useState('');
-  const [availableTimes, setAvailableTimes] = useState([]);
-  const [bookedTimes, setBookedTimes] = useState([]);
-  const [availability, setAvailability] = useState({});
-  const [error, setError] = useState('');
-  
-  const getTodayDate = () => {
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, '0');
-    const day = String(today.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  };
 
-  const generateTimeIntervals = (start, end, interval) => {
-    const times = [];
-    const [startHour, startMinute] = start.split(':').map(Number);
-    const [endHour, endMinute] = end.split(':').map(Number);
-    let currentTime = new Date(1970, 0, 1, startHour, startMinute);
-    const endTime = new Date(1970, 0, 1, endHour, endMinute);
+function RescheduledModal({ show, handleClose, appointment }) {
+    const [doctors, setDoctors] = useState([]);
+    const [selectedDoctor, setSelectedDoctor] = useState(null);
+    const [date, setDate] = useState("");
+    const [time, setTime] = useState("");
+    const [availability, setAvailability] = useState({});
+    const [morningTimeRange, setMorningTimeRange] = useState("");
+    const [afternoonTimeRange, setAfternoonTimeRange] = useState("");
+    const [bookedSlots, setBookedSlots] = useState({ morning: 0, afternoon: 0 });
+    const [availableSlots, setAvailableSlots] = useState({ morning: 0, afternoon: 0 });
 
-    while (currentTime <= endTime) {
-      times.push(currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
-      currentTime = new Date(currentTime.getTime() + interval * 60000); // interval in minutes
-    }
+    // Function to format time
+    const formatTime = (timeString) => {
+        const [hours, minutes] = timeString.split(":");
+        const time = new Date();
+        time.setHours(hours);
+        time.setMinutes(minutes);
+        return time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+    };
 
-    return times;
-  };
+    // Handle time selection
+    const handleTimeSelection = (selectedTime) => {
+        setTime(selectedTime);
+    };
 
-  const getAvailableTimes = (day) => {
-    const dayAvailability = availability[day];
-    if (!dayAvailability) return [];
+    // Fetch all doctors
+    useEffect(() => {
+        const fetchDoctors = async () => {
+            try {
+                const response = await axios.get(`${ip.address}/api/doctor/api/alldoctor`);
+                const doctorOptions = response.data.theDoctor.map((doctor) => ({
+                    value: doctor._id,
+                    label: `${doctor.dr_firstName} ${doctor.dr_middleInitial ? doctor.dr_middleInitial + '. ' : ''}${doctor.dr_lastName}`,
+                }));
+                setDoctors(doctorOptions);
+            } catch (err) {
+                console.error(err);
+            }
+        };
 
-    let times = [];
-    if (dayAvailability.morning.available) {
-      const morningTimes = generateTimeIntervals(
-        dayAvailability.morning.startTime,
-        dayAvailability.morning.endTime,
-        dayAvailability.morning.interval || 30 // Ensure default interval is used if not present
-      );
-      times = times.concat(morningTimes);
-    }
-    if (dayAvailability.afternoon.available) {
-      const afternoonTimes = generateTimeIntervals(
-        dayAvailability.afternoon.startTime,
-        dayAvailability.afternoon.endTime,
-        dayAvailability.afternoon.interval || 30 // Ensure default interval is used if not present
-      );
-      times = times.concat(afternoonTimes);
-    }
-    return times;
-  };
+        fetchDoctors();
+    }, []);
 
-  useEffect(() => {
-    if (appointment) {
-      axios.get(`${ip.address}/api/doctor/${appointment.doctor._id}/available`)
-        .then((response) => {
-          console.log("Doctor availability fetched:", response.data);
-          const { availability } = response.data;
-          setAvailability(availability);
-        })
-        .catch((err) => {
-          console.log(err.response.data);
-        });
-    }
-  }, [appointment]);
+    // Fetch availability when a doctor is selected
+    useEffect(() => {
+        if (selectedDoctor) {
+            axios.get(`${ip.address}/api/doctor/${selectedDoctor.value}`)
+                .then(response => {
+                    const doctor = response.data.doctor;
+                    setAvailability(doctor.availability || {});
+                })
+                .catch(err => {
+                    console.error(err);
+                });
+        } else {
+            setAvailability({});
+        }
+    }, [selectedDoctor]);
 
-  useEffect(() => {
-    if (newDate) {
-      const selectedDate = new Date(newDate);
-      const daysOfWeek = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
-      const day = daysOfWeek[selectedDate.getDay()];
+    // Handle appointment details when the modal is opened
+    useEffect(() => {
+        if (show && appointment) {
+            setSelectedDoctor({
+                value: appointment.doctor._id,
+                label: `${appointment.doctor.dr_firstName} ${appointment.doctor.dr_middleInitial ? appointment.doctor.dr_middleInitial + '. ' : ''}${appointment.doctor.dr_lastName}`
+            });
+            setDate(new Date(appointment.date).toISOString().split('T')[0]);
+            setTime(appointment.time);
+        }
+    }, [show, appointment]);
 
-      const times = getAvailableTimes(day);
-      setAvailableTimes(times);
+    // Update available time slots based on selected date and doctor's availability
+    useEffect(() => {
+        if (date && availability && selectedDoctor) {
+            const selectedDate = new Date(date);
+            const daysOfWeek = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+            const day = daysOfWeek[selectedDate.getDay()];
+            const dayAvailability = availability[day];
 
-      // Fetch already booked times for the selected date and doctor
-      axios.get(`${ip.address}/api//doctor/${appointment.doctor._id}/booked-slots?date=${newDate}`)
-        .then((response) => {
-          const bookedSlots = response.data.bookedSlots;
-          setBookedTimes(bookedSlots);
-        })
-        .catch((err) => {
-          console.log(err.response.data);
-        });
-    } else {
-      setAvailableTimes([]);
-      setBookedTimes([]);
-    }
-  }, [newDate, appointment]);
+            if (dayAvailability) {
+                setMorningTimeRange(dayAvailability.morning?.available ? `${formatTime(dayAvailability.morning.startTime)} - ${formatTime(dayAvailability.morning.endTime)}` : "");
+                setAfternoonTimeRange(dayAvailability.afternoon?.available ? `${formatTime(dayAvailability.afternoon.startTime)} - ${formatTime(dayAvailability.afternoon.endTime)}` : "");
 
-  const handleSubmit = () => {
-    if (!newDate || !newTime) {
-      setError('Please select a date and time');
-      return;
-    }
-    onSubmit(newDate, newTime);
-  };
+                // Fetch booked slots for the selected date and doctor
+                axios
+                    .get(`${ip.address}/api/doctor/${selectedDoctor.value}/booked-slots?date=${date}`)
+                    .then((response) => {
+                        const bookedTimes = response.data.bookedSlots || [];
 
-  const todayDate = getTodayDate();
-  const availableSlots = availableTimes.length - bookedTimes.length;
+                        // Count morning and afternoon bookings
+                        const morningBookedCount = bookedTimes.filter((time) => {
+                            const hour = parseInt(time.split(':')[0], 10);
+                            return hour < 12;
+                        }).length;
 
-  return (
-    <Modal show={show} onHide={handleClose}>
-      <Modal.Header closeButton>
-        <Modal.Title>Reschedule Appointment</Modal.Title>
-      </Modal.Header>
-      <Modal.Body>
-        <Form>
-          <Form.Group controlId="formNewDate">
-            <Form.Label>New Date</Form.Label>
-            <Form.Control 
-              type="date" 
-              value={newDate} 
-              min={todayDate}
-              onChange={(e) => setNewDate(e.target.value)} 
-            />
-          </Form.Group>
-          {availableTimes.length > 0 ? (
-            <>
-              <Form.Group controlId="formNewTime">
-                <Form.Label>New Time</Form.Label>
-                <center>
-                <div>
-                  {availableTimes.map((timeSlot) => (
-                    <Button
-                      key={timeSlot}
-                      variant="outline-primary"
-                      onClick={() => setNewTime(timeSlot)}
-                      disabled={bookedTimes.includes(timeSlot) || newTime === timeSlot}
-                      className="m-1"
-                    >
-                      {timeSlot}
-                    </Button>
-                  ))}
-                </div>
-                </center>
-                <center><h5>Slots Available: {availableSlots}</h5></center> 
-              </Form.Group>
-            </>
-          ) : (
-            <p>No available times for the selected date.</p>
-          )}
-          {error && <p style={{ color: 'red' }}>{error}</p>}
-        </Form>
-      </Modal.Body>
-      <Modal.Footer>
-        <Button variant="secondary" onClick={handleClose}>Close</Button>
-        <Button variant="primary" onClick={handleSubmit}>Submit</Button>
-      </Modal.Footer>
-    </Modal>
-  );
-};
+                        const afternoonBookedCount = bookedTimes.filter((time) => {
+                            const hour = parseInt(time.split(':')[0], 10);
+                            return hour >= 12;
+                        }).length;
 
-export default RescheduleModal;
+                        setBookedSlots({ morning: morningBookedCount, afternoon: afternoonBookedCount });
+
+                        // Calculate available slots
+                        let morningAvailableSlots = 0;
+                        let afternoonAvailableSlots = 0;
+
+                        if (dayAvailability.morning?.available) {
+                            morningAvailableSlots = dayAvailability.morning.maxPatients - morningBookedCount;
+                        }
+
+                        if (dayAvailability.afternoon?.available) {
+                            afternoonAvailableSlots = dayAvailability.afternoon.maxPatients - afternoonBookedCount;
+                        }
+
+                        setAvailableSlots({ morning: morningAvailableSlots, afternoon: afternoonAvailableSlots });
+                    })
+                    .catch((err) => {
+                        console.error(err);
+                        setBookedSlots({ morning: 0, afternoon: 0 });
+                        setAvailableSlots({ morning: 0, afternoon: 0 });
+                    });
+            } else {
+                setMorningTimeRange("");
+                setAfternoonTimeRange("");
+                setBookedSlots({ morning: 0, afternoon: 0 });
+                setAvailableSlots({ morning: 0, afternoon: 0 });
+            }
+        } else {
+            setMorningTimeRange("");
+            setAfternoonTimeRange("");
+            setBookedSlots({ morning: 0, afternoon: 0 });
+            setAvailableSlots({ morning: 0, afternoon: 0 });
+        }
+    }, [date, availability, selectedDoctor]);
+
+    const todayDate = new Date().toISOString().split('T')[0]; // Today's date for the minimum date selection
+
+    // Submit the rescheduled appointment
+    const handleRescheduleSubmit = () => {
+        if (!selectedDoctor || !date || !time) {
+            window.alert("Please fill all fields!");
+            return;
+        }
+
+        // Determine the period based on the selected time
+        let period = '';
+        if (time === morningTimeRange) {
+            period = 'morning';
+            if (availableSlots.morning <= 0) {
+                window.alert('No available slots for the selected morning period.');
+                return;
+            }
+        } else if (time === afternoonTimeRange) {
+            period = 'afternoon';
+            if (availableSlots.afternoon <= 0) {
+                window.alert('No available slots for the selected afternoon period.');
+                return;
+            }
+        } else {
+            // Custom time
+            period = 'custom';
+        }
+
+        const rescheduleData = {
+            doctor: selectedDoctor.value,
+            date: date,
+            time: time
+        };
+
+        axios.put(`${ip.address}/api/appointments/${appointment._id}/assign`, rescheduleData)
+            .then((response) => {
+                alert("Appointment successfully rescheduled!");
+
+                // Decrease the available slots after successful rescheduling
+                if (period === 'morning' || period === 'afternoon') {
+                    setAvailableSlots(prevSlots => ({
+                        ...prevSlots,
+                        [period]: prevSlots[period] - 1
+                    }));
+                }
+
+                handleClose();  // Close modal after successful submission
+            })
+            .catch((err) => {
+                console.error(err);
+                alert("Error occurred while rescheduling the appointment.");
+            });
+    };
+
+    return (
+        <Modal show={show} onHide={handleClose}>
+            <Modal.Header closeButton>
+                <Modal.Title>Reschedule Appointment</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+                <Form.Group as={Col} className="mb-3">
+                    <Form.Label>Select Doctor</Form.Label>
+                    <Select
+                        options={doctors}
+                        value={selectedDoctor}
+                        onChange={setSelectedDoctor}
+                        placeholder="Select a doctor"
+                        isClearable
+                    />
+                </Form.Group>
+
+                <Form.Group as={Col} className="mb-3">
+                    <Form.Label>Date</Form.Label>
+                    <Form.Control
+                        type="date"
+                        min={todayDate}
+                        value={date}
+                        onChange={(e) => setDate(e.target.value)}
+                    />
+                </Form.Group>
+
+                <Form.Group as={Col} className="mb-3">
+                    <Form.Label>Time</Form.Label>
+                    {morningTimeRange && availableSlots.morning > 0 && (
+                        <Button
+                            variant={time === morningTimeRange ? "secondary" : "outline-primary"}
+                            onClick={() => handleTimeSelection(morningTimeRange)}
+                            className="m-1"
+                        >
+                            Morning: {morningTimeRange} <br />
+                            Slots left: {availableSlots.morning}
+                        </Button>
+                    )}
+                    {afternoonTimeRange && availableSlots.afternoon > 0 && (
+                        <Button
+                            variant={time === afternoonTimeRange ? "secondary" : "outline-primary"}
+                            onClick={() => handleTimeSelection(afternoonTimeRange)}
+                            className="m-1"
+                        >
+                            Afternoon: {afternoonTimeRange} <br />
+                            Slots left: {availableSlots.afternoon}
+                        </Button>
+                    )}
+                    {((!morningTimeRange || availableSlots.morning <= 0) && (!afternoonTimeRange || availableSlots.afternoon <= 0)) && (
+                        <Form.Control
+                            type="time"
+                            value={time}
+                            onChange={(e) => setTime(e.target.value)}
+                            required
+                        />
+                    )}
+                </Form.Group>
+            </Modal.Body>
+            <Modal.Footer>
+                <Button variant="secondary" onClick={handleClose}>
+                    Close
+                </Button>
+                <Button variant="primary" onClick={handleRescheduleSubmit}>
+                    Submit
+                </Button>
+            </Modal.Footer>
+        </Modal>
+    );
+}
+
+export default RescheduledModal;

@@ -30,6 +30,20 @@ const OngoingAppointment = ({ allAppointments, setAllAppointments }) => {
     setShowRescheduleModal(true);
   };
 
+  const handleFollowUpChange = (appointmentId, checked) => {
+    axios.put(`${ip.address}/api/appointments/${appointmentId}/followup`, { followUp: checked })
+      .then(() => {
+        setAllAppointments(prevAppointments =>
+          prevAppointments.map(appointment =>
+            appointment._id === appointmentId ? { ...appointment, followUp: checked } : appointment
+          )
+        );
+      })
+      .catch((err) => {
+        console.error("Error updating follow-up:", err);
+      });
+  };
+
   // Handle confirm reschedule
   const handleConfirmReschedule = (rescheduledReason) => {
     const newStatus = {
@@ -160,6 +174,7 @@ const OngoingAppointment = ({ allAppointments, setAllAppointments }) => {
               <th>Date</th>
               <th>Time</th>
               <th>Status</th>
+              <th>Follow Up</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -190,6 +205,16 @@ const OngoingAppointment = ({ allAppointments, setAllAppointments }) => {
                       </div>
                     </td>
                     <td>
+                      <Form.Check
+                      type="checkbox"
+                      checked={appointment.followUp || false}
+                      onChange={(e) => {
+                        e.stopPropagation();
+                        handleFollowUpChange(appointment._id, e.target.checked);
+                      }}
+                    />
+                    </td>
+                    <td>
                       <div>
                         <Link
                           to="/information"
@@ -217,7 +242,7 @@ const OngoingAppointment = ({ allAppointments, setAllAppointments }) => {
 
                   {/* Collapsible row for "Reason" */}
                   <tr>
-                    <td colSpan="6" style={{ padding: 0 }}>
+                    <td colSpan="7" style={{ padding: 0 }}>
                       <Collapse in={expandedRow === appointment._id}>
                         <div style={{ padding: '10px', backgroundColor: '#f8f9fa', transition: 'height 0.35s ease'}}>
                           <strong>Reason:</strong> {appointment.reason}

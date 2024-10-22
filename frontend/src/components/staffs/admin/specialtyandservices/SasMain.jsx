@@ -3,20 +3,20 @@ import ManageSpecialty from './ManageSpecialty';
 import SidebarAdmin from '../sidebar/SidebarAdmin';
 import { Container, Row, Col } from 'react-bootstrap';
 import AdminNavbar from '../navbar/AdminNavbar';
-import { useParams } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 import ManageServices from './ManageServices';
 import ManageHMO from './ManageHMO';
-
 function SasMain() {
-    const { aid } = useParams();
-    const [activeTab, setActiveTab] = useState('specialty'); // Default tab
 
+    const [activeTab, setActiveTab] = useState('specialty'); // Default tab
+    const location = useLocation();
+    const { userId, userName, role } = location.state || {};
     return (
         <>
             <div className='d-flex w-100'>
-                <SidebarAdmin aid={aid} />
+                <SidebarAdmin userId={userId} userName={userName} role={role} />
                 <div className='w-100'>
-                    <AdminNavbar />
+                    <AdminNavbar userId={userId} userName={userName} role={role} />
                     <Container fluid style={{ overflowY: 'auto', height: 'calc(100vh - 100px)', width: '100%', paddingBottom: '1.5rem' }}>
                         <div className='maincolor-container p-0'>
                             <div className='content-area p-0'>
@@ -49,9 +49,9 @@ function SasMain() {
                                     <Row className="mt-4">
                                         <Col>
                                             {/* Conditionally Render Components Based on Active Tab */}
-                                            {activeTab === 'specialty' && <ManageSpecialty aid={aid} />}
-                                            {activeTab === 'services' && <ManageServices />}
-                                            {activeTab === 'hmo' && <ManageHMO />}
+                                            {activeTab === 'specialty' && <ManageSpecialty aid={userId} />}
+                                            {activeTab === 'services' && <ManageServices aid={userId}/>}
+                                            {activeTab === 'hmo' && <ManageHMO aid={userId}/>}
                                         </Col>
                                     </Row>
                                 </Container>

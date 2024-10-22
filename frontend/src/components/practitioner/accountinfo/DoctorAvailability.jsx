@@ -4,6 +4,7 @@ import { Form, Button, Row, Col } from 'react-bootstrap';
 import DeactivationModal from './modal/DeactivationModal';
 import { ip } from '../../../ContentExport';
 
+
 const initialTimeSlot = { startTime: '', endTime: '', available: false, maxPatients: 0 }; // Removed interval and added maxPatients
 
 const initialAvailability = {
@@ -213,6 +214,7 @@ function DoctorAvailability({ doctorId }) {
                     {activeAppointmentStatus ? 'Deactivate Appointments' : 'Activate Appointments'}
                 </Button>
 
+                
                 {/* Render the modal for deactivation reason */}
                 <DeactivationModal
                     show={showModal}

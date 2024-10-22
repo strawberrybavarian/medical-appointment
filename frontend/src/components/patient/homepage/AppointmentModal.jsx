@@ -57,7 +57,7 @@ function AppointmentModal({ show, handleClose, serviceId, pid }) {
             reason,
         };
 
-        axios.post(`${ip.address}/api/patient/api/${pid}/createappointment`, formData)
+        axios.post(`${ip.address}/api/patient/api/${pid}/createserviceappointment`, formData)
             .then(() => {
                 handleClose(); // Close the modal on success
                 window.location.reload(); // Reload to reflect changes
@@ -86,7 +86,7 @@ function AppointmentModal({ show, handleClose, serviceId, pid }) {
             <Modal show={show} onHide={handleClose} className='am-overlay'>
                 <div>
                     <Modal.Header className="am-header" closeButton>
-                        <Modal.Title>Book Appointment</Modal.Title>
+                        <Modal.Title>Book Service Appointment</Modal.Title>
                     </Modal.Header>
                     <Modal.Body>
                         {service ? (

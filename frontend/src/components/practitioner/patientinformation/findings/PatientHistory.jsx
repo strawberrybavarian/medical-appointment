@@ -87,7 +87,7 @@ const PatientHistory = ({pid}) => {
                             <p><strong>History of Present Illness:</strong> {record?.historyOfPresentIllness.currentSymptoms.length > 0 ? record.historyOfPresentIllness.currentSymptoms.join(", ") : "None"}</p>
                             <p><strong>Lifestyle (Smoking):</strong> {record?.lifestyle.smoking ? 'Yes' : 'No'}</p>
                             <p><strong>Lifestyle (Alcohol Consumption):</strong> {record?.lifestyle.alcoholConsumption ? 'Yes' : 'No'}</p>
-                            <p><strong>Social Support:</strong> {record?.socialHistory.socialSupport ? 'Yes' : 'No'}</p>
+                            
                             <p><strong>Remarks:</strong> {record?.remarks}</p>
                         </Card.Body>
                     </Collapse>

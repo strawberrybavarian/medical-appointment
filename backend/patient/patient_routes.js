@@ -32,7 +32,11 @@ const storage = multer.diskStorage({
 
 
 module.exports = app => { 
+  //Laboratory Results
+    app.get("/api/patient/getpatientbyid/:patientID", PatientController.getPatientByPatientID);
     //For Logging In
+    app.get('/api/patient/getallemails', PatientController.getAllPatientEmails); 
+    app.get('/api/patient/getcontactnumber', PatientController.getAllContactNumbers); 
     app.post('/api/patient/api/login', PatientController.loginPatient);
     //ResetPassword Forgot Password
     app.post('/api/patient/forgot-password', PatientController.forgotPassword);
@@ -73,7 +77,7 @@ module.exports = app => {
     // app.post('/patient/api/:uid/createappointment', PatientController.createAppointment);
     app.put('/api/patient/:appointmentId/updateappointment', PatientController.cancelAppointment)
         // app.put('patient/api/:uid/rescheduleappointment', PatientController.resche)
-
+    app.get('/api/patient/api/getaudit/:pid', PatientController.getPatientWithAudits);
 
     
 

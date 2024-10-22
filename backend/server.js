@@ -41,13 +41,18 @@ app.use('/images', express.static(path.join(__dirname, 'patient', 'images')));
 app.use('/images', express.static(path.join(__dirname, 'prescription', 'images')));
 app.use('/images', express.static(path.join(__dirname, 'appointments', 'images')));
 app.use('/images', express.static(path.join(__dirname, 'payment', 'images')));
+app.use('/images', express.static(path.join(__dirname, 'announcement', 'images')));
+app.use('/images', express.static(path.join(__dirname, 'news', 'images')));
+app.use('/images', express.static(path.join(__dirname, 'specialty', 'images')));
+app.use('/images', express.static(path.join(__dirname, 'services', 'images')));
+
 app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 // Static file serving for uploaded PDFs
 
 
 // Static file serving for uploaded PDFs
 app.use('/uploads', cors({
-    
+    origin: '*',
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true

@@ -1,7 +1,10 @@
+// findings_controller.js
+
 const Findings = require('./findings_model');
 const Patient = require('../patient/patient_model');
-const Appointment = require('../appointments/appointment_model')
-//Creation of FIndings
+const Appointment = require('../appointments/appointment_model');
+
+// Create or Update Findings
 const createFindings = async (req, res) => {
     try {
         const findingsData = req.body;
@@ -14,8 +17,16 @@ const createFindings = async (req, res) => {
             return res.status(400).json({ message: 'Missing required fields' });
         }
 
+        // Fetch the appointment to ensure it exists
+        const appointment = await Appointment.findById(findingsData.appointment);
+
+        if (!appointment) {
+            console.error('Appointment not found:', findingsData.appointment);
+            return res.status(404).json({ message: 'Appointment not found' });
+        }
+
         // Check if a findings document already exists for the appointment
-        let findings = await Findings.findOne({ patient: findingsData.patient, appointment: findingsData.appointment });
+        let findings = await Findings.findOne({ appointment: findingsData.appointment });
 
         if (findings) {
             // Update the existing findings document
@@ -53,7 +64,7 @@ const createFindings = async (req, res) => {
                 return res.status(500).json({ message: 'Failed to update related entities' });
             }
 
-            return res.status(200).json(newFindings);
+            return res.status(201).json(newFindings);
         }
     } catch (error) {
         console.error('Error in createFindings controller:', error);
@@ -62,23 +73,21 @@ const createFindings = async (req, res) => {
 };
 
 
-
-
-// Get a specific Finding by ID
+// Get a specific Appointment with Findings by Appointment ID
 const getOneFindings = async (req, res) => {
     try {
-        const findings = await Appointment.findById(req.params.id)
+        const appointment = await Appointment.findById(req.params.id)
             .populate('patient')
             .populate('doctor')
             .populate('findings')
             .populate('prescription')
             .populate('immunization');
         
-        if (!findings) {
-            return res.status(404).json({ message: 'Findings not found' });
+        if (!appointment) {
+            return res.status(404).json({ message: 'Appointment not found' });
         }
 
-        res.status(200).json(findings);
+        res.status(200).json(appointment);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

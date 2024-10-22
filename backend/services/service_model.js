@@ -1,3 +1,5 @@
+// File: service_model.js
+
 const mongoose = require('mongoose');
 const { Schema, model } = mongoose;
 
@@ -10,22 +12,22 @@ const ServiceSchema = new Schema({
     },
     category: {
         type: String,
-     
-
     },
-
     availability: {
         type: String,
         enum: ['Available', 'Not Available', 'Coming Soon'],
         default: 'Available',
     },
     requirements: [{
-        type: String,  // List any pre-requirements (e.g., fasting, doctor referral)
+        type: String,
     }],
     doctors: [{
         type: Schema.Types.ObjectId,
-        ref: 'Doctor',  // Reference doctors who offer these services (e.g., for consultation, 2D-Echo)
+        ref: 'Doctor',
     }],
+    imageUrl: {
+        type: String, // This field will store the path to the image
+    },
 }, { timestamps: true });
 
 const Service = model('Service', ServiceSchema);

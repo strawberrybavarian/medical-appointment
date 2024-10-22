@@ -78,10 +78,12 @@ const FindingsSchema = new Schema({
             type: Boolean,              
             default: false
         },
-        physicalActivity: {
-            type: String, 
-        }              
+        others: {
+            type: [String],  // Array of strings to capture additional lifestyle information
+            default: []      // Default to an empty array
+        }
     },
+    
 
     // Family history of relevant medical conditions
     familyHistory: [{

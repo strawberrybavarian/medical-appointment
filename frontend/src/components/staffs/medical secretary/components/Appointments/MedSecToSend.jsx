@@ -4,7 +4,7 @@ import axios from "axios";
 import { useParams } from "react-router-dom";
 import UploadLabResultsModal from "./modal/UploadLabResultsModal";
 import { ip } from "../../../../../ContentExport";
-const MedSecToSend = ({ allAppointments, setAllAppointments }) => {
+const MedSecToSend = ({ allAppointments, setAllAppointments, msid }) => {
   const { did } = useParams();
   const [error, setError] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -16,7 +16,7 @@ const MedSecToSend = ({ allAppointments, setAllAppointments }) => {
   const [showToast, setShowToast] = useState(false);  // Success toast state
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [alldoctors, setAllDoctors] = useState([]);  // State for doctors
-
+  console.log(msid)
   useEffect(() => {
     axios.get(`${ip.address}/api/doctor/api/alldoctor`)
       .then((result) => {
@@ -72,19 +72,51 @@ const MedSecToSend = ({ allAppointments, setAllAppointments }) => {
 
   // Handle sending the laboratory result
   const handleSendLabResult = async () => {
+    if (!file) {
+        setError('Please select a file before submitting.');
+        return;
+    }
+
     const labData = new FormData();
     labData.append('file', file);
 
+    // Log the form data before sending
+    console.log('Sending file:', file);
+
     try {
-      await axios.post(`${ip.address}/api/doctor/api/createLaboratoryResult/${selectedAppointment.patient._id}/${selectedAppointment._id}`, labData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
-      setShowToast(true);  // Show success toast
-      setFile(null);  // Reset file after upload
-      setShowSendModal(false);  // Close modal after successful upload
+        const response = await axios.post(
+            `${ip.address}/api/medsec/${msid}/api/createLaboratoryResult/${selectedAppointment.patient._id}/${selectedAppointment._id}`,
+            labData,
+            {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            }
+        );
+        
+        console.log('Response from server:', response.data); // Log the response from the server
+        
+        setShowToast(true);  // Show success toast
+        setFile(null);  // Reset file after upload
+        setShowSendModal(false);  // Close modal after successful upload
     } catch (err) {
-      setError('Failed to send laboratory result');
+        setError('Failed to send laboratory result');
+        console.error('Error during file upload:', err.response?.data || err.message);
     }
+};
+
+
+  const handleUpdateStatus = (appointmentId, newStatus) => {
+    axios.put(`${ip.address}/api/appointments/${appointmentId}/status`, { status: newStatus })
+      .then((response) => {
+        setAllAppointments(prevAppointments =>
+          prevAppointments.map(appointment =>
+            appointment._id === appointmentId ? { ...appointment, status: newStatus } : appointment
+          )
+        );
+      })
+      .catch((err) => {
+        console.error("Error updating status:", err);
+        setError("Failed to update the appointment status.");
+      });
   };
 
   return (
@@ -116,6 +148,7 @@ const MedSecToSend = ({ allAppointments, setAllAppointments }) => {
             <th>Date</th>
             <th>Time</th>
             <th>Status</th>
+            <th>Account Status</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -131,6 +164,7 @@ const MedSecToSend = ({ allAppointments, setAllAppointments }) => {
                 <td>{appointment.date ? new Date(appointment.date).toLocaleDateString() : "Not Assigned"}</td>
                 <td>{appointment.time || "Not Assigned"}</td>
                 <td>{appointment.status}</td>
+                <td>{appointment.patient.accountStatus}</td>
                 <td>
                   <Dropdown>
                     <Dropdown.Toggle variant="secondary" id="dropdown-basic">
@@ -141,6 +175,12 @@ const MedSecToSend = ({ allAppointments, setAllAppointments }) => {
                       <Dropdown.Item onClick={() => { setSelectedAppointment(appointment); setShowSendModal(true); }}>
                         Send Laboratory
                       </Dropdown.Item>
+                      <Dropdown.Item
+                                onClick={() => handleUpdateStatus(appointment._id, "Completed")}
+                                className="action-item"
+                              >
+                                Complete
+                              </Dropdown.Item>
                     </Dropdown.Menu>
                   </Dropdown>
                 </td>

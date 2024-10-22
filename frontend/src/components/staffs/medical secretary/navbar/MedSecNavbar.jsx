@@ -34,7 +34,7 @@ function MedSecNavbar({msid}) {
         });
     }, [msid]);
 
-    console.log(name);
+  
     
 
     const onNavigateAppoinments = () => {

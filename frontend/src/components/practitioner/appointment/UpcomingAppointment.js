@@ -14,6 +14,19 @@ const UpcomingAppointment = ({ allAppointments, setAllAppointments }) => {
   const [expandedRow, setExpandedRow] = useState(null); // Track expanded row
   const defaultImage = "images/014ef2f860e8e56b27d4a3267e0a193a.jpg";
   // Get today's date
+  const handleFollowUpChange = (appointmentId, checked) => {
+    axios.put(`${ip.address}/api/appointments/${appointmentId}/followup`, { followUp: checked })
+      .then(() => {
+        setAllAppointments(prevAppointments =>
+          prevAppointments.map(appointment =>
+            appointment._id === appointmentId ? { ...appointment, followUp: checked } : appointment
+          )
+        );
+      })
+      .catch((err) => {
+        console.error("Error updating follow-up:", err);
+      });
+  };
   const getTodayDate = () => {
     const today = new Date();
     const year = today.getFullYear();
@@ -131,6 +144,7 @@ const UpcomingAppointment = ({ allAppointments, setAllAppointments }) => {
               <th>Date</th>
               <th>Time</th>
               <th>Status</th>
+              <th>Follow Up</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -160,6 +174,17 @@ const UpcomingAppointment = ({ allAppointments, setAllAppointments }) => {
                           {appointment.status}
                         </div>
                       </div>
+                    </td>
+                    <td>
+                      <Form.Check
+                      type="checkbox"
+                      disabled={true}
+                      checked={appointment.followUp || false}
+                      onChange={(e) => {
+                        e.stopPropagation();
+                        handleFollowUpChange(appointment._id, e.target.checked);
+                      }}
+                    />
                     </td>
                     <td>
                       <span 

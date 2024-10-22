@@ -17,7 +17,7 @@ function MedSecDashboard() {
       .get(`${ip.address}/api/medicalsecretary/api/patient-stats`)
       .then((response) => {
         const data = response.data;
-        console.log('Patient Stats:', data);
+      
 
         // Directly use the stats data from the backend response
         setStats({

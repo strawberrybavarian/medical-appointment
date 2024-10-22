@@ -4,6 +4,7 @@ const path = require('path');
 const fs = require('fs');
 const NewsController = require('./news_controller');
 
+console.log('News Routes connected')
 // Use the same storage setup from announcements
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -46,6 +47,6 @@ module.exports = app => {
     app.post('/api/news/api/addnews/:id', upload.array('images', 10), NewsController.addNewNewsByUserId);
     app.get('/api/news/api/finduser/:id/:role', NewsController.findNewsByUserId);
     app.get('/api/news/api/getallnews/:id/:role', NewsController.getAllNewsByUserId);
-    app.delete('/api/news/api/deletenews/:id/:index', NewsController.deleteNewsByIndex);
+    app.delete('/api/news/api/deletenews/:id/:newsId', NewsController.deleteNewsById);
     app.put('/api/news/api/updatenews/:userId/:newsId', upload.array('images'), NewsController.updateNewsAtIndex);
 }

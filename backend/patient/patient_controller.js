@@ -11,6 +11,7 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const { staff_email } = require('../EmailExport');
 const crypto = require('crypto');
+const Audit = require('../audit/audit_model')
 
 //For Email
 
@@ -162,20 +163,19 @@ const NewPatientSignUp = async (req, res) => {
   const { patient_email, patient_password, ...otherFields } = req.body;
 
   try {
-      const newPatient = new Patient({
-          patient_email,
-          patient_password,
-          ...otherFields,
-      });
+    const newPatient = new Patient({
+      patient_email,
+      patient_password,
+      ...otherFields,
+    });
 
-      await newPatient.save();
-      res.status(201).json({ message: 'Patient registered successfully' });
+    await newPatient.save();
+    res.status(201).json({ message: 'Patient registered successfully' });
   } catch (error) {
-      res.status(500).json({ message: 'Error registering patient', error });
+    console.error("Error while saving patient:", error); // This will log the exact error to the server logs
+    res.status(500).json({ message: 'Error registering patient', error });
   }
 };
-
-
 const loginPatient = async (req, res) => {
   const { email, password } = req.body;
 
@@ -201,16 +201,34 @@ const loginPatient = async (req, res) => {
       // Include other necessary fields
     };
 
+    // Audit the successful login action
+    const auditData = {
+      user: patient._id,
+      userType: 'Patient', // Specify the user type
+      action: 'Login',  // The action performed
+      description: 'Patient logged in',  // Description of the action
+      ipAddress: req.ip,  // Get the IP address from the request
+      userAgent: req.get('User-Agent'),  // Get the User-Agent (browser/device info)
+    };
+
+    // Save the audit record to the database
+    const audit = await new Audit(auditData).save();
+
+    // Add the audit ID to the patient's `audits` array
+    patient.audits.push(audit._id);
+    await patient.save();
+
+    // Respond to the client
     res.json({
       message: 'Successfully logged in',
       patientId: patient._id,
       patientData: patientData,
     });
   } catch (error) {
+    // Handle error
     res.status(500).json({ message: 'Error logging in', error });
   }
 };
-
 const updatePatientStatus = async (req, res) => {
   try {
       const { pid } = req.params;
@@ -223,7 +241,7 @@ const updatePatientStatus = async (req, res) => {
 
       patient.accountStatus = updatedStatus;
       await patient.save(); // Save triggers the pre-save hook for validation
-
+      
       res.json({ status: 'success', message: 'Account status updated successfully' });
   } catch (error) {
       res.status(400).json({ status: 'error', message: error.message });
@@ -233,7 +251,7 @@ const updatePatientStatus = async (req, res) => {
 
 const changePatientPassword = async (req, res) => {
   const { pid } = req.params;
-  const { newPassword } = req.body;
+  const { oldPassword, newPassword } = req.body;
 
   try {
     const patient = await Patient.findById(pid);
@@ -242,49 +260,107 @@ const changePatientPassword = async (req, res) => {
       return res.status(404).json({ message: 'Patient not found' });
     }
 
-    // Directly storing the new password without hashing
+    // Verify the old password matches
+    const isMatch = await bcrypt.compare(oldPassword, patient.patient_password);
+    if (!isMatch) {
+      return res.status(401).json({ message: 'Old password is incorrect' });
+    }
+
+    // Set the new password (the pre-save hook will automatically hash it)
     patient.patient_password = newPassword;
+
+    // Save the patient, the pre-save hook will hash the new password
     await patient.save();
 
+    // Respond to the client
     res.json({ message: 'Password updated successfully' });
   } catch (error) {
+    // Handle error
     res.status(500).json({ message: 'Error updating password', error });
   }
 };
 
 
-
 const updatePatientInfo = async (req, res) => {
   try {
-      const { pid } = req.params;
-      const updatedInfo = req.body;
+    const { pid } = req.params;
+    const updatedInfo = req.body;
 
-      const patient = await Patient.findById(pid);
-      if (!patient) {
-          return res.status(404).json({ message: 'Patient not found' });
-      }
+    console.log("Received PID:", pid);
+    console.log("Updated Info:", updatedInfo);
 
-      // Check if the last update was less than 30 days ago
-      const lastUpdate = new Date(patient.updatedAt);
-      const now = new Date();
-      const daysSinceLastUpdate = Math.floor((now - lastUpdate) / (1000 * 60 * 60 * 24));
-      if (daysSinceLastUpdate < 30) {
-          return res.status(400).json({ message: 'You can only update your information every 30 days.' });
-      }
+    const patient = await Patient.findById(pid);
+    if (!patient) {
+      return res.status(404).json({ message: 'Patient not found' });
+    }
 
-      // Update the patient information
-      patient.patient_firstName = updatedInfo.patient_firstName || patient.patient_firstName;
-      patient.patient_lastName = updatedInfo.patient_lastName || patient.patient_lastName;
-      patient.patient_middleInitial = updatedInfo.patient_middleInitial || patient.patient_middleInitial;
-      patient.patient_contactNumber = updatedInfo.patient_contactNumber || patient.patient_contactNumber;
+    // Check if the last update was less than 30 days ago
+    const lastUpdate = new Date(patient.lastProfileUpdate);
+    const now = new Date();
+    const daysSinceLastUpdate = Math.floor((now - lastUpdate) / (1000 * 60 * 60 * 24));
+    console.log(`Days since last update: ${daysSinceLastUpdate}`);
+    // Uncomment if you want to enforce the 30-day restriction
+    // if (daysSinceLastUpdate < 30) {
+    //   return res.status(400).json({ message: 'You can only update your information every 30 days.' });
+    // }
 
-      await patient.save();
-      res.json({ success: true, message: 'Information updated successfully' });
+    // Capture changes before updating
+    const changes = [];
+
+    if (updatedInfo.patient_firstName && updatedInfo.patient_firstName !== patient.patient_firstName) {
+      changes.push(`First Name changed from "${patient.patient_firstName}" to "${updatedInfo.patient_firstName}"`);
+    }
+    if (updatedInfo.patient_lastName && updatedInfo.patient_lastName !== patient.patient_lastName) {
+      changes.push(`Last Name changed from "${patient.patient_lastName}" to "${updatedInfo.patient_lastName}"`);
+    }
+    if (updatedInfo.patient_middleInitial && updatedInfo.patient_middleInitial !== patient.patient_middleInitial) {
+      changes.push(`Middle Initial changed from "${patient.patient_middleInitial}" to "${updatedInfo.patient_middleInitial}"`);
+    }
+    if (updatedInfo.patient_contactNumber && updatedInfo.patient_contactNumber !== patient.patient_contactNumber) {
+      changes.push(`Contact Number changed from "${patient.patient_contactNumber}" to "${updatedInfo.patient_contactNumber}"`);
+    }
+    if (updatedInfo.patient_email && updatedInfo.patient_email !== patient.patient_email) {
+      changes.push(`Email changed from "${patient.patient_email}" to "${updatedInfo.patient_email}"`);
+    }
+    // Add other fields as necessary, ensuring they are optional
+
+    // Update the patient information
+    patient.patient_firstName = updatedInfo.patient_firstName || patient.patient_firstName;
+    patient.patient_lastName = updatedInfo.patient_lastName || patient.patient_lastName;
+    patient.patient_middleInitial = updatedInfo.patient_middleInitial || patient.patient_middleInitial;
+    patient.patient_contactNumber = updatedInfo.patient_contactNumber || patient.patient_contactNumber;
+    patient.patient_email = updatedInfo.patient_email || patient.patient_email;
+    // Update other fields similarly
+
+    // Create the audit description based on changes
+    const auditDescription = changes.length > 0 ? changes.join(', ') : 'No significant changes made.';
+
+    // Create the audit record
+    const auditData = {
+      user: patient._id,
+      userType: 'Patient', // Specify the user type
+      action: 'Update Info',  // The action performed
+      description: auditDescription,  // Description of the changes made
+      ipAddress: req.ip,  // Get the IP address from the request
+      userAgent: req.get('User-Agent'),  // Get the User-Agent (browser/device info)
+    };
+
+    // Save the audit record to the database
+    const audit = await new Audit(auditData).save();
+
+    // Add the audit ID to the patient's `audits` array
+    patient.audits.push(audit._id);
+
+    // Save the updated patient data
+    patient.lastProfileUpdate = now; // Update the lastProfileUpdate date
+    await patient.save();
+
+    res.json({ success: true, message: 'Information updated successfully' });
   } catch (error) {
-      res.status(500).json({ message: 'Error updating patient information', error });
+    console.error('Error updating patient information:', error);
+    res.status(500).json({ message: 'Error updating patient information', error });
   }
 };
-
 
 
 const createUnregisteredPatient = async (req, res) => {
@@ -301,8 +377,6 @@ const createUnregisteredPatient = async (req, res) => {
   }
 };
 
-
-
 const findAllPatient = (req, res) => {
     Patient.find()
     .populate('patient_appointments')
@@ -313,7 +387,6 @@ const findAllPatient = (req, res) => {
       res.json({ message: 'Something went wrong', error: err })
   });
 }
-
 
 //getPatient
 const findPatientById = (req, res) => {
@@ -377,6 +450,7 @@ const findPatientById = (req, res) => {
     ]
   })
   .populate('laboratoryResults')
+  .populate('audits')
 
 
     .then((thePatient) => {
@@ -391,8 +465,6 @@ const findPatientById = (req, res) => {
     });
 };
 
-
-
 const findPatientByEmail = (req, res) => {
   Patient.findOne({email:req.params.email})
       .then((thePatient) => {
@@ -403,30 +475,47 @@ const findPatientByEmail = (req, res) => {
       });
 }
 
-
-
-
-
-
-
 const bookedSlots = async (req, res) => {
   try {
-      const { doctorId } = req.params;
-      const { date } = req.query;
+    const { doctorId } = req.params;
+    const { date } = req.query;
 
-      // Check doctors active appointment status
-      const doctor = await Doctor.findById(doctorId).select('activeAppointmentStatus');
-      if (!doctor.activeAppointmentStatus) {
-          return res.status(400).json({ message: 'Doctor is not available for appointments.' });
-      }
+    const selectedDate = new Date(date);
 
-      const bookedSlots = await Appointment.find({ doctor: doctorId, date: new Date(date), status: { $ne: 'Cancelled' } }).select('time -_id');
-      res.status(200).json({ bookedSlots: bookedSlots.map(slot => slot.time) });
+    // Fetch the doctor with bookedSlots for the specific date
+    const doctor = await Doctor.findOne({
+      _id: doctorId,
+      'bookedSlots.date': selectedDate,
+    }).select('bookedSlots.$');
+
+    if (!doctor) {
+      return res.status(404).json({ message: 'Doctor not found.' });
+    }
+
+    // Handle cases where no slots exist for the given date
+    let bookedSlot = doctor.bookedSlots[0];
+    if (!bookedSlot) {
+      bookedSlot = { date: selectedDate, morning: 0, afternoon: 0 };
+    }
+
+    res.status(200).json({
+      morning: bookedSlot.morning,
+      afternoon: bookedSlot.afternoon,
+    });
   } catch (error) {
-      console.error(error); // Log the error details
-      res.status(400).json({ message: error.message });
+    console.error('Error fetching booked slots:', error);
+    res.status(400).json({ message: error.message });
   }
 };
+
+
+
+
+
+
+
+
+
 
 
 
@@ -435,17 +524,22 @@ const cancelAppointment = async (req, res) => {
     const { cancelReason } = req.body;
     const appointmentId = req.params.appointmentId; // Appointment ID from URL parameter
 
-    console.log('Cancelling appointment with ID:', appointmentId);
+    // Logging to check if the function is called more than once
+    console.log('Cancel request received for appointment:', appointmentId);
 
     // Find the appointment before updating (to know the current doctor, date, and time)
-    const appointment = await Appointment.findById(appointmentId);
+    const appointment = await Appointment.findById(appointmentId)
+      .populate('doctor', 'dr_firstName dr_lastName') // Populate doctor's name
+      .populate('patient', 'patient_firstName patient_lastName'); // Optionally, populate patient's name
 
     if (!appointment) {
-      console.log('Appointment not found');
       return res.status(404).json({ message: "Appointment not found" });
     }
 
-    console.log('Appointment found:', appointment);
+    // Ensure that the appointment hasn't been canceled already
+    if (appointment.status === 'Cancelled') {
+      return res.status(400).json({ message: 'Appointment has already been cancelled.' });
+    }
 
     // Update the cancelReason and status to 'Cancelled'
     const updatedAppointment = await Appointment.findByIdAndUpdate(
@@ -454,28 +548,24 @@ const cancelAppointment = async (req, res) => {
       { new: true }
     );
 
-    console.log('Updated appointment:', updatedAppointment);
+    // Create audit for appointment cancellation
+    const auditData = {
+      user: appointment.patient._id, // Assuming the patient is cancelling the appointment
+      userType: 'Patient', // Specify the user type
+      action: 'Cancel Appointment',
+      description: `Appointment with Dr. ${appointment.doctor.dr_firstName} ${appointment.doctor.dr_lastName} on ${appointment.date.toLocaleDateString()} at ${appointment.time} was cancelled. Reason: ${cancelReason}`,
+      ipAddress: req.ip,  // Get the IP address from the request
+      userAgent: req.get('User-Agent'),  // Get the User-Agent (browser/device info)
+    };
 
-    // If the appointment has a doctor assigned, we need to update the available slots
-    if (appointment.doctor) {
-      console.log('Updating slots for doctor:', appointment.doctor);
+    // Save the audit record
+    const audit = await new Audit(auditData).save();
 
-      const timePeriod = parseInt(appointment.time.split(":")[0]) < 12 ? 'morning' : 'afternoon';
-
-      console.log('Time period:', timePeriod);
-
-      // Increment the maxPatients slot by 1 for the doctor
-      const doctorUpdateResult = await Doctor.findByIdAndUpdate(
-        appointment.doctor,
-        {
-          $inc: {
-            [`availability.${new Date(appointment.date).toLocaleString('en-US', { weekday: 'long' }).toLowerCase()}.${timePeriod}.maxPatients`]: 1
-          }
-        },
-        { new: true } // Return the updated doctor record
-      );
-
-      console.log('Doctor availability updated:', doctorUpdateResult);
+    // Add the audit ID to the patient's `audits` array
+    const patient = await Patient.findById(appointment.patient);
+    if (patient) {
+      patient.audits.push(audit._id);
+      await patient.save();
     }
 
     res.status(200).json(updatedAppointment);
@@ -487,13 +577,41 @@ const cancelAppointment = async (req, res) => {
 
 
 
+
+
 const updatePatientImage = async (req, res) => {
   try {
     const patientId = req.params.id;
     const imagePath = `images/${req.file.filename}`;  // Assuming the images are stored in an 'images' directory
 
-    const updatedPatient = await Patient.findByIdAndUpdate(patientId, { patient_image: imagePath }, { new: true });
+    // Find the patient by ID
+    const patient = await Patient.findById(patientId);
+    if (!patient) {
+      return res.status(404).json({ message: 'Patient not found' });
+    }
 
+    // Update the patient image
+    patient.patient_image = imagePath;
+    const updatedPatient = await patient.save();
+
+    // Create audit for updating the patient image
+    const auditData = {
+      user: patient._id, // The patient who updated their image
+      userType: 'Patient', // Specify the user type
+      action: 'Update Image',
+      description: `Patient updated their profile image.`,
+      ipAddress: req.ip,  // Get the IP address from the request
+      userAgent: req.get('User-Agent'),  // Get the User-Agent (browser/device info)
+    };
+
+    // Save the audit record to the database
+    const audit = await new Audit(auditData).save();
+
+    // Add the audit ID to the patient's `audits` array
+    patient.audits.push(audit._id);
+    await patient.save();  // Save the patient again with the audit entry
+
+    // Respond with the updated patient
     res.json({ updatedPatient, message: 'Patient image updated successfully' });
   } catch (error) {
     console.error('Error updating patient image:', error);
@@ -530,10 +648,24 @@ const forgotPassword = async (req, res) => {
 
     const token = crypto.randomBytes(20).toString('hex');
     patient.resetPasswordToken = token;
-    patient.resetPasswordExpires = Date.now() + 30 * 60 * 1000;
+    patient.resetPasswordExpires = Date.now() + 5 * 60 * 1000; // 5-minute expiration
 
     await patient.save();
+    const auditData = {
+      user: patient._id, // The patient who requested the reset
+      userType: 'Patient', // Specify the user type
+      action: 'Forgot Password Request',
+      description: `Patient requested a password reset. Token generated with a 5-minute expiration.`,
+      ipAddress: req.ip,  // Get the IP address from the request
+      userAgent: req.get('User-Agent'),  // Get the User-Agent (browser/device info)
+    };
 
+    // Save the audit record to the database
+    const audit = await new Audit(auditData).save();
+
+    // Add the audit ID to the patient's `audits` array
+    patient.audits.push(audit._id);
+    await patient.save();  // Save the patient again with the audit entry
     const transporter = nodemailer.createTransport({
       service: 'Gmail',
       auth: {
@@ -549,7 +681,7 @@ const forgotPassword = async (req, res) => {
       } else {
         console.log("Server is ready to send messages:", success);
       }
-    });
+});
 
     // const resetLink = `${ip.address}/reset-password/patient/${token}`;
     const resetLink = `${req.protocol}://${req.get('host')}/reset-password/patient/${token}`;
@@ -580,7 +712,8 @@ const forgotPassword = async (req, res) => {
 
 
 
-  const resetPassword = async (req, res) => {
+
+const resetPassword = async (req, res) => {
     const { token } = req.params;
     const { password } = req.body;
 
@@ -598,13 +731,71 @@ const forgotPassword = async (req, res) => {
         patient.patient_password = password;
         patient.resetPasswordToken = undefined;
         patient.resetPasswordExpires = undefined;
-
         await patient.save();
 
         res.json({ message: 'Password has been updated.' });
     } catch (error) {
         res.status(500).json({ message: 'Error in resetting password', error });
     }
+};
+
+const getAllPatientEmails = (req, res) => {
+  Patient.find({}, 'patient_email')
+      .then((patient) => {
+          const emails = patient.map(patient => patient.patient_email);
+          res.json(emails); // Send raw doctors data for inspection
+      })
+      .catch((err) => {
+          console.error('Error fetching patient emails:', err);
+          res.status(500).json({ message: 'Something went wrong', error: err });
+      });
+};
+
+const getAllContactNumbers = (req, res) => {
+  Patient.find({}, 'patient_contactNumber')
+  .then((patient) => {
+      const contactNumbers = patient.map(patient => patient.patient_contactNumber);
+      res.json(contactNumbers); // Send raw doctors data for inspection
+  } )
+  .catch((err) => { 
+      console.error('Error fetching patient contact numbers:', err);
+      res.status(500).json({ message: 'Something went wrong', error: err });
+  } );
+}
+
+// Assuming you're using Mongoose
+const getPatientWithAudits = async (req, res) => {
+  try {
+      const { pid } = req.params;
+
+      const patient = await Patient.findById(pid)
+          .populate({
+              path: 'audits',
+              options: { sort: { createdAt: -1 } }, // Ensure audits are sorted in reverse order
+          });
+
+      if (!patient) {
+          return res.status(404).json({ message: 'Patient not found' });
+      }
+
+      res.json({ thePatient: patient });
+  } catch (error) {
+      res.status(500).json({ message: 'Error fetching patient data', error });
+  }
+};
+
+const getPatientByPatientID = async (req, res) => {
+  try {
+    const patientID = req.params.patientID;
+    const patient = await Patient.findOne({ patient_ID: patientID });
+    if (!patient) {
+      return res.status(404).json({ message: "Patient not found" });
+    }
+    res.status(200).json({ patient });
+  } catch (error) {
+    console.error("Error fetching patient:", error);
+    res.status(500).json({ message: "Server error" });
+  }
 };
 module.exports = {
     NewPatientSignUp,
@@ -623,5 +814,6 @@ module.exports = {
     createUnregisteredPatient,
     updatePatientImage,
     createPatientSession,
-    forgotPassword, resetPassword, loginPatient
+    forgotPassword, resetPassword, loginPatient, getAllPatientEmails, getAllContactNumbers, getPatientWithAudits,
+    getPatientByPatientID
 }

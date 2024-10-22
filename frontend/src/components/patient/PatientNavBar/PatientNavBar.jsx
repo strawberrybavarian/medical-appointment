@@ -35,34 +35,34 @@ function PatientNavBar({pid}) {
     };
     
 
-    // Start inactivity timer
-    const startInactivityTimer = () => {
-        if (timeoutId) clearTimeout(timeoutId);
-        timeoutId = setTimeout(() => {
-            logoutUser(); // Log the user out after inactivity
-        }, inactivityLimit);
-    };
+    // // Start inactivity timer
+    // const startInactivityTimer = () => {
+    //     if (timeoutId) clearTimeout(timeoutId);
+    //     timeoutId = setTimeout(() => {
+    //         logoutUser(); // Log the user out after inactivity
+    //     }, inactivityLimit);
+    // };
 
-    // Reset inactivity timer on user activity
-    const resetInactivityTimer = () => {
-        startInactivityTimer();
-    };
+    // // Reset inactivity timer on user activity
+    // const resetInactivityTimer = () => {
+    //     startInactivityTimer();
+    // };
 
-    useEffect(() => {
-        // Set up event listeners for activity detection
-        window.addEventListener("mousemove", resetInactivityTimer);
-        window.addEventListener("keypress", resetInactivityTimer);
+    // useEffect(() => {
+    //     // Set up event listeners for activity detection
+    //     window.addEventListener("mousemove", resetInactivityTimer);
+    //     window.addEventListener("keypress", resetInactivityTimer);
 
-        // Start the initial inactivity timer
-        startInactivityTimer();
+    //     // Start the initial inactivity timer
+    //     startInactivityTimer();
 
-        // Cleanup event listeners on component unmount
-        return () => {
-            clearTimeout(timeoutId);
-            window.removeEventListener("mousemove", resetInactivityTimer);
-            window.removeEventListener("keypress", resetInactivityTimer);
-        };
-    }, []);
+    //     // Cleanup event listeners on component unmount
+    //     return () => {
+    //         clearTimeout(timeoutId);
+    //         window.removeEventListener("mousemove", resetInactivityTimer);
+    //         window.removeEventListener("keypress", resetInactivityTimer);
+    //     };
+    // }, []);
 
     const onClickHomepage = () => {
         navigate(`/homepage`, { state: { pid: patient._id } });

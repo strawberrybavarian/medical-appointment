@@ -46,7 +46,8 @@ module.exports = app => {
 
   app.get('/api/doctor/api/finduser/:id', AnnouncementController.findDoctorById);
   app.get('/api/doctor/api/post/getallpost/:id', AnnouncementController.getAllPostbyId);
-  app.delete('/api/doctor/api/post/deletepost/:id/:index', AnnouncementController.findPostByIdDelete);
+  app.delete('/api/doctor/api/post/deletepost/:id/:postId', AnnouncementController.findPostByIdDelete);
+
 
   app.put('/api/doctor/api/post/updatepost/:doctorId/:postId', upload.array('images'), AnnouncementController.updatePostAtIndex);
 

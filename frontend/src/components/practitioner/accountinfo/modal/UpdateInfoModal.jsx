@@ -88,14 +88,14 @@ const UpdateInfoModal = ({ show, handleClose, doctorData, handleUpdate }) => {
               />
             </Form.Group>
           </Row>
-          <Form.Group controlId="email">
+          {/* <Form.Group controlId="email">
             <Form.Label>Email:</Form.Label>
             <Form.Control
               name="dr_email"
               value={formData.dr_email || doctorData.email}
               onChange={handleChange}
             />
-          </Form.Group>
+          </Form.Group> */}
           <Row>
             <Form.Group as={Col} controlId="dob">
               <Form.Label>Birthdate:</Form.Label>

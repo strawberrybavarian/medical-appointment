@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const { Schema, model } = mongoose;
+const Audit = require('../audit/audit_model');  // Import the Audit model
 
 const PatientSchema = new Schema({
     // Personal info
@@ -14,12 +15,13 @@ const PatientSchema = new Schema({
         type: String,
         unique: true
     },
-    role:{
+    role: {
         type: String,
         default: 'Patient'
     },
     patient_image: {   
         type: String,
+        default: 'images/014ef2f860e8e56b27d4a3267e0a193a.jpg'
     },
     patient_firstName: {
         type: String,
@@ -46,17 +48,11 @@ const PatientSchema = new Schema({
     },
     accountStatus: {
         type: String,
-        enum: ['Registered', 'Unregistered', 'Deactivated', 'Deleted'],
+        
         default: 'Registered'
     },
     patient_contactNumber: {
         type: String,
-        validate: {
-            validator: function (v) {
-                return v.length === 11;
-            },
-            message: props => `${props.value} has to be 11 characters long.`
-        }
     },
     patient_gender: {
         type: String,
@@ -70,27 +66,27 @@ const PatientSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'Findings'
     }],
-    patient_address: {  // Added patient_address field
+    patient_address: {
         street: {
             type: String,
         },
         city: {
             type: String,
         },
-        state: {
+        barangay: {
             type: String,
         },
         zipCode: {
             type: String,
         },
-        country: {
+        region: {
             type: String,
         }
     },
-    patient_nationality:{
+    patient_nationality: {
         type: String,
     },
-    patient_civilstatus:{
+    patient_civilstatus: {
         type: String,
     },
     
@@ -115,6 +111,12 @@ const PatientSchema = new Schema({
         ref: 'Notification'
     }],
     
+    // Add audits as a reference array
+    audits: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Audit'
+    }],
+
     twoFactorSecret: { type: String },
     twoFactorEnabled: { type: Boolean, default: false },
     otp: {
@@ -123,11 +125,13 @@ const PatientSchema = new Schema({
     otpExpires: {
         type: Date
     },
-    lastProfileUpdate: { // New field to track profile updates
+    lastProfileUpdate: { 
         type: Date,
         default: Date.now
     }
 }, { timestamps: true }); // Keep timestamps for `createdAt` and `updatedAt`
+
+// Pre-save hook for hashing password
 PatientSchema.pre('save', async function (next) {
     if (!this.isModified('patient_password')) {
         return next();
@@ -140,6 +144,7 @@ PatientSchema.pre('save', async function (next) {
         next(error);
     }
 });
+
 // Pre-save hook for generating the patient ID
 PatientSchema.pre('save', async function (next) {
     if (!this.isNew) {
@@ -164,9 +169,7 @@ PatientSchema.pre('save', async function (next) {
     }
 });
 
-const QRCode = require('qrcode');
-const speakeasy = require('speakeasy');
-
+// Method to generate QRCode for 2FA
 PatientSchema.methods.generateQRCode = async function () {
     const otpAuthUrl = speakeasy.otpauthURL({
         secret: this.twoFactorSecret,
@@ -174,35 +177,42 @@ PatientSchema.methods.generateQRCode = async function () {
         issuer: 'Landagan Kids Clinic',
         encoding: 'base32'
     });
-    console.log('Generated OTP Auth URL:', otpAuthUrl); // Log the URL for debugging
     return await QRCode.toDataURL(otpAuthUrl);
 };
 
-
-
+// Hook to audit account status changes
 PatientSchema.pre('save', async function (next) {
+    if (!this.isNew && this.isModified('accountStatus')) {
+        const lastStatusUpdate = this.lastProfileUpdate || this.updatedAt; 
+        const thirtyDaysInMillis = 30 * 24 * 60 * 60 * 1000;
+        const now = Date.now();
 
-    if (this.isNew) {
-        return next();  
+        if (lastStatusUpdate && (now - lastStatusUpdate.getTime()) < thirtyDaysInMillis) {
+            const error = new Error("Account status can only be updated once every 30 days.");
+            return next(error);
+        }
+
+        // Audit record for account status change
+        const auditData = {
+            user: this._id,
+            userType: 'Patient',
+            action: 'Account Status Update',
+            description: `Account status changed to ${this.accountStatus}`,
+            ipAddress: this._reqIp || 'N/A',
+            userAgent: this._userAgent || 'N/A'
+        };
+
+        const auditRecord = await new Audit(auditData).save();
+
+        // Add audit reference to the patient's audits array
+        this.audits.push(auditRecord._id);
+
+        this.lastProfileUpdate = new Date();
     }
-    if (!this.isModified('accountStatus')) {
-        return next(); 
-    }
-
-    const lastStatusUpdate = this.lastProfileUpdate || this.updatedAt; 
-    const thirtyDaysInMillis = 30 * 24 * 60 * 60 * 1000;
-    const now = Date.now();
-
-
-    if (lastStatusUpdate && (now - lastStatusUpdate.getTime()) < thirtyDaysInMillis) {
-        const error = new Error("Account status can only be updated once every 30 days.");
-        return next(error);
-    }
-    this.lastProfileUpdate = new Date();
     next();
 });
 
-
+// Other audit logs for specific actions can be added similarly
 
 const Patient = model('Patient', PatientSchema);
 

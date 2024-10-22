@@ -48,7 +48,14 @@ const AdminSchema = new mongoose.Schema({
         type: Schema.Types.ObjectId,
         ref: 'Service',
     }],
+    audits: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Audit'
+    }],
 }, { timestamps: true });
 
+AdminSchema.virtual('name').get(function () {
+    return `${this.firstName} ${this.lastName}`;
+  });
 const Admin = mongoose.model('Admin', AdminSchema);
 module.exports = Admin;

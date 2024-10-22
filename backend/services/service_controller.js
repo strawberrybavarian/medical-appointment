@@ -11,28 +11,33 @@ const Specialty = require('../specialty/specialty_model')
 // Create a new service
 const createService = async (req, res) => {
   try {
-    const { name, description, category, availability, requirements, doctors } = req.body;
+      const { name, description, category, availability, requirements, doctors } = req.body;
 
-    // Log to verify the incoming request
-    console.log("Request body:", req.body);
+      // Handle image upload
+      let imageUrl = '';
+      if (req.file) {
+          const imagePath = `images/${req.file.filename}`; // Path to saved image
+          imageUrl = imagePath;
+      }
 
-    // Create a new service
-    const newService = new Service({
-      name,
-      description,
-      category,
-      availability,
-      requirements,
-      doctors,
-    });
+      // Create a new service
+      const newService = new Service({
+          name,
+          description,
+          category,
+          availability,
+          requirements: requirements.split(','), // Assuming requirements are sent as a comma-separated string
+          doctors,
+          imageUrl,
+      });
 
-    // Save the service to the database
-    await newService.save();
+      // Save the service to the database
+      await newService.save();
 
-    res.status(201).json({ message: 'Service created successfully', service: newService });
+      res.status(201).json({ message: 'Service created successfully', service: newService });
   } catch (error) {
-    console.error("Error saving service:", error); // Log more details
-    res.status(500).json({ message: 'Server error', error: error.message });
+      console.error("Error saving service:", error);
+      res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
 
@@ -64,25 +69,41 @@ const createService = async (req, res) => {
   // Update a service
   const updateService = async (req, res) => {
     try {
-      const { id } = req.params;
-      const { name, description, category, availability, requirements, doctors } = req.body;
-  
-      // Find and update the service
-      const updatedService = await Service.findByIdAndUpdate(
-        id,
-        { name, description, category, availability, requirements, doctors },
-        { new: true } // Return the updated document
-      );
-  
-      if (!updatedService) {
-        return res.status(404).json({ message: 'Service not found' });
-      }
-  
-      res.status(200).json({ message: 'Service updated successfully', service: updatedService });
+        const { id } = req.params;
+        const { name, description, category, availability, requirements, doctors } = req.body;
+
+        let updatedData = {
+            name,
+            description,
+            category,
+            availability,
+            requirements: requirements.split(','), // Assuming requirements are sent as a comma-separated string
+            doctors,
+        };
+
+        // Handle image upload
+        if (req.file) {
+            const imagePath = `images/${req.file.filename}`; // Path to saved image
+            updatedData.imageUrl = imagePath;
+        }
+
+        // Find and update the service
+        const updatedService = await Service.findByIdAndUpdate(
+            id,
+            updatedData,
+            { new: true }
+        );
+
+        if (!updatedService) {
+            return res.status(404).json({ message: 'Service not found' });
+        }
+
+        res.status(200).json({ message: 'Service updated successfully', service: updatedService });
     } catch (error) {
-      res.status(500).json({ message: 'Server error', error: error.message });
+        console.error("Error updating service:", error);
+        res.status(500).json({ message: 'Server error', error: error.message });
     }
-  };
+};
   
   // Delete a service
   const deleteService = async (req, res) => {

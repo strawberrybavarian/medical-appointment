@@ -18,6 +18,7 @@ function NewsAnnouncement({ user_image, user_name, user_id, role }) {
   const [headline, setHeadline] = useState(""); // Headline state
   const [currentImageIndexes, setCurrentImageIndexes] = useState({}); // Store individual image indexes for each news
 
+  
   const defaultImage = "images/014ef2f860e8e56b27d4a3267e0a193a.jpg";
   
   // Fetch all news
@@ -90,14 +91,22 @@ function NewsAnnouncement({ user_image, user_name, user_id, role }) {
   };
 
   // Delete news from the list
-  const deleteNews = (index) => {
-    axios
-      .delete(`${ip.address}/api/news/api/delete/${user_id}/${index}`)
-      .then(() => {
-        setTheNewsList(theNewsList.filter((_, i) => i !== index));
-      })
-      .catch((err) => console.log("Error deleting news:", err.response ? err.response.data : err.message));
-  };
+// Delete news from the list
+// Delete news from the list
+// Delete news by its _id
+const deleteNews = (newsId) => {
+  axios
+    .delete(`${ip.address}/api/news/api/deletenews/${user_id}/${newsId}`, {
+      data: { role: role }, // Pass the role in the request body
+    })
+    .then(() => {
+      setTheNewsList(theNewsList.filter(news => news._id !== newsId)); // Remove from state
+    })
+    .catch((err) => console.log("Error deleting news:", err.response ? err.response.data : err.message));
+};
+
+
+
 
   // Handler for navigating to the previous image for a specific news
   const handlePreviousImage = (newsId, images) => {
@@ -173,7 +182,8 @@ function NewsAnnouncement({ user_image, user_name, user_id, role }) {
                   <Dropdown.Item onClick={() => openEditNewsModal(newsItem._id, newsItem.content, newsItem.images)}>
                     Edit
                   </Dropdown.Item>
-                  <Dropdown.Item onClick={() => deleteNews(index)}>Delete</Dropdown.Item>
+                  <Dropdown.Item onClick={() => deleteNews(newsItem._id)}>Delete</Dropdown.Item>
+
                 </Dropdown.Menu>
               </Dropdown>
             </div>
@@ -181,7 +191,7 @@ function NewsAnnouncement({ user_image, user_name, user_id, role }) {
             {/* News Headline */}
             {newsItem.headline && (
               <h5 className="mt-2" style={{ fontWeight: "bold" }}>
-                <Link to={`/news/${newsItem._id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                <Link to={`/news/${newsItem.news_ID}`} style={{ textDecoration: 'none', color: 'inherit' }}>
                   {newsItem.headline}
                 </Link>
               </h5>
@@ -193,7 +203,7 @@ function NewsAnnouncement({ user_image, user_name, user_id, role }) {
               {newsItem.images && newsItem.images.length > 0 && (
                 <div className="w-100 position-relative">
                   <img
-                    src={newsItem.images[currentImageIndexes[newsItem._id]]}
+                    src={`${ip.address}/${newsItem.images[currentImageIndexes[newsItem._id]]}`}
                     alt="News"
                     style={{ maxWidth: "100%", height: "auto", cursor: "pointer" }}
                   />

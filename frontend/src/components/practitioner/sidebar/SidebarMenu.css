@@ -1,13 +1,24 @@
-.gaTCvF {
+
+
+.sbm-doctor{
+
     background: rgb(26, 32, 59)!important;
     color: rgb(255, 255, 255);
     height: 100%;
     min-width: 290px ;
     text-align: left;
-    transition: width 0s ease 0s, left 0s ease 0s, right 0s ease 0s, all 0.3s ease 0s;
+    transition: width 0s ease 0s, left 0s ease 0s, right 0s ease 0s, all 0.3s ease 0s !important;
     position: relative;
     z-index: 1009 !important;
     border-radius: 0px 40px 40px 0 !important;
+
+}
+
+.sbm-item:hover{
+  background-color: white !important;
+  color: #000 !important; 
+  border-radius: 9px;
+
 }
 
 .gmeTLe .side-icon {
@@ -46,11 +57,7 @@
     color: #000 !important; 
   }
 
-  .gmeTLe:hover {
-    background-color: white !important;
-    color: #000 !important; 
-    border-radius: 9px;
-}  
+
 
 .headercustom {
     font-size: 14px;
@@ -72,4 +79,62 @@
 body{
   font-family: 'Poppins', sans-serif;
 }
+.custom-logout-modal {
+  /* Customize the entire modal */
+  backdrop-filter: blur(5px); /* Optional: Adds blur to the background */
+}
+.new-modal-content
+{
+  background-color: #ffffff !important;
+  border: 0 solid !important;
+}
+
+.modal-content {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+
+  pointer-events: auto;
+  background-color: var(--bs-modal-bg);
+  background-clip: padding-box;
+  border: 0 solid !important;
+  border-radius: var(--bs-modal-border-radius);
+  outline: 0;
+}
+
+.icon-background{
+  background-color: #0D6EFD;
+  color: #fff;
+  border-radius: 1000px;
+  padding: 10px;
+  width: 100px;
+  height: 100px;
+  text-align: center;
+}
+
+.color-white{
+  bottom: 50%;
+  color: #fff;
+  padding-top: 15px;
+  padding-left: 3px;
+} 
+
+.color-black{
+
+  color: #000;
+
+}
+
+.no-button-background{
+  background-color: #1a203b00;
+
+  color: #000;
+  border: 0 solid !important;
+
+
+ 
+  text-align: center;
+}
+
 

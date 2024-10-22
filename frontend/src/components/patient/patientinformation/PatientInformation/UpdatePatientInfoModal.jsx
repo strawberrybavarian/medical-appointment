@@ -8,7 +8,7 @@ const UpdatePatientInfoModal = ({ show, handleClose, thePatient, pid }) => {
     const [lastName, setLastName] = useState("");
     const [middleInitial, setMiddleInitial] = useState("");
     const [contactNumber, setContactNumber] = useState("");
-
+  
     // Use useEffect to populate the form with the existing patient info when the modal opens
     useEffect(() => {
         if (thePatient) {
@@ -20,6 +20,7 @@ const UpdatePatientInfoModal = ({ show, handleClose, thePatient, pid }) => {
     }, [thePatient, show]); // Trigger useEffect when the modal is shown or patient data is passed
 
     const handleSaveChanges = async () => {
+        console.log("PID:", pid); // Check the patient ID
         try {
             const response = await axios.put(`${ip.address}/api/patient/api/updateinfo/${pid}`, {
                 patient_firstName: firstName,
@@ -27,7 +28,6 @@ const UpdatePatientInfoModal = ({ show, handleClose, thePatient, pid }) => {
                 patient_middleInitial: middleInitial,
                 patient_contactNumber: contactNumber,
             });
-
             if (response.data.success) {
                 alert("Information updated successfully!");
                 handleClose(); // Close modal after successful update
@@ -39,6 +39,7 @@ const UpdatePatientInfoModal = ({ show, handleClose, thePatient, pid }) => {
             alert("Error updating information.");
         }
     };
+    
 
     return (
         <Modal show={show} onHide={handleClose}>

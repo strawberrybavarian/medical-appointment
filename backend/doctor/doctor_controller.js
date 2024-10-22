@@ -7,6 +7,7 @@ const Prescription = require('../prescription/prescription_model');
 const Notification = require('../notifications/notifications_model')
 const DoctorService = require('../doctor/doctor_service')
 const mongoose = require('mongoose');
+const Specialty = require('../specialty/specialty_model');
 const QRCode = require('qrcode');
 const speakeasy = require('speakeasy');
 const bcrypt = require('bcryptjs');
@@ -192,6 +193,30 @@ const verifyTwoFactor = async (req, res) => {
     }
 };
 
+const updateDoctorPassword = async (req, res) => {
+  const { doctorId } = req.params;
+  const { newPassword } = req.body;
+
+  try {
+    const doctor = await Doctors.findById(doctorId);
+
+    if (!doctor) {
+      return res.status(404).json({ message: 'Doctor not found' });
+    }
+
+    // Assign the new password
+    doctor.dr_password = newPassword;
+    doctor.passwordChanged = true; 
+    await doctor.save();
+
+    res.json({ message: 'Password updated successfully' });
+  } catch (error) {
+    console.error('Error updating password:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+
 // const NewDoctorSignUp = (req, res) => {
 //     Doctors.create(req.body)
 //         .then((newDoctor) => {
@@ -202,59 +227,131 @@ const verifyTwoFactor = async (req, res) => {
 //         });
 // };
 
-
+const generateRandomPassword = () => {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let password = '';
+  for (let i = 0; i < 8; i++) {
+    password += chars[Math.floor(Math.random() * chars.length)];
+  }
+  return password;
+};
 const NewDoctorSignUp = async (req, res) => {
-    const { dr_email, dr_password, ...otherFields } = req.body;
-  
-    try {
-        const newDoctor = new Doctors({
-            dr_email,
-            dr_password,
-            ...otherFields,
-        });
-  
-        await newDoctor.save();
-        res.status(201).json({ message: 'Doctor registered successfully' });
-    } catch (error) {
-        res.status(500).json({ message: 'Error registering doctor', error });
+  const {
+    dr_firstName,
+    dr_lastName,
+    dr_middleInitial,
+    dr_email,
+    dr_contactNumber,
+    dr_dob,
+    dr_gender,
+    dr_licenseNo,
+    dr_specialty,
+    // Removed dr_password from req.body
+  } = req.body;
+
+  try {
+    // Check if email already exists
+    const existingDoctor = await Doctors.findOne({ dr_email });
+    if (existingDoctor) {
+      return res.status(400).json({ message: 'Email already registered' });
     }
-  };
+
+    // Generate a random password
+    const generatedPassword = generateRandomPassword();
+
+    // Create the new Doctor with the generated password
+    const newDoctor = new Doctors({
+      dr_firstName,
+      dr_lastName,
+      dr_middleInitial,
+      dr_email,
+      dr_contactNumber,
+      dr_dob,
+      dr_gender,
+      dr_licenseNo,
+      dr_specialty,
+      dr_password: generatedPassword, // Correctly assign generated password
+      accountStatus: 'Registered',
+    });
+
+    await newDoctor.save();
+
+    // Send email with the generated password
+    const transporter = nodemailer.createTransport({
+      service: 'gmail', // You can use other email services if needed
+      auth: {
+        user: staff_email.user, // Your email
+        pass: staff_email.pass, // Your email password
+      },
+    });
+
+    const mailOptions = {
+      from: staff_email.user,
+      to: dr_email,
+      subject: 'Your Doctor Account Password',
+      text: `Hello Dr. ${dr_firstName} ${dr_lastName},\n\nYour account has been created. Your password is: ${generatedPassword}\n\nPlease log in and change your password.\n\nBest Regards,\nYour Healthcare Team`,
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.error('Error sending email:', error);
+        return res.status(500).json({ message: 'Error sending email' });
+      }
+      console.log('Email sent: ' + info.response);
+    });
+
+    res.status(201).json({ message: 'Doctor registered successfully. Email sent with the password.' });
+
+  } catch (error) {
+    console.error('Error registering doctor:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
 
 
-  const loginDoctor = async (req, res) => {
-    const { email, password } = req.body;
-  
-    try {
-      const doctor = await Doctors.findOne({ dr_email: email });
-  
-      if (!doctor) {
-        return res.status(404).json({ message: 'No doctor with that email found' });
-      }
-  
-      const isMatch = await bcrypt.compare(password, doctor.dr_password);
-  
-      if (!isMatch) {
-        return res.status(401).json({ message: 'Invalid email or password' });
-      }
-  
-      // Exclude sensitive information before sending
-      const doctorData = {
-        _id: doctor._id,
-        dr_email: doctor.dr_email,
-        dr_firstName: doctor.dr_firstName,
-        dr_lastName: doctor.dr_lastName,
-        // Include other necessary fields
-      };
-  
-      res.json({
-        message: 'Successfully logged in',
-        doctorId: doctor._id,
-        doctorData: doctorData,
-      });
-    } catch (error) {
-      res.status(500).json({ message: 'Error logging in', error });
+const loginDoctor = async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    const doctor = await Doctors.findOne({ dr_email: email });
+
+    if (!doctor) {
+      return res.status(404).json({ message: 'No doctor with that email found' });
     }
-  };
+
+    // Check if the doctor's account status is "Review"
+    if (doctor.accountStatus === 'Review') {
+      return res.status(403).json({ message: 'Your account is currently under review. Please wait for approval.' });
+    }
+
+    const isMatch = await bcrypt.compare(password, doctor.dr_password);
+
+    if (!isMatch) {
+      return res.status(401).json({ message: 'Invalid email or password' });
+    }
+
+    // Exclude sensitive information before sending
+    const doctorData = {
+      _id: doctor._id,
+      dr_email: doctor.dr_email,
+      dr_firstName: doctor.dr_firstName,
+      dr_lastName: doctor.dr_lastName,
+      // Include the passwordChanged field
+      passwordChanged: doctor.passwordChanged,
+      // Include other necessary fields
+    };
+
+    res.json({
+      message: 'Successfully logged in',
+      doctorId: doctor._id,
+      doctorData: doctorData,
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Error logging in', error });
+  }
+};
+
+  
 
 
 const updateDoctorDetails = (req, res) => {
@@ -306,14 +403,18 @@ const findOneDoctor = (req, res) => {
 };
 ;
 
-const findUniqueSpecialties = (req, res) => {
-    Doctors.distinct('dr_specialty')
-        .then((specialties) => {
-            res.json({ specialties });
-        })
-        .catch((err) => {
-            res.json({ message: 'Something went wrong', error: err });
-        });
+const findUniqueSpecialties = async (req, res) => {
+  try {
+      // Step 1: Get the list of unique specialties from the Doctors collection
+      const specialtyNames = await Doctors.distinct('dr_specialty');
+
+      // Step 2: Fetch specialty details from the Specialty collection
+      const specialties = await Specialty.find({ name: { $in: specialtyNames } });
+
+      res.json({ specialties });
+  } catch (err) {
+      res.status(500).json({ message: 'Something went wrong', error: err });
+  }
 };
 const updateDoctorImage = async (req, res) => {
     try {
@@ -914,7 +1015,7 @@ const deleteDoctorBiography = async (req, res) => {
       const doctor = await Doctors.findOne({ dr_email: email });
   
       if (!doctor) {
-        return res.status(404).json({ message: 'No patient with that email found' });
+        return res.status(404).json({ message: 'No doctor with that email found' });
       }
   
       // Step 2: Generate a reset token and set the expiry
@@ -1006,17 +1107,129 @@ const deleteDoctorBiography = async (req, res) => {
   };
   
   const getAllDoctorEmails = (req, res) => {
+    console.log("Fetching doctor emails...");
     Doctors.find({}, 'dr_email')
         .then((doctors) => {
+            console.log("Fetched doctors:", doctors);
             const emails = doctors.map(doctor => doctor.dr_email);
-            res.json(emails); // Send raw doctors data for inspection
+            res.json(emails);
         })
         .catch((err) => {
             console.error('Error fetching doctor emails:', err);
             res.status(500).json({ message: 'Something went wrong', error: err });
         });
 };
-  
+
+const getAllDoctorEmailse = async (req, res) => {
+
+
+  try {
+      const doctors = await Doctors.find({}, 'dr_email').lean(); // Using lean() for better performance
+
+      
+      // Filtering out any null or undefined values in dr_email field
+      const emails = doctors
+          .map(doctor => doctor.dr_email)
+          .filter(email => email !== null && email !== undefined);
+
+      res.status(200).json(emails);
+  } catch (err) {
+      console.error('Error fetching doctor emails:', err);
+      res.status(500).json({ message: 'Something went wrong', error: err.message });
+  }
+};
+
+const getAllContactNumbers = async (req, res) => {
+  try {
+    console.log("Fetching doctor contact numbers...");
+
+    // Fetch only the `dr_contactNumber` field for all doctors, using lean for performance
+    const doctors = await Doctors.find({}, 'dr_contactNumber').lean();
+
+    if (!doctors.length) {
+      return res.status(404).json({ message: 'No doctors found' });
+    }
+
+    console.log("Fetched doctors:", doctors);
+
+    // Map through the doctors to get only the contact numbers
+    const contactNumbers = doctors.map(doctor => doctor.dr_contactNumber);
+
+    // Return the contact numbers as JSON
+    res.status(200).json(contactNumbers);
+  } catch (error) {
+    console.error('Error fetching doctor contact numbers:', error);
+    res.status(500).json({ message: 'Something went wrong', error });
+  }
+};
+
+
+
+
+// Get all slots for a doctor
+const getDoctorSlots = async (req, res) => {
+  try {
+    const doctor = await Doctors.findById(req.params.doctorId).select('slots');
+    if (!doctor) {
+      return res.status(404).json({ message: 'Doctor not found' });
+    }
+    res.status(200).json({ slots: doctor.slots });
+  } catch (err) {
+    res.status(500).json({ message: 'Error retrieving slots', error: err });
+  }
+};
+
+// Update slots for a doctor
+const updateDoctorSlots = async (req, res) => {
+  try {
+    const { slots } = req.body;
+    const doctor = await Doctors.findByIdAndUpdate(
+      req.params.doctorId,
+      { slots },
+      { new: true, runValidators: true }
+    );
+    if (!doctor) {
+      return res.status(404).json({ message: 'Doctor not found' });
+    }
+    res.status(200).json({ message: 'Slots updated successfully', slots: doctor.slots });
+  } catch (err) {
+    res.status(500).json({ message: 'Error updating slots', error: err });
+  }
+};
+const changeDoctorPassword = async (req, res) => {
+  try {
+    const doctorId = req.params.id;
+    const { dr_email, oldPassword, newPassword } = req.body;
+
+    // Find the doctor by ID
+    const doctor = await Doctors.findById(doctorId);
+    if (!doctor) {
+      return res.status(404).json({ message: 'Doctor not found.' });
+    }
+
+    // Verify that the email matches
+    if (doctor.dr_email !== dr_email) {
+      return res.status(400).json({ message: 'Email does not match.' });
+    }
+
+    // Check if the old password is correct
+    const isMatch = await bcrypt.compare(oldPassword, doctor.dr_password);
+    if (!isMatch) {
+      return res.status(400).json({ message: 'Incorrect current password.' });
+    }
+
+    // Update the password (it will be hashed in the pre-save hook)
+    doctor.dr_password = newPassword;
+    await doctor.save();
+
+    res.status(200).json({ message: 'Password changed successfully.' });
+  } catch (error) {
+    console.error('Error changing password:', error);
+    res.status(500).json({ message: 'Server error. Please try again later.' });
+  }
+};
+
+
 module.exports = {
     NewDoctorSignUp,
     findAllDoctors,
@@ -1057,6 +1270,7 @@ module.exports = {
     createDoctorSession,
     resetPassword, forgotPassword, 
     getDoctorHmo,
-    getAllDoctorEmails
+    getAllDoctorEmails, getAllDoctorEmailse, getAllContactNumbers,
+    getDoctorSlots, updateDoctorSlots, changeDoctorPassword, updateDoctorPassword
 
 };

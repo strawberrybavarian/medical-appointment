@@ -16,6 +16,30 @@ function MedSecTodaysApp({ allAppointments, setAllAppointments }) {
   const [showRescheduleModal, setShowRescheduleModal] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [error, setError] = useState("");
+
+  const convertTimeRangeTo12HourFormat = (timeRange) => {
+    // Check if the timeRange is missing or empty
+    if (!timeRange) return 'Not Assigned';
+  
+    const convertTo12Hour = (time) => {
+      // Handle single time values like "10:00"
+      if (!time) return '';
+  
+      let [hours, minutes] = time.split(':').map(Number);
+      const period = hours >= 12 ? 'PM' : 'AM';
+      hours = hours % 12 || 12; // Convert 0 or 12 to 12 in 12-hour format
+  
+      return `${hours}:${String(minutes).padStart(2, '0')} ${period}`;
+    };
+  
+    // Handle both single times and ranges
+    if (timeRange.includes(' - ')) {
+      const [startTime, endTime] = timeRange.split(' - ');
+      return `${convertTo12Hour(startTime)} - ${convertTo12Hour(endTime)}`;
+    } else {
+      return convertTo12Hour(timeRange); // Single time case
+    }
+  };
   useEffect(() => {
     axios.get(`${ip.address}/api/doctor/api/alldoctor`)
       .then((result) => {
@@ -71,16 +95,7 @@ function MedSecTodaysApp({ allAppointments, setAllAppointments }) {
   };
 
 
-  const convertTo12HourFormat = (time) => {
-    if (!time) return 'Not Assigned'; 
-    if (time.includes('AM') || time.includes('PM')) {
-      return time; 
-    }
-    const [hours, minutes] = time.split(':');
-    const period = hours >= 12 ? 'PM' : 'AM';
-    const hour12 = hours % 12 || 12; 
-    return `${hour12}:${minutes} ${period}`;
-  };
+
 
   const getUniqueCategories = () => {
     const categories = allAppointments.flatMap(appointment => 
@@ -124,7 +139,19 @@ function MedSecTodaysApp({ allAppointments, setAllAppointments }) {
     setShowRescheduleModal(false);
     setSelectedAppointment(null);
   };
-
+  const handleFollowUpChange = (appointmentId, checked) => {
+    axios.put(`${ip.address}/api/appointments/${appointmentId}/followup`, { followUp: checked })
+      .then(() => {
+        setAllAppointments(prevAppointments =>
+          prevAppointments.map(appointment =>
+            appointment._id === appointmentId ? { ...appointment, followUp: checked } : appointment
+          )
+        );
+      })
+      .catch((err) => {
+        console.error("Error updating follow-up:", err);
+      });
+  };
   return (
     <>
       <Container>
@@ -216,6 +243,7 @@ function MedSecTodaysApp({ allAppointments, setAllAppointments }) {
                 <th>Date</th>
                 <th>Time</th>
                 <th>Status</th>
+                <th>Follow Up</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -225,7 +253,9 @@ function MedSecTodaysApp({ allAppointments, setAllAppointments }) {
                 const patientName = `${patient.patient_firstName} ${patient.patient_middleInitial}. ${patient.patient_lastName}`;
 
                 const doctor = appointment.doctor;
-                const doctorName = `${doctor?.dr_firstName} ${doctor?.dr_middleInitial}. ${doctor?.dr_lastName}`;
+                const doctorName = doctor
+                ? `${doctor?.dr_firstName} ${doctor?.dr_middleInitial}. ${doctor?.dr_lastName}`
+                : "Not Assigned";
                 
                 const appointmentTypes = appointment.appointment_type
                 .map(typeObj => typeObj.appointment_type)
@@ -242,7 +272,7 @@ function MedSecTodaysApp({ allAppointments, setAllAppointments }) {
                     <td style={{fontSize: '14px'}}>{categoryTypes}</td>
                     <td style={{fontSize: '14px'}}>{appointmentTypes}</td>
                     <td style={{fontSize: '14px'}}>{new Date(appointment.date).toLocaleDateString()}</td>
-                    <td style={{fontSize: '14px'}}> {convertTo12HourFormat(appointment.time)}</td> {/* Convert time to 12-hour AM/PM format */}
+                    <td style={{fontSize: '14px'}}>  {appointment.time ? convertTimeRangeTo12HourFormat(appointment.time) : 'Not Assigned'}</td> {/* Convert time to 12-hour AM/PM format */}
                 
                     <td >
                       <div className="d-flex justify-content-center">
@@ -250,6 +280,17 @@ function MedSecTodaysApp({ allAppointments, setAllAppointments }) {
                           {appointment.status}
                         </div>
                       </div>
+                    </td>
+                    <td>
+                      <Form.Check
+                      type="checkbox"
+                      disabled={true}
+                      checked={appointment.followUp || false}
+                      onChange={(e) => {
+                        e.stopPropagation();
+                        handleFollowUpChange(appointment._id, e.target.checked);
+                      }}
+                    />
                     </td>
                     <td>
                       <Dropdown >

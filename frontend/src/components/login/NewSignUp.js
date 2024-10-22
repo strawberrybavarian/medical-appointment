@@ -4,417 +4,892 @@ import { Link, useNavigate } from "react-router-dom";
 import { Row, Col, Button, Form, Container, Card } from "react-bootstrap";
 import PasswordValidation from "./PasswordValidation";
 import "./SignUp.css";
-import NavigationalBar from '../landpage/navbar';
-import { ip } from "../../ContentExport";
+import { image, ip } from "../../ContentExport";
+import ForLoginAndSignupNavbar from "../landpage/ForLoginAndSignupNavbar";
+import TermsAndConditionsModal from "./TermsAndConditionsModal";
+import Select from 'react-select';
 
 const NewSignUp = () => {
-    const navigate = useNavigate();
-    const [ufirstName, setfirstName] = useState("");
-    const [uLastName, setLastName] = useState("");
-    const [uAge, setAge] = useState(0);
-    const [uMiddleInitial, setMiddleInitial] = useState("");
-    const [uemail, setemail] = useState("");
-    const [uBirth, setBirth] = useState("");
-    const [upassword, setPass] = useState("");
-    const [confirmPassword, setConfirmPassword] = useState("");
-    const [uNumber, setNumber] = useState("");
-    const [uGender, setGender] = useState("");
-    const [urole, setURole] = useState("Patient");
-    const [accountStatus, setAccountStatus] = useState('Registered');
+  const navigate = useNavigate();
+  const [ufirstName, setFirstName] = useState("");
+  const [uLastName, setLastName] = useState("");
+  const [uAge, setAge] = useState(0);
+  const [uMiddleInitial, setMiddleInitial] = useState("");
+  const [uemail, setEmail] = useState("");
+  const [uBirth, setBirth] = useState("");
+  const [upassword, setPass] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [uNumber, setNumber] = useState("");
+  const [uGender, setGender] = useState("Male");
+  const [accountStatus, setAccountStatus] = useState("Registered");
 
-    // Practitioner-specific fields
-    const [dr_licenseNo, setLicenseNo] = useState("");
+  // Patient-specific fields
+  const [patientAddress, setPatientAddress] = useState({
+    street: "",
+    barangay: "",
+    city: "",
+    province: "",
+    region: "",
+    zipCode: "",
+  });
+  const [patientNationality, setPatientNationality] = useState("");
+  const [patientCivilStatus, setPatientCivilStatus] = useState("");
 
-    // Patient-specific fields
-    const [patientAddress, setPatientAddress] = useState({
-        street: "",
+  const [errors, setErrors] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    birth: "",
+    number: "",
+    gender: "",
+    street: "",
+    barangay: "",
+    city: "",
+    province: "",
+    region: "",
+    zipCode: "",
+    civilStatus: "",
+  });
+
+  const [existingEmails, setExistingEmails] = useState([]);
+  const [existingContactNumbers, setExistingContactNumbers] = useState([]);
+
+  const [showTermsModal, setShowTermsModal] = useState(false);
+
+  const [regions, setRegions] = useState([]);
+  const [provinces, setProvinces] = useState([]);
+  const [cities, setCities] = useState([]);
+  const [barangays, setBarangays] = useState([]);
+
+  const [selectedRegionCode, setSelectedRegionCode] = useState(null);
+  const [selectedProvinceCode, setSelectedProvinceCode] = useState(null);
+  const [selectedCityMunCode, setSelectedCityMunCode] = useState(null);
+
+  const handleShowTermsModal = () => {
+    if (validateForm()) {
+      setShowTermsModal(true);
+    }
+  };
+  const handleCloseTermsModal = () => setShowTermsModal(false);
+
+  const handleAcceptTerms = () => {
+    setShowTermsModal(false);
+    // Proceed to register the user
+    registerUser();
+  };
+
+  useEffect(() => {
+    // Fetch existing emails and contact numbers for validation
+    const fetchData = async () => {
+      try {
+        const [patientResponse, patientNumberResponse] = await Promise.all([
+          axios.get(`${ip.address}/api/patient/getallemails`),
+          axios.get(`${ip.address}/api/patient/getcontactnumber`),
+        ]);
+
+        const validEmails = patientResponse.data.filter(
+          (email) => email !== null
+        );
+        setExistingEmails(validEmails);
+
+        const validContactNumbers = patientNumberResponse.data.filter(
+          (number) => number !== null
+        );
+        setExistingContactNumbers(validContactNumbers);
+      } catch (err) {
+        console.error(
+          "Error fetching existing emails or contact numbers:",
+          err
+        );
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    // Fetch Regions on component mount
+    const fetchRegions = async () => {
+      try {
+        const response = await axios.get("https://psgc.gitlab.io/api/regions/");
+        setRegions(response.data);
+      } catch (error) {
+        console.error("Error fetching regions:", error);
+      }
+    };
+
+    fetchRegions();
+  }, []);
+
+  useEffect(() => {
+    if (selectedRegionCode) {
+      const fetchProvincesOrCities = async () => {
+        try {
+          const response = await axios.get(
+            `https://psgc.gitlab.io/api/regions/${selectedRegionCode.value}/provinces/`
+          );
+          const provincesData = response.data;
+          setProvinces(provincesData);
+          setCities([]); // Reset cities
+          setBarangays([]); // Reset barangays
+          setSelectedProvinceCode(null); // Reset selected province
+          setSelectedCityMunCode(null); // Reset selected city
+
+          if (provincesData.length > 0) {
+            // Region has provinces
+            setPatientAddress((prevAddress) => ({
+              ...prevAddress,
+              region: selectedRegionCode.label,
+              province: "",
+              city: "",
+              barangay: "",
+            }));
+          } else {
+            // Region has no provinces (e.g., NCR), fetch cities/municipalities directly
+            const citiesResponse = await axios.get(
+              `https://psgc.gitlab.io/api/regions/${selectedRegionCode.value}/cities-municipalities/`
+            );
+            setCities(citiesResponse.data);
+            setPatientAddress((prevAddress) => ({
+              ...prevAddress,
+              region: selectedRegionCode.label,
+              province: "", // No province
+              city: "",
+              barangay: "",
+            }));
+          }
+        } catch (error) {
+          console.error("Error fetching provinces or cities:", error);
+        }
+      };
+
+      fetchProvincesOrCities();
+    } else {
+      setProvinces([]);
+      setCities([]);
+      setBarangays([]);
+      setSelectedProvinceCode(null);
+      setSelectedCityMunCode(null);
+      setPatientAddress((prevAddress) => ({
+        ...prevAddress,
+        region: "",
+        province: "",
         city: "",
-        state: "",
-        zipCode: "",
-        country: "",
-    });
-    const [patientNationality, setPatientNationality] = useState("");
-    const [patientCivilStatus, setPatientCivilStatus] = useState("");
+        barangay: "",
+      }));
+    }
+  }, [selectedRegionCode]);
 
-    const [errors, setErrors] = useState({
-        firstName: "",
-        lastName: "",
-        email: "",
-        password: "",
-        confirmPassword: "",
-        birth: "",
-        number: "",
-        gender: "",
-        role: "",
-    });
+  useEffect(() => {
+    if (selectedProvinceCode) {
+      // Fetch cities/municipalities for the selected province
+      const fetchCities = async () => {
+        try {
+          const response = await axios.get(
+            `https://psgc.gitlab.io/api/provinces/${selectedProvinceCode.value}/cities-municipalities/`
+          );
+          setCities(response.data);
+          setBarangays([]); // Reset barangays
+          setSelectedCityMunCode(null); // Reset selected city
+          setPatientAddress((prevAddress) => ({
+            ...prevAddress,
+            province: selectedProvinceCode.label,
+            city: "",
+            barangay: "",
+          }));
+        } catch (error) {
+          console.error("Error fetching cities/municipalities:", error);
+        }
+      };
 
-    // Validation function
-    const validateForm = () => {
-        const newErrors = {};
-        if (!ufirstName) newErrors.firstName = "First Name is required";
-        if (!uLastName) newErrors.lastName = "Last Name is required";
-        if (!uemail || !/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(uemail)) newErrors.email = "Valid Email is required";
-        if (!upassword) newErrors.password = "Password is required";
-        if (upassword !== confirmPassword) newErrors.confirmPassword = "Passwords do not match";
-        if (!uBirth) newErrors.birth = "Birthdate is required";
-        if (!uNumber) newErrors.number = "Contact Number is required";
-        if (!uGender) newErrors.gender = "Gender is required";
-        if (!urole) newErrors.role = "Role is required";
+      fetchCities();
+    } else if (provinces.length === 0 && selectedRegionCode) {
+      // If no provinces, we have already fetched cities in the previous effect
+      setPatientAddress((prevAddress) => ({
+        ...prevAddress,
+        province: "",
+      }));
+    } else {
+      setCities([]);
+      setBarangays([]);
+      setSelectedCityMunCode(null);
+      setPatientAddress((prevAddress) => ({
+        ...prevAddress,
+        province: "",
+        city: "",
+        barangay: "",
+      }));
+    }
+  }, [selectedProvinceCode]);
 
-        setErrors(newErrors);
-        return Object.keys(newErrors).length === 0; // Returns true if no errors
+  useEffect(() => {
+    if (selectedCityMunCode) {
+      // Fetch barangays for the selected city/municipality
+      const fetchBarangays = async () => {
+        try {
+          const response = await axios.get(
+            `https://psgc.gitlab.io/api/cities-municipalities/${selectedCityMunCode.value}/barangays/`
+          );
+          setBarangays(response.data);
+          setPatientAddress((prevAddress) => ({
+            ...prevAddress,
+            city: selectedCityMunCode.label,
+            barangay: "",
+          }));
+        } catch (error) {
+          console.error("Error fetching barangays:", error);
+        }
+      };
+
+      fetchBarangays();
+    } else {
+      setBarangays([]);
+      setPatientAddress((prevAddress) => ({
+        ...prevAddress,
+        city: "",
+        barangay: "",
+      }));
+    }
+  }, [selectedCityMunCode]);
+
+  const validateForm = () => {
+    const newErrors = {};
+    if (!ufirstName) newErrors.firstName = "First Name is required";
+    if (!uLastName) newErrors.lastName = "Last Name is required";
+    if (!uemail || !/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(uemail)) {
+      newErrors.email = "Valid Email is required";
+    } else if (existingEmails.includes(uemail)) {
+      newErrors.email = "Email already exists";
+    }
+    if (!upassword) newErrors.password = "Password is required";
+    if (upassword !== confirmPassword)
+      newErrors.confirmPassword = "Passwords do not match";
+    if (!uBirth) newErrors.birth = "Birthdate is required";
+    if (!uNumber || !/^09\d{9}$/.test(uNumber)) {
+      newErrors.number =
+        "Valid Philippine number starting with 09 and 11 digits long is required";
+    } else if (existingContactNumbers.includes(uNumber)) {
+      newErrors.number = "Contact number already exists";
+    }
+    if (!uGender) newErrors.gender = "Gender is required";
+
+    if (!patientAddress.street) newErrors.street = "Street is required";
+    if (!patientAddress.region) newErrors.region = "Region is required";
+    if (provinces.length > 0 && !patientAddress.province)
+      newErrors.province = "Province is required";
+    if (!patientAddress.city) newErrors.city = "City/Municipality is required";
+    if (!patientAddress.barangay) newErrors.barangay = "Barangay is required";
+    if (!patientAddress.zipCode) newErrors.zipCode = "Zip Code is required";
+    if (!patientCivilStatus) newErrors.civilStatus = "Civil Status is required";
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleBlur = (field, value) => {
+    let error = "";
+    switch (field) {
+      case "firstName":
+        error = !value ? "First Name is required" : "";
+        break;
+      case "lastName":
+        error = !value ? "Last Name is required" : "";
+        break;
+      case "email":
+        if (!value || !/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(value)) {
+          error = "Valid Email is required";
+        } else if (existingEmails.includes(value)) {
+          error = "Email already exists";
+        }
+        break;
+      case "password":
+        error = !value ? "Password is required" : "";
+        break;
+      case "confirmPassword":
+        error = value !== upassword ? "Passwords do not match" : "";
+        break;
+      case "birth":
+        error = !value ? "Birthdate is required" : "";
+        break;
+      case "number":
+        if (!value || !/^09\d{9}$/.test(value)) {
+          error =
+            "Valid Philippine number starting with 09 and 11 digits long is required";
+        } else if (existingContactNumbers.includes(value)) {
+          error = "Contact number already exists";
+        }
+        break;
+      case "gender":
+        error = !value ? "Gender is required" : "";
+        break;
+      case "street":
+        error = !value ? "Street is required" : "";
+        break;
+      case "region":
+        error = !value ? "Region is required" : "";
+        break;
+      case "province":
+        if (provinces.length > 0 && !value) {
+          error = "Province is required";
+        } else {
+          error = "";
+        }
+        break;
+      case "city":
+        error = !value ? "City/Municipality is required" : "";
+        break;
+      case "barangay":
+        error = !value ? "Barangay is required" : "";
+        break;
+      case "zipCode":
+        error = !value ? "Zip Code is required" : "";
+        break;
+      case "civilStatus":
+        error = !value ? "Civil Status is required" : "";
+        break;
+      default:
+        break;
+    }
+    setErrors((prevErrors) => ({ ...prevErrors, [field]: error }));
+  };
+
+  const handleTextInputChange = (setter) => (e) => {
+    const value = e.target.value.replace(/[^a-zA-Z\s]/g, "");
+    setter(value);
+  };
+
+  const handleNumberInputChange = (setter) => (e) => {
+    const value = e.target.value.replace(/\D/g, "");
+    setter(value);
+  };
+
+  const registerUser = () => {
+    if (!validateForm()) {
+      return;
+    }
+
+    const patientUser = {
+      patient_firstName: ufirstName,
+      patient_middleInitial: uMiddleInitial,
+      patient_lastName: uLastName,
+      patient_email: uemail,
+      patient_password: upassword,
+      patient_dob: uBirth,
+      patient_age: uAge,
+      patient_contactNumber: uNumber,
+      patient_gender: uGender,
+      accountStatus: accountStatus,
+      patient_address: patientAddress,
+      patient_nationality: patientNationality,
+      patient_civilstatus: patientCivilStatus,
     };
 
-    // Field Blur Handler (for validation on blur)
-    const handleBlur = (field, value) => {
-        let error = "";
-        switch (field) {
-            case "firstName":
-                error = !value ? "First Name is required" : "";
-                break;
-            case "lastName":
-                error = !value ? "Last Name is required" : "";
-                break;
-            case "email":
-                error = !value || !/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(value) ? "Valid Email is required" : "";
-                break;
-            case "password":
-                error = !value ? "Password is required" : "";
-                break;
-            case "confirmPassword":
-                error = value !== upassword ? "Passwords do not match" : "";
-                break;
-            case "birth":
-                error = !value ? "Birthdate is required" : "";
-                break;
-            case "number":
-                error = !value ? "Contact Number is required" : "";
-                break;
-            case "gender":
-                error = !value ? "Gender is required" : "";
-                break;
-            case "role":
-                error = !value ? "Role is required" : "";
-                break;
-            default:
-                break;
-        }
-        setErrors((prevErrors) => ({ ...prevErrors, [field]: error }));
-    };
+    axios
+      .post(`${ip.address}/api/patient/api/signup`, patientUser)
+      .then((response) => {
+        window.alert("Successfully registered Patient");
+        navigate("/medapp/login");
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
 
-    const registerUser = () => {
-        if (!validateForm()) {
-            return;
-        }
+  const calculateAge = (dob) => {
+    const birthDate = new Date(dob);
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDifference = today.getMonth() - birthDate.getMonth();
+    if (
+      monthDifference < 0 ||
+      (monthDifference === 0 && today.getDate() < birthDate.getDate())
+    ) {
+      age--;
+    }
+    return age;
+  };
 
-        if (urole === "Practitioner") {
-            const doctorUser = {
-                dr_firstName: ufirstName,
-                dr_lastName: uLastName,
-                dr_middleInitial: uMiddleInitial,
-                dr_email: uemail,
-                dr_password: upassword,
-                dr_dob: uBirth,
-                dr_age: uAge,
-                dr_contactNumber: uNumber,
-                dr_gender: uGender,
-                dr_licenseNo: dr_licenseNo,  // Practitioner-specific field
-            };
-            axios.post(`${ip.address}/api/doctor/api/signup`, doctorUser)
-                .then((response) => {
-               
-                    window.alert("Successfully registered Practitioner");
-                    navigate('/medapp/login');
-                })
-                .catch((err) => {
-                    console.log(err);
-                });
-        } else if (urole === "Patient") {
-            const patientUser = {
-                patient_firstName: ufirstName,
-                patient_middleInitial: uMiddleInitial,
-                patient_lastName: uLastName,
-                patient_email: uemail,
-                patient_password: upassword,
-                patient_dob: uBirth,
-                patient_age: uAge,
-                patient_contactNumber: uNumber,
-                patient_gender: uGender,
-                accountStatus: accountStatus,
-                patient_address: patientAddress,  // Patient-specific field
-                patient_nationality: patientNationality,
-                patient_civilstatus: patientCivilStatus,
-            };
-  
-            axios.post(`${ip.address}/api/patient/api/signup`, patientUser)
-                .then((response) => {
-              
-                    window.alert("Successfully registered Patient");
-                    navigate('/medapp/login');
-                })
-                .catch((err) => {
-                    console.log(err);
-                });
-        }
-    };
+  useEffect(() => {
+    if (uBirth) {
+      const age = calculateAge(uBirth);
+      setAge(age);
+    }
+  }, [uBirth]);
 
-    const calculateAge = (dob) => {
-        const birthDate = new Date(dob);
-        const today = new Date();
-        let age = today.getFullYear() - birthDate.getFullYear();
-        const monthDifference = today.getMonth() - birthDate.getMonth();
-        if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < birthDate.getDate())) {
-            age--;
-        }
-        return age;
-    };
+  // Civil Status options
+  const civilStatusOptions = [
+    { value: "Single", label: "Single" },
+    { value: "Married", label: "Married" },
+    { value: "Divorced", label: "Divorced" },
+    { value: "Separated", label: "Separated" },
+    { value: "Widowed", label: "Widowed" },
+  ];
 
-    useEffect(() => {
-        if (uBirth) {
-            const age = calculateAge(uBirth);
-            setAge(age);
-        }
-    }, [uBirth]);
+  // Gender options
+  const genderOptions = [
+    { value: "Male", label: "Male" },
+    { value: "Female", label: "Female" },
+    { value: "Other", label: "Other" },
+  ];
 
-    return (
-        <>
-            <div>
-               <div>
-                <NavigationalBar />
-                <Container fluid style={{ overflowY: 'auto', height: 'calc(100vh - 100px)', width: '100%', paddingBottom: '1.5rem' }}>
-                    <div    className="login-background"
-                            style={{
-                            //   backgroundImage: `url(${ip.address}/images/Background-Login.png)`, // Dynamically load the image URL
-                            backgroundSize: 'cover',
-                            backgroundPosition: 'center'}}>
-                       
-                            <div className="login-background">
-                                <div className="login-overlay"></div>
-                                <div className="login-page">
+  return (
+    <>
+      <ForLoginAndSignupNavbar />
+      <Container
+        fluid
+        className="p-0 d-flex flex-column justify-content-center"
+        style={{
+          height: "calc(100vh - 10px)",
+          overflowY: "auto",
+          backgroundImage: `url(${ip.address}/images/Background-Signup.png)`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          width: "100%",
+          paddingBottom: "1.5rem",
+          paddingTop: "20rem",
+        }}
+      >
+        <div
+          className="d-flex justify-content-center align-items-center flex-column"
+          style={{ minHeight: "100vh" }}
+        >
+          <Container
+            className="d-flex justify-content-center align-items-center "
+            style={{ minHeight: "100vh" }}
+          >
+            <Row className="justify-content-start mt-5">
+              <Col>
+                <Card
+                  className="shadow p-4"
+                  style={{ zIndex: 2, width: "100%", marginTop: "40rem" }}
+                >
+                  <Card.Body>
+                    <div className="text-center">
+                      <img
+                        src={image.logo}
+                        style={{
+                          width: "15rem",
+                          height: "7.5rem",
+                        }}
+                      />
+                    </div>
 
-                                <Container className="d-flex justify-content-center align-items-center vh-100 pt-5 mt-5" style={{paddingTop:'400px'}}>
-                <Card className="container shadow p-4" style={{marginTop:'20rem'}} >
-                    <Card.Body>
-                        <div className="container">
-                            <h4>Sign Up</h4>
-                       
-                            <Form>
+                    <h4 className="text-center mb-4">Sign Up</h4>
+                    <Form>
+                      {/* First and Last Name */}
+                      <Row className="mb-3">
+                        <Form.Group as={Col}>
+                          <Form.Label>First Name</Form.Label>
+                          <Form.Control
+                            type="text"
+                            placeholder="Enter First Name"
+                            onBlur={(e) =>
+                              handleBlur("firstName", e.target.value)
+                            }
+                            onChange={handleTextInputChange(setFirstName)}
+                            value={ufirstName}
+                          />
+                          {errors.firstName && (
+                            <Form.Text className="text-danger">
+                              {errors.firstName}
+                            </Form.Text>
+                          )}
+                        </Form.Group>
 
-                            <Form.Group as={Col} controlId="formChoose" className="mb-3">
-                                        <Form.Label>Choose what to register:</Form.Label>
-                                        <Form.Select
-                                            onBlur={(e) => handleBlur("role", e.target.value)}
-                                            onChange={(e) => setURole(e.target.value)}
-                                            defaultValue="Patient"
-                                        >
-                                            
-                                            <option value="Patient">Patient</option>
-                                            <option value="Practitioner">Practitioner</option>
-                                        </Form.Select>
-                                    </Form.Group>
-                                {/* Fields for name, email, password, etc. */}
-                                <Row className="mb-3">
-                                    <Form.Group as={Col} controlId="formFName">
-                                        <Form.Label>First Name</Form.Label>
-                                        <Form.Control
-                                            type="text"
-                                            placeholder="Enter First Name"
-                                            onBlur={(e) => handleBlur("firstName", e.target.value)}
-                                            onChange={(e) => setfirstName(e.target.value)}
-                                        />
-                                    </Form.Group>
+                        <Form.Group as={Col}>
+                          <Form.Label>Last Name</Form.Label>
+                          <Form.Control
+                            type="text"
+                            placeholder="Enter Last Name"
+                            onBlur={(e) =>
+                              handleBlur("lastName", e.target.value)
+                            }
+                            onChange={handleTextInputChange(setLastName)}
+                            value={uLastName}
+                          />
+                          {errors.lastName && (
+                            <Form.Text className="text-danger">
+                              {errors.lastName}
+                            </Form.Text>
+                          )}
+                        </Form.Group>
+                      </Row>
 
-                                    <Form.Group as={Col} controlId="formLName">
-                                        <Form.Label>Last Name</Form.Label>
-                                        <Form.Control
-                                            type="text"
-                                            placeholder="Enter Last Name"
-                                            onBlur={(e) => handleBlur("lastName", e.target.value)}
-                                            onChange={(e) => setLastName(e.target.value)}
-                                        />
-                                    </Form.Group>
-                                    
-                                    <Form.Group as={Col} controlId="formMName">
-                                        <Form.Label>Middle Initial</Form.Label>
-                                        <Form.Control
-                                            type="text"
-                                            placeholder="Enter Middle Initial"
-                                            onChange={(e) => setMiddleInitial(e.target.value)}
-                                        />
-                                    </Form.Group>
-                                </Row>
+                      {/* Middle Initial, Birthdate, and Contact */}
+                      <Row className="mb-3">
+                        <Form.Group as={Col}>
+                          <Form.Label>Middle Initial</Form.Label>
+                          <Form.Control
+                            maxLength={1}
+                            type="text"
+                            placeholder="Enter Middle Initial"
+                            onChange={handleTextInputChange(setMiddleInitial)}
+                            value={uMiddleInitial}
+                          />
+                        </Form.Group>
 
-                                <Row>
-                                    <Form.Group as={Col} className="mb-3" controlId="formBirthDate">
-                                        <Form.Label>Birthdate</Form.Label>
-                                        <Form.Control
-                                            type="date"
-                                            placeholder="Enter Birthdate"
-                                            onBlur={(e) => handleBlur("birth", e.target.value)}
-                                            onChange={(e) => setBirth(e.target.value)}
-                                        />
-                                    </Form.Group>
+                        <Form.Group as={Col}>
+                          <Form.Label>Birthdate</Form.Label>
+                          <Form.Control
+                            type="date"
+                            onBlur={(e) => handleBlur("birth", e.target.value)}
+                            onChange={(e) => setBirth(e.target.value)}
+                            value={uBirth}
+                          />
+                          {errors.birth && (
+                            <Form.Text className="text-danger">
+                              {errors.birth}
+                            </Form.Text>
+                          )}
+                        </Form.Group>
 
-                                    <Form.Group as={Col} className="mb-3" controlId="formContactNumber">
-                                        <Form.Label>Contact Number</Form.Label>
-                                        <Form.Control
-                                            type="text"
-                                            placeholder="Enter Contact Number (e.g., 09123456789)"
-                                            onBlur={(e) => handleBlur("number", e.target.value)}
-                                            onChange={(e) => setNumber(e.target.value)}
-                                            maxLength={11}
-                                        />
-                                    </Form.Group>
-                                </Row>
+                        <Form.Group as={Col}>
+                          <Form.Label>Contact Number</Form.Label>
+                          <Form.Control
+                            type="text"
+                            maxLength={11}
+                            placeholder="Enter Contact Number"
+                            onBlur={(e) => handleBlur("number", e.target.value)}
+                            onChange={handleNumberInputChange(setNumber)}
+                            value={uNumber}
+                          />
+                          {errors.number && (
+                            <Form.Text className="text-danger">
+                              {errors.number}
+                            </Form.Text>
+                          )}
+                        </Form.Group>
+                      </Row>
 
-                                <Row>
-                                    <Form.Group as={Col} className="mb-3" controlId="formEmail">
-                                        <Form.Label>Email</Form.Label>
-                                        <Form.Control
-                                            type="email"
-                                            placeholder="Enter Email Address"
-                                            onBlur={(e) => handleBlur("email", e.target.value)}
-                                            onChange={(e) => setemail(e.target.value)}
-                                        />
-                                    </Form.Group>
-                                </Row>
+                      {/* Email and Password */}
+                      <Row className="mb-3">
+                        <Form.Group as={Col}>
+                          <Form.Label>Email</Form.Label>
+                          <Form.Control
+                            type="email"
+                            placeholder="Enter Email"
+                            onBlur={(e) => handleBlur("email", e.target.value)}
+                            onChange={(e) => setEmail(e.target.value)}
+                            value={uemail}
+                          />
+                          {errors.email && (
+                            <Form.Text className="text-danger">
+                              {errors.email}
+                            </Form.Text>
+                          )}
+                        </Form.Group>
+                      </Row>
 
-                                <Row>
-                                    <Form.Group className="mb-3" controlId="formPassword">
-                                        <Form.Label>Password</Form.Label>
-                                        <Form.Control
-                                            type="password"
-                                            placeholder="Enter Password"
-                                            onBlur={(e) => handleBlur("password", e.target.value)}
-                                            onChange={(e) => setPass(e.target.value)}
-                                        />
-                                    </Form.Group>
-                                </Row>
+                      <Row className="mb-3">
+                        <Form.Group as={Col}>
+                          <Form.Label>Password</Form.Label>
+                          <Form.Control
+                            type="password"
+                            placeholder="Enter Password"
+                            onBlur={(e) =>
+                              handleBlur("password", e.target.value)
+                            }
+                            onChange={(e) => setPass(e.target.value)}
+                            value={upassword}
+                          />
+                          {errors.password && (
+                            <Form.Text className="text-danger">
+                              {errors.password}
+                            </Form.Text>
+                          )}
+                        </Form.Group>
+                      </Row>
 
-                                <Row>
-                                    <Form.Group className="mb-3" controlId="formConfirmPassword">
-                                        <Form.Label>Confirm Password</Form.Label>
-                                        <Form.Control
-                                            type="password"
-                                            placeholder="Confirm Password"
-                                            onBlur={(e) => handleBlur("confirmPassword", e.target.value)}
-                                            onChange={(e) => setConfirmPassword(e.target.value)}
-                                        />
-                                    </Form.Group>
-                                </Row>
+                      <Row className="mb-3">
+                        <Form.Group as={Col}>
+                          <Form.Label>Confirm Password</Form.Label>
+                          <Form.Control
+                            type="password"
+                            placeholder="Confirm Password"
+                            onBlur={(e) =>
+                              handleBlur("confirmPassword", e.target.value)
+                            }
+                            onChange={(e) => setConfirmPassword(e.target.value)}
+                            value={confirmPassword}
+                          />
+                          {errors.confirmPassword && (
+                            <Form.Text className="text-danger">
+                              {errors.confirmPassword}
+                            </Form.Text>
+                          )}
+                        </Form.Group>
+                      </Row>
 
+                      <PasswordValidation password={upassword} />
 
-                                <PasswordValidation password={upassword} />
-                                {urole === "Patient" && (
-                                    <>
-                                        <Row>
-                                            <Form.Group as={Col} controlId="formStreet">
-                                                <Form.Label>Street</Form.Label>
-                                                <Form.Control
-                                                    type="text"
-                                                    placeholder="Enter Street"
-                                                    onChange={(e) => setPatientAddress({ ...patientAddress, street: e.target.value })}
-                                                />
-                                            </Form.Group>
-                                            <Form.Group as={Col} controlId="formCity">
-                                                <Form.Label>City</Form.Label>
-                                                <Form.Control
-                                                    type="text"
-                                                    placeholder="Enter City"
-                                                    onChange={(e) => setPatientAddress({ ...patientAddress, city: e.target.value })}
-                                                />
-                                            </Form.Group>
-                                        </Row>
-                                        {/* Additional fields for patient address */}
-                                        <Row>
-                                            <Form.Group as={Col} controlId="formNationality">
-                                                <Form.Label>Nationality</Form.Label>
-                                                <Form.Control
-                                                    type="text"
-                                                    placeholder="Enter Nationality"
-                                                    onChange={(e) => setPatientNationality(e.target.value)}
-                                                />
-                                            </Form.Group>
-                                            <Form.Group as={Col} controlId="formCivilStatus">
-                                                <Form.Label>Civil Status</Form.Label>
-                                                <Form.Control
-                                                    type="text"
-                                                    placeholder="Enter Civil Status"
-                                                    onChange={(e) => setPatientCivilStatus(e.target.value)}
-                                                />
-                                            </Form.Group>
-                                        </Row>
-                                    </>
-                                )}
+                      {/* Address Fields */}
+                      <Row className="mb-3">
+                        <Form.Group as={Col}>
+                          <Form.Label>Street</Form.Label>
+                          <Form.Control
+                            type="text"
+                            placeholder="Enter Street"
+                            onChange={(e) =>
+                              setPatientAddress({
+                                ...patientAddress,
+                                street: e.target.value,
+                              })
+                            }
+                            onBlur={(e) => handleBlur("street", e.target.value)}
+                            value={patientAddress.street}
+                          />
+                          {errors.street && (
+                            <Form.Text className="text-danger">
+                              {errors.street}
+                            </Form.Text>
+                          )}
+                        </Form.Group>
+                      </Row>
+                      <Row className="mb-3">
+                        <Form.Group as={Col}>
+                          <Form.Label>Region</Form.Label>
+                          <Select
+                            options={regions.map((region) => ({
+                              value: region.code,
+                              label: `${region.code} - ${region.regionName}`,
+                            }))}
+                            onChange={(selectedOption) => {
+                              setSelectedRegionCode(selectedOption);
+                            }}
+                            onBlur={() =>
+                              handleBlur(
+                                "region",
+                                selectedRegionCode ? selectedRegionCode.label : ""
+                              )
+                            }
+                            value={selectedRegionCode}
+                            placeholder="Select Region"
+                            isSearchable
+                          />
+                          {errors.region && (
+                            <Form.Text className="text-danger">
+                              {errors.region}
+                            </Form.Text>
+                          )}
+                        </Form.Group>
+                        {provinces.length > 0 && (
+                          <Form.Group as={Col}>
+                            <Form.Label>Province</Form.Label>
+                            <Select
+                              options={provinces.map((province) => ({
+                                value: province.code,
+                                label: `${province.code} - ${province.name}`,
+                              }))}
+                              onChange={(selectedOption) => {
+                                setSelectedProvinceCode(selectedOption);
+                              }}
+                              onBlur={() =>
+                                handleBlur(
+                                  "province",
+                                  selectedProvinceCode
+                                    ? selectedProvinceCode.label
+                                    : ""
+                                )
+                              }
+                              value={selectedProvinceCode}
+                              placeholder="Select Province"
+                              isSearchable
+                            />
+                            {errors.province && (
+                              <Form.Text className="text-danger">
+                                {errors.province}
+                              </Form.Text>
+                            )}
+                          </Form.Group>
+                        )}
+                      </Row>
+                      <Row className="mb-3">
+                        <Form.Group as={Col}>
+                          <Form.Label>City/Municipality</Form.Label>
+                          <Select
+                            options={cities.map((city) => ({
+                              value: city.code,
+                              label: `${city.code} - ${city.name}`,
+                            }))}
+                            onChange={(selectedOption) => {
+                              setSelectedCityMunCode(selectedOption);
+                            }}
+                            onBlur={() =>
+                              handleBlur(
+                                "city",
+                                selectedCityMunCode
+                                  ? selectedCityMunCode.label
+                                  : ""
+                              )
+                            }
+                            value={selectedCityMunCode}
+                            placeholder="Select City/Municipality"
+                            isSearchable
+                          />
+                          {errors.city && (
+                            <Form.Text className="text-danger">
+                              {errors.city}
+                            </Form.Text>
+                          )}
+                        </Form.Group>
+                        <Form.Group as={Col}>
+                          <Form.Label>Barangay</Form.Label>
+                          <Select
+                            options={barangays.map((barangay) => ({
+                              value: barangay.name,
+                              label: `${barangay.code} - ${barangay.name}`,
+                            }))}
+                            onChange={(selectedOption) => {
+                              setPatientAddress((prevAddress) => ({
+                                ...prevAddress,
+                                barangay: selectedOption.label,
+                              }));
+                            }}
+                            onBlur={() =>
+                              handleBlur(
+                                "barangay",
+                                patientAddress.barangay
+                              )
+                            }
+                            value={
+                              patientAddress.barangay
+                                ? { label: patientAddress.barangay }
+                                : null
+                            }
+                            placeholder="Select Barangay"
+                            isSearchable
+                          />
+                          {errors.barangay && (
+                            <Form.Text className="text-danger">
+                              {errors.barangay}
+                            </Form.Text>
+                          )}
+                        </Form.Group>
+                      </Row>
+                      <Row className="mb-3">
+                        <Form.Group as={Col}>
+                          <Form.Label>Zip Code</Form.Label>
+                          <Form.Control
+                            type="text"
+                            placeholder="Enter Zip Code"
+                            onChange={handleNumberInputChange((value) =>
+                              setPatientAddress({
+                                ...patientAddress,
+                                zipCode: value,
+                              })
+                            )}
+                            onBlur={(e) => handleBlur("zipCode", e.target.value)}
+                            value={patientAddress.zipCode}
+                          />
+                          {errors.zipCode && (
+                            <Form.Text className="text-danger">
+                              {errors.zipCode}
+                            </Form.Text>
+                          )}
+                        </Form.Group>
+                      </Row>
 
-                                {urole === "Practitioner" && (
-                                    <Row>
-                                        <Form.Group as={Col} controlId="formLicenseNo">
-                                            <Form.Label>License Number</Form.Label>
-                                            <Form.Control
-                                                type="text"
-                                                placeholder="Enter License Number"
-                                                onChange={(e) => setLicenseNo(e.target.value)}
-                                            />
-                                        </Form.Group>
-                                    </Row>
-                                )}
+                      {/* Nationality and Civil Status */}
+                      <Row className="mb-3">
+                        <Form.Group as={Col}>
+                          <Form.Label>Nationality</Form.Label>
+                          <Form.Control
+                            type="text"
+                            placeholder="Enter Nationality"
+                            onChange={handleTextInputChange(
+                              setPatientNationality
+                            )}
+                            value={patientNationality}
+                          />
+                        </Form.Group>
+                        <Form.Group as={Col}>
+                          <Form.Label>Civil Status</Form.Label>
+                          <Select
+                            options={civilStatusOptions}
+                            onChange={(selectedOption) => {
+                              setPatientCivilStatus(selectedOption.value);
+                            }}
+                            onBlur={() =>
+                              handleBlur(
+                                "civilStatus",
+                                patientCivilStatus
+                              )
+                            }
+                            value={
+                              patientCivilStatus
+                                ? {
+                                    value: patientCivilStatus,
+                                    label: patientCivilStatus,
+                                  }
+                                : null
+                            }
+                            placeholder="Select Civil Status"
+                            isSearchable
+                          />
+                          {errors.civilStatus && (
+                            <Form.Text className="text-danger">
+                              {errors.civilStatus}
+                            </Form.Text>
+                          )}
+                        </Form.Group>
+                      </Row>
 
-                                <Row>
-                                    <Form.Group as={Col} controlId="formChooseGender">
-                                        <Form.Label>Gender:</Form.Label>
-                                        <Form.Select
-                                            onBlur={(e) => handleBlur("gender", e.target.value)}
-                                            onChange={(e) => setGender(e.target.value)}
-                                            defaultValue=""
-                                        >
-                                            <option value="" disabled>Select Gender</option>
-                                            <option value="Male">Male</option>
-                                            <option value="Female">Female</option>
-                                            <option value="Other">Other</option>
-                                        </Form.Select>
-                                    </Form.Group>
+                      {/* Gender */}
+                      <Row className="mb-3">
+                        <Form.Group as={Col}>
+                          <Form.Label>Gender</Form.Label>
+                          <Form.Select
+                            onBlur={(e) => handleBlur("gender", e.target.value)}
+                            onChange={(e) => setGender(e.target.value)}
+                            value={uGender}
+                          >
+                            <option value="">Select Gender</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                            <option value="Other">Other</option>
+                          </Form.Select>
+                          {errors.gender && (
+                            <Form.Text className="text-danger">
+                              {errors.gender}
+                            </Form.Text>
+                          )}
+                        </Form.Group>
+                      </Row>
 
-                                  
-                                </Row>
-
-                                {/* Role-specific Conditional Fields */}
-                                
-
-                                
-                                {/* Submit button */}
-                                <div className="d-lg-flex justify-content-between align-items-center mt-3">
-                                    <Button onClick={registerUser} variant="primary" type="button">
-                                        Submit
-                                    </Button>
-                                    <div className="mb-0">
-                                        <Link to="/medapp/login">Already have an account?</Link>
-                                    </div>
-                                </div>
-                            </Form>
+                      <div className="d-lg-flex justify-content-between align-items-center mt-3">
+                        <Button
+                          onClick={handleShowTermsModal}
+                          variant="primary"
+                          type="button"
+                        >
+                          Submit
+                        </Button>
+                        <div className="mb-0">
+                          <Link to="/medapp/login">
+                            Already have an account?
+                          </Link>
                         </div>
-                    </Card.Body>
+                      </div>
+                    </Form>
+                  </Card.Body>
                 </Card>
-            </Container>
-
-
-                                </div>
-                            </div>
-
-                            
-                        </div>
-                  
-                </Container>
-               </div>
-            </div>
-           
-        
-
-
-         
-            
-        </>
-    );
+                <div className="p-5" style={{ padding: "10rem" }}></div>
+                <div className="p-5" style={{ padding: "1rem" }}></div>
+              </Col>
+            </Row>
+          </Container>
+        </div>
+        {/* Include the Terms and Conditions Modal */}
+        <TermsAndConditionsModal
+          show={showTermsModal}
+          handleClose={handleCloseTermsModal}
+          handleAccept={handleAcceptTerms}
+        />
+      </Container>
+    </>
+  );
 };
 
 export default NewSignUp;

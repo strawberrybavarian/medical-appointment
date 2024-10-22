@@ -39,7 +39,7 @@ function DoctorNavbar({doctor_image, did}) {
         <div className="landing-page">
             <div >
                 <Navbar bg="" expand="lg" className="dn-navbar">
-                <Container fluid>
+                <Container fluid style={{padding: '0 4rem 0 4rem'}}>
                            
                             <img className="molino-logo" src={image.logo} alt="Logo" />
                            
@@ -58,9 +58,9 @@ function DoctorNavbar({doctor_image, did}) {
 
 
                         <Nav className="align-items-center">
-                            {/* Profile section with image and two-paragraph text */}
-                            <NavDropdown
-                                title={
+                           
+                           
+                              
                                     <div className="d-flex align-items-center justify-content-end ">
                                         
                                         <div className="ms-2 ">
@@ -77,18 +77,15 @@ function DoctorNavbar({doctor_image, did}) {
                                             style={{objectFit: 'cover'}}
                                         />
                                     </div>
-                                }
-                                id="basic-nav-dropdown"
-                                className="pnb-nav-link1"
-                            >   
+                             
                             
-                            <NavDropdown.Item as={Link} to="/account" state={{did: did}}>Account</NavDropdown.Item>
-                            <NavDropdown.Divider />
-                            <NavDropdown.Item className="pnb-nav-link" onClick={onButtonContainer1Click}>Logout</NavDropdown.Item>
+                    
+                            
+                          
                                 
                                    
                                 
-                            </NavDropdown>
+                         
                         </Nav>
                         
                     </Navbar.Collapse>

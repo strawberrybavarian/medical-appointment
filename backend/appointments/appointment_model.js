@@ -7,14 +7,18 @@ const AppointmentSchema = new Schema({
         {
             appointment_type: {
                 type: String, // Store the name of the service
-                required: true,
+        
             },
             category: {
                 type: String, // Store the category of the service
-                required: true,
+        
             }
         }
     ],
+    followUp: {
+        type: Boolean,
+        default: false,
+    },
     patient: {
         type: Schema.Types.ObjectId,
         ref: 'Patient',
@@ -44,7 +48,7 @@ const AppointmentSchema = new Schema({
     },
     status: {
         type: String,
-        enum: ['Pending', 'Scheduled', 'Completed', 'Cancelled', 'Missed', 'Rescheduled', 'Ongoing', 'For Payment' ],
+        
         default: 'Pending'
     },
     medium: {
@@ -73,6 +77,7 @@ const AppointmentSchema = new Schema({
           ref: 'Laboratory'
         }
       ],
+    
 }, { timestamps: true });
 
 const Appointment = model('Appointment', AppointmentSchema);

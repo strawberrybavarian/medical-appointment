@@ -12,19 +12,7 @@ function LaboratoryResults({ patientId, appointmentId }) {
     const [labResults, setLabResults] = useState([]);
     const [error, setError] = useState(null);
 
-    useEffect(() => {
-        const fetchLabResults = async () => {
-            try {
-                const response = await axios.get(`${ip.address}/api/patient/${patientId}/appointments/${appointmentId}/labResults`);
-                setLabResults(response.data);
-                console.log(response.data);
-            } catch (err) {
-                setError('Failed to fetch laboratory results');
-                toast.error('Failed to fetch laboratory results'); // Show error toast
-            }
-        };
-        fetchLabResults();
-    }, [patientId, appointmentId]);
+    
 
     // Handle file input change
     const handleFileChange = (e) => {

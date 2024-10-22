@@ -1,10 +1,13 @@
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Container, Button, Navbar, Nav, NavDropdown } from 'react-bootstrap';
+import { Navbar, Nav, Container, Button, Dropdown } from "react-bootstrap";
 import "./Landing.css";
-import { image } from '../../ContentExport';
+import { image } from "../../ContentExport";
+import LabResultModal from "./LabResultModal"; // Import the LabResultModal component
 
-function LandingPage() {
+function NavigationalBar({ scrollToServices, scrollToAbout, scrollToNews }) {
   const navigate = useNavigate();
+  const [showLabModal, setShowLabModal] = useState(false); // State to control modal visibility
 
   const onSignUpClick = () => {
     navigate("/medapp/signup");
@@ -18,28 +21,88 @@ function LandingPage() {
     navigate("/staffs");
   };
 
+  const handleServicesClick = (e) => {
+    e.preventDefault();
+    scrollToServices();
+  };
+
+  const handleAboutClick = (e) => {
+    e.preventDefault();
+    scrollToAbout();
+  };
+
+  const handleNewsClick = (e) => {
+    e.preventDefault();
+    scrollToNews();
+  };
+
+  const handleLabResultClick = () => {
+    setShowLabModal(true);
+  };
+
   return (
-    <div className="landing-page">
-      <div className="navbar-3">
-        <Navbar bg="light" expand="lg">
-          <Container>
-            <img className="molino-logo" src={image.logo} alt="Logo" />
-            <Navbar.Toggle aria-controls="basic-navbar-nav" />
-            <Navbar.Collapse id="basic-navbar-nav">
-              <Nav className="me-auto"></Nav>
-              <Nav>
-                <Button className="button1" onClick={onSignUpClick}>Sign Up</Button>
-                <NavDropdown title="Log In" id="login-dropdown" className="login-button">
-                  <NavDropdown.Item onClick={onMemberLoginClick}>Member</NavDropdown.Item>
-                  <NavDropdown.Item onClick={onStaffLoginClick}>Staffs</NavDropdown.Item>
-                </NavDropdown>
-              </Nav>
-            </Navbar.Collapse>
-          </Container>
-        </Navbar>
-      </div>
-    </div>
+    <>
+      <Navbar bg="light" expand="lg" className="nav-bar-no-color fixed-top">
+        <Container>
+          {/* Logo */}
+          <Navbar.Brand href="#hero">
+            <img src={image.logo} alt="Logo" className="molino-logo" />
+          </Navbar.Brand>
+
+          {/* Toggle Button for Small Screens */}
+          <Navbar.Toggle aria-controls="navbarNav" />
+
+          {/* Navbar Links */}
+          <Navbar.Collapse id="navbarNav">
+            <Nav className="ms-auto align-items-center">
+              <Nav.Link href="/">Home</Nav.Link>
+              <Nav.Link href="#about" onClick={handleAboutClick}>
+                About
+              </Nav.Link>
+              <Nav.Link href="#services" onClick={handleServicesClick}>
+                Services
+              </Nav.Link>
+              <Nav.Link href="#news" onClick={handleServicesClick}>News</Nav.Link>
+              <Nav.Link href="#departments">Departments</Nav.Link>
+              <Nav.Link href="#doctors">Doctors</Nav.Link>
+              <Nav.Link href="#contact">Contact</Nav.Link>
+
+              {/* Lab Result Button */}
+              <Button
+                variant="outline-primary"
+                className="ms-3"
+                onClick={handleLabResultClick}
+              >
+                Lab Result
+              </Button>
+
+              <Button className="button1 ms-3" onClick={onSignUpClick}>
+                Sign Up
+              </Button>
+              <Dropdown className="ms-3" autoClose="outside">
+                <Dropdown.Toggle as={Button} variant="primary" id="dropdown-basic">
+                  Login
+                </Dropdown.Toggle>
+
+                <Dropdown.Menu className="login-dropdown-menu">
+                  <Dropdown.Item onClick={onMemberLoginClick}>
+                    Doctor & Patient
+                  </Dropdown.Item>
+                  <Dropdown.Item onClick={onStaffLoginClick}>Staffs</Dropdown.Item>
+                </Dropdown.Menu>
+              </Dropdown>
+            </Nav>
+          </Navbar.Collapse>
+        </Container>
+      </Navbar>
+
+      {/* LabResultModal */}
+      <LabResultModal
+        show={showLabModal}
+        handleClose={() => setShowLabModal(false)}
+      />
+    </>
   );
 }
 
-export default LandingPage;
+export default NavigationalBar;

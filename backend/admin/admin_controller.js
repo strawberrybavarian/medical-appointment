@@ -321,7 +321,7 @@ const updatePatientAccountStatus = (req, res) => {
     const { patientId } = req.params;
     const { status } = req.body;
 
-    const validStatuses = ['Registered', 'Unregistered', 'Deactivated', 'Deleted'];
+    const validStatuses = ['Registered', 'Unregistered', 'Deactivated', 'Deleted', 'Archived'];
 
     if (!validStatuses.includes(status)) {
         return res.status(400).json({ message: 'Invalid status provided.' });
