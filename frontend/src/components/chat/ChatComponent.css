@@ -1,0 +1,120 @@
+/* src/components/Chat/ChatComponent.css */
+
+
+.chat-overlay {
+  position: fixed;
+  bottom: 150px;
+  right: 60px;
+  width: 550px;
+  height: 650px;
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column; /* Ensure column layout */
+  z-index: 1060;
+  overflow: hidden;
+}
+.chat-container {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  background-color: #f0f0f0;
+}
+
+.patient-list {
+  width: 250px;
+  background-color: #fff;
+  border-right: 1px solid #ddd;
+  overflow-y: auto;
+}
+
+.patient-list h3 {
+  text-align: center;
+  margin: 10px 0;
+  color: #007bff;
+}
+
+.patient-list ul {
+  list-style: none;
+  padding: 0;
+}
+
+.patient-list li {
+  padding: 15px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.patient-list li:hover {
+  background-color: #f0f0f0;
+}
+
+.patient-list li.active {
+  background-color: #007bff;
+  color: white;
+}
+
+.chat-box {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: #fff;
+}
+
+.messages {
+  flex: 1;
+  padding: 15px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.message {
+  margin-bottom: 10px;
+  max-width: 70%;
+  padding: 10px;
+  border-radius: 10px;
+  word-wrap: break-word;
+  display: inline-block;
+}
+
+.message.sent {
+  align-self: flex-end; /* Ensures the message aligns to the right */
+  background-color: #007bff;
+  color: white;
+}
+
+.message.received {
+  align-self: flex-start; /* Ensures the message aligns to the left */
+  background-color: #e0e0e0;
+}
+
+.message-input {
+  display: flex;
+  border-top: 1px solid #ddd;
+  padding: 20px;
+}
+
+.message-input input {
+  flex: 1;
+  border: none;
+  padding: 10px;
+  border-radius: 8px;
+  margin-right: 10px;
+  background-color: #f7f7f7;
+}
+
+.message-input button {
+  border: none;
+  background-color: #007bff;
+  color: white;
+  border-radius: 8px;
+  padding: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}

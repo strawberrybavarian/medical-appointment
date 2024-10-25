@@ -1,0 +1,21 @@
+.chat-box {
+  position: fixed;
+  bottom: 100px;
+  right: 80px;
+  width: 550px;
+  max-height: 500px;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  display: flex;
+  flex-direction: column;
+}
+
+.message-list {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.chat-input {
+  padding: 10px;
+  border-top: 1px solid #ccc;
+}

@@ -22,6 +22,7 @@ const StaffLogIn = () => {
                 let response;
                 if (userRole === "Medical Secretary") {
                     response = await axios.get(`${ip.address}/api/medicalsecretary/api/allmedicalsecretary`);
+                    
                 } else if (userRole === "Admin") {
                     response = await axios.get(`${ip.address}/api/admin/api/alladmin`);
                 }
@@ -30,6 +31,8 @@ const StaffLogIn = () => {
                     const userData = response.data.theMedicalSecretary || response.data.theAdmin;
                     setUsers(userData);
                 }
+
+                console.log(response)
             } catch (err) {
                 console.log(err);
             }
