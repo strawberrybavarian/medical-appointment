@@ -4,26 +4,38 @@ const ChatMessage = require('./chat_model');
 const mongoose = require('mongoose');
 const MedicalSecretary = require('../medicalsecretary/medicalsecretary_model');
 const Admin = require('../admin/admin_model');
+const Patient = require('../patient/patient_model'); // Ensure Patient model is imported
 
 // Function to send a message
 const sendMessage = async (req, res) => {
   try {
-    const { senderId, senderModel, receiverId, receiverModel, message } = req.body;
+    const { senderId, senderModel, receiverId, message } = req.body;
 
     let receivers = [];
+    let receiverModel = '';
 
     if (senderModel === 'Patient') {
       // Patient is sending a message
       // Get all Medical Secretary and Admin IDs
       const medSecs = await MedicalSecretary.find({}, '_id');
       const admins = await Admin.find({}, '_id');
-      receivers = [...medSecs.map((medSec) => medSec._id), ...admins.map((admin) => admin._id)];
+      receivers = [
+        ...medSecs.map((medSec) => medSec._id.toString()),
+        ...admins.map((admin) => admin._id.toString()),
+      ];
       receiverModel = 'Staff';
     } else if (senderModel === 'Medical Secretary' || senderModel === 'Admin') {
-      // Medical Secretary or Admin is sending a message to a specific patient
+      // Staff member is sending a message to a patient
       if (!receiverId) {
         return res.status(400).json({ success: false, message: 'Receiver ID is required' });
       }
+
+      const isReceiverPatient = await Patient.exists({ _id: receiverId });
+      if (!isReceiverPatient) {
+        return res.status(400).json({ success: false, message: 'Invalid receiver ID' });
+      }
+
+      // Sending message to a patient
       receivers = [receiverId];
       receiverModel = 'Patient';
     } else {
@@ -43,42 +55,44 @@ const sendMessage = async (req, res) => {
     res.status(200).json({ success: true, message: 'Message sent successfully', data: newMessage });
   } catch (error) {
     console.error('Error sending message:', error);
-    res.status(500).json({ success: false, message: 'Failed to send message', error: error.message });
+    res
+      .status(500)
+      .json({ success: false, message: 'Failed to send message', error: error.message });
   }
 };
 
-// Function to get messages between two users or for a patient
+// Function to get messages between staff and a patient
 const getMessages = async (req, res) => {
   try {
-    const { userId, otherUserId, receiverModel } = req.query;
+    const { userId, otherUserId } = req.query;
 
     let query = {};
 
     if (otherUserId) {
-      // Fetch all messages between userId and otherUserId
+      // Staff fetching messages with a patient
       query = {
         $or: [
           {
-            sender: userId,
-            receiver: { $in: [otherUserId] },
+            // Messages sent by the patient to staff
+            sender: otherUserId,
+            senderModel: 'Patient',
           },
           {
-            sender: otherUserId,
-            receiver: { $in: [userId] },
+            // Messages sent by any staff member to the patient
+            receiver: { $in: [otherUserId] },
+            senderModel: { $in: ['Medical Secretary', 'Admin'] },
           },
         ],
       };
-    } else if (receiverModel) {
-      // For patients, fetch messages sent and received involving Staff
+    } else if (userId) {
+      // Patient fetching messages
       query = {
         $or: [
           {
             sender: userId,
-            receiverModel: 'Staff',
           },
           {
             receiver: { $in: [userId] },
-            senderModel: 'Staff',
           },
         ],
       };
@@ -88,21 +102,59 @@ const getMessages = async (req, res) => {
 
     const messages = await ChatMessage.find(query).sort({ createdAt: 1 });
 
-    res.status(200).json({ success: true, data: messages });
+    // Populate senderName if not already present
+    for (let msg of messages) {
+      if (!msg.senderName) {
+        msg.senderName = await getSenderName(msg.sender, msg.senderModel);
+        await msg.save();
+      }
+    }
+
+    const messagesData = messages.map((msg) => ({
+      _id: msg._id.toString(),
+      sender: msg.sender.toString(),
+      senderModel: msg.senderModel,
+      senderName: msg.senderName || 'Unknown', // Include senderName
+      receiver: msg.receiver.map((id) => id.toString()),
+      receiverModel: msg.receiverModel,
+      message: msg.message,
+      createdAt: msg.createdAt,
+    }));
+
+    res.status(200).json({ success: true, data: messagesData });
   } catch (error) {
     console.error('Error fetching messages:', error);
-    res.status(500).json({ success: false, message: 'Failed to fetch messages', error: error.message });
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch messages',
+      error: error.message,
+    });
   }
 };
+
+// Helper function to get sender's name
+async function getSenderName(senderId, senderModel) {
+  if (senderModel === 'Patient') {
+    const patient = await Patient.findById(senderId);
+    return `${patient.patient_firstName} ${patient.patient_lastName}`;
+  } else if (senderModel === 'Medical Secretary') {
+    const medSec = await MedicalSecretary.findById(senderId);
+    return `${medSec.medSec_firstName} ${medSec.medSec_lastName}`;
+  } else if (senderModel === 'Admin') {
+    const admin = await Admin.findById(senderId);
+    return `${admin.admin_firstName} ${admin.admin_lastName}`;
+  } else {
+    return 'Unknown Sender';
+  }
+}
 
 // Function to get list of patients who have chatted
 const getPatientsList = async (req, res) => {
   try {
-    // Find distinct patient IDs who have sent messages to any Staff
+    // Find distinct patient IDs who have sent messages
     const patients = await ChatMessage.aggregate([
       {
         $match: {
-          receiverModel: 'Staff',
           senderModel: 'Patient',
         },
       },
@@ -111,7 +163,7 @@ const getPatientsList = async (req, res) => {
       },
       {
         $lookup: {
-          from: 'patients', // The collection name for patients
+          from: 'patients',
           localField: '_id',
           foreignField: '_id',
           as: 'patientInfo',
