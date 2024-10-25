@@ -9,12 +9,13 @@ import { ip } from '../../../../../ContentExport';
 import BarAppointment from '../Charts/BarAppointment';
 import SidebarAdmin from '../../sidebar/SidebarAdmin';
 import LineCompletedAppointments from '../Charts/LineCompletedAppointments';
-
+import ChatComponent from '../../../../chat/ChatComponent';
+import { BsChatDotsFill } from 'react-icons/bs'; // Chat icon
 function PatientMain() {
   const location = useLocation();
   const { userId, userName, role } = location.state || {};
   const navigate = useNavigate();
-
+  const [showChat, setShowChat] = useState(false);
   // Retrieve state from location
  
 
@@ -60,6 +61,23 @@ function PatientMain() {
             </Col>
             <Col md={6}>
               <LineCompletedAppointments />
+
+              <button
+                                            className="chat-toggle-btn"
+                                            onClick={() => setShowChat(!showChat)}
+                                            >
+                                            <BsChatDotsFill />
+                                        </button>
+
+                                            {showChat && (
+                                            <div className="chat-overlay">
+                                                <ChatComponent
+                                                userId={userId}
+                                                userRole={role}
+                                                closeChat={() => setShowChat(false)}
+                                                />
+                                            </div>
+                                            )}
             </Col>
           </Row>
         </Container>

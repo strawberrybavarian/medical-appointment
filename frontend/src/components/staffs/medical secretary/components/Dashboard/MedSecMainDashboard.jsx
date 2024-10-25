@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Row, Col } from 'react-bootstrap'; 
+import { Container, Row, Col, Button } from 'react-bootstrap'; 
 import { useLocation } from 'react-router-dom';
 import MedSecDashboard from './MedSecDashboard';
 import MedSecNavbar from '../../navbar/MedSecNavbar';
@@ -9,14 +9,15 @@ import BarAppointment from '../../../admin/dashboard/Charts/BarAppointment';
 import LineCompletedAppointments from '../../../admin/dashboard/Charts/LineCompletedAppointments';
 import AppointmentFullCalendar from '../Calendar/AppointmentFullCalendar';
 import { ip } from '../../../../../ContentExport';
-
+import ChatComponent from '../../../../chat/ChatComponent';
+import { BsChatDotsFill } from 'react-icons/bs'; // Chat icon
 function MedSecMainDashboard() {
     const location = useLocation();  // Retrieve state from location
     const { userId, userName, role } = location.state || {};  // Destructure the passed data
-
+    const [showChat, setShowChat] = useState(false);
     const [medSecData, setMedSecData] = useState(null); 
     const [error, setError] = useState(null);  // Handle error state
-    
+    console.log(role)
     useEffect(() => {
         if (userId) {
             axios.get(`${ip.address}/api/medicalsecretary/api/findone/${userId}`)
@@ -52,6 +53,25 @@ function MedSecMainDashboard() {
                                                     </div>
                                             </div>
                                         </div>
+
+                                        <button
+                                            className="chat-toggle-btn"
+                                            onClick={() => setShowChat(!showChat)}
+                                            >
+                                            <BsChatDotsFill />
+                                        </button>
+
+                                            {showChat && (
+                                            <div className="chat-overlay">
+                                                <ChatComponent
+                                                userId={userId}
+                                                userRole={role}
+                                                closeChat={() => setShowChat(false)}
+                                                />
+                                            </div>
+                                            )}
+
+
                                     </Col>
                                     <Col md={4}>
                                         <Container fluid className='flex-column pt-4'>
