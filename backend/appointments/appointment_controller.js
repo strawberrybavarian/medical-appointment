@@ -82,6 +82,18 @@ const createAppointment = async (req, res) => {
       return res.status(400).json({ message: 'Cannot book an appointment in the past.' });
     }
 
+    // Check if the patient already has an appointment on the same date
+    const existingAppointment = await Appointment.findOne({
+      patient: patientId,
+      date: selectedDate.toISOString().split('T')[0], // Match the date (ignoring time)
+    });
+
+    if (existingAppointment) {
+      return res.status(400).json({ 
+        message: 'You already have an appointment booked on this date.' 
+      });
+    }
+
     const [patientData, doctorData] = await Promise.all([
       Patient.findById(patientId).select('patient_firstName patient_lastName'),
       Doctors.findById(doctor).select('dr_firstName dr_lastName availability bookedSlots'),
@@ -99,7 +111,9 @@ const createAppointment = async (req, res) => {
     const timePeriod = parseInt(startTime.split(':')[0]) < 12 ? 'morning' : 'afternoon';
 
     if (!availability || !availability[timePeriod]?.available) {
-      return res.status(400).json({ message: `No available slots for ${timePeriod} on ${dayOfWeek}.` });
+      return res.status(400).json({ 
+        message: `No available slots for ${timePeriod} on ${dayOfWeek}.` 
+      });
     }
 
     // Default to 'Consultation' if no appointment_type is provided
@@ -129,6 +143,7 @@ const createAppointment = async (req, res) => {
     res.status(500).json({ message: `Failed to create appointment: ${error.message}` });
   }
 };
+
 
 
 // Utility function to convert 12-hour time to 24-hour format

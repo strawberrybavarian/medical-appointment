@@ -26,13 +26,13 @@ function NewsSection() {
       });
   }, []);
 
-  // Function to handle next page with circular logic
+  
   const handleNext = () => {
     setTransitionDirection('next');
     setCurrentPage((prevPage) =>
       (prevPage + 1) * itemsPerPage < newsList.length
         ? prevPage + 1
-        : 0 // Reset to first page when reaching the end
+        : 0 
     );
   };
 
@@ -43,21 +43,21 @@ function NewsSection() {
     );
   };
 
-  // Automatically slide every 5 seconds
+
   useEffect(() => {
     intervalRef.current = setInterval(() => {
       handleNext();
-    }, 5000); // Slide every 5 seconds
+    }, 5000); 
 
-    // Clear the interval when the component unmounts or when user interacts
+ 
     return () => clearInterval(intervalRef.current);
-  }, [newsList]); // Restart interval if newsList changes
+  }, [newsList]); 
 
-  // Stop automatic sliding when user clicks next/prev (optional)
+
   const handleManualSlide = (direction) => {
-    clearInterval(intervalRef.current); // Clear existing interval
-    direction === 'next' ? handleNext() : handlePrev(); // Slide manually
-    intervalRef.current = setInterval(handleNext, 5000); // Restart auto-slide
+    clearInterval(intervalRef.current); 
+    direction === 'next' ? handleNext() : handlePrev(); 
+    intervalRef.current = setInterval(handleNext, 5000); 
   };
 
   const displayedNews = newsList.slice(
@@ -67,7 +67,7 @@ function NewsSection() {
 
   return (
     <section id="news" style={{ padding: '50px', backgroundColor: '#f7f7f7' }}>
-      <div className="container section-title" data-aos="fade-up">
+      <div className=" section-title" data-aos="fade-up">
         <h2>Latest News</h2>
       </div>
 

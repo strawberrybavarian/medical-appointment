@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Navbar, Nav, Container, Button, Dropdown } from "react-bootstrap";
 import "./Landing.css";
+import "./navbar.css";
 import { image } from "../../ContentExport";
 import LabResultModal from "./LabResultModal"; // Import the LabResultModal component
 
@@ -42,8 +43,8 @@ function NavigationalBar({ scrollToServices, scrollToAbout, scrollToNews }) {
 
   return (
     <>
-      <Navbar bg="light" expand="lg" className="nav-bar-no-color fixed-top">
-        <Container>
+      <Navbar bg="light" expand="lg" className="nav-bar-no-color navbar-fixed-top fixed-top px-5 py-0">
+   
           {/* Logo */}
           <Navbar.Brand href="#hero">
             <img src={image.logo} alt="Logo" className="molino-logo" />
@@ -93,7 +94,6 @@ function NavigationalBar({ scrollToServices, scrollToAbout, scrollToNews }) {
               </Dropdown>
             </Nav>
           </Navbar.Collapse>
-        </Container>
       </Navbar>
 
       {/* LabResultModal */}
