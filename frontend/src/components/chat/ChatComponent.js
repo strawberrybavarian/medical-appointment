@@ -5,7 +5,7 @@ import io from 'socket.io-client';
 import './ChatComponent.css';
 import { ip } from '../../ContentExport';
 import axios from 'axios';
-import { BsArrowRight } from 'react-icons/bs'; // Importing icon for send button
+import { BsArrowRight } from 'react-icons/bs';
 
 function ChatComponent({ userId, userRole, closeChat }) {
   const [message, setMessage] = useState('');
@@ -42,7 +42,7 @@ function ChatComponent({ userId, userRole, closeChat }) {
     setSocket(newSocket);
 
     // Authenticate the user with the server
-    newSocket.emit('identify', { userId, userRole });
+    newSocket.emit('identify', { userId: userId.toString(), userRole });
 
     // Receive the list of patients who have chatted
     if (isMedSecOrAdmin) {
@@ -52,49 +52,55 @@ function ChatComponent({ userId, userRole, closeChat }) {
       });
     }
 
+    // Handle incoming chat messages
+    newSocket.on('chat message', handleChatMessage);
+
     // Cleanup on component unmount
     return () => {
       newSocket.disconnect();
     };
   }, [userId, userRole]);
 
-  useEffect(() => {
-    if (!socket) return;
+  const handleChatMessage = (data) => {
+    console.log('Received chat message:', data);
 
-    const handleChatMessage = (data) => {
-      console.log('Received chat message:', data);
-
-      if (isMedSecOrAdmin) {
-        // Check if the message is relevant to the selected patient
-        if (
-          (data.senderModel === 'Patient' && data.sender === selectedPatientRef.current?._id) ||
-          (data.receiver.includes(selectedPatientRef.current?._id) && data.sender === userId)
-        ) {
-          setMessages((prevMessages) => [...prevMessages, data]);
-        }
-        // Add patient to the list if not already present
-        if (
-          data.senderModel === 'Patient' &&
-          !patientList.find((p) => p._id === data.sender)
-        ) {
-          setPatientList((prevList) => [
-            ...prevList,
-            { _id: data.sender, name: data.senderName || 'Unknown Patient' },
-          ]);
-        }
-      } else if (isPatient) {
-        if (data.sender === userId || data.receiver.includes(userId)) {
-          setMessages((prevMessages) => [...prevMessages, data]);
-        }
+    if (isMedSecOrAdmin) {
+      // Check if the message involves the selected patient
+      if (
+        selectedPatientRef.current &&
+        (data.sender === selectedPatientRef.current._id ||
+          data.receiver.includes(selectedPatientRef.current._id))
+      ) {
+        setMessages((prevMessages) => {
+          // Check if message already exists to prevent duplication
+          if (!prevMessages.find((msg) => msg._id === data._id)) {
+            return [...prevMessages, data];
+          }
+          return prevMessages;
+        });
       }
-    };
-
-    socket.on('chat message', handleChatMessage);
-
-    return () => {
-      socket.off('chat message', handleChatMessage);
-    };
-  }, [socket, isPatient, isMedSecOrAdmin, userId, patientList]);
+      // Add patient to the list if not already present
+      if (
+        data.senderModel === 'Patient' &&
+        !patientList.find((p) => p._id === data.sender)
+      ) {
+        setPatientList((prevList) => [
+          ...prevList,
+          { _id: data.sender, name: data.senderName || 'Unknown Patient' },
+        ]);
+      }
+    } else if (isPatient) {
+      if (data.sender === userId || data.receiver.includes(userId)) {
+        setMessages((prevMessages) => {
+          // Check if message already exists to prevent duplication
+          if (!prevMessages.find((msg) => msg._id === data._id)) {
+            return [...prevMessages, data];
+          }
+          return prevMessages;
+        });
+      }
+    }
+  };
 
   useEffect(() => {
     if (isPatient) {
@@ -113,15 +119,14 @@ function ChatComponent({ userId, userRole, closeChat }) {
       if (isPatient) {
         response = await axios.get(`${ip.address}/api/chat/messages`, {
           params: {
-            userId: userId,
-            receiverModel: 'Staff', // Adjusted to 'Staff' to include both MedSec and Admin
+            userId: userId.toString(),
           },
         });
       } else if (isMedSecOrAdmin && otherUserId) {
         response = await axios.get(`${ip.address}/api/chat/messages`, {
           params: {
-            userId: userId,
-            otherUserId: otherUserId,
+            userId: userId.toString(),
+            otherUserId: otherUserId.toString(),
           },
         });
       } else {
@@ -129,8 +134,14 @@ function ChatComponent({ userId, userRole, closeChat }) {
       }
 
       if (response.data.success) {
-        setMessages(response.data.data);
-        console.log('Fetched messages:', response.data.data);
+        // Convert sender and receiver IDs to strings
+        const messagesData = response.data.data.map((msg) => ({
+          ...msg,
+          sender: msg.sender.toString(),
+          receiver: msg.receiver.map((id) => id.toString()),
+        }));
+        setMessages(messagesData);
+        console.log('Fetched messages:', messagesData);
       } else {
         console.error('Failed to fetch messages:', response.data.message);
       }
@@ -142,15 +153,17 @@ function ChatComponent({ userId, userRole, closeChat }) {
   const sendMessage = () => {
     if (message.trim() !== '') {
       let messageData = {
-        senderId: userId,
+        senderId: userId.toString(),
         senderModel: userRole,
         message,
       };
 
       if (isPatient) {
-        messageData.receiverModel = 'Staff'; // Adjusted to 'Staff' to include both MedSec and Admin
+        // Patients send messages to staff
+        messageData.receiverModel = 'Staff';
       } else if (isMedSecOrAdmin && selectedPatient) {
-        messageData.receiverId = selectedPatient._id;
+        // Staff sends messages to a specific patient
+        messageData.receiverId = selectedPatient._id.toString();
         messageData.receiverModel = 'Patient';
       } else {
         console.error('Receiver ID or model is not defined.');
@@ -158,8 +171,6 @@ function ChatComponent({ userId, userRole, closeChat }) {
       }
 
       socket.emit('chat message', messageData);
-
-      // Remove optimistic update to prevent duplicate messages
 
       setMessage('');
     }
@@ -190,14 +201,22 @@ function ChatComponent({ userId, userRole, closeChat }) {
 
       <div className="chat-box">
         <div className="messages">
-          {messages.map((msg, index) => (
-            <div
-              key={index}
-              className={`message ${msg.sender === userId ? 'sent' : 'received'}`}
-            >
-              <p>{msg.message}</p>
-            </div>
-          ))}
+          {messages.map((msg) => {
+            const isSentByCurrentUser = msg.sender === userId.toString();
+            const displayName = isSentByCurrentUser
+              ? 'You'
+              : `${msg.senderName} (${msg.senderModel})`;
+
+            return (
+              <div
+                key={msg._id}
+                className={`message ${isSentByCurrentUser ? 'sent' : 'received'}`}
+              >
+                {!isSentByCurrentUser && <p className="sender-name">{displayName}</p>}
+                <p>{msg.message}</p>
+              </div>
+            );
+          })}
         </div>
 
         <div className="message-input">
