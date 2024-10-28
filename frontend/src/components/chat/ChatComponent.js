@@ -1,5 +1,3 @@
-// ChatComponent.js
-
 import React, { useState, useEffect, useRef } from 'react';
 import io from 'socket.io-client';
 import './ChatComponent.css';
@@ -32,7 +30,7 @@ function ChatComponent({ userId, userRole, closeChat }) {
       return;
     }
 
-    // Connect to socket server
+
     const newSocket = io(ip.address, {
       transports: ['websocket'],
       cors: {
@@ -41,7 +39,7 @@ function ChatComponent({ userId, userRole, closeChat }) {
     });
     setSocket(newSocket);
 
-    // Authenticate the user with the server
+
     newSocket.emit('identify', { userId: userId.toString(), userRole });
 
     // Receive the list of patients who have chatted

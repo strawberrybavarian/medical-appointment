@@ -1,13 +1,13 @@
 const image = {
-    logo: "https://medical-appointment-qiih.onrender.com/images/Molino-Polyclinic-Logo.png",
-    // logo: "http://localhost:8000/images/Molino-Polyclinic-Logo.png",
+    // logo: "https://medical-appointment-qiih.onrender.com/images/Molino-Polyclinic-Logo.png",
+    logo: "http://localhost:8000/images/Molino-Polyclinic-Logo.png",
 };
 
 const ip ={
-    address: 'https://medical-appointment-qiih.onrender.com'
+    // address: 'https://medical-appointment-qiih.onrender.com'
 
 
-    // address: 'http://localhost:8000'
+    address: 'http://localhost:8000'
 
 };
 

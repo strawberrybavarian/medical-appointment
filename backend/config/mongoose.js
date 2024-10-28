@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
-mongoose.connect('mongodb+srv://mern:mern@cluster0.6mdyfjt.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0',
-// mongoose.connect('mongodb://127.0.0.1:27017/PIMSdb', 
+// mongoose.connect('mongodb+srv://mern:mern@cluster0.6mdyfjt.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0',
+mongoose.connect('mongodb://127.0.0.1:27017/PIMSdb', 
 {
 
 
@@ -10,7 +10,7 @@ mongoose.connect('mongodb+srv://mern:mern@cluster0.6mdyfjt.mongodb.net/?retryWri
 
 mongoose.connection.once('open', async () => {
   try {
-    // Check if 'patients' collection exists
+
     const collections = await mongoose.connection.db.listCollections().toArray();
     const patientsCollectionExists = collections.some(col => col.name === 'patients');
 
@@ -33,7 +33,6 @@ mongoose.connection.once('open', async () => {
       console.log('Patients collection does not exist. Cannot create or drop indexes.');
     }
 
-    // Check if 'appointments' collection exists
     const appointmentsCollectionExists = collections.some(col => col.name === 'appointments');
 
     if (appointmentsCollectionExists) {

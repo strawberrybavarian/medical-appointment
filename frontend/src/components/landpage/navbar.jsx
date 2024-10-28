@@ -44,7 +44,7 @@ function NavigationalBar({ scrollToServices, scrollToAbout, scrollToNews }) {
   return (
     <>
       <Navbar bg="light" expand="lg" className="nav-bar-no-color navbar-fixed-top fixed-top px-5 py-0">
-   
+        <Container>
           {/* Logo */}
           <Navbar.Brand href="#hero">
             <img src={image.logo} alt="Logo" className="molino-logo" />
@@ -94,6 +94,7 @@ function NavigationalBar({ scrollToServices, scrollToAbout, scrollToNews }) {
               </Dropdown>
             </Nav>
           </Navbar.Collapse>
+          </Container>
       </Navbar>
 
       {/* LabResultModal */}

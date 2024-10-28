@@ -8,13 +8,12 @@ import { ip } from "../../ContentExport";
 import { Button } from "react-bootstrap";
 
 function LandingPage() {
-  const topRef = useRef(null);      // Ref for the top of the page
-  const servicesRef = useRef(null); // Ref for the services section
-  const aboutRef = useRef(null);    // Ref for the about section
-  const newsRef = useRef(null);     // Ref for the news section
+  const topRef = useRef(null);   
+  const servicesRef = useRef(null); 
+  const aboutRef = useRef(null);    
+  const newsRef = useRef(null);     
 
-  const [showButton, setShowButton] = useState(false); // State to control visibility
-
+  const [showButton, setShowButton] = useState(false); 
   const scrollToTop = () => {
     topRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -31,7 +30,7 @@ function LandingPage() {
     newsRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  // Throttle scroll handler to improve performance
+
   const handleScroll = () => {
     if (window.scrollY > 100) {
       setShowButton(true);
@@ -40,18 +39,18 @@ function LandingPage() {
     }
   };
 
-  // Attach the scroll event listener inside useEffect
+
   useEffect(() => {
     window.addEventListener("scroll", handleScroll, { passive: true });
 
-    // Cleanup event listener on component unmount
+
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   return (
     <>
       <div style={{ overflowY: "auto", overflowX: "hidden", height: "calc(100vh)" }}>
-        {/* Top Reference */}
+
         <div ref={topRef} />
 
         <NavigationalBar
@@ -122,7 +121,7 @@ function LandingPage() {
           </section>
 
           {/* Back to Top Button */}
-          {showButton && (
+ 
             <Button
               className="back-to-top-button"
               onClick={scrollToTop}
@@ -130,7 +129,7 @@ function LandingPage() {
             >
               ⬆
             </Button>
-          )}
+   
 
           <Footer />
         </div>
