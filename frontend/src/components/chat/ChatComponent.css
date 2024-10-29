@@ -1,63 +1,22 @@
-/* src/components/Chat/ChatComponent.css */
-
-
-.chat-overlay {
-  position: fixed;
-  bottom: 150px;
-  right: 60px;
-  width: 50%;
-  height: 650px;
-  background-color: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  display: flex;
-  flex-direction: column; /* Ensure column layout */
-  z-index: 1060;
-  overflow: hidden;
-}
 .chat-container {
   display: flex;
   height: 100%;
   width: 100%;
   border-radius: 12px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
   background-color: #f0f0f0;
+  overflow: hidden;
+  flex-direction: row; /* Default for larger screens */
 }
 
+/* Patient List Section */
 .patient-list {
-  width: 250px;
+  width: 25%; /* Default width for patient list on larger screens */
   background-color: #fff;
   border-right: 1px solid #ddd;
   overflow-y: auto;
 }
 
-.patient-list h3 {
-  text-align: center;
-  margin: 10px 0;
-  color: #007bff;
-}
-
-.patient-list ul {
-  list-style: none;
-  padding: 0;
-}
-
-.patient-list li {
-  padding: 15px;
-  cursor: pointer;
-  transition: background 0.3s;
-}
-
-.patient-list li:hover {
-  background-color: #f0f0f0;
-}
-
-.patient-list li.active {
-  background-color: #007bff;
-  color: white;
-}
-
+/* Chat Box */
 .chat-box {
   flex: 1;
   display: flex;
@@ -65,6 +24,7 @@
   background-color: #fff;
 }
 
+/* Messages Section */
 .messages {
   flex: 1;
   padding: 15px;
@@ -73,30 +33,43 @@
   flex-direction: column;
 }
 
+/* Message styles */
 .message {
   margin-bottom: 10px;
-  max-width: 70%;
   padding: 10px;
   border-radius: 10px;
-  word-wrap: break-word;
-  display: inline-block;
+  word-wrap: break-word; /* Wrap long words */
+  word-break: break-word; /* Break long URLs */
+  max-width: 75%; /* Adjust max-width for better mobile layout */
 }
 
+/* Sent messages align to the right */
 .message.sent {
-  align-self: flex-end; /* Ensures the message aligns to the right */
+  align-self: flex-end;
   background-color: #007bff;
   color: white;
 }
 
+/* Received messages align to the left */
 .message.received {
-  align-self: flex-start; /* Ensures the message aligns to the left */
+  align-self: flex-start;
   background-color: #e0e0e0;
+  color: black;
 }
 
+/* Sender name for received messages */
+.sender-name {
+  font-size: 12px;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+/* Message Input Area */
 .message-input {
   display: flex;
   border-top: 1px solid #ddd;
-  padding: 20px;
+  padding: 10px;
+  background-color: #f7f7f7;
 }
 
 .message-input input {
@@ -105,7 +78,7 @@
   padding: 10px;
   border-radius: 8px;
   margin-right: 10px;
-  background-color: #f7f7f7;
+  background-color: #fff;
 }
 
 .message-input button {
@@ -117,4 +90,69 @@
   cursor: pointer;
   display: flex;
   align-items: center;
+}
+
+/* Chat Overlay */
+.chat-overlay {
+  position: fixed;
+  bottom: 150px;
+  right: 60px;
+  width: 35%; /* Default for larger screens */
+  height: 650px;
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  z-index: 1060;
+  overflow: hidden;
+}
+
+/* Responsive Design for Smaller Screens */
+@media (max-width: 768px) {
+  .chat-container {
+    flex-direction: column; /* Stack vertically */
+    height: 100vh; /* Take full screen height */
+  }
+
+  .patient-list {
+    width: 100%; /* Full width on mobile */
+    border-right: none; /* Remove right border */
+    border-bottom: 1px solid #ddd; /* Add bottom border instead */
+  }
+
+  .chat-overlay {
+    bottom: 0;
+    right: 0;
+    width: 80%; /* Full width on mobile */
+    /* Full height on mobile */
+    border-radius: 0; /* Remove border radius for fullscreen view */
+    padding: 10px; /* Add padding to allow for close button */
+  }
+
+  /* Add some padding/margin so the close button is visible */
+  .chat-overlay::before {
+    content: '';
+    display: block;
+    height: 50px; /* Space at the top to see close button */
+    width: 100%;
+  }
+
+  .message {
+    max-width: 90%; /* Increase message width for mobile */
+  }
+
+  .message-input {
+    flex-direction: column; /* Stack input and button vertically */
+    padding: 10px;
+  }
+
+  .message-input input {
+    margin-bottom: 10px; /* Add space between input and button */
+  }
+
+  .chat-btn-container {
+    bottom: 20px; /* Adjust position on mobile */
+    right: 20px;
+  }
 }

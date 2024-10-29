@@ -12,14 +12,26 @@ function ChatComponent({ userId, userRole, closeChat }) {
   const [selectedPatient, setSelectedPatient] = useState(null);
   const [socket, setSocket] = useState(null);
 
+  const messagesEndRef = useRef(null); // Reference to the end of the chat
   const isPatient = userRole === 'Patient';
   const isMedSec = userRole === 'Medical Secretary';
   const isAdmin = userRole === 'Admin';
   const isMedSecOrAdmin = isMedSec || isAdmin;
 
-  // Use refs to keep track of selectedPatient
   const selectedPatientRef = useRef(selectedPatient);
-
+  const formatTimestamp = (isoDate) => {
+    const date = new Date(isoDate); // Convert ISO string to Date object
+    const options = {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false, // Optional: Use 24-hour format
+    };
+    return date.toLocaleString('en-GB', options).replace(',', '');
+  };
   useEffect(() => {
     selectedPatientRef.current = selectedPatient;
   }, [selectedPatient]);
@@ -30,19 +42,11 @@ function ChatComponent({ userId, userRole, closeChat }) {
       return;
     }
 
-
-    const newSocket = io(ip.address, {
-      transports: ['websocket'],
-      cors: {
-        origin: '*',
-      },
-    });
+    const newSocket = io(ip.address, { transports: ['websocket'], cors: { origin: '*' } });
     setSocket(newSocket);
-
 
     newSocket.emit('identify', { userId: userId.toString(), userRole });
 
-    // Receive the list of patients who have chatted
     if (isMedSecOrAdmin) {
       newSocket.on('patient list', (patients) => {
         console.log('Received patient list:', patients);
@@ -50,10 +54,8 @@ function ChatComponent({ userId, userRole, closeChat }) {
       });
     }
 
-    // Handle incoming chat messages
     newSocket.on('chat message', handleChatMessage);
 
-    // Cleanup on component unmount
     return () => {
       newSocket.disconnect();
     };
@@ -63,21 +65,19 @@ function ChatComponent({ userId, userRole, closeChat }) {
     console.log('Received chat message:', data);
 
     if (isMedSecOrAdmin) {
-      // Check if the message involves the selected patient
       if (
         selectedPatientRef.current &&
         (data.sender === selectedPatientRef.current._id ||
           data.receiver.includes(selectedPatientRef.current._id))
       ) {
         setMessages((prevMessages) => {
-          // Check if message already exists to prevent duplication
           if (!prevMessages.find((msg) => msg._id === data._id)) {
             return [...prevMessages, data];
           }
           return prevMessages;
         });
       }
-      // Add patient to the list if not already present
+
       if (
         data.senderModel === 'Patient' &&
         !patientList.find((p) => p._id === data.sender)
@@ -90,7 +90,6 @@ function ChatComponent({ userId, userRole, closeChat }) {
     } else if (isPatient) {
       if (data.sender === userId || data.receiver.includes(userId)) {
         setMessages((prevMessages) => {
-          // Check if message already exists to prevent duplication
           if (!prevMessages.find((msg) => msg._id === data._id)) {
             return [...prevMessages, data];
           }
@@ -106,7 +105,7 @@ function ChatComponent({ userId, userRole, closeChat }) {
     } else if (isMedSecOrAdmin && selectedPatient) {
       fetchMessages(selectedPatient._id);
     } else {
-      setMessages([]); // Clear messages if no patient is selected
+      setMessages([]);
     }
   }, [selectedPatient, isPatient, isMedSecOrAdmin]);
 
@@ -132,7 +131,6 @@ function ChatComponent({ userId, userRole, closeChat }) {
       }
 
       if (response.data.success) {
-        // Convert sender and receiver IDs to strings
         const messagesData = response.data.data.map((msg) => ({
           ...msg,
           sender: msg.sender.toString(),
@@ -157,10 +155,8 @@ function ChatComponent({ userId, userRole, closeChat }) {
       };
 
       if (isPatient) {
-        // Patients send messages to staff
         messageData.receiverModel = 'Staff';
       } else if (isMedSecOrAdmin && selectedPatient) {
-        // Staff sends messages to a specific patient
         messageData.receiverId = selectedPatient._id.toString();
         messageData.receiverModel = 'Patient';
       } else {
@@ -169,13 +165,21 @@ function ChatComponent({ userId, userRole, closeChat }) {
       }
 
       socket.emit('chat message', messageData);
-
       setMessage('');
     }
   };
 
   const handlePatientSelect = (patient) => {
     setSelectedPatient(patient);
+  };
+
+  // Automatically scrolls to the bottom whenever the messages array changes
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
   return (
@@ -199,22 +203,40 @@ function ChatComponent({ userId, userRole, closeChat }) {
 
       <div className="chat-box">
         <div className="messages">
-          {messages.map((msg) => {
-            const isSentByCurrentUser = msg.sender === userId.toString();
-            const displayName = isSentByCurrentUser
-              ? 'You'
-              : `${msg.senderName} (${msg.senderModel})`;
+        {messages.map((msg) => {
+  const isSentByCurrentUser = msg.sender === userId.toString();
+  const displayName = isSentByCurrentUser ? 'You' : `${msg.senderModel}`;
 
-            return (
-              <div
-                key={msg._id}
-                className={`message ${isSentByCurrentUser ? 'sent' : 'received'}`}
-              >
-                {!isSentByCurrentUser && <p className="sender-name">{displayName}</p>}
-                <p>{msg.message}</p>
-              </div>
-            );
-          })}
+  return (
+    <>
+      <div>
+        {!isSentByCurrentUser && (
+          <p style={{ fontSize: '12px', paddingLeft: '4px' }} className="sender-name">
+            {displayName}
+          </p>
+        )}
+      </div>
+
+      <div
+        key={msg._id}
+        className={`message ${isSentByCurrentUser ? 'sent' : 'received'}`}
+      >
+        <p>{msg.message} <br /></p>
+        <div>
+          <p
+            style={{
+              fontSize: '10px',
+              color: isSentByCurrentUser ? 'white' : 'gray',
+            }}
+          >
+            Sent | {formatTimestamp(msg.createdAt)}
+          </p>
+        </div>
+      </div>
+    </>
+  );
+})}
+          <div ref={messagesEndRef} /> {/* Scroll to this element */}
         </div>
 
         <div className="message-input">

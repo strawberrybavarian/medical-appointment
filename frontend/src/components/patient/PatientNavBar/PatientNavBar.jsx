@@ -89,7 +89,7 @@ function PatientNavBar({pid}) {
     };
 
     return (
-        <Navbar fluid expand="md" className="pnb-navbar">
+        <Navbar fluid expand="md" className="nav-bar-no-color navbar-fixed-top fixed-top px-5 py-0">
             <Container fluid>
                 <Link to={{ pathname: `/homepage`, state: { pid: patient._id } }}>
                     <img className="molino-logo" src={image.logo || defaultImage} alt="Logo" />

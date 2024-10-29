@@ -29,7 +29,9 @@ function DoctorCarousel({ pid }) {
     setDoctorId(did);
     navigate(`/doctorprofile`); // Navigate to doctor profile with the patient ID
   };
-
+  const onButtonContainerClick = () => {
+    navigate(`/choosedoctor`, { state: { pid: patient._id } });
+  };
   const timeSinceLastActive = (lastActive) => {
     const now = new Date();
     const lastActiveDate = new Date(lastActive);
@@ -59,8 +61,21 @@ function DoctorCarousel({ pid }) {
   return (
     <>
       <Container>
-        <Container className="ml-5">
+        <Container className="ml-5 d-flex w-100">
+          <div className="w-100">
           <h4>List of Doctors</h4>
+          </div>
+         
+          <div className="w-100 d-flex justify-content-end mr-5">
+            <a href
+                variant="primary"
+                onClick={onButtonContainerClick}
+                className="view-all-doctors-btn"
+              >
+                View All Doctors
+              </a>
+          </div>
+          
         </Container>
 
         <div className="doctor-carousel-container">

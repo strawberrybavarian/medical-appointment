@@ -25,7 +25,7 @@ function ForLoginAndSignupNavbar({ scrollToServices }) {
     };
 
     return (
-        <Navbar bg="light" expand="lg" className="nav-bar-no-color">
+        <Navbar bg="light" expand="lg" className="nav-bar-no-color navbar-fixed-top fixed-top px-5 py-0">
             <Container>
                 {/* Logo */}
                 <Navbar.Brand href="#hero">

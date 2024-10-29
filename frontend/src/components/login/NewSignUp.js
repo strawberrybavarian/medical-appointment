@@ -436,12 +436,12 @@ const NewSignUp = () => {
 
   return (
     <>
-      <ForLoginAndSignupNavbar />
+    
       <Container
         fluid
         className="p-0 d-flex flex-column justify-content-center"
         style={{
-          height: "calc(100vh - 10px)",
+          height: "calc(100vh)",
           overflowY: "auto",
           backgroundImage: `url(${ip.address}/images/Background-Signup.png)`,
           backgroundSize: "cover",
@@ -451,6 +451,7 @@ const NewSignUp = () => {
           paddingTop: "20rem",
         }}
       >
+          <ForLoginAndSignupNavbar />
         <div
           className="d-flex justify-content-center align-items-center flex-column"
           style={{ minHeight: "100vh" }}
@@ -463,7 +464,7 @@ const NewSignUp = () => {
               <Col>
                 <Card
                   className="shadow p-4"
-                  style={{ zIndex: 2, width: "100%", marginTop: "40rem" }}
+                  style={{ zIndex: 2, width: "100%", marginTop: "60rem" }}
                 >
                   <Card.Body>
                     <div className="text-center">

@@ -82,10 +82,11 @@ const createAppointment = async (req, res) => {
       return res.status(400).json({ message: 'Cannot book an appointment in the past.' });
     }
 
-    // Check if the patient already has an appointment on the same date
+    // Check if the patient already has an active appointment on the same date
     const existingAppointment = await Appointment.findOne({
       patient: patientId,
       date: selectedDate.toISOString().split('T')[0], // Match the date (ignoring time)
+      status: { $nin: ['Cancelled', 'Completed'] }, // Exclude cancelled and completed appointments
     });
 
     if (existingAppointment) {
@@ -143,6 +144,7 @@ const createAppointment = async (req, res) => {
     res.status(500).json({ message: `Failed to create appointment: ${error.message}` });
   }
 };
+
 
 
 
