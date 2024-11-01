@@ -1,97 +1,119 @@
 .stepper-container {
-    display: flex;
-    flex-direction: column;
-    padding: 20px 0;
-  }
-  
-  .step-item {
-    display: flex;
-    align-items: flex-start;
-    position: relative;
-  }
-  
-  .step-marker {
-    position: relative;
-    margin-right: 10px;
-  }
-  
-  .step-circle {
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    background-color: #ddd;
-    color: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1;
-  }
-  
-  .step-item.active .step-circle {
-    background-color: #007bff;
-    animation: pulse 2s infinite;
-  }
-  
-  .step-item.completed .step-circle {
-    background-color: #007bff;
-  }
-  
-  .step-line {
-    position: absolute;
-    top: 30px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 4px;
-    height: calc(100% - 30px);
-    background-color: #ddd;
-    z-index: 0;
-  }
-  
-  .step-item.completed .step-line {
-    background-color: #007bff;
-  }
-  
-  .step-content {
-    flex: 1;
-  }
-  
-  .step-label {
-    margin-top: 5px;
-    font-size: 1rem;
-    color: #333;
-  }
-  
-  @keyframes pulse {
-    0% {
-      box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.7);
-    }
-    70% {
-      box-shadow: 0 0 0 15px rgba(0, 123, 255, 0);
-    }
-    100% {
-      box-shadow: 0 0 0 0 rgba(0, 123, 255, 0);
-    }
-  }
+  display: flex;
+  flex-direction: column;
+  padding: 20px 0;
+}
 
-  .appointment-details {
-    margin-top: 20px;
-    padding: 15px;
-    background-color: #f8f9fa; /* Light gray background */
-    border-radius: 5px;
+.step-item {
+  display: flex;
+  align-items: flex-start;
+  position: relative;
+  min-height: 60px;
+}
+
+.step-marker {
+  position: relative;
+  margin-right: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.step-circle {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background-color: #ddd;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 1;
+}
+
+/* Adding the line with dynamic height */
+.step-line {
+  position: absolute;
+  top: 50%; /* Start the line from the center of the circle */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: calc(100% + 70px); /* Dynamic height to cover the space between items */
+  background-color: #ddd;
+  z-index: 0;
+}
+
+.step-item.completed .step-circle {
+  background-color: #007bff;
+}
+
+.step-item.completed .step-line {
+  background-color: #007bff;
+}
+
+/* Hide line for the last step */
+.step-item:last-child .step-line {
+  display: none;
+}
+
+.step-content {
+  flex: 1;
+  padding-bottom: 20px;
+}
+
+.step-label {
+  margin-top: 5px;
+  font-size: 1rem;
+  color: #333;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.7);
   }
-  
-  .appointment-details h4 {
-    margin-bottom: 15px;
+  70% {
+    box-shadow: 0 0 0 15px rgba(0, 123, 255, 0);
   }
-  
-  .appointment-details p {
-    font-size: 1rem;
-    margin-bottom: 10px;
-    display: flex;
-    align-items: center;
+  100% {
+    box-shadow: 0 0 0 0 rgba(0, 123, 255, 0);
   }
-  
-  .appointment-details .font-gray {
-    color: #6c757d; /* Bootstrap's secondary text color */
-  }
-  
+}
+
+.appointment-details {
+  margin-top: 10px;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 5px;
+}
+
+.appointment-details h4 {
+  margin-bottom: 15px;
+}
+
+.appointment-details p {
+  font-size: 1rem;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+}
+
+.appointment-details .font-gray {
+  color: #6c757d;
+}
+
+.step-item:not(:last-child) {
+  margin-bottom: 20px;
+}
+
+.step-item.active .step-circle,
+.step-item.completed .step-circle {
+  background-color: #007bff;
+  color: #fff;
+}
+
+/* Line should turn blue for active/completed steps */
+.step-item.active .step-line,
+.step-item.completed .step-line {
+  background-color: #007bff;
+}

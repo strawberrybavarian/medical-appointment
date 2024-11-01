@@ -53,8 +53,14 @@ function MedSecMain() {
   }, [location.search]);
   return (
     <>
-      <MedSecNavbar msid={userId} /> 
-      <Container fluid style={{ overflowY: 'auto', height: 'calc(100vh - 100px)', width: '100%', paddingBottom: '1.5rem' }}>
+    
+      <Container
+        className="cont-fluid-no-gutter"
+        fluid
+        style={{ overflowY: 'scroll', height: '100vh'}}
+      >
+
+<MedSecNavbar msid={userId} /> 
         
         <div className='maincolor-container'>
           <div className='content-area'>

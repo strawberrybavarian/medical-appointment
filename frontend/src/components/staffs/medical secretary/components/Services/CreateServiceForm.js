@@ -1,10 +1,11 @@
+// CreateServiceForm.js
 import React, { useState, useEffect } from "react";
 import { Form, Button, Alert, Modal } from "react-bootstrap";
 import Select from "react-select";
 import axios from "axios";
 import { ip } from "../../../../../ContentExport";
 
-function CreateServiceForm({ show, onClose }) {
+function CreateServiceForm({ show, onClose, patientId, patientName }) {
   const [serviceId, setServiceId] = useState(null); // Selected service
   const [services, setServices] = useState([]); // List of services
   const [selectedPatient, setSelectedPatient] = useState(null);
@@ -16,6 +17,7 @@ function CreateServiceForm({ show, onClose }) {
 
   // Fetch services and patients
   useEffect(() => {
+    // Fetch services
     axios
       .get(`${ip.address}/api/admin/getall/services`)
       .then((res) => {
@@ -27,17 +29,26 @@ function CreateServiceForm({ show, onClose }) {
       })
       .catch((err) => console.error(err));
 
+    // Fetch patients
     axios
       .get(`${ip.address}/api/patient/api/allpatient`)
       .then((res) => {
         const patientOptions = res.data.thePatient.map((patient) => ({
           value: patient._id,
-          label: `${patient.patient_firstName} ${patient.patient_lastName}`,
+          label: `${patient.patient_firstName} ${patient.patient_middleInitial || ''} ${patient.patient_lastName}`,
         }));
         setPatients(patientOptions);
+
+        // If patientId is provided, set selectedPatient
+        if (patientId) {
+          const matchedPatient = patientOptions.find((p) => p.value === patientId);
+          if (matchedPatient) {
+            setSelectedPatient(matchedPatient);
+          }
+        }
       })
       .catch((err) => console.error(err));
-  }, []);
+  }, [patientId]);
 
   const openConfirmationModal = () => {
     if (!serviceId || !selectedPatient || !date || !reason) {
@@ -135,18 +146,34 @@ function CreateServiceForm({ show, onClose }) {
         </Modal.Footer>
       </Modal>
 
-      <Modal show={showConfirmation} onHide={() => setShowConfirmation(false)} centered>
+      <Modal
+        show={showConfirmation}
+        onHide={() => setShowConfirmation(false)}
+        centered
+      >
         <Modal.Header closeButton>
           <Modal.Title>Confirm Appointment</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <p><strong>Service:</strong> {serviceId?.label}</p>
-          <p><strong>Date:</strong> {date}</p>
-          <p><strong>Primary Concern:</strong> {reason}</p>
+          <p>
+            <strong>Service:</strong> {serviceId?.label}
+          </p>
+          <p>
+            <strong>Patient:</strong> {selectedPatient?.label}
+          </p>
+          <p>
+            <strong>Date:</strong> {date}
+          </p>
+          <p>
+            <strong>Primary Concern:</strong> {reason}
+          </p>
           <p>Do you want to confirm this appointment?</p>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowConfirmation(false)}>
+          <Button
+            variant="secondary"
+            onClick={() => setShowConfirmation(false)}
+          >
             Cancel
           </Button>
           <Button variant="primary" onClick={confirmAppointment}>
