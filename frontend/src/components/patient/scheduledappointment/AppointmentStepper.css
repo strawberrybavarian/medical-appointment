@@ -81,10 +81,11 @@
 }
 
 .appointment-details {
+  width: 100%;
   margin-top: 10px;
-  padding: 15px;
-  background-color: #f8f9fa;
-  border-radius: 5px;
+  padding: 1.5rem;
+  background-color: #ffffff;
+  border-radius: 10px;
 }
 
 .appointment-details h4 {
@@ -116,4 +117,18 @@
 .step-item.active .step-line,
 .step-item.completed .step-line {
   background-color: #007bff;
+}
+
+.step-item.active .step-circle {
+  background-color: #007bff;
+  color: #fff;
+  animation: pulse 1.5s infinite;
+}
+
+
+
+
+.step-item.active .step-line {
+  background: linear-gradient(to bottom, #007bff 50%, #ddd 50%);
+  height: calc(100% + 330px); /* Adjust line height if needed */
 }

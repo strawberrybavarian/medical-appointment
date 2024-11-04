@@ -6,7 +6,7 @@ import {
   PersonFill,
   PencilFill,
 } from 'react-bootstrap-icons';
-
+import { Row, Col } from 'react-bootstrap';
 const statusSteps = [
   'Pending',
   'Scheduled',
@@ -56,29 +56,33 @@ function AppointmentStepper({ currentStatus, latestAppointment }) {
 
             {/* Display appointment details below the active step */}
             {index === activeStep && latestAppointment && (
-              <div className="appointment-details">
+              <div className="appointment-details shadow-sm">
                 <h4>Appointment Details</h4>
-                <p>
-                  <ClockFill
-                    className="font-gray"
-                    size={20}
-                    style={{ marginRight: '0.7rem' }}
-                  />
-                  {formatDate(latestAppointment.date)} at{' '}
-                  {latestAppointment.time}
-                </p>
-                <p>
-                  <PersonFill
-                    className="font-gray"
-                    size={20}
-                    style={{ marginRight: '0.7rem' }}
-                  />
-                  Doctor:{' '}
-                  {latestAppointment.doctor
-                    ? `Dr. ${latestAppointment.doctor.dr_firstName} ${latestAppointment.doctor.dr_middleInitial}. ${latestAppointment.doctor.dr_lastName}`
-                    : 'Not assigned yet'}
-                </p>
-                <p>
+                <Row>
+                  <Col>
+                      <p>
+                      <ClockFill
+                        className="font-gray"
+                        size={20}
+                        style={{ marginRight: '0.7rem' }}
+                      />
+                      {formatDate(latestAppointment.date)} at{' '}
+                      {latestAppointment.time}
+                    </p>
+
+                    <p>
+                    <PersonFill
+                      className="font-gray"
+                      size={20}
+                      style={{ marginRight: '0.7rem' }}
+                    />
+                    Doctor:{' '}
+                    {latestAppointment.doctor
+                      ? `Dr. ${latestAppointment.doctor.dr_firstName} ${latestAppointment.doctor.dr_middleInitial}. ${latestAppointment.doctor.dr_lastName}`
+                      : 'Not assigned yet'}
+                  </p>
+                  </Col>
+                  <p>
                   <PencilFill
                     className="font-gray"
                     size={20}
@@ -97,13 +101,19 @@ function AppointmentStepper({ currentStatus, latestAppointment }) {
                   Category:{' '}
                   {latestAppointment.appointment_type?.category || 'N/A'}
                 </p>
+
+                  <Col>
+                  
+                  </Col>
+                </Row>
+                
+              
+
                 <p>
                   Follow-up: {latestAppointment.followUp ? 'Yes' : 'No'}
                 </p>
               </div>
             )}
-
-            
           </div>
         </div>
       ))}

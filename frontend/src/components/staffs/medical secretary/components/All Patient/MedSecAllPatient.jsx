@@ -94,7 +94,7 @@ function MedSecAllPatient() {
           onChange={(e) => setSearchTerm(e.target.value)}
         />
       </Form.Group>
-      <Table striped bordered hover responsive>
+      <Table responsive striped variant="light" className="mt-3">
         <thead>
           <tr>
             <th>Patient</th>
