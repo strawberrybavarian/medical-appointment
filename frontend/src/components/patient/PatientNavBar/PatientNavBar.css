@@ -112,11 +112,12 @@
 
 
 .notification-overlay {
-   
-    height: 100vh; /* Set a max height for the overlay */
-    width: 400px;
-    overflow-y: auto; /* Make the overlay scrollable */
     position: absolute;
+    top: 100%; /* Position the overlay below the bell icon */
+    right: 0; /* Align the overlay's right edge with the parent element */
+    width: 400px;
+    max-height: 80vh; /* Adjust as needed */
+    overflow-y: auto; /* Make the overlay scrollable */
     background: white;
     box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
     padding: 10px;

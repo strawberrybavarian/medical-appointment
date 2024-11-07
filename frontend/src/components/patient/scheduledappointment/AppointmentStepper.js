@@ -7,6 +7,7 @@ import {
   PencilFill,
 } from 'react-bootstrap-icons';
 import { Row, Col } from 'react-bootstrap';
+
 const statusSteps = [
   'Pending',
   'Scheduled',
@@ -31,6 +32,14 @@ function AppointmentStepper({ currentStatus, latestAppointment }) {
     return `${dayOfWeek}, ${month} ${day}, ${year}`;
   };
 
+  // Extract appointment type, handling both object and array cases
+  const getAppointmentType = () => {
+    if (Array.isArray(latestAppointment.appointment_type)) {
+      return latestAppointment.appointment_type[0]?.appointment_type || 'N/A';
+    }
+    return latestAppointment.appointment_type?.appointment_type || 'N/A';
+  };
+
   return (
     <div className="stepper-container">
       {statusSteps.map((status, index) => (
@@ -48,19 +57,18 @@ function AppointmentStepper({ currentStatus, latestAppointment }) {
         >
           <div className="step-marker">
             <div className="step-circle">{index + 1}</div>
-            {/* Render the line except for the last step */}
             {index < statusSteps.length - 1 && <div className="step-line" />}
           </div>
           <div className="step-content">
             <p className="step-label">{status}</p>
 
-            {/* Display appointment details below the active step */}
             {index === activeStep && latestAppointment && (
               <div className="appointment-details shadow-sm">
                 <h4>Appointment Details</h4>
+                <p> ID : {latestAppointment.appointment_ID}</p>
                 <Row>
                   <Col>
-                      <p>
+                    <p>
                       <ClockFill
                         className="font-gray"
                         size={20}
@@ -69,49 +77,30 @@ function AppointmentStepper({ currentStatus, latestAppointment }) {
                       {formatDate(latestAppointment.date)} at{' '}
                       {latestAppointment.time}
                     </p>
+                    <p>
+                      <PersonFill
+                        className="font-gray"
+                        size={20}
+                        style={{ marginRight: '0.7rem' }}
+                      />
+                      Doctor:{' '}
+                      {latestAppointment.doctor
+                        ? `Dr. ${latestAppointment.doctor.dr_firstName} ${latestAppointment.doctor.dr_middleInitial}. ${latestAppointment.doctor.dr_lastName}`
+                        : 'Not assigned yet'}
+                    </p>
 
                     <p>
-                    <PersonFill
-                      className="font-gray"
-                      size={20}
-                      style={{ marginRight: '0.7rem' }}
-                    />
-                    Doctor:{' '}
-                    {latestAppointment.doctor
-                      ? `Dr. ${latestAppointment.doctor.dr_firstName} ${latestAppointment.doctor.dr_middleInitial}. ${latestAppointment.doctor.dr_lastName}`
-                      : 'Not assigned yet'}
-                  </p>
+                      <PencilFill
+                        className="font-gray"
+                        size={20}
+                        style={{ marginRight: '0.7rem' }}
+                      />
+                      Appointment Type: {getAppointmentType()}
+                    </p>
                   </Col>
-                  <p>
-                  <PencilFill
-                    className="font-gray"
-                    size={20}
-                    style={{ marginRight: '0.7rem' }}
-                  />
-                  Appointment Type:{' '}
-                  {latestAppointment.appointment_type?.appointment_type ||
-                    'N/A'}
-                </p>
-                <p>
-                  <PeopleFill
-                    className="font-gray"
-                    size={20}
-                    style={{ marginRight: '0.7rem' }}
-                  />
-                  Category:{' '}
-                  {latestAppointment.appointment_type?.category || 'N/A'}
-                </p>
-
-                  <Col>
-                  
-                  </Col>
+                 
                 </Row>
-                
-              
-
-                <p>
-                  Follow-up: {latestAppointment.followUp ? 'Yes' : 'No'}
-                </p>
+                <p>Follow-up: {latestAppointment.followUp ? 'Yes' : 'No'}</p>
               </div>
             )}
           </div>

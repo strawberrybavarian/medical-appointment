@@ -7,7 +7,7 @@ import UpdatePatientImageModal from './UpdatePatientImageModal';  // Import the 
 import './PatientInformation.css';
 import * as Icon from "react-bootstrap-icons";
 import { ip } from '../../../../ContentExport';
-
+import Footer from '../../../Footer';
 function PatientInformation({ pid }) {
   const [thePatient, setThePatient] = useState();
   const [theName, setTheName] = useState("");
@@ -90,82 +90,94 @@ function PatientInformation({ pid }) {
 
   return (
     <>
-      <div style={{ width: '100%', height: '100vh' }}>
-        <Container className="mt-4">
-       
-            <div className="p-3">
-              <h3 className="m-0">Account Details</h3>
-              <p className="m-0">Manage your Profile</p>
-              <hr />
-            </div>
 
-            <Container>
-            
-              <div className='pi-container2 d-flex align-items-center shadow-sm mb-4'> 
-                <img src={`${ip.address}/${image}`} alt="Doctor" className="ai-image" />
-                  <div style={{marginLeft: '1rem'}} className="d-flex align-items-center justify-content-between w-100">
-                    <div>
-                      <h4 className="m-0">{theName}</h4>
-                      <p style={{fontSize: '15px'}}>Patient</p>
-                    </div>
-
-                    <div>
-                      <Button  onClick={() => setShowImageModal(true)}>Upload Image<Icon.Upload style={{marginLeft:'0.4rem'}}/></Button>
-                    </div>
-                  </div>
-              </div>
-              
-
-              <Form className='pi-container2 shadow-sm '>
-                <div className="justify-content-end">
-                  <Row>
-                    <Form.Group as={Col} controlId="firstName">
-                      <Form.Label>First Name:</Form.Label>
-                      <Form.Control value={theName} disabled className="form-picontrol" />
-                    </Form.Group>
-                    <Form.Group as={Col} controlId="lastName">
-                      <Form.Label>Last Name:</Form.Label>
-                      <Form.Control value={theLastName} disabled className="form-picontrol" />
-                    </Form.Group>
-                    <Form.Group as={Col} controlId="middleInitial">
-                      <Form.Label>Middle Initial:</Form.Label>
-                      <Form.Control value={theMI} disabled className="form-picontrol" />
-                    </Form.Group>
-                  </Row>
-                  <Row>
-                    <Form.Group as={Col} controlId="email">
-                      <Form.Label>Email:</Form.Label>
-                      <Form.Control value={maskEmail(email)} disabled className="form-picontrol" />
-                    </Form.Group>
-                  </Row>
-                  <Row>
-                    <Form.Group as={Col} controlId="dob">
-                      <Form.Label>Birthdate:</Form.Label>
-                      <Form.Control className="form-picontrol" value={new Date(dob).toLocaleDateString()} disabled />
-                    </Form.Group>
-                    <Form.Group as={Col} controlId="contactNumber">
-                      <Form.Label>Contact Number:</Form.Label>
-                      <Form.Control className="form-picontrol" value={cnumber} disabled />
-                    </Form.Group>
-                  </Row>
-                  <Row>
-                    <Col className="text-center mt-3">
-                      {/* Button to open update modal */}
-                      <Button variant="primary" onClick={handleShowInfoModal}>
-                        Edit Information
-                      </Button>
-                      {/* Change Password link */}
-                      <Button variant="link" onClick={() => setShowPasswordModal(true)}>
-                        Change Password
-                      </Button>
-                    </Col>
-                  </Row>
-                </div>
-              </Form>
-            </Container>
+      <Container fluid className="maincolor-container" style={{height: '100vh'}}>
+        <div className="content-area p-0 m-0">
         
+       
+       <div className="p-3">
+         <h3 className="m-0">Account Details</h3>
+         <p className="m-0">Manage your Profile</p>
+         <hr />
+       </div>
+
+        <Container>
+        
+          <div className='pi-container2 d-flex align-items-center shadow-sm mb-4'> 
+            <img src={`${ip.address}/${image}`} alt="Doctor" className="ai-image" />
+              <div style={{marginLeft: '1rem'}} className="d-flex align-items-center justify-content-between w-100">
+                <div>
+                  <h4 className="m-0">{theName}</h4>
+                  <p style={{fontSize: '15px'}}>Patient</p>
+                </div>
+
+                <div>
+                  <Button  onClick={() => setShowImageModal(true)}>Upload Image<Icon.Upload style={{marginLeft:'0.4rem'}}/></Button>
+                </div>
+              </div>
+          </div>
+         
+
+         <Form className='pi-container2 shadow-sm mb-5 '>
+           <div className="justify-content-end">
+             <Row>
+               <Form.Group as={Col} controlId="firstName">
+                 <Form.Label>First Name:</Form.Label>
+                 <Form.Control value={theName} disabled className="form-picontrol" />
+               </Form.Group>
+               <Form.Group as={Col} controlId="lastName">
+                 <Form.Label>Last Name:</Form.Label>
+                 <Form.Control value={theLastName} disabled className="form-picontrol" />
+               </Form.Group>
+               <Form.Group as={Col} controlId="middleInitial">
+                 <Form.Label>Middle Initial:</Form.Label>
+                 <Form.Control value={theMI} disabled className="form-picontrol" />
+               </Form.Group>
+             </Row>
+             <Row>
+               <Form.Group as={Col} controlId="email">
+                 <Form.Label>Email:</Form.Label>
+                 <Form.Control value={maskEmail(email)} disabled className="form-picontrol" />
+               </Form.Group>
+             </Row>
+             <Row>
+               <Form.Group as={Col} controlId="dob">
+                 <Form.Label>Birthdate:</Form.Label>
+                 <Form.Control className="form-picontrol" value={new Date(dob).toLocaleDateString()} disabled />
+               </Form.Group>
+               <Form.Group as={Col} controlId="contactNumber">
+                 <Form.Label>Contact Number:</Form.Label>
+                 <Form.Control className="form-picontrol" value={cnumber} disabled />
+               </Form.Group>
+             </Row>
+             <Row>
+               <Col className="text-center mt-3">
+                 {/* Button to open update modal */}
+                 <Button variant="primary" onClick={handleShowInfoModal}>
+                   Edit Information
+                 </Button>
+                 {/* Change Password link */}
+                 <Button variant="link" onClick={() => setShowPasswordModal(true)}>
+                   Change Password
+                 </Button>
+               </Col>
+             </Row>
+           </div>
+         </Form>
+
+
+
+       
         </Container>
-      </div>
+
+        </div>
+
+
+
+         
+      </Container>
+
+
 
       {/* Render the ChangePasswordModal component */}
       <ChangePasswordModal
