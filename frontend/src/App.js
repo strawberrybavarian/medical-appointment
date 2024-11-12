@@ -42,8 +42,7 @@ import DoctorScheduleManagement from './components/staffs/medical secretary/comp
 import MedSecMainDashboard from './components/staffs/medical secretary/components/Dashboard/MedSecMainDashboard';
 import ManageDoctorMain from './components/staffs/medical secretary/components/Manage Doctors/ManageDoctorMain';
 import AllDoctors from './components/staffs/medical secretary/components/Manage Doctors/AllDoctors';
-
-
+import MedSecAllPatient from './components/staffs/medical secretary/components/All Patient/MedSecAllPatient';
 
 
 //Admin
@@ -64,6 +63,7 @@ import ResetPassword from './components/login/ResetPassword';
 import { PatientProvider } from './components/patient/PatientContext';
 import { DoctorProvider } from './components/practitioner/DoctorContext';
 import AdminNewsManagement from './components/staffs/admin/news/AdminNewsManagement';
+
 function App() {
 
   return (
@@ -108,6 +108,7 @@ function App() {
           <Route path={"/medsec/doctors"} element={<AllDoctors />}/>
           <Route path={"/medsec/doctors/schedule"} element={<ManageDoctorMain />} />
           <Route path={"/medsec/account"} element={<MedSecAccInfo />} />
+          <Route path={"/medsec/patient"} element={<MedSecAllPatient />} />
         
 
 

@@ -25,7 +25,7 @@ function PatientInformationSidebar({pid}) {
     };
 
     return (
-        <div className='pisb-sidebarcontainer'>
+        <div className='pisb-sidebarcontainer' style={{position:'sticky'}}>
             <CDBSidebar className='pisb-sidebar' textColor="#fff" backgroundColor="#333" minWidth="250px">
                 <CDBSidebarHeader className="pisb-newheader head-div">
                 </CDBSidebarHeader>
@@ -69,18 +69,17 @@ function PatientInformationSidebar({pid}) {
             </CDBSidebar>
 
             
-            <Container fluid className='cont-fluid-no-gutter' style={{overflowY: 'scroll', height: '100vh', paddingBottom: '100px', paddingTop: '1.5rem'}}>
+            <Container fluid className='cont-fluid-no-gutter'>
                 <div>
                     <div className="content-area mb-5">
                         {activeTab === 'profile' && <PatientInformation pid={pid} />}
                         {activeTab === 'records' && <PatientMedicalRecord pid={pid} />}
                         {activeTab === 'twofactor' && <TwoFactorAuth pid={pid} />}
                         {activeTab === 'audit' && <AuditPatient pid={pid} />}
+
                     </div>
 
-                <Container fluid className="footer-container cont-fluid-no-gutter w-100">
-                        <Footer />
-                </Container>
+            
                 </div>
             </Container>
 

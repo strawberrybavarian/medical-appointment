@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Navbar, Nav, Container, Button, Dropdown } from "react-bootstrap";
 import "./Landing.css";
+import "./navbar.css";
 import { image } from "../../ContentExport";
 import LabResultModal from "./LabResultModal"; // Import the LabResultModal component
 
@@ -42,7 +43,7 @@ function NavigationalBar({ scrollToServices, scrollToAbout, scrollToNews }) {
 
   return (
     <>
-      <Navbar bg="light" expand="lg" className="nav-bar-no-color fixed-top">
+      <Navbar bg="light" expand="lg" className="nav-bar-no-color navbar-fixed-top fixed-top px-5 py-0">
         <Container>
           {/* Logo */}
           <Navbar.Brand href="#hero">
@@ -93,7 +94,7 @@ function NavigationalBar({ scrollToServices, scrollToAbout, scrollToNews }) {
               </Dropdown>
             </Nav>
           </Navbar.Collapse>
-        </Container>
+          </Container>
       </Navbar>
 
       {/* LabResultModal */}

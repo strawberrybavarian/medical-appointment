@@ -10,7 +10,7 @@ mongoose.connect('mongodb://127.0.0.1:27017/PIMSdb',
 
 mongoose.connection.once('open', async () => {
   try {
-    // Check if 'patients' collection exists
+
     const collections = await mongoose.connection.db.listCollections().toArray();
     const patientsCollectionExists = collections.some(col => col.name === 'patients');
 
@@ -33,7 +33,6 @@ mongoose.connection.once('open', async () => {
       console.log('Patients collection does not exist. Cannot create or drop indexes.');
     }
 
-    // Check if 'appointments' collection exists
     const appointmentsCollectionExists = collections.some(col => col.name === 'appointments');
 
     if (appointmentsCollectionExists) {

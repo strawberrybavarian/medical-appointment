@@ -10,7 +10,7 @@ const Audit = require('../audit/audit_model');
 const Admin = require('../admin/admin_model');
 const Service = require('../services/service_model');
 const Doctor = require('../doctor/doctor_model');
-
+const socket = require('../socket'); // Import the socket module
 
 const updateFollowUpStatus = async (req, res) => {
   const appointmentId = req.params.id;
@@ -70,8 +70,8 @@ const createAppointment = async (req, res) => {
     const { doctor, date, time, reason, medium, appointment_type } = req.body;
     const patientId = req.params.uid;
 
-    if (!date || !reason) {
-      return res.status(400).json({ message: 'Date and Primary Concern are required.' });
+    if (!date || !time || !reason) {
+      return res.status(400).json({ message: 'Date, Time, and Primary Concern are required.' });
     }
 
     const selectedDate = new Date(date);
@@ -82,6 +82,19 @@ const createAppointment = async (req, res) => {
       return res.status(400).json({ message: 'Cannot book an appointment in the past.' });
     }
 
+    // Check if the patient already has an active appointment
+    const existingAppointment = await Appointment.findOne({
+      patient: patientId,
+      status: { $nin: ['Cancelled', 'Completed'] }, // Exclude cancelled and completed appointments
+    });
+
+    if (existingAppointment) {
+      return res.status(400).json({
+        message: 'You already have an active appointment. Please complete or cancel it before booking a new one.'
+      });
+    }
+
+    // Existing code remains intact
     const [patientData, doctorData] = await Promise.all([
       Patient.findById(patientId).select('patient_firstName patient_lastName'),
       Doctors.findById(doctor).select('dr_firstName dr_lastName availability bookedSlots'),
@@ -90,17 +103,8 @@ const createAppointment = async (req, res) => {
     if (!patientData) return res.status(404).json({ message: 'Patient not found.' });
     if (!doctorData) return res.status(404).json({ message: 'Doctor not found.' });
 
-    const dayOfWeek = selectedDate.toLocaleString('en-US', { weekday: 'long' }).toLowerCase();
-    const availability = doctorData.availability[dayOfWeek];
-
-    // Convert time to 24-hour format
+    // Convert time to 24-hour format (Assuming you have a function for this)
     const [startTime, endTime] = time.split(' - ').map(convertTo24HourFormat);
-
-    const timePeriod = parseInt(startTime.split(':')[0]) < 12 ? 'morning' : 'afternoon';
-
-    if (!availability || !availability[timePeriod]?.available) {
-      return res.status(400).json({ message: `No available slots for ${timePeriod} on ${dayOfWeek}.` });
-    }
 
     // Default to 'Consultation' if no appointment_type is provided
     const finalAppointmentType = appointment_type?.appointment_type || "Consultation";
@@ -112,7 +116,7 @@ const createAppointment = async (req, res) => {
       time: `${startTime} - ${endTime}`, // Save time in 24-hour format
       reason,
       medium,
-      appointment_type: { appointment_type: finalAppointmentType, category: "General" }, // Use the final appointment type
+      appointment_type: { appointment_type: finalAppointmentType, category: "General" },
       status: 'Pending', // Set status to 'Pending'
     });
 
@@ -123,12 +127,201 @@ const createAppointment = async (req, res) => {
       Doctors.findByIdAndUpdate(doctor, { $push: { dr_appointments: savedAppointment._id } }),
     ]);
 
+    // Send Notifications to Medical Secretaries and Admins
+    const [medicalSecretaries, admins] = await Promise.all([
+      MedicalSecretary.find({}, '_id'),
+      Admin.find({}, '_id'),
+    ]);
+
+    const recipients = [...medicalSecretaries.map(ms => ms._id), ...admins.map(ad => ad._id)];
+
+    const notificationMessage = `New pending appointment created by ${patientData.patient_firstName} ${patientData.patient_lastName}.`;
+
+    const notification = new Notification({
+      message: notificationMessage,
+      receiver: recipients,
+      receiverModel: 'Admin', // Adjust based on your schema
+      isRead: false,
+      link: `/appointments/${savedAppointment._id}`,
+      type: 'Appointment',
+      recipientType: 'Admin', // Adjust if needed
+    });
+
+    await notification.save();
+
+    // Add notification to each recipient's notifications array
+    await Promise.all(
+      medicalSecretaries.map(ms => {
+        return MedicalSecretary.findByIdAndUpdate(ms._id, { $push: { notifications: notification._id } });
+      })
+    );
+
+    await Promise.all(
+      admins.map(ad => {
+        return Admin.findByIdAndUpdate(ad._id, { $push: { notifications: notification._id } });
+      })
+    );
+
+    // Emit Socket.IO event to Medical Secretaries and Admins
+    const io = socket.getIO();
+    const clients = socket.clients;
+
+    if (io && clients) {
+      for (let userId in clients) {
+        const userSocket = clients[userId];
+        const userRole = userSocket.userRole;
+
+        if (userRole === 'Medical Secretary' || userRole === 'Admin') {
+          userSocket.emit('newAppointment', {
+            message: notificationMessage,
+            appointmentId: savedAppointment._id,
+            patientName: `${patientData.patient_firstName} ${patientData.patient_lastName}`,
+            doctorName: `${doctorData.dr_firstName} ${doctorData.dr_lastName}`,
+            date: savedAppointment.date,
+            time: savedAppointment.time,
+            link: `/appointments/${savedAppointment._id}`,
+          });
+        }
+      }
+    }
+
     res.status(201).json(savedAppointment);
   } catch (error) {
     console.error('Error creating appointment:', error);
     res.status(500).json({ message: `Failed to create appointment: ${error.message}` });
   }
 };
+
+
+const createServiceAppointment = async (req, res) => {
+  try {
+    const { date, reason, appointment_type, serviceId } = req.body;
+    const patientId = req.params.uid;
+
+    // Validate essential data
+    if (!date || !reason) {
+      return res.status(400).json({ message: 'Date and Primary Concern are required' });
+    }
+
+    // **Check if the patient already has an active appointment**
+    const existingAppointment = await Appointment.findOne({
+      patient: patientId,
+      status: { $nin: ['Cancelled', 'Completed'] },
+    });
+
+    if (existingAppointment) {
+      return res.status(400).json({
+        message: 'You already have an active appointment. Please complete or cancel it before booking a new one.',
+      });
+    }
+
+    // Existing code remains intact
+    const patientData = await Patient.findById(patientId).select('patient_firstName patient_lastName');
+    if (!patientData) {
+      return res.status(404).json({ message: 'Patient not found' });
+    }
+
+    const serviceData = await Service.findById(serviceId).select('name category availability');
+    if (!serviceData) {
+      return res.status(404).json({ message: 'Service not found' });
+    }
+
+    // Check service availability
+    if (serviceData.availability === 'Not Available' || serviceData.availability === 'Coming Soon') {
+      return res.status(400).json({ message: `The selected service (${serviceData.name}) is currently not available.` });
+    }
+
+    const newAppointment = new Appointment({
+      patient: new mongoose.Types.ObjectId(patientId),
+      service: new mongoose.Types.ObjectId(serviceId),
+      date,
+      reason,
+      appointment_type: {
+        appointment_type: serviceData.name,
+        category: serviceData.category,
+      },
+      status: 'Pending',
+    });
+
+    const savedAppointment = await newAppointment.save();
+
+    await Patient.findByIdAndUpdate(patientId, { $push: { patient_appointments: savedAppointment._id } });
+
+    // Audit log for the created service appointment
+    const patientFullName = `${patientData.patient_firstName} ${patientData.patient_lastName}`;
+    const auditData = {
+      user: patientId,
+      userType: 'Patient',
+      action: 'Create Service Appointment',
+      description: `Appointment created for patient: ${patientFullName} for service: ${serviceData.name} on ${date}. Reason: ${reason}`,
+      ipAddress: req.ip,
+      userAgent: req.get('User-Agent'),
+    };
+
+    const audit = new Audit(auditData);
+    await audit.save();
+
+    await Patient.findByIdAndUpdate(patientId, { $push: { audits: audit._id } });
+
+    // **Send Notifications to Medical Secretaries and Admins**
+    const [medicalSecretaries, admins] = await Promise.all([
+      MedicalSecretary.find({}, '_id'),
+      Admin.find({}, '_id'),
+    ]);
+
+    const recipients = [...medicalSecretaries.map((ms) => ms._id), ...admins.map((ad) => ad._id)];
+
+    const notificationMessage = `New service appointment created by ${patientData.patient_firstName} ${patientData.patient_lastName} for ${serviceData.name}.`;
+
+    const notification = new Notification({
+      message: notificationMessage,
+      recipient: recipients,
+      recipientType: 'Admin', // Adjust if needed
+      type: 'Appointment',
+    });
+
+    await notification.save();
+
+    // Add notification to each recipient's notifications array
+    await Promise.all(
+      medicalSecretaries.map((ms) => {
+        return MedicalSecretary.findByIdAndUpdate(ms._id, { $push: { notifications: notification._id } });
+      })
+    );
+
+    await Promise.all(
+      admins.map((ad) => {
+        return Admin.findByIdAndUpdate(ad._id, { $push: { notifications: notification._id } });
+      })
+    );
+
+    // Emit Socket.IO event to connected Medical Secretaries and Admins
+    const io = socket.getIO();
+    const clients = socket.clients;
+
+    if (io && clients) {
+      for (let userId in clients) {
+        const userSocket = clients[userId];
+        const userRole = userSocket.userRole;
+
+        if (userRole === 'Medical Secretary' || userRole === 'Admin') {
+          userSocket.emit('newAppointment', {
+            message: notificationMessage,
+            appointmentId: savedAppointment._id,
+            link: `/appointments/${savedAppointment._id}`,
+          });
+        }
+      }
+    }
+
+    res.status(201).json(savedAppointment);
+  } catch (error) {
+    console.error('Error creating service appointment:', error);
+    res.status(500).json({ message: `Failed to create service appointment: ${error.message}` });
+  }
+};
+
+
 
 
 // Utility function to convert 12-hour time to 24-hour format
@@ -209,118 +402,92 @@ const updateAppointmentStatus = async (req, res) => {
     const { status } = req.body;
     const appointmentId = req.params.id;
 
-    console.log(`Received request to update appointment status to: ${status}`);
-
     // Validate status
-    const validStatuses = ['Pending', 'Scheduled', 'Completed', 'Cancelled', 'Ongoing', 'To-send', 'For Payment'];
+    const validStatuses = ['Pending', 'Scheduled', 'Completed', 'Cancelled', 'Ongoing', 'To-send', 'For Payment', 'Upcoming'];
     if (!validStatuses.includes(status)) {
-      console.error(`Invalid status: ${status}`);
       return res.status(400).json({ message: 'Invalid status update.' });
     }
 
-    // Fetch the appointment with populated doctor data (if available)
-    const appointment = await Appointment.findById(appointmentId).populate('doctor', 'bookedSlots availability');
+    // Fetch the appointment with populated doctor and patient data
+    const appointment = await Appointment.findById(appointmentId)
+      .populate('doctor', 'dr_firstName dr_lastName bookedSlots availability')
+      .populate('patient', 'patient_firstName patient_lastName');
 
     if (!appointment) {
-      console.error('Appointment not found.');
       return res.status(404).json({ message: 'Appointment not found.' });
     }
 
-    console.log(`Fetched appointment: ${JSON.stringify(appointment, null, 2)}`);
+    const oldStatus = appointment.status;
+    appointment.status = status;
 
-    const { doctor, date, time } = appointment;
+    // Save appointment status update
+    await appointment.save();
 
-    // If no doctor is assigned, skip slot and availability logic
-    if (!doctor) {
-      console.warn('No doctor assigned to this appointment.');
+    const io = socket.getIO();
+    const clients = socket.clients;
 
-      // Just update the status without dealing with doctor availability or slots
-      const updatedAppointment = await Appointment.findByIdAndUpdate(
-        appointmentId,
-        { status },
-        { new: true }
-      );
-
-      console.log(`Updated appointment without doctor: ${JSON.stringify(updatedAppointment, null, 2)}`);
-      return res.status(200).json(updatedAppointment);
-    }
-
-    const [startTime] = time.split(' - ').map(convertTo24HourFormat);
-    const timePeriod = parseInt(startTime.split(':')[0]) < 12 ? 'morning' : 'afternoon';
-
-    console.log(`Time period determined as: ${timePeriod}`);
-
-    const dayOfWeek = new Date(date).toLocaleString('en-US', { weekday: 'long' }).toLowerCase();
-    console.log(`Day of the week: ${dayOfWeek}`);
-
-    const availability = doctor.availability?.[dayOfWeek]?.[timePeriod];
-    console.log(`Availability object for ${dayOfWeek} ${timePeriod}:`, availability);
-
-    if (!availability) {
-      console.error(`No availability found for ${dayOfWeek} ${timePeriod}.`);
-      return res.status(400).json({
-        message: `No available slots for ${timePeriod} on ${dayOfWeek}.`,
+    // Send Notification to Doctor if status becomes 'Scheduled' or 'Upcoming'
+    if ((status === 'Scheduled' || status === 'Upcoming') && appointment.doctor) {
+      const notificationMessage = `Appointment with ${appointment.patient.patient_firstName} ${appointment.patient.patient_lastName} is now ${status}.`;
+      const doctorNotification = new Notification({
+        message: notificationMessage,
+        receiver: appointment.doctor._id,
+        receiverModel: 'Doctor',
+        isRead: false,
+        link: `/appointments/${appointment._id}`,
+        type: 'StatusUpdate',
+        recipientType: 'Doctor',
       });
+      await doctorNotification.save();
+
+      // Add notification to doctor's notifications array
+      await Doctors.findByIdAndUpdate(appointment.doctor._id, { $push: { notifications: doctorNotification._id } });
+
+      // Emit socket.io event to Doctor
+      const doctorSocket = clients[appointment.doctor._id.toString()];
+      if (doctorSocket && doctorSocket.userRole === 'Doctor') {
+        doctorSocket.emit('appointmentStatusUpdate', {
+          message: notificationMessage,
+          appointmentId: appointment._id,
+          doctorId: appointment.doctor._id,
+          status: status,
+          link: `/appointments/${appointment._id}`,
+        });
+      }
     }
 
-    const maxPatients = availability.maxPatients;
-    console.log(`Max patients for ${dayOfWeek} ${timePeriod}: ${maxPatients}`);
-
-    if (maxPatients === undefined) {
-      console.error(`Max patients for ${dayOfWeek} ${timePeriod} is undefined.`);
-      return res.status(400).json({
-        message: `Doctor availability not properly configured.`,
+    // Send Notification to Patient if status changes
+    if (['Scheduled', 'Ongoing', 'Completed', 'Cancelled'].includes(status) && oldStatus !== status) {
+      // Include the appointment_ID in the notification message
+      const notificationMessage = `Your appointment ${appointment.appointment_ID || appointment._id} status has been updated to ${status}.`;
+      const patientNotification = new Notification({
+        message: notificationMessage,
+        receiver: appointment.patient._id,
+        receiverModel: 'Patient',
+        isRead: false,
+        link: `/myappointment`,
+        type: 'StatusUpdate',
+        recipientType: 'Patient',
       });
+      await patientNotification.save();
+
+      // Add notification to patient's notifications array
+      await Patient.findByIdAndUpdate(appointment.patient._id, { $push: { notifications: patientNotification._id } });
+
+      // Emit socket.io event to Patient
+      const patientSocket = clients[appointment.patient._id.toString()];
+      if (patientSocket && patientSocket.userRole === 'Patient') {
+        patientSocket.emit('appointmentStatusUpdate', {
+          message: notificationMessage,
+          appointmentId: appointment._id,
+          patientId: appointment.patient._id,
+          status: status,
+          link: `/myappointment`,
+        });
+      }
     }
 
-    const formattedDate = new Date(date).toISOString().split('T')[0];
-    const bookedSlot = doctor.bookedSlots.find(
-      (slot) => slot.date.toISOString().split('T')[0] === formattedDate
-    );
-
-    if (!bookedSlot) {
-      console.error(`No booked slot found for date: ${formattedDate}.`);
-      return res.status(400).json({
-        message: 'No booked slots found for the selected date.',
-      });
-    }
-
-    const currentCount = timePeriod === 'morning' ? bookedSlot.morning : bookedSlot.afternoon;
-    console.log(`Current count for ${timePeriod}: ${currentCount}`);
-
-    // Check if the slot is already full
-    if (status === 'Scheduled' && currentCount >= maxPatients) {
-      console.error(`Cannot schedule. ${timePeriod} slot is already full.`);
-      return res.status(400).json({
-        message: `No available slots for the ${timePeriod}. Please choose another time.`,
-      });
-    }
-
-    // Update the slot count based on the status change
-    if (status === 'Scheduled') {
-      if (timePeriod === 'morning') bookedSlot.morning += 1;
-      else bookedSlot.afternoon += 1;
-      console.log(`${timePeriod} slot count increased.`);
-    } else if (appointment.status === 'Scheduled' && status !== 'Scheduled') {
-      if (timePeriod === 'morning') bookedSlot.morning -= 1;
-      else bookedSlot.afternoon -= 1;
-      console.log(`${timePeriod} slot count rolled back.`);
-    }
-
-    // Save the updated doctor data
-    doctor.markModified('bookedSlots');
-    await doctor.save();
-    console.log('Doctor slot update saved.');
-
-    // Update the appointment status
-    const updatedAppointment = await Appointment.findByIdAndUpdate(
-      appointmentId,
-      { status },
-      { new: true }
-    );
-
-    console.log(`Updated appointment: ${JSON.stringify(updatedAppointment, null, 2)}`);
-    res.status(200).json(updatedAppointment);
+    res.status(200).json(appointment);
   } catch (error) {
     console.error('Error updating appointment status:', error);
     res.status(500).json({ message: `Failed to update status: ${error.message}` });
@@ -328,77 +495,7 @@ const updateAppointmentStatus = async (req, res) => {
 };
 
 
-const createServiceAppointment = async (req, res) => {
-  try {
-    const { date, reason, appointment_type, serviceId } = req.body;
-    const patientId = req.params.uid;
 
-    // Validate essential data
-    if (!date || !reason) {
-      return res.status(400).json({ message: 'Date and Primary Concern are required' });
-    }
-
-    // Fetch the patient's details (first and last name)
-    const patientData = await Patient.findById(patientId).select('patient_firstName patient_lastName');
-    if (!patientData) {
-      return res.status(404).json({ message: 'Patient not found' });
-    }
-
-    // Fetch the service details
-    const serviceData = await Service.findById(serviceId).select('name category availability');
-    if (!serviceData) {
-      return res.status(404).json({ message: 'Service not found' });
-    }
-
-    // Check service availability
-    if (serviceData.availability === "Not Available" || serviceData.availability === "Coming Soon") {
-      return res.status(400).json({ message: `The selected service (${serviceData.name}) is currently not available.` });
-    }
-
-    // Create a new appointment object without specific doctor or time
-    const newAppointment = new Appointment({
-      patient: new mongoose.Types.ObjectId(patientId),
-      service: new mongoose.Types.ObjectId(serviceId),
-      date,
-      reason,
-      appointment_type: {
-        appointment_type: serviceData.name,
-        category: serviceData.category
-      },
-      
-    });
-
-    // Save the new appointment
-    const savedAppointment = await newAppointment.save();
-
-    // Update the patient's appointments array
-    await Patient.findByIdAndUpdate(patientId, { $push: { patient_appointments: savedAppointment._id } });
-
-    // Audit log for the created service appointment
-    const patientFullName = `${patientData.patient_firstName} ${patientData.patient_lastName}`;
-    const auditData = {
-      user: patientId,
-      userType: 'Patient',
-      action: 'Create Service Appointment',
-      description: `Appointment created for patient: ${patientFullName} for service: ${serviceData.name} on ${date}. Reason: ${reason}`,
-      ipAddress: req.ip,
-      userAgent: req.get('User-Agent'),
-    };
-
-    const audit = new Audit(auditData);
-    await audit.save();
-
-    // Push the audit to the patient's audits array
-    await Patient.findByIdAndUpdate(patientId, { $push: { audits: audit._id } });
-
-    // Return the saved appointment as the response
-    res.status(201).json(savedAppointment);
-
-  } catch (error) {
-    console.error('Error creating service appointment:', error);
-    res.status(500).json({ message: `Failed to create service appointment: ${error.message}` });
-  }
-};
 const getAppointmentById = async (req, res) => {
   try {
     const appointmentId = req.params.id;
@@ -453,7 +550,20 @@ const updateAppointmentDetails = async (req, res) => {
       appointmentId,
       updateData,
       { new: true }
-    );
+    ).populate('patient', 'patient_firstName patient_lastName');
+
+    // **Send Notification to Patient about Appointment Update**
+    const notificationMessage = `Your appointment details have been updated. Please check the new details.`;
+    const patientNotification = new Notification({
+      message: notificationMessage,
+      recipient: [updatedAppointment.patient._id],
+      recipientType: 'Patient',
+      type: 'AppointmentUpdate',
+    });
+    await patientNotification.save();
+
+    // Optionally, add notification to patient's notifications array
+    await Patient.findByIdAndUpdate(updatedAppointment.patient._id, { $push: { notifications: patientNotification._id } });
 
     res.status(200).json(updatedAppointment);
   } catch (error) {
@@ -461,6 +571,7 @@ const updateAppointmentDetails = async (req, res) => {
     res.status(500).json({ message: `Failed to update appointment: ${error.message}` });
   }
 };
+
 const updatePatientAppointmentDetails = async (req, res) => {
   try {
     const { doctor, date, time, appointment_type, reason, findings, cancelReason } = req.body;
@@ -514,12 +625,37 @@ const updatePatientAppointmentDetails = async (req, res) => {
       await patient.save();
     }
 
+    // **Send Notifications**
+
+    // Notify Patient about the new follow-up appointment
+    const patientNotification = new Notification({
+      message: `Your follow-up appointment has been scheduled on ${date} at ${time}.`,
+      recipient: [oldAppointment.patient],
+      recipientType: 'Patient',
+      type: 'Appointment',
+    });
+    await patientNotification.save();
+
+    await Patient.findByIdAndUpdate(oldAppointment.patient, { $push: { notifications: patientNotification._id } });
+
+    // Notify Doctor about the new appointment
+    const doctorNotification = new Notification({
+      message: `New follow-up appointment scheduled with patient ID ${oldAppointment.patient}.`,
+      recipient: [doctor],
+      recipientType: 'Doctor',
+      type: 'Appointment',
+    });
+    await doctorNotification.save();
+
+    await Doctors.findByIdAndUpdate(doctor, { $push: { notifications: doctorNotification._id } });
+
     res.status(201).json(newAppointment);
   } catch (error) {
     console.error('Error scheduling follow-up appointment:', error.message);
     res.status(500).json({ message: `Failed to schedule follow-up appointment: ${error.message}` });
   }
 };
+
 
 
 

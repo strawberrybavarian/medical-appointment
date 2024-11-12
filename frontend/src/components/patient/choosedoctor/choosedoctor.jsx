@@ -133,9 +133,14 @@ function ChooseDoctor() {
             <Helmet>
                 <title>Molino Care | Patient</title>
             </Helmet>
-            <PatientNavBar pid={patient._id} />
+          
         
-            <Container  className='cont-fluid-no-gutter' fluid style={{overflowY: 'scroll', height: '100vh', paddingBottom: '100px', paddingTop: '1.5rem'}}>
+            <Container
+                className="cont-fluid-no-gutter"
+                fluid
+                style={{ overflowY: 'scroll', height: '100vh'}}
+            >
+                  <PatientNavBar pid={patient._id} />
                 <div className="maincolor-container">
                     <div className="content-area">
                         <Container className="announcement-container white-background align-items-center mt-3 mb-3 shadow-sm p-5">
@@ -282,9 +287,9 @@ function ChooseDoctor() {
 
 
                     </div>
-                        <div className="footer-container">
-                            <Footer />
-                        </div>
+                    <Container fluid className="footer-container cont-fluid-no-gutter">
+            <Footer />
+          </Container>
 
 
                 </div>

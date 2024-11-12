@@ -49,4 +49,6 @@ module.exports = app => {
     app.get('/api/news/api/getallnews/:id/:role', NewsController.getAllNewsByUserId);
     app.delete('/api/news/api/deletenews/:id/:newsId', NewsController.deleteNewsById);
     app.put('/api/news/api/updatenews/:userId/:newsId', upload.array('images'), NewsController.updateNewsAtIndex);
+    
+    app.put('/api/notifications/:id/read', NewsController.markAsRead);
 }

@@ -12,6 +12,8 @@ import { faChevronLeft } from '@fortawesome/free-solid-svg-icons'; // Import Che
 function ManageDoctorMain() {
     const location = useLocation();
     const { did, msid } = location.state || {}; // Get did and msid from location state
+  
+    
     const navigate = useNavigate(); // Initialize useNavigate for navigation
 
     console.log('Received did:', did);
@@ -21,7 +23,7 @@ function ManageDoctorMain() {
 
     // Back navigation handler
     const handleBackClick = () => {
-        navigate('/medsec/doctors', { state: { msid } }); 
+        navigate('/medsec/doctors', { state: { userId: msid } }); 
     };
 
     return (

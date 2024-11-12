@@ -199,8 +199,9 @@ const LogInUser = () => {
 
   return (
     <>
-      <ForLoginAndSignupNavbar />
-      <div
+         <ForLoginAndSignupNavbar />
+      <Container
+        fluid
         className="login-background cont-fluid-no-gutter"
         style={{
           backgroundImage: `url(${ip.address}/images/Background-Login1.png)`, // Dynamically load the image URL
@@ -214,8 +215,10 @@ const LogInUser = () => {
           width: '100%',
         }}
       >
+        
         {/* Scrollable container */}
         <div style={{ width: '100%', maxHeight: '100vh', overflowY: 'auto', display: 'flex', flexDirection: 'column', minHeight: '100vh'}}>
+    
           <Container className="login-container cont-fluid-no-gutter">
             <Row className="justify-content-start">
               <Col md={5}>
@@ -284,11 +287,11 @@ const LogInUser = () => {
               </Col>
             </Row>
           </Container>
-          <div className="footer-container" style={{paddingBottom:'5.2rem'}}>
+          <div className="footer-container" style={{paddingBottom:'4.6rem'}}>
             <Footer />
           </div>
         </div>
-      </div>
+      </Container>
 
       {/* Forgot Password Modal */}
       <Modal show={showForgotPasswordModal} onHide={() => setShowForgotPasswordModal(false)}>

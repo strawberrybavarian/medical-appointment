@@ -44,7 +44,9 @@ function MedSecNavbar({msid}) {
         navigate(`/medsec/createpatient/${msid}`)
     }
 
-
+    const onNavigatePatient = () => {
+        navigate(`/medsec/patient`, {state: {userId: msid, userName: name, role: roles}})
+    }
 
     const onNavigateDoctors = () => {
         navigate(`/medsec/doctors`, {state: {userId: msid, userName: name, role: roles}})
@@ -66,13 +68,11 @@ function MedSecNavbar({msid}) {
     
         <div className="landing-page">
             <div className="navbar-3">
-                <Navbar bg="light" expand="lg" className="pnb-navbar">
+                <Navbar bg="light" expand="lg" className="nav-bar-no-color navbar-fixed-top fixed-top px-5 py-0">
                 <Container fluid>
                            
                             <img className="molino-logo" src={image.logo} alt="Logo" />
-                            <div className='msn-container'>    
-                                <h6>Molino Polyclinic</h6>
-                            </div>
+                    
                            
          
            
@@ -86,6 +86,7 @@ function MedSecNavbar({msid}) {
                     
                           
                             <Nav.Link className="pnb-nav-link" onClick={onNavigateDoctors}>Manage Doctors </Nav.Link>
+                            <Nav.Link className="pnb-nav-link" onClick={onNavigatePatient}>Patients </Nav.Link>
                             
                             
                         </Nav>

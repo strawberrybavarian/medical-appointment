@@ -84,19 +84,64 @@
   }
   .chat-toggle-btn {
     position: fixed;
-    bottom: 20px;
-    right: 50px;
-    background-color: #007bff;
+    bottom: 50px;
+    right: 80px;
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    font-size: 50px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    z-index: 1050; /* Ensure it stays above other content */
     color: white;
     border: none;
-    border-radius: 100%;
-    width: 100px;
-    height: 100px;
+    background-color: #007bff; /* Adjust to your preferred color */
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 24px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     cursor: pointer;
-    z-index: 1050; /* Ensure it stays above other content */
+    transition: transform 0.2s ease-in-out;
+  
+    /* Pulse animation */
+    animation: pulse 2s infinite;
+  }
+  
+  /* Animation keyframes for pulsing */
+  @keyframes pulse {
+    0% {
+      transform: scale(1);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    50% {
+      transform: scale(1.1);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+    100% {
+      transform: scale(1);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+  }
+  
+  /* Responsive styles for smaller screens */
+  @media (max-width: 768px) {
+    .chat-toggle-btn {
+      bottom: 20px;
+      right: 20px;
+      width: 60px;
+      height: 60px;
+      font-size: 30px; /* Adjust font size */
+    }
+  }
+  
+
+  .view-all-doctors-btn {
+    text-decoration: none; /* No underline by default */
+    color: #007bff; /* Default link color */
+  /* Optional: Make the text bold */
+    transition: color 0.3s ease; /* Smooth transition effect */
+    cursor: pointer;
+  }
+  
+  .view-all-doctors-btn:hover {
+    text-decoration: underline; /* Underline on hover */
+    color: #0056b3; /* Optional: Change color on hover */
   }
