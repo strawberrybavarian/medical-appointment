@@ -3,7 +3,7 @@ import { Button, Container } from 'react-bootstrap';
 import axios from "axios";
 import CancelModal from "../scheduledappointment/Modal/CancelModal";
 import './Appointment.css';
-import { PeopleFill, ClockFill, PersonFill } from 'react-bootstrap-icons';
+import { PeopleFill, ClockFill, PersonFill, PencilFill } from 'react-bootstrap-icons';
 import { ip } from '../../../ContentExport';
 
 function Appointments({ appointments, setAppointments }) {
@@ -99,6 +99,31 @@ function Appointments({ appointments, setAppointments }) {
         return groups;
     }, {});
 
+
+    const convertTimeRangeTo12HourFormat = (timeRange) => {
+        // Check if the timeRange is missing or empty
+        if (!timeRange) return 'Not Assigned';
+      
+        const convertTo12Hour = (time) => {
+          // Handle single time values like "10:00"
+          if (!time) return '';
+      
+          let [hours, minutes] = time.split(':').map(Number);
+          const period = hours >= 12 ? 'PM' : 'AM';
+          hours = hours % 12 || 12; // Convert 0 or 12 to 12 in 12-hour format
+      
+          return `${hours}:${String(minutes).padStart(2, '0')} ${period}`;
+        };
+      
+        // Handle both single times and ranges
+        if (timeRange.includes(' - ')) {
+          const [startTime, endTime] = timeRange.split(' - ');
+          return `${convertTo12Hour(startTime)} - ${convertTo12Hour(endTime)}`;
+        } else {
+          return convertTo12Hour(timeRange); // Single time case
+        }
+      };
+
     return (
         <>
             <div className='d-flex justify-content-center mainContainer'>
@@ -126,9 +151,10 @@ function Appointments({ appointments, setAppointments }) {
                                 };
 
                                 const doctor = appointment.doctor || {};  // Safeguard doctor data
-
+                                const appointmentType = appointment.appointment_type[0]?.appointment_type || "N/A";
+                                const category = appointment.appointment_type[0]?.category || "N/A";
                                 return (
-                                    <Container className='d-flex justify-content-start subContainer shadow-sm' key={i}>
+<Container className='d-flex justify-content-start subContainer shadow-sm' key={i}>
                                         <div className='aaContainer'>
                                             <p style={{ textAlign: 'center' }}>
                                                 <span style={dayOfWeekStyle}>{dayOfWeek}</span>
@@ -137,16 +163,37 @@ function Appointments({ appointments, setAppointments }) {
                                         </div>
                                         <Container className="d-flex justify-content-start">
                                             <div className='pa-cont1'>
+                                                {appointment.doctor ? (
+                                                    <>
+                                                        <p style={{ fontSize: '0.8rem',  }} className='font-gray'>
+                                                           ID : {appointment.appointment_ID}
+                                                        </p>
+                                                        <p style={{ fontSize: '1rem' }}>
+                                                            <PersonFill className='font-gray' size={20} style={{ marginRight: '0.7rem' }} />
+                                                            Dr. {appointment.doctor.dr_firstName} {appointment.doctor.dr_middleInitial}. {appointment.doctor.dr_lastName}
+                                                        </p>
+                                                        <p style={{ fontSize: '1rem' }}>
+                                                            <ClockFill className='font-gray' size={20} style={{ marginRight: '0.7rem' }} />
+                                                            {appointment.time ? convertTimeRangeTo12HourFormat(appointment.time) : 'Not Assigned'}
+                                                        </p>
+                                                    </>
+                                                ) : (
+                                                    <p style={{ fontSize: '1rem', color: '#999' }}>No assigned doctor</p>
+                                                )}
+                                            </div>
+                                            <div className='pa-cont1'>
                                                 <p style={{ fontSize: '1rem' }}>
-                                                    <PersonFill className='font-gray' size={20} style={{ marginRight: '0.7rem' }} />
-                                                    Dr. {doctor.dr_firstName} {doctor.dr_middleInitial}. {doctor.dr_lastName}
+                                                    <PencilFill className='font-gray' size={20} style={{ marginRight: '0.7rem' }} />
+                                                    {appointmentType}
                                                 </p>
                                                 <p style={{ fontSize: '1rem' }}>
-                                                    <ClockFill className='font-gray' size={20} style={{ marginRight: '0.7rem' }} />
-                                                    {appointment.time}
+                                                    <PeopleFill className='font-gray' size={20} style={{ marginRight: '0.7rem' }} />
+                                                    {category}
+                                                </p>
+                                                <p style={{ fontSize: '1rem' }}>
+                                                    Follow-up: {appointment.followUp ? 'Yes' : 'No'}
                                                 </p>
                                             </div>
-                                            
                                         </Container>
                                         <div className="bContainer">
                                             <Button onClick={() => handleCancelClick(appointment)}>Cancel</Button>

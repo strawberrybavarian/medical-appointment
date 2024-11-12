@@ -82,7 +82,7 @@ const createAppointment = async (req, res) => {
       return res.status(400).json({ message: 'Cannot book an appointment in the past.' });
     }
 
-    // **Check if the patient already has an active appointment**
+    // Check if the patient already has an active appointment
     const existingAppointment = await Appointment.findOne({
       patient: patientId,
       status: { $nin: ['Cancelled', 'Completed'] }, // Exclude cancelled and completed appointments
@@ -106,7 +106,7 @@ const createAppointment = async (req, res) => {
     const dayOfWeek = selectedDate.toLocaleString('en-US', { weekday: 'long' }).toLowerCase();
     const availability = doctorData.availability[dayOfWeek];
 
-    // Convert time to 24-hour format
+    // Convert time to 24-hour format (Assuming you have a function for this)
     const [startTime, endTime] = time.split(' - ').map(convertTo24HourFormat);
 
     const timePeriod = parseInt(startTime.split(':')[0]) < 12 ? 'morning' : 'afternoon';
@@ -138,7 +138,7 @@ const createAppointment = async (req, res) => {
       Doctors.findByIdAndUpdate(doctor, { $push: { dr_appointments: savedAppointment._id } }),
     ]);
 
-    // **Send Notifications to Medical Secretaries and Admins**
+    // Send Notifications to Medical Secretaries and Admins
     const [medicalSecretaries, admins] = await Promise.all([
       MedicalSecretary.find({}, '_id'),
       Admin.find({}, '_id'),
@@ -157,16 +157,24 @@ const createAppointment = async (req, res) => {
 
     await notification.save();
 
-    // Optionally, update each recipient's notifications array
-    // Uncomment the following code if you have notifications array in your Admin and MedicalSecretary models
-    /*
-    await Promise.all(
-      recipients.map(userId => {
-        // Replace User with Admin or MedicalSecretary model as appropriate
-        return Admin.findByIdAndUpdate(userId, { $push: { notifications: notification._id } });
-      })
-    );
-    */
+    // Emit socket.io event to Medical Secretaries and Admins
+    const io = global.io;
+    const users = global.users;
+    if (io && users) {
+      for (let userId in users) {
+        const user = users[userId];
+        if (user.userRole === 'Medical Secretary' || user.userRole === 'Admin') {
+          io.to(user.socketId).emit('newAppointment', {
+            message: notificationMessage,
+            appointmentId: savedAppointment._id,
+            patientName: `${patientData.patient_firstName} ${patientData.patient_lastName}`,
+            doctorName: `${doctorData.dr_firstName} ${doctorData.dr_lastName}`,
+            date: savedAppointment.date,
+            time: savedAppointment.time,
+          });
+        }
+      }
+    }
 
     res.status(201).json(savedAppointment);
   } catch (error) {
@@ -384,7 +392,10 @@ const updateAppointmentStatus = async (req, res) => {
     // Save appointment status update
     await appointment.save();
 
-    // **Send Notification to Doctor if status becomes 'Scheduled' or 'Upcoming'**
+    const io = global.io;
+    const users = global.users;
+
+    // Send Notification to Doctor if status becomes 'Scheduled' or 'Upcoming'
     if ((status === 'Scheduled' || status === 'Upcoming') && appointment.doctor) {
       const notificationMessage = `Appointment with ${appointment.patient.patient_firstName} ${appointment.patient.patient_lastName} is now ${status}.`;
       const doctorNotification = new Notification({
@@ -397,9 +408,22 @@ const updateAppointmentStatus = async (req, res) => {
 
       // Optionally, add notification to doctor's notifications array
       await Doctors.findByIdAndUpdate(appointment.doctor._id, { $push: { notifications: doctorNotification._id } });
+
+      // Emit socket.io event to Doctor
+      if (io && users) {
+        const doctorUser = users[appointment.doctor._id.toString()];
+        if (doctorUser && doctorUser.userRole === 'Doctor') {
+          io.to(doctorUser.socketId).emit('appointmentStatusUpdate', {
+            message: notificationMessage,
+            appointmentId: appointment._id,
+            doctorId: appointment.doctor._id,
+            status: status,
+          });
+        }
+      }
     }
 
-    // **Send Notification to Patient if status changes**
+    // Send Notification to Patient if status changes
     if (['Scheduled', 'Ongoing', 'Completed', 'Cancelled'].includes(status) && oldStatus !== status) {
       // Include the appointment_ID in the notification message
       const notificationMessage = `Your appointment ${appointment.appointment_ID} status has been updated to ${status}.`;
@@ -413,6 +437,19 @@ const updateAppointmentStatus = async (req, res) => {
 
       // Optionally, add notification to patient's notifications array
       await Patient.findByIdAndUpdate(appointment.patient._id, { $push: { notifications: patientNotification._id } });
+
+      // Emit socket.io event to Patient
+      if (io && users) {
+        const patientUser = users[appointment.patient._id.toString()];
+        if (patientUser && patientUser.userRole === 'Patient') {
+          io.to(patientUser.socketId).emit('appointmentStatusUpdate', {
+            message: notificationMessage,
+            appointmentId: appointment._id,
+            patientId: appointment.patient._id,
+            status: status,
+          });
+        }
+      }
     }
 
     res.status(200).json(appointment);

@@ -111,34 +111,72 @@
 
 
 
+/* PatientNavBar.css */
+
+/* Existing styles... */
+
+/* Styles for notification overlay */
 .notification-overlay {
     position: absolute;
-    top: 100%; /* Position the overlay below the bell icon */
-    right: 0; /* Align the overlay's right edge with the parent element */
-    width: 400px;
-    max-height: 80vh; /* Adjust as needed */
-    overflow-y: auto; /* Make the overlay scrollable */
-    background: white;
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    top: 100%;
+    right: 0;
+    width: 300px;
+    max-height: 400px;
+    overflow-y: auto;
+    background-color: white;
+    border: 1px solid #ccc;
+    z-index: 1000;
+  }
+  
+  .notification-item {
+    display: flex;
+    align-items: center;
     padding: 10px;
-    border-radius: 4px;
-    z-index: 1000; /* Ensure it appears above other content */
-}
-
-/* Customize the scrollbar */
-.notification-overlay::-webkit-scrollbar {
-    width: 8px;
-}
-
-.notification-overlay::-webkit-scrollbar-track {
-    background: #f1f1f1; 
-}
-
-.notification-overlay::-webkit-scrollbar-thumb {
-    background: #888; 
-    border-radius: 4px;
-}
-
-.notification-overlay::-webkit-scrollbar-thumb:hover {
-    background: #555; 
-}
+    cursor: pointer;
+  }
+  
+  /* Unread notifications are highlighted */
+  .notification-item.unread {
+    background-color: #e6f7ff; /* Light blue background */
+  }
+  
+  /* Read notifications have no background */
+  .notification-item.read {
+    background-color: white;
+  }
+  
+  /* Circle indicator */
+  .notification-circle {
+    margin-right: 10px;
+  }
+  
+  .circle {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+  }
+  
+  /* Unread notification circle is blue and filled */
+  .circle.unread {
+    background-color: #1890ff; /* Blue color */
+  }
+  
+  /* Read notification circle is gray and hollow */
+  .circle.read {
+    border: 1px solid #ccc;
+    background-color: transparent;
+  }
+  
+  /* Notification message */
+  .notification-message {
+    flex: 1; /* Take up remaining space */
+  }
+  
+  /* Add a horizontal rule between notifications */
+  .notification-item hr {
+    margin: 5px 0;
+    border: none;
+    border-top: 1px solid #f0f0f0;
+  }
+  

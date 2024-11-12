@@ -62,6 +62,30 @@ function CompleteAppointment({ appointments, setAppointments }) {
             return groups;
         }, {});
 
+        const convertTimeRangeTo12HourFormat = (timeRange) => {
+            // Check if the timeRange is missing or empty
+            if (!timeRange) return 'Not Assigned';
+          
+            const convertTo12Hour = (time) => {
+              // Handle single time values like "10:00"
+              if (!time) return '';
+          
+              let [hours, minutes] = time.split(':').map(Number);
+              const period = hours >= 12 ? 'PM' : 'AM';
+              hours = hours % 12 || 12; // Convert 0 or 12 to 12 in 12-hour format
+          
+              return `${hours}:${String(minutes).padStart(2, '0')} ${period}`;
+            };
+          
+            // Handle both single times and ranges
+            if (timeRange.includes(' - ')) {
+              const [startTime, endTime] = timeRange.split(' - ');
+              return `${convertTo12Hour(startTime)} - ${convertTo12Hour(endTime)}`;
+            } else {
+              return convertTo12Hour(timeRange); // Single time case
+            }
+          };
+
     return (
         <>
             <div className='mainContainer'>
@@ -111,7 +135,7 @@ function CompleteAppointment({ appointments, setAppointments }) {
                                                         </p>
                                                         <p style={{ fontSize: '1rem' }}>
                                                             <ClockFill className='font-gray' size={20} style={{ marginRight: '0.7rem' }} />
-                                                            {appointment.time}
+                                                            {appointment.time ? convertTimeRangeTo12HourFormat(appointment.time) : 'Not Assigned'}
                                                         </p>
                                                     </>
                                                 ) : (

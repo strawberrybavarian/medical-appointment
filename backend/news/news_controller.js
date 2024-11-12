@@ -1,29 +1,32 @@
+// news_controller.js
+
 const MedicalSecretary = require('../medicalsecretary/medicalsecretary_model');
 const Admin = require('../admin/admin_model');
-const News = require('./news_model')
+const News = require('./news_model');
 const fs = require('fs');
 const path = require('path');
-
+const Notification = require('../notifications/notifications_model');
+const Patient = require('../patient/patient_model');
+const Doctor = require('../doctor/doctor_model');
+const socket = require('../socket'); // Import the socket module;
 // Find news by Medical Secretary or Admin
-
-
 const getGeneralNews = async (req, res) => {
     try {
         const newsPosts = await News.aggregate([
             {
                 $lookup: {
-                    from: 'medicalsecretaries',  // The collection name in MongoDB
-                    localField: 'posted_by',     // The field in News that stores the Medical Secretary/Admin _id
-                    foreignField: '_id',         // The field in the Medical Secretary collection that matches
-                    as: 'medicalSecretaryInfo'   // The field to hold the Medical Secretary details
+                    from: 'medicalsecretaries',
+                    localField: 'posted_by',
+                    foreignField: '_id',
+                    as: 'medicalSecretaryInfo'
                 }
             },
             {
                 $lookup: {
-                    from: 'admins',              // The Admin collection
-                    localField: 'posted_by',     // The field in News that stores the Admin _id
-                    foreignField: '_id',         // The field in the Admin collection that matches
-                    as: 'adminInfo'              // The field to hold the Admin details
+                    from: 'admins',
+                    localField: 'posted_by',
+                    foreignField: '_id',
+                    as: 'adminInfo'
                 }
             },
             {
@@ -36,8 +39,8 @@ const getGeneralNews = async (req, res) => {
                     posted_by: 1,
                     postedByInfo: {
                         $cond: {
-                            if: { $eq: ['$role', 'Medical Secretary'] }, 
-                            then: { $arrayElemAt: ['$medicalSecretaryInfo', 0] }, 
+                            if: { $eq: ['$role', 'Medical Secretary'] },
+                            then: { $arrayElemAt: ['$medicalSecretaryInfo', 0] },
                             else: { $arrayElemAt: ['$adminInfo', 0] }
                         }
                     }
@@ -52,14 +55,11 @@ const getGeneralNews = async (req, res) => {
     }
 };
 
-
-
-  
 const findNewsByUserId = (req, res) => {
     const { id, role } = req.params;
-    
+
     const UserModel = role === 'Medical Secretary' ? MedicalSecretary : Admin;
-    
+
     UserModel.findOne({ _id: id })
         .populate('news')
         .then((user) => {
@@ -71,48 +71,146 @@ const findNewsByUserId = (req, res) => {
 };
 
 // Add new news by Medical Secretary or Admin
+// news_controller.js
+
+// news_controller.js
+
 const addNewNewsByUserId = async (req, res) => {
     try {
-        let imagePaths = [];
-
-        // Handle file uploads and store file paths
-        if (req.files && req.files.length > 0) {
-            imagePaths = req.files.map(file => {
-                // Save file path as images/$filename
-                const imagePath = `images/${file.filename}`;
-                return imagePath;
-            });
-        }
-
-        // Set headline automatically (you can define the logic for headline generation)
-        const headline = req.body.headline || "Default Headline"; // or any other logic to set headline
-
-        const newNews = new News({
-            content: req.body.content,
-            headline: headline,  // Include the headline
-            posted_by: req.params.id,
-            role: req.body.role,  // Either 'MedicalSecretary' or 'Admin'
-            images: imagePaths,  // Store image paths instead of base64
+      let imagePaths = [];
+  
+      // Handle file uploads and store file paths
+      if (req.files && req.files.length > 0) {
+        imagePaths = req.files.map((file) => {
+          const imagePath = `images/${file.filename}`;
+          return imagePath;
         });
-
-        // Save the new news entry
-        const savedNews = await newNews.save();
-
-        // Choose the correct model based on the user's role
-        const UserModel = req.body.role === 'Medical Secretary' ? MedicalSecretary : Admin;
-
-        const updatedUser = await UserModel.findByIdAndUpdate(
-            req.params.id,
-            { $push: { news: savedNews._id } },
-            { new: true }
-        ).populate('news');
-
-        res.json({ updatedUser, message: 'New news added successfully' });
+      }
+  
+      // Set headline
+      const headline = req.body.headline || 'Default Headline';
+  
+      const newNews = new News({
+        content: req.body.content,
+        headline: headline,
+        posted_by: req.params.id,
+        role: req.body.role,
+        images: imagePaths,
+      });
+  
+      // Save the new news entry
+      const savedNews = await newNews.save();
+  
+      // Choose the correct model based on the user's role
+      const UserModel =
+        req.body.role === 'Medical Secretary' ? MedicalSecretary : Admin;
+  
+      const updatedUser = await UserModel.findByIdAndUpdate(
+        req.params.id,
+        { $push: { news: savedNews._id } },
+        { new: true }
+      ).populate('news');
+  
+      // Send notifications to all Patients and Doctors
+      try {
+        const patients = await Patient.find();
+        const doctors = await Doctor.find();
+  
+        const notificationMessage = `New News: ${headline}`;
+        const link = `/news/${savedNews.news_ID}`;
+  
+        // Create notifications for patients
+        const patientNotifications = patients.map((patient) => {
+          return new Notification({
+            message: notificationMessage,
+            receiver: patient._id,
+            receiverModel: 'Patient',
+            isRead: false,
+            link: link,
+            type: 'News',
+            recipientType: 'Patient',
+          });
+        });
+  
+        // Create notifications for doctors
+        const doctorNotifications = doctors.map((doctor) => {
+          return new Notification({
+            message: notificationMessage,
+            receiver: doctor._id,
+            receiverModel: 'Doctor',
+            isRead: false,
+            link: link,
+            type: 'News',
+            recipientType: 'Doctor',
+          });
+        });
+  
+        // Save all notifications to the database
+        const allNotifications = [...patientNotifications, ...doctorNotifications];
+        const savedNotifications = await Notification.insertMany(allNotifications);
+  
+        // Update patients with the notifications
+        await Promise.all(
+          patients.map(async (patient) => {
+            const notification = savedNotifications.find((n) =>
+              n.receiver.equals(patient._id)
+            );
+            if (notification) {
+              await Patient.findByIdAndUpdate(patient._id, {
+                $push: { notifications: notification._id },
+              });
+            }
+          })
+        );
+  
+        // Update doctors with the notifications
+        await Promise.all(
+          doctors.map(async (doctor) => {
+            const notification = savedNotifications.find((n) =>
+              n.receiver.equals(doctor._id)
+            );
+            if (notification) {
+              await Doctor.findByIdAndUpdate(doctor._id, {
+                $push: { notifications: notification._id },
+              });
+            }
+          })
+        );
+  
+        // Emit socket.io event to patients and doctors
+        const io = socket.getIO(); // Get the initialized io instance
+        const clients = socket.clients; // Get the clients map
+  
+        if (io && clients) {
+          // Send to all connected patients and doctors
+          for (let userId in clients) {
+            const userSocket = clients[userId];
+            const userRole = userSocket.userRole;
+  
+            console.log(`Emitting newNews event to userId: ${userId}, userRole: ${userRole}`);
+  
+            if (userRole === 'Patient' || userRole === 'Doctor') {
+              userSocket.emit('newNews', {
+                message: notificationMessage,
+                link: `/news/${savedNews.news_ID}`,
+                news_ID: savedNews.news_ID,
+                headline: headline,
+                images: imagePaths,
+              });
+            }
+          }
+        }
+      } catch (notificationError) {
+        console.error('Error sending notifications:', notificationError);
+        // Handle notification error, but do not block the response
+      }
+  
+      res.json({ updatedUser, message: 'New news added successfully' });
     } catch (error) {
-        console.error('Error adding news:', error);
-        res.status(500).json({ message: 'Error adding news', error });
+      console.error('Error adding news:', error);
+      res.status(500).json({ message: 'Error adding news', error });
     }
-};
+  };
 
 
 // Retrieve all news
@@ -133,7 +231,6 @@ const getAllNewsByUserId = (req, res) => {
         });
 };
 
-// Delete news by index
 // Delete news by its _id
 const deleteNewsById = async (req, res) => {
     const newsId = req.params.newsId;
@@ -164,12 +261,11 @@ const deleteNewsById = async (req, res) => {
     }
 };
 
-
 // Update news at specific index
 const updateNewsAtIndex = async (req, res) => {
     const { userId, newsId } = req.params;
     const role = req.body.role;
-    
+
     // Log values to see if they are correctly passed
     console.log("userId:", userId);
     console.log("newsId:", newsId);
@@ -213,8 +309,9 @@ const updateNewsAtIndex = async (req, res) => {
             news.images.push(...imagePaths);
         }
 
-        // Update the content
+        // Update the content and headline
         news.content = req.body.content || news.content;
+        news.headline = req.body.headline || news.headline;
 
         // Save the updated news
         const updatedNews = await news.save();
@@ -226,30 +323,39 @@ const updateNewsAtIndex = async (req, res) => {
     }
 };
 
-
-
 const getNewsById = async (req, res) => {
     try {
-      const news = await News.findOne({ news_ID: req.params.id });
+        const news = await News.findOne({ news_ID: req.params.id });
 
-      if (!news) {
-        return res.status(404).json({ message: "News not found" });
-      }
-      res.json({ news });
+        if (!news) {
+            return res.status(404).json({ message: "News not found" });
+        }
+        res.json({ news });
     } catch (err) {
-      res.status(500).json({ error: err.message });
+        res.status(500).json({ error: err.message });
+    }
+};
+
+const markAsRead = async (req, res) => {
+    try {
+      const notificationId = req.params.id;
+  
+      await Notification.findByIdAndUpdate(notificationId, { isRead: true });
+  
+      res.json({ message: 'Notification marked as read' });
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
+      res.status(500).json({ message: 'Error marking notification as read', error });
     }
   };
-  
-  
-
 
 module.exports = {
-  addNewNewsByUserId,
-  getAllNewsByUserId,
-  deleteNewsById,
-  updateNewsAtIndex,
-  findNewsByUserId,
-  getGeneralNews,
-  getNewsById
+    addNewNewsByUserId,
+    getAllNewsByUserId,
+    deleteNewsById,
+    updateNewsAtIndex,
+    findNewsByUserId,
+    getGeneralNews,
+    getNewsById,
+    markAsRead
 };

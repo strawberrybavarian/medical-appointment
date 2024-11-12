@@ -122,6 +122,31 @@ const OngoingAppointment = ({ allAppointments, setAllAppointments }) => {
     setExpandedRow(expandedRow === appointmentId ? null : appointmentId); // Toggle the expanded row
   };
 
+  const convertTimeRangeTo12HourFormat = (timeRange) => {
+    // Check if the timeRange is missing or empty
+    if (!timeRange) return 'Not Assigned';
+  
+    const convertTo12Hour = (time) => {
+      // Handle single time values like "10:00"
+      if (!time) return '';
+  
+      let [hours, minutes] = time.split(':').map(Number);
+      const period = hours >= 12 ? 'PM' : 'AM';
+      hours = hours % 12 || 12; // Convert 0 or 12 to 12 in 12-hour format
+  
+      return `${hours}:${String(minutes).padStart(2, '0')} ${period}`;
+    };
+  
+    // Handle both single times and ranges
+    if (timeRange.includes(' - ')) {
+      const [startTime, endTime] = timeRange.split(' - ');
+      return `${convertTo12Hour(startTime)} - ${convertTo12Hour(endTime)}`;
+    } else {
+      return convertTo12Hour(timeRange); // Single time case
+    }
+  };
+
+
   return (
     <>
       <div style={{ padding: '30px', width: '100%' }}>
@@ -196,7 +221,8 @@ const OngoingAppointment = ({ allAppointments, setAllAppointments }) => {
                     <td><img alt='Patient' src={patientImage} style={{ marginRight:'10px', width: '30px', height:'30px', borderRadius:'100px' }}/>{patientName}</td>
                     <td>{appointmentTypes}</td>
                     <td>{new Date(appointment.date).toLocaleDateString()}</td>
-                    <td>{appointment.time}</td>
+                    <td style={{fontSize: '14px'}}>{appointment.time ? convertTimeRangeTo12HourFormat(appointment.time) : 'Not Assigned' }</td>                    
+
                     <td>
                       <div className="d-flex justify-content-center">
                         <div className="ongoing-appointment">
