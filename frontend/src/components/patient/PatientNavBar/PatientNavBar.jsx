@@ -1,5 +1,3 @@
-// PatientNavBar.jsx
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Container, Navbar, Nav, NavDropdown } from 'react-bootstrap';
@@ -24,10 +22,8 @@ function PatientNavBar({ pid }) {
 
   // Initialize socket.io client
   useEffect(() => {
-    // Initialize socket connection
     socketRef.current = io(ip.address); // Ensure ip.address includes protocol and port
 
-    // Handle socket connection events
     socketRef.current.on('connect', () => {
       console.log('Socket connected:', socketRef.current.id);
     });
@@ -36,77 +32,66 @@ function PatientNavBar({ pid }) {
       console.error('Socket connection error:', error);
     });
 
-    // Identify the user to the server
     socketRef.current.emit('identify', { userId: pid, userRole: 'Patient' });
 
-    // Listen for socket events
     socketRef.current.on('newNews', (data) => {
-      console.log('Received newNews event:', data);
-      // Create a new notification object
       const notification = {
-        _id: Date.now().toString(), // Generate a unique ID
+        _id: Date.now().toString(),
         message: data.message,
         isRead: false,
         link: data.link,
         type: 'News',
+        createdAt: new Date().toISOString(),
       };
-      // Update the notifications state
       setNotifications((prevNotifications) => [notification, ...prevNotifications]);
-
-      // Show browser notification
       showBrowserNotification(data.message);
     });
 
     socketRef.current.on('appointmentStatusUpdate', (data) => {
-      console.log('Received appointmentStatusUpdate event:', data);
-      // Check if the notification is for this patient
       if (data.patientId === pid) {
         const notification = {
           _id: Date.now().toString(),
           message: data.message,
           isRead: false,
-          link: data.link, // Use link from data
+          link: data.link,
           type: 'StatusUpdate',
+          createdAt: new Date().toISOString(),
         };
         setNotifications((prevNotifications) => [notification, ...prevNotifications]);
-
-        // Show browser notification
         showBrowserNotification(data.message);
       }
     });
 
-    // Handle socket disconnection
     socketRef.current.on('disconnect', () => {
       console.log('Socket disconnected');
     });
 
-    // Handle socket reconnection
     socketRef.current.io.on('reconnect', () => {
       console.log('Socket reconnected');
       socketRef.current.emit('identify', { userId: pid, userRole: 'Patient' });
     });
 
-    // Clean up on unmount
     return () => {
       socketRef.current.disconnect();
     };
   }, [pid]);
 
-  // Request browser notification permission on component mount
   useEffect(() => {
     if ('Notification' in window && Notification.permission !== 'granted') {
       Notification.requestPermission();
     }
   }, []);
 
-  // Fetch patient data and notifications
   useEffect(() => {
     axios
       .get(`${ip.address}/api/patient/api/onepatient/${pid}`)
       .then((res) => {
         const patientData = res.data.thePatient;
         setImage(patientData.patient_image || defaultImage);
-        setNotifications(patientData.notifications || []);
+        const sortedNotifications = (patientData.notifications || []).sort(
+          (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+        );
+        setNotifications(sortedNotifications);
       })
       .catch((err) => {
         console.log(err);
@@ -137,19 +122,12 @@ function PatientNavBar({ pid }) {
 
   const markAsRead = async (notification) => {
     try {
-      console.log('Notification clicked:', notification);
-
-      // Navigate to the link if it exists
       if (notification.link) {
         navigate(notification.link);
-      } else {
-        console.warn('No link found in notification:', notification);
       }
 
-      // Mark notification as read
       await axios.put(`${ip.address}/api/notifications/${notification._id}/read`);
 
-      // Update the notification state
       setNotifications((prevNotifications) =>
         prevNotifications.map((notif) =>
           notif._id === notification._id ? { ...notif, isRead: true } : notif
@@ -160,7 +138,6 @@ function PatientNavBar({ pid }) {
     }
   };
 
-  // Function to show browser notification
   const showBrowserNotification = (message) => {
     if ('Notification' in window && Notification.permission === 'granted') {
       new Notification('New Notification', {
@@ -169,6 +146,10 @@ function PatientNavBar({ pid }) {
       });
     }
   };
+
+  // Calculate unread notifications count and set max to 9+
+  const unreadCount = notifications.filter((notif) => !notif.isRead).length;
+  const displayCount = unreadCount > 9 ? '9+' : unreadCount;
 
   return (
     <Navbar
@@ -199,39 +180,34 @@ function PatientNavBar({ pid }) {
           <Nav>
             <Nav.Link onClick={toggleNotifications} className="position-relative">
               <Bell size={20} />
-              {notifications.some((notif) => !notif.isRead) && (
-                <span className="notification-badge"></span>
+              {unreadCount > 0 && (
+                <span className="notification-badge">{displayCount}</span>
               )}
               {showNotifications && (
                 <div className="notification-overlay">
                   {notifications.length > 0 ? (
-                    notifications
-                      .slice()
-                      .reverse()
-                      .map((notification, index) => (
-                        <div
-                          key={index}
-                          className={`notification-item ${
-                            !notification.isRead ? 'unread' : 'read'
-                          }`}
-                          onClick={(e) => {
-                            e.preventDefault();
-                            markAsRead(notification);
-                          }}
-                        >
-                          {/* Display the circle indicator */}
-                          <span className="notification-circle">
-                            {notification.isRead ? (
-                              <span className="circle read"></span>
-                            ) : (
-                              <span className="circle unread"></span>
-                            )}
-                          </span>
-                          {/* Display the notification message */}
-                          <span className="notification-message">{notification.message}</span>
-                          {index < notifications.length - 1 && <hr />}
-                        </div>
-                      ))
+                    notifications.map((notification, index) => (
+                      <div
+                        key={notification._id}
+                        className={`notification-item ${
+                          !notification.isRead ? 'unread' : 'read'
+                        }`}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          markAsRead(notification);
+                        }}
+                      >
+                        <span className="notification-circle">
+                          {notification.isRead ? (
+                            <span className="circle read"></span>
+                          ) : (
+                            <span className="circle unread"></span>
+                          )}
+                        </span>
+                        <span className="notification-message">{notification.message}</span>
+                        {index < notifications.length - 1 && <hr />}
+                      </div>
+                    ))
                   ) : (
                     <div>No new notifications</div>
                   )}

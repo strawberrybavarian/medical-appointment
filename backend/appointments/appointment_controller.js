@@ -10,7 +10,7 @@ const Audit = require('../audit/audit_model');
 const Admin = require('../admin/admin_model');
 const Service = require('../services/service_model');
 const Doctor = require('../doctor/doctor_model');
-
+const socket = require('../socket'); // Import the socket module
 
 const updateFollowUpStatus = async (req, res) => {
   const appointmentId = req.params.id;
@@ -103,19 +103,8 @@ const createAppointment = async (req, res) => {
     if (!patientData) return res.status(404).json({ message: 'Patient not found.' });
     if (!doctorData) return res.status(404).json({ message: 'Doctor not found.' });
 
-    const dayOfWeek = selectedDate.toLocaleString('en-US', { weekday: 'long' }).toLowerCase();
-    const availability = doctorData.availability[dayOfWeek];
-
     // Convert time to 24-hour format (Assuming you have a function for this)
     const [startTime, endTime] = time.split(' - ').map(convertTo24HourFormat);
-
-    const timePeriod = parseInt(startTime.split(':')[0]) < 12 ? 'morning' : 'afternoon';
-
-    if (!availability || !availability[timePeriod]?.available) {
-      return res.status(400).json({
-        message: `No available slots for ${timePeriod} on ${dayOfWeek}.`
-      });
-    }
 
     // Default to 'Consultation' if no appointment_type is provided
     const finalAppointmentType = appointment_type?.appointment_type || "Consultation";
@@ -150,27 +139,47 @@ const createAppointment = async (req, res) => {
 
     const notification = new Notification({
       message: notificationMessage,
-      recipient: recipients,
-      recipientType: 'Admin', // Adjust based on your schema
+      receiver: recipients,
+      receiverModel: 'Admin', // Adjust based on your schema
+      isRead: false,
+      link: `/appointments/${savedAppointment._id}`,
       type: 'Appointment',
+      recipientType: 'Admin', // Adjust if needed
     });
 
     await notification.save();
 
-    // Emit socket.io event to Medical Secretaries and Admins
-    const io = global.io;
-    const users = global.users;
-    if (io && users) {
-      for (let userId in users) {
-        const user = users[userId];
-        if (user.userRole === 'Medical Secretary' || user.userRole === 'Admin') {
-          io.to(user.socketId).emit('newAppointment', {
+    // Add notification to each recipient's notifications array
+    await Promise.all(
+      medicalSecretaries.map(ms => {
+        return MedicalSecretary.findByIdAndUpdate(ms._id, { $push: { notifications: notification._id } });
+      })
+    );
+
+    await Promise.all(
+      admins.map(ad => {
+        return Admin.findByIdAndUpdate(ad._id, { $push: { notifications: notification._id } });
+      })
+    );
+
+    // Emit Socket.IO event to Medical Secretaries and Admins
+    const io = socket.getIO();
+    const clients = socket.clients;
+
+    if (io && clients) {
+      for (let userId in clients) {
+        const userSocket = clients[userId];
+        const userRole = userSocket.userRole;
+
+        if (userRole === 'Medical Secretary' || userRole === 'Admin') {
+          userSocket.emit('newAppointment', {
             message: notificationMessage,
             appointmentId: savedAppointment._id,
             patientName: `${patientData.patient_firstName} ${patientData.patient_lastName}`,
             doctorName: `${doctorData.dr_firstName} ${doctorData.dr_lastName}`,
             date: savedAppointment.date,
             time: savedAppointment.time,
+            link: `/appointments/${savedAppointment._id}`,
           });
         }
       }
@@ -202,7 +211,7 @@ const createServiceAppointment = async (req, res) => {
 
     if (existingAppointment) {
       return res.status(400).json({
-        message: 'You already have an active appointment. Please complete or cancel it before booking a new one.'
+        message: 'You already have an active appointment. Please complete or cancel it before booking a new one.',
       });
     }
 
@@ -218,7 +227,7 @@ const createServiceAppointment = async (req, res) => {
     }
 
     // Check service availability
-    if (serviceData.availability === "Not Available" || serviceData.availability === "Coming Soon") {
+    if (serviceData.availability === 'Not Available' || serviceData.availability === 'Coming Soon') {
       return res.status(400).json({ message: `The selected service (${serviceData.name}) is currently not available.` });
     }
 
@@ -229,7 +238,7 @@ const createServiceAppointment = async (req, res) => {
       reason,
       appointment_type: {
         appointment_type: serviceData.name,
-        category: serviceData.category
+        category: serviceData.category,
       },
       status: 'Pending',
     });
@@ -260,7 +269,7 @@ const createServiceAppointment = async (req, res) => {
       Admin.find({}, '_id'),
     ]);
 
-    const recipients = [...medicalSecretaries.map(ms => ms._id), ...admins.map(ad => ad._id)];
+    const recipients = [...medicalSecretaries.map((ms) => ms._id), ...admins.map((ad) => ad._id)];
 
     const notificationMessage = `New service appointment created by ${patientData.patient_firstName} ${patientData.patient_lastName} for ${serviceData.name}.`;
 
@@ -273,17 +282,39 @@ const createServiceAppointment = async (req, res) => {
 
     await notification.save();
 
-    // Optionally, add notification to each recipient's notifications array
-    /*
+    // Add notification to each recipient's notifications array
     await Promise.all(
-      recipients.map(userId => {
-        return Admin.findByIdAndUpdate(userId, { $push: { notifications: notification._id } });
+      medicalSecretaries.map((ms) => {
+        return MedicalSecretary.findByIdAndUpdate(ms._id, { $push: { notifications: notification._id } });
       })
     );
-    */
+
+    await Promise.all(
+      admins.map((ad) => {
+        return Admin.findByIdAndUpdate(ad._id, { $push: { notifications: notification._id } });
+      })
+    );
+
+    // Emit Socket.IO event to connected Medical Secretaries and Admins
+    const io = socket.getIO();
+    const clients = socket.clients;
+
+    if (io && clients) {
+      for (let userId in clients) {
+        const userSocket = clients[userId];
+        const userRole = userSocket.userRole;
+
+        if (userRole === 'Medical Secretary' || userRole === 'Admin') {
+          userSocket.emit('newAppointment', {
+            message: notificationMessage,
+            appointmentId: savedAppointment._id,
+            link: `/appointments/${savedAppointment._id}`,
+          });
+        }
+      }
+    }
 
     res.status(201).json(savedAppointment);
-
   } catch (error) {
     console.error('Error creating service appointment:', error);
     res.status(500).json({ message: `Failed to create service appointment: ${error.message}` });
@@ -392,63 +423,67 @@ const updateAppointmentStatus = async (req, res) => {
     // Save appointment status update
     await appointment.save();
 
-    const io = global.io;
-    const users = global.users;
+    const io = socket.getIO();
+    const clients = socket.clients;
 
     // Send Notification to Doctor if status becomes 'Scheduled' or 'Upcoming'
     if ((status === 'Scheduled' || status === 'Upcoming') && appointment.doctor) {
       const notificationMessage = `Appointment with ${appointment.patient.patient_firstName} ${appointment.patient.patient_lastName} is now ${status}.`;
       const doctorNotification = new Notification({
         message: notificationMessage,
-        recipient: [appointment.doctor._id],
-        recipientType: 'Doctor',
+        receiver: appointment.doctor._id,
+        receiverModel: 'Doctor',
+        isRead: false,
+        link: `/appointments/${appointment._id}`,
         type: 'StatusUpdate',
+        recipientType: 'Doctor',
       });
       await doctorNotification.save();
 
-      // Optionally, add notification to doctor's notifications array
+      // Add notification to doctor's notifications array
       await Doctors.findByIdAndUpdate(appointment.doctor._id, { $push: { notifications: doctorNotification._id } });
 
       // Emit socket.io event to Doctor
-      if (io && users) {
-        const doctorUser = users[appointment.doctor._id.toString()];
-        if (doctorUser && doctorUser.userRole === 'Doctor') {
-          io.to(doctorUser.socketId).emit('appointmentStatusUpdate', {
-            message: notificationMessage,
-            appointmentId: appointment._id,
-            doctorId: appointment.doctor._id,
-            status: status,
-          });
-        }
+      const doctorSocket = clients[appointment.doctor._id.toString()];
+      if (doctorSocket && doctorSocket.userRole === 'Doctor') {
+        doctorSocket.emit('appointmentStatusUpdate', {
+          message: notificationMessage,
+          appointmentId: appointment._id,
+          doctorId: appointment.doctor._id,
+          status: status,
+          link: `/appointments/${appointment._id}`,
+        });
       }
     }
 
     // Send Notification to Patient if status changes
     if (['Scheduled', 'Ongoing', 'Completed', 'Cancelled'].includes(status) && oldStatus !== status) {
       // Include the appointment_ID in the notification message
-      const notificationMessage = `Your appointment ${appointment.appointment_ID} status has been updated to ${status}.`;
+      const notificationMessage = `Your appointment ${appointment.appointment_ID || appointment._id} status has been updated to ${status}.`;
       const patientNotification = new Notification({
         message: notificationMessage,
-        recipient: [appointment.patient._id],
-        recipientType: 'Patient',
+        receiver: appointment.patient._id,
+        receiverModel: 'Patient',
+        isRead: false,
+        link: `/myappointment`,
         type: 'StatusUpdate',
+        recipientType: 'Patient',
       });
       await patientNotification.save();
 
-      // Optionally, add notification to patient's notifications array
+      // Add notification to patient's notifications array
       await Patient.findByIdAndUpdate(appointment.patient._id, { $push: { notifications: patientNotification._id } });
 
       // Emit socket.io event to Patient
-      if (io && users) {
-        const patientUser = users[appointment.patient._id.toString()];
-        if (patientUser && patientUser.userRole === 'Patient') {
-          io.to(patientUser.socketId).emit('appointmentStatusUpdate', {
-            message: notificationMessage,
-            appointmentId: appointment._id,
-            patientId: appointment.patient._id,
-            status: status,
-          });
-        }
+      const patientSocket = clients[appointment.patient._id.toString()];
+      if (patientSocket && patientSocket.userRole === 'Patient') {
+        patientSocket.emit('appointmentStatusUpdate', {
+          message: notificationMessage,
+          appointmentId: appointment._id,
+          patientId: appointment.patient._id,
+          status: status,
+          link: `/myappointment`,
+        });
       }
     }
 
@@ -458,6 +493,7 @@ const updateAppointmentStatus = async (req, res) => {
     res.status(500).json({ message: `Failed to update status: ${error.message}` });
   }
 };
+
 
 
 const getAppointmentById = async (req, res) => {
