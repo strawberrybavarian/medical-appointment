@@ -390,7 +390,8 @@ const findOneDoctor = (req, res) => {
 
     Doctors.findById(doctorId)
         .populate('dr_services')
-        .populate('dr_appointments') // Populate services offered by the doctor
+        .populate('dr_appointments')
+        .populate('notifications') // Populate services offered by the doctor
         .then(doctor => {
             if (!doctor) {
                 return res.status(404).json({ message: 'Doctor not found' });
@@ -435,6 +436,7 @@ const findDoctorById = (req, res) => {
     Doctors.findOne({ _id: req.params.id })
         .populate('dr_posts')
         .populate('dr_appointments')
+        .populate('notifications')
         .then((theDoctor) => {
             res.json({ theDoctor });
         })

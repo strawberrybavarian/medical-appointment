@@ -21,9 +21,19 @@ module.exports = {
     io.on('connection', (socket) => {
       console.log('A user connected:', socket.id);
 
+      
+
       // Handle user identification
       socket.on('identify', async (userData) => {
+
+
         console.log('Identify event received:', userData);
+
+        if (!userData.userId) {
+          console.error('User ID is undefined in identify event');
+          return;
+        }
+
         socket.userId = userData.userId.toString();
         socket.userRole = userData.userRole;
         clients[socket.userId] = socket; // Store the socket instance

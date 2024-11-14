@@ -59,7 +59,6 @@ const SidebarMenu = (props) => {
                                 icon="calendar-alt"> 
                                 My Patient 
                             </CDBSidebarMenuItem>
-                            <CDBSidebarMenuItem className="font-style-poppins sbm-item" icon="bell"> Notification </CDBSidebarMenuItem>
                             <CDBSidebarMenuItem className="font-style-poppins sbm-item" icon="user" onClick={() => navigate(`/account`, { state: { did: props.did } })}> Account Information </CDBSidebarMenuItem>
                             <CDBSidebarMenuItem className="font-style-poppins sbm-item" icon="arrow-left" onClick={handleLogout}> Log Out </CDBSidebarMenuItem> 
                         </CDBSidebarMenu>

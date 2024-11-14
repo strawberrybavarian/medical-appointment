@@ -9,7 +9,7 @@ const Notification = require('../notifications/notifications_model');
 const Patient = require('../patient/patient_model');
 const Doctor = require('../doctor/doctor_model');
 const socket = require('../socket'); // Import the socket module;
-// Find news by Medical Secretary or Admin
+
 const getGeneralNews = async (req, res) => {
     try {
         const newsPosts = await News.aggregate([
@@ -70,147 +70,147 @@ const findNewsByUserId = (req, res) => {
         });
 };
 
-// Add new news by Medical Secretary or Admin
-// news_controller.js
-
-// news_controller.js
 
 const addNewNewsByUserId = async (req, res) => {
-    try {
-      let imagePaths = [];
-  
-      // Handle file uploads and store file paths
-      if (req.files && req.files.length > 0) {
-        imagePaths = req.files.map((file) => {
-          const imagePath = `images/${file.filename}`;
-          return imagePath;
-        });
-      }
-  
-      // Set headline
-      const headline = req.body.headline || 'Default Headline';
-  
-      const newNews = new News({
-        content: req.body.content,
-        headline: headline,
-        posted_by: req.params.id,
-        role: req.body.role,
-        images: imagePaths,
+  try {
+    let imagePaths = [];
+
+    // Handle file uploads and store file paths
+    if (req.files && req.files.length > 0) {
+      imagePaths = req.files.map((file) => {
+        const imagePath = `images/${file.filename}`;
+        return imagePath;
       });
-  
-      // Save the new news entry
-      const savedNews = await newNews.save();
-  
-      // Choose the correct model based on the user's role
-      const UserModel =
-        req.body.role === 'Medical Secretary' ? MedicalSecretary : Admin;
-  
-      const updatedUser = await UserModel.findByIdAndUpdate(
-        req.params.id,
-        { $push: { news: savedNews._id } },
-        { new: true }
-      ).populate('news');
-  
-      // Send notifications to all Patients and Doctors
-      try {
-        const patients = await Patient.find();
-        const doctors = await Doctor.find();
-  
-        const notificationMessage = `New News: ${headline}`;
-        const link = `/news/${savedNews.news_ID}`;
-  
-        // Create notifications for patients
-        const patientNotifications = patients.map((patient) => {
-          return new Notification({
-            message: notificationMessage,
-            receiver: patient._id,
-            receiverModel: 'Patient',
-            isRead: false,
-            link: link,
-            type: 'News',
-            recipientType: 'Patient',
-          });
+    }
+
+    // Set headline
+    const headline = req.body.headline || 'Default Headline';
+
+    const newNews = new News({
+      content: req.body.content,
+      headline: headline,
+      posted_by: req.params.id,
+      role: req.body.role,
+      images: imagePaths,
+    });
+
+    // Save the new news entry
+    const savedNews = await newNews.save();
+
+    // Choose the correct model based on the user's role
+    const UserModel =
+      req.body.role === 'Medical Secretary' ? MedicalSecretary : Admin;
+
+    const updatedUser = await UserModel.findByIdAndUpdate(
+      req.params.id,
+      { $push: { news: savedNews._id } },
+      { new: true }
+    ).populate('news');
+
+    // Send notifications to all Patients and Doctors
+    try {
+      const patients = await Patient.find();
+      const doctors = await Doctor.find();
+
+      const notificationMessage = `New News: ${headline}`;
+      const link = `/news/${savedNews.news_ID}`;
+
+      // Create notifications for patients
+      const patientNotifications = patients.map((patient) => {
+        return new Notification({
+          message: notificationMessage,
+          receiver: patient._id,
+          receiverModel: 'Patient',
+          isRead: false,
+          link: link,
+          type: 'News',
+          recipientType: 'Patient',
         });
-  
-        // Create notifications for doctors
-        const doctorNotifications = doctors.map((doctor) => {
-          return new Notification({
-            message: notificationMessage,
-            receiver: doctor._id,
-            receiverModel: 'Doctor',
-            isRead: false,
-            link: link,
-            type: 'News',
-            recipientType: 'Doctor',
-          });
+      });
+
+      // Create notifications for doctors
+      const doctorNotifications = doctors.map((doctor) => {
+        return new Notification({
+          message: notificationMessage,
+          receiver: doctor._id,
+          receiverModel: 'Doctor',
+          isRead: false,
+          link: link,
+          type: 'News',
+          recipientType: 'Doctor',
         });
-  
-        // Save all notifications to the database
-        const allNotifications = [...patientNotifications, ...doctorNotifications];
-        const savedNotifications = await Notification.insertMany(allNotifications);
-  
-        // Update patients with the notifications
-        await Promise.all(
-          patients.map(async (patient) => {
-            const notification = savedNotifications.find((n) =>
-              n.receiver.equals(patient._id)
-            );
-            if (notification) {
-              await Patient.findByIdAndUpdate(patient._id, {
-                $push: { notifications: notification._id },
-              });
-            }
-          })
-        );
-  
-        // Update doctors with the notifications
-        await Promise.all(
-          doctors.map(async (doctor) => {
-            const notification = savedNotifications.find((n) =>
-              n.receiver.equals(doctor._id)
-            );
-            if (notification) {
-              await Doctor.findByIdAndUpdate(doctor._id, {
-                $push: { notifications: notification._id },
-              });
-            }
-          })
-        );
-  
-        // Emit socket.io event to patients and doctors
-        const io = socket.getIO(); // Get the initialized io instance
-        const clients = socket.clients; // Get the clients map
-  
-        if (io && clients) {
-          // Send to all connected patients and doctors
-          for (let userId in clients) {
-            const userSocket = clients[userId];
-            const userRole = userSocket.userRole;
-  
-            console.log(`Emitting newNews event to userId: ${userId}, userRole: ${userRole}`);
-  
-            if (userRole === 'Patient' || userRole === 'Doctor') {
-              userSocket.emit('newNews', {
-                message: notificationMessage,
-                link: `/news/${savedNews.news_ID}`,
-                news_ID: savedNews.news_ID,
-                headline: headline,
-                images: imagePaths,
-              });
-            }
+      });
+
+      // Save all notifications to the database
+      const allNotifications = [...patientNotifications, ...doctorNotifications];
+      const savedNotifications = await Notification.insertMany(allNotifications);
+
+      // Update patients with the notifications
+      await Promise.all(
+        patients.map(async (patient) => {
+          const notification = savedNotifications.find((n) =>
+            n.receiver.toString() === patient._id.toString()
+          );
+          if (notification) {
+            await Patient.findByIdAndUpdate(patient._id, {
+              $push: { notifications: notification._id },
+            });
+          }
+        })
+      );
+
+      // Update doctors with the notifications
+      await Promise.all(
+        doctors.map(async (doctor) => {
+          const notification = savedNotifications.find((n) =>
+            n.receiver.toString() === doctor._id.toString()
+          );
+          if (notification) {
+            await Doctor.findByIdAndUpdate(doctor._id, {
+              $push: { notifications: notification._id },
+            });
+          }
+        })
+      );
+
+      // Emit socket.io event to patients and doctors
+      const io = socket.getIO(); // Get the initialized io instance
+      const clients = socket.clients; // Get the clients map
+
+      if (io && clients) {
+        // Send to all connected patients and doctors
+        for (let userId in clients) {
+          const userSocket = clients[userId];
+          const userRole = userSocket.userRole;
+
+          console.log(`Emitting newNews event to userId: ${userId}, userRole: ${userRole}`);
+
+          if (userRole === 'Patient' || userRole === 'Doctor') {
+            userSocket.emit('newNews', {
+              message: notificationMessage,
+              link: `/news/${savedNews.news_ID}`,
+              news_ID: savedNews.news_ID,
+              headline: headline,
+              images: imagePaths,
+              notificationId: savedNotifications.find(
+                (n) => n.receiver.toString() === userId
+              )?._id.toString(), // Include notification ID
+            });
           }
         }
-      } catch (notificationError) {
-        console.error('Error sending notifications:', notificationError);
-        // Handle notification error, but do not block the response
       }
-  
-      res.json({ updatedUser, message: 'New news added successfully' });
-    } catch (error) {
-      console.error('Error adding news:', error);
-      res.status(500).json({ message: 'Error adding news', error });
+    } catch (notificationError) {
+      console.error('Error sending notifications:', notificationError);
+      // Handle notification error, but do not block the response
     }
-  };
+
+    res.json({ updatedUser, message: 'New news added successfully' });
+  } catch (error) {
+    console.error('Error adding news:', error);
+    res.status(500).json({ message: 'Error adding news', error });
+  }
+};
+
 
 
 // Retrieve all news

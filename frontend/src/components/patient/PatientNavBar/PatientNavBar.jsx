@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { Container, Navbar, Nav, NavDropdown } from 'react-bootstrap';
 import { Bell } from 'react-bootstrap-icons';
 import './PatientNavBar.css';
@@ -19,10 +19,11 @@ function PatientNavBar({ pid }) {
 
   // Use useRef to maintain the socket instance
   const socketRef = useRef();
+  const location = useLocation();
 
   // Initialize socket.io client
   useEffect(() => {
-    socketRef.current = io(ip.address); // Ensure ip.address includes protocol and port
+    socketRef.current = io(ip.address);
 
     socketRef.current.on('connect', () => {
       console.log('Socket connected:', socketRef.current.id);
@@ -32,11 +33,15 @@ function PatientNavBar({ pid }) {
       console.error('Socket connection error:', error);
     });
 
-    socketRef.current.emit('identify', { userId: pid, userRole: 'Patient' });
+    if (pid) {
+      socketRef.current.emit('identify', { userId: pid, userRole: 'Patient' });
+    } else {
+      console.warn('Patient ID is undefined');
+    }
 
     socketRef.current.on('newNews', (data) => {
       const notification = {
-        _id: Date.now().toString(),
+        _id: data.notificationId, // Use the notification ID from the server
         message: data.message,
         isRead: false,
         link: data.link,
@@ -50,7 +55,7 @@ function PatientNavBar({ pid }) {
     socketRef.current.on('appointmentStatusUpdate', (data) => {
       if (data.patientId === pid) {
         const notification = {
-          _id: Date.now().toString(),
+          _id: data.notificationId, // Use the notification ID from the server
           message: data.message,
           isRead: false,
           link: data.link,
@@ -68,7 +73,9 @@ function PatientNavBar({ pid }) {
 
     socketRef.current.io.on('reconnect', () => {
       console.log('Socket reconnected');
-      socketRef.current.emit('identify', { userId: pid, userRole: 'Patient' });
+      if (pid) {
+        socketRef.current.emit('identify', { userId: pid, userRole: 'Patient' });
+      }
     });
 
     return () => {
@@ -83,6 +90,11 @@ function PatientNavBar({ pid }) {
   }, []);
 
   useEffect(() => {
+    if (!pid) {
+      console.warn('Patient ID is undefined');
+      return;
+    }
+
     axios
       .get(`${ip.address}/api/patient/api/onepatient/${pid}`)
       .then((res) => {
@@ -123,11 +135,16 @@ function PatientNavBar({ pid }) {
   const markAsRead = async (notification) => {
     try {
       if (notification.link) {
-        navigate(notification.link);
+        navigate(notification.link, { state: { pid } }); // Pass pid in state
       }
-
+  
+      if (!notification._id) {
+        console.error('Notification ID is undefined');
+        return;
+      }
+  
       await axios.put(`${ip.address}/api/notifications/${notification._id}/read`);
-
+  
       setNotifications((prevNotifications) =>
         prevNotifications.map((notif) =>
           notif._id === notification._id ? { ...notif, isRead: true } : notif
@@ -166,13 +183,22 @@ function PatientNavBar({ pid }) {
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar-nav" className="justify-content-end">
           <Nav>
-            <Nav.Link className="pnb-nav-link" onClick={onClickHomepage}>
+            <Nav.Link
+              className={`pnb-nav-link ${location.pathname === '/homepage' ? 'active' : ''}`}
+              onClick={onClickHomepage}
+            >
               Home
             </Nav.Link>
-            <Nav.Link className="pnb-nav-link" onClick={MyAppointment}>
+            <Nav.Link
+              className={`pnb-nav-link ${location.pathname === '/myappointment' ? 'active' : ''}`}
+              onClick={MyAppointment}
+            >
               My Appointments
             </Nav.Link>
-            <Nav.Link className="pnb-nav-link" onClick={onButtonContainerClick}>
+            <Nav.Link
+              className={`pnb-nav-link ${location.pathname === '/choosedoctor' ? 'active' : ''}`}
+              onClick={onButtonContainerClick}
+            >
               Choose Doctor
             </Nav.Link>
           </Nav>
