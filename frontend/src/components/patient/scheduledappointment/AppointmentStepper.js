@@ -7,7 +7,6 @@ import {
   PencilFill,
 } from 'react-bootstrap-icons';
 import { Row, Col } from 'react-bootstrap';
-
 const statusSteps = [
   'Pending',
   'Scheduled',
@@ -18,11 +17,8 @@ const statusSteps = [
   'Rescheduled',
   'Cancelled',
 ];
-
 function AppointmentStepper({ currentStatus, latestAppointment }) {
   const activeStep = statusSteps.indexOf(currentStatus);
-
-  // Function to format the date
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     const dayOfWeek = date.toLocaleString('default', { weekday: 'short' });
@@ -31,40 +27,28 @@ function AppointmentStepper({ currentStatus, latestAppointment }) {
     const year = date.getFullYear();
     return `${dayOfWeek}, ${month} ${day}, ${year}`;
   };
-
-  // Extract appointment type, handling both object and array cases
   const getAppointmentType = () => {
     if (Array.isArray(latestAppointment.appointment_type)) {
       return latestAppointment.appointment_type[0]?.appointment_type || 'N/A';
     }
     return latestAppointment.appointment_type?.appointment_type || 'N/A';
   };
-
-
   const convertTimeRangeTo12HourFormat = (timeRange) => {
-    // Check if the timeRange is missing or empty
     if (!timeRange) return 'Not Assigned';
-  
     const convertTo12Hour = (time) => {
-      // Handle single time values like "10:00"
       if (!time) return '';
-  
       let [hours, minutes] = time.split(':').map(Number);
       const period = hours >= 12 ? 'PM' : 'AM';
-      hours = hours % 12 || 12; // Convert 0 or 12 to 12 in 12-hour format
-  
+      hours = hours % 12 || 12;
       return `${hours}:${String(minutes).padStart(2, '0')} ${period}`;
     };
-  
-    // Handle both single times and ranges
     if (timeRange.includes(' - ')) {
       const [startTime, endTime] = timeRange.split(' - ');
       return `${convertTo12Hour(startTime)} - ${convertTo12Hour(endTime)}`;
     } else {
-      return convertTo12Hour(timeRange); // Single time case
+      return convertTo12Hour(timeRange);
     }
   };
-
   return (
     <div className="stepper-container">
       {statusSteps.map((status, index) => (
@@ -86,7 +70,6 @@ function AppointmentStepper({ currentStatus, latestAppointment }) {
           </div>
           <div className="step-content">
             <p className="step-label">{status}</p>
-
             {index === activeStep && latestAppointment && (
               <div className="appointment-details shadow-sm">
                 <h4>Appointment Details</h4>
@@ -113,7 +96,6 @@ function AppointmentStepper({ currentStatus, latestAppointment }) {
                         ? `Dr. ${latestAppointment.doctor.dr_firstName} ${latestAppointment.doctor.dr_middleInitial}. ${latestAppointment.doctor.dr_lastName}`
                         : 'Not assigned yet'}
                     </p>
-
                     <p>
                       <PencilFill
                         className="font-gray"
@@ -123,7 +105,6 @@ function AppointmentStepper({ currentStatus, latestAppointment }) {
                       Appointment Type: {getAppointmentType()}
                     </p>
                   </Col>
-                 
                 </Row>
                 <p>Follow-up: {latestAppointment.followUp ? 'Yes' : 'No'}</p>
               </div>
@@ -134,5 +115,4 @@ function AppointmentStepper({ currentStatus, latestAppointment }) {
     </div>
   );
 }
-
 export default AppointmentStepper;

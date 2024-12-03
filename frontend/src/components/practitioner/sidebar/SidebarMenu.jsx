@@ -25,17 +25,17 @@ const SidebarMenu = (props) => {
             .then(res => {
                 console.log('Doctor status updated to Offline');
                 setShowLogoutModal(false);
-                navigate('/'); // Navigate to the home page after updating the status
+                navigate('/');
             })
             .catch(err => {
                 console.error('Error updating doctor status', err);
                 setShowLogoutModal(false);
-                navigate('/'); // Navigate even if there was an error, but you might want to handle this differently
+                navigate('/'); 
             });
     };
 
     const cancelLogout = () => {
-        setShowLogoutModal(false); // Close the modal without logging out
+        setShowLogoutModal(false);
     };
 
     return (

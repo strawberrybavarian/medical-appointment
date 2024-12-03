@@ -58,10 +58,10 @@ const PrescriptionSchema = new Schema({
         default: 'active'
     },
     
-    prescriptionImage: {
+    prescriptionImages: [{
         type: String,
-        default: '' // Path to prescription image, if available
-    },
+        default: '' // Path to prescription images
+    }],
     
     // Optional expiry date for prescription validity
     expiryDate: {

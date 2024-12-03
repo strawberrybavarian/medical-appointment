@@ -7,10 +7,12 @@ const createPrescription = async (req, res) => {
   try {
     const { patientId, appointmentId } = req.params;
     const { doctorId, medications } = req.body; // Medications are passed as stringified JSON
-    const imagePath = req.file ? `images/${req.file.filename}` : '';
+
+    // Handle multiple images
+    const imagePaths = req.files ? req.files.map(file => `images/${file.filename}`) : [];
 
     // Log received data for debugging
-    console.log('Received data:', { patientId, appointmentId, doctorId, medications, imagePath });
+    console.log('Received data:', { patientId, appointmentId, doctorId, medications, imagePaths });
 
     // Validate input
     if (!patientId || !doctorId || !appointmentId) {
@@ -35,7 +37,7 @@ const createPrescription = async (req, res) => {
     if (prescription) {
       // Update the existing prescription
       prescription.medications = parsedMedications;
-      if (imagePath) prescription.prescriptionImage = imagePath; // Update image if present
+      if (imagePaths.length > 0) prescription.prescriptionImages = imagePaths; // Update images if present
       await prescription.save();
     } else {
       // Create a new prescription
@@ -44,7 +46,7 @@ const createPrescription = async (req, res) => {
         appointment: appointmentId,
         doctor: doctorId,
         medications: parsedMedications,
-        prescriptionImage: imagePath,
+        prescriptionImages: imagePaths,
       });
       await prescription.save();
     }

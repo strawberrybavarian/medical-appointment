@@ -1,4 +1,6 @@
-const express = require("express");
+// server.js
+
+const express = require('express');
 const app = express();
 const port = 8000;
 const path = require('path');
@@ -8,8 +10,7 @@ const http = require('http');
 const server = http.createServer(app); // Use this server for Socket.IO
 require('dotenv').config();
 
-
-
+// Import models
 const ChatMessage = require('./chat/chat_model');
 const Patient = require('./patient/patient_model');
 const MedicalSecretary = require('./medicalsecretary/medicalsecretary_model');
@@ -18,30 +19,36 @@ const Notification = require('./notifications/notifications_model');
 const Appointment = require('./appointments/appointment_model');
 const News = require('./news/news_model');
 
+// Initialize Socket.IO
 const socket = require('./socket'); // Import the socket module
 socket.init(server); // Initialize Socket.IO with the server
 
+// Import the scheduler after initializing Socket.IO
+require('./appointments/scheduler');
 
+app.use(
+  session({
+    secret: 'your_secret_key',
+    resave: false,
+    saveUninitialized: true,
+    cookie: {
+      maxAge: 24 * 60 * 60 * 1000,
+    },
+  })
+);
 
-
-app.use(session({
-  secret: 'your_secret_key',
-  resave: false,
-  saveUninitialized: true,
-  cookie: {
-    maxAge: 24 * 60 * 60 * 1000
-  }
-}));
-
-require("./config/mongoose");
+// Connect to MongoDB
+require('./config/mongoose');
 
 // CORS Configuration
 const cors = require('cors');
-app.use(cors({
+app.use(
+  cors({
     origin: '*',
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization']
-}));
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  })
+);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -59,44 +66,48 @@ app.use('/images', express.static(path.join(__dirname, 'services', 'images')));
 
 app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 
-app.use('/uploads', cors({
+app.use(
+  '/uploads',
+  cors({
     origin: '*',
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true
-}), express.static(path.join(__dirname, 'public/uploads')));
+    credentials: true,
+  }),
+  express.static(path.join(__dirname, 'public/uploads'))
+);
 
 app.get('/uploads/:filename', (req, res) => {
-    const fileName = req.params.filename;
-    const filePath = path.join(__dirname, 'public/uploads', fileName);
+  const fileName = req.params.filename;
+  const filePath = path.join(__dirname, 'public/uploads', fileName);
 
-    if (fs.existsSync(filePath)) {
-        res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Disposition', `inline; filename="${fileName}"`);
-        const fileStream = fs.createReadStream(filePath);
-        fileStream.pipe(res);
-    } else {
-        res.status(404).send('File not found.');
-    }
+  if (fs.existsSync(filePath)) {
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `inline; filename="${fileName}"`);
+    const fileStream = fs.createReadStream(filePath);
+    fileStream.pipe(res);
+  } else {
+    res.status(404).send('File not found.');
+  }
 });
 
 app.use(express.static(path.join(__dirname, '../frontend/public')));
 
 // Route Imports
-const DoctorRoutes = require("./doctor/doctor_routes");
+const DoctorRoutes = require('./doctor/doctor_routes');
 DoctorRoutes(app);
-const PatientRoutes = require("./patient/patient_routes");
+const PatientRoutes = require('./patient/patient_routes');
 PatientRoutes(app);
-const MedicalSecretaryRoutes = require("./medicalsecretary/medicalsecretary_routes");
+const MedicalSecretaryRoutes = require('./medicalsecretary/medicalsecretary_routes');
 MedicalSecretaryRoutes(app);
-const CashierRoutes = require("./cashier/cashier_routes");
+const CashierRoutes = require('./cashier/cashier_routes');
 CashierRoutes(app);
 const AdminRoutes = require('./admin/admin_routes');
 AdminRoutes(app);
 
-const FindingsRoutes = require("./findings/findings_routes");
+const FindingsRoutes = require('./findings/findings_routes');
 FindingsRoutes(app);
-const PrescriptionRoutes = require("./prescription/prescription_routes");
+const PrescriptionRoutes = require('./prescription/prescription_routes');
 PrescriptionRoutes(app);
 const AppointmentRoutes = require('./appointments/appointment_routes');
 AppointmentRoutes(app);

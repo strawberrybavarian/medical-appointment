@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { Button, Form, Table, Container, Card, Row, Col } from "react-bootstrap";
-import { PencilSquare, Trash, CheckCircle, XCircle } from 'react-bootstrap-icons'; // Import the icons
+import { PencilSquare, Trash, CheckCircle, XCircle } from 'react-bootstrap-icons';
 import axios from "axios";
 import { ip } from "../../../../ContentExport";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import PrescriptionHistory from "./PrescriptionHistory";
-
+import ImagePrescriptionUpload from "./ImagePrescriptionUpload";
 function Prescription({ patientId, appointmentId, doctorId }) {
   const [medication, setMedication] = useState({
     name: "",
@@ -18,19 +18,19 @@ function Prescription({ patientId, appointmentId, doctorId }) {
     notes: "",
   });
   const [medications, setMedications] = useState([]);
-  const [editingIndex, setEditingIndex] = useState(null); // Track if editing an existing medication
-  const [isAdding, setIsAdding] = useState(false); // Track if we're adding a new prescription
+  const [editingIndex, setEditingIndex] = useState(null);
+  const [isAdding, setIsAdding] = useState(false);
   const [error, setError] = useState("");
-
+  const [prescriptionImages, setPrescriptionImages] = useState([]);
   useEffect(() => {
-    // Fetch existing prescriptions
     const fetchPrescription = async () => {
-      console.log("Fetching prescription for appointmentId:", appointmentId); // Log the appointmentId
+      console.log("Fetching prescription for appointmentId:", appointmentId);
       try {
         const response = await axios.get(`${ip.address}/api/getfindings/${appointmentId}`);
         if (response.data && response.data.prescription) {
           console.log("Prescription found:", response.data.prescription);
           setMedications(response.data.prescription.medications);
+          setPrescriptionImages(response.data.prescription.prescriptionImages || []);
         } else {
           console.log("No prescription found");
         }
@@ -38,24 +38,19 @@ function Prescription({ patientId, appointmentId, doctorId }) {
         console.log("Error fetching prescription:", err);
       }
     };
-
     fetchPrescription();
   }, [appointmentId]);
-
   const handleMedicationChange = (field, value) => {
     setMedication({ ...medication, [field]: value });
   };
-
   const addMedication = () => {
     if (medication.name && medication.type && medication.dosage && medication.frequency && medication.duration && medication.instruction) {
       if (editingIndex !== null) {
-        // Update existing medication
         const updatedMedications = [...medications];
         updatedMedications[editingIndex] = medication;
         setMedications(updatedMedications);
         setEditingIndex(null);
       } else {
-        // Add new medication
         setMedications((prevMedications) => [...prevMedications, medication]);
       }
       setMedication({
@@ -72,20 +67,15 @@ function Prescription({ patientId, appointmentId, doctorId }) {
       setError("Please fill in all fields");
     }
   };
-
   const removeMedication = async (index) => {
     const newMedications = medications.filter((_, i) => i !== index);
     setMedications(newMedications);
-
-    // Save after removal
     await handleSubmit();
   };
-
   const editMedication = (index) => {
     setMedication(medications[index]);
     setEditingIndex(index);
   };
-
   const cancelEdit = () => {
     setEditingIndex(null);
     setMedication({
@@ -98,14 +88,17 @@ function Prescription({ patientId, appointmentId, doctorId }) {
       notes: "",
     });
   };
-
   const handleSubmit = async () => {
     const formData = new FormData();
     formData.append("patientId", patientId);
     formData.append("doctorId", doctorId);
     formData.append("appointmentId", appointmentId);
     formData.append("medications", JSON.stringify(medications));
-  
+    prescriptionImages.forEach((image, index) => {
+      if (image.file) {
+        formData.append("images", image.file);
+      }
+    });
     try {
       const response = await axios.post(
         `${ip.address}/api/doctor/api/createPrescription/${patientId}/${appointmentId}`,
@@ -123,7 +116,6 @@ function Prescription({ patientId, appointmentId, doctorId }) {
       console.log("Error saving prescription:", err);
     }
   };
-
   const printPrescription = () => {
     const printWindow = window.open('hahaa', 'Molino Polyclinic');
     printWindow.document.write(`
@@ -145,14 +137,12 @@ function Prescription({ patientId, appointmentId, doctorId }) {
       <body>
         <div class="container">
           <h1>Prescription</h1>
-
           <div class="details">
             <p><strong>Doctor:</strong> Dr. ${doctorId}</p>
             <p><strong>Appointment ID:</strong> ${appointmentId}</p>
             <p><strong>Date:</strong> ${new Date().toLocaleDateString()}</p>
             <p><strong>Patient ID:</strong> ${patientId}</p>
           </div>
-
           <h3>Medications</h3>
           <table class="table">
             <thead>
@@ -187,7 +177,6 @@ function Prescription({ patientId, appointmentId, doctorId }) {
     printWindow.print();
     printWindow.close();
   };
-
   return (
     <Container fluid>
       <Row>
@@ -195,7 +184,6 @@ function Prescription({ patientId, appointmentId, doctorId }) {
           <PrescriptionHistory pid={patientId} />
         </Col>
         <Col md={8}>
-
           <Card className="mb-4">
           <Card.Header>
             <h4 className="m-0 font-weight-bold text-gray">Prescription Preview</h4>
@@ -226,7 +214,7 @@ function Prescription({ patientId, appointmentId, doctorId }) {
                         <td><Form.Control type="text" value={medication.instruction} onChange={(e) => handleMedicationChange("instruction", e.target.value)} /></td>
                         <td>
                           <CheckCircle
-                            onClick={addMedication}  // Handles both adding and saving to the backend
+                            onClick={addMedication}
                             style={{ color: "green", cursor: "pointer" }}
                             title="Save"
                           />
@@ -249,7 +237,6 @@ function Prescription({ patientId, appointmentId, doctorId }) {
                     )}
                   </tr>
                 ))}
-
                 {isAdding && (
                   <tr>
                     <td><Form.Control type="text" value={medication.name} onChange={(e) => handleMedicationChange("name", e.target.value)} /></td>
@@ -260,7 +247,7 @@ function Prescription({ patientId, appointmentId, doctorId }) {
                     <td><Form.Control type="text" value={medication.instruction} onChange={(e) => handleMedicationChange("instruction", e.target.value)} /></td>
                     <td>
                       <CheckCircle
-                        onClick={addMedication}  // Handles both adding and saving to the backend
+                        onClick={addMedication}
                         style={{ color: "green", cursor: "pointer" }}
                         title="Save"
                       />
@@ -270,34 +257,33 @@ function Prescription({ patientId, appointmentId, doctorId }) {
                 )}
               </tbody>
             </Table>
-
             <div className="d-flex justify-content-between">
               {!isAdding && (
                 <Button variant="primary" onClick={() => setIsAdding(true)}>
                   Add Medication
                 </Button>
               )}
-
-              {/* Save Prescription Button linked to handleSubmit */}
+              {}
               <Button variant="success" onClick={handleSubmit}>
                 Save Prescription
               </Button>
-
               <Button variant="success" onClick={printPrescription}>
                 Print Prescription
               </Button>
             </div>
 
+            <ImagePrescriptionUpload
+            prescriptionImages={prescriptionImages}
+            setPrescriptionImages={setPrescriptionImages}
+            />
             {error && <p className="text-danger mt-2">{error}</p>}
           </Card.Body>
+
         </Card>
         </Col>
       </Row>
-      
       <ToastContainer />
-
     </Container>
   );
 }
-
 export default Prescription;
