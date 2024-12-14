@@ -287,6 +287,23 @@ const updatePatientAccountStatus = (req, res) => {
         res.status(500).json({ message: 'Something went wrong. Please try again.', error: err });
     });
 };
+
+const findAdminById = (req, res) => {
+    Admin.findOne({ _id: req.params.adminId })
+      .populate('notifications') // Populate notifications
+      .then((theAdmin) => {
+      if (!theAdmin) {
+        return res.status(404).json({ message: 'Admin not found' });
+      }
+      res.json({ theAdmin });
+      })
+      .catch((err) => {
+      console.error('Error finding Admin:', err);
+      res.status(500).json({ message: 'Something went wrong', error: err });
+      });
+};
+
+
 module.exports = {
     NewAdminSignUp,
     findAllAdmin,
@@ -300,5 +317,6 @@ module.exports = {
     getAllStaff,
     updateStaffAccountStatus,
     adminSignUp,
-    changeAdminPassword
+    changeAdminPassword,
+    findAdminById
 };

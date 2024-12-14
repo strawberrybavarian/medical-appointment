@@ -7,6 +7,8 @@ const Prescription = require('../prescription/prescription_model');
 const Notification = require('../notifications/notifications_model')
 const DoctorService = require('../doctor/doctor_service')
 const mongoose = require('mongoose');
+const Admin = require('../admin/admin_model');
+const socket = require('../socket');
 const Specialty = require('../specialty/specialty_model');
 const QRCode = require('qrcode');
 const speakeasy = require('speakeasy');
@@ -708,30 +710,95 @@ const updateAvailability = async (req, res) => {
 };
 
 const requestDeactivation = async (req, res) => {
-    try {
-        const { reason } = req.body;
+  try {
+    const { reason } = req.body;
 
-        // Set the deactivation request status and reason
-        const doctor = await Doctors.findByIdAndUpdate(
-            req.params.doctorId,
-            { 
-                deactivationRequest: {
-                    requested: true,
-                    reason,
-                    confirmed: null
-                }
-            },
-            { new: true }
-        );
+    // Update the doctor's deactivation request status
+    const doctor = await Doctors.findByIdAndUpdate(
+      req.params.doctorId,
+      {
+        deactivationRequest: {
+          requested: true,
+          reason,
+          confirmed: null
+        }
+      },
+      { new: true }
+    );
 
-        // Notify the admin or medical secretary (e.g., send an email, or push notification)
-        // For now, we'll just log it
-        console.log(`Deactivation request for Doctor ${doctor.dr_firstName} ${doctor.dr_lastName} pending confirmation.`);
-
-        res.status(200).json({ message: 'Deactivation request sent successfully', doctor });
-    } catch (error) {
-        res.status(400).json({ message: error.message });
+    if (!doctor) {
+      return res.status(404).json({ message: 'Doctor not found.' });
     }
+
+    // Create a notification message
+    const message = `Deactivation request for Doctor ${doctor.dr_firstName} ${doctor.dr_lastName} is pending confirmation.`;
+   
+    const type = 'DeactivationRequest';
+
+    // Find all Admins and Medical Secretaries
+    const [medicalSecretaries, admins] = await Promise.all([
+      MedicalSecretary.find({}, '_id'),
+      Admin.find({}, '_id'),
+    ]);
+
+    const adminRecipients = admins.map(ad => ad._id);
+    const medSecRecipients = medicalSecretaries.map(ms => ms._id);
+
+    // Create Notification for Admins
+    const adminNotification = new Notification({
+      message: message,
+      receiver: adminRecipients,
+      receiverModel: 'Admin',
+      recipientType: 'Admin',
+      isRead: false,
+      link: '/',
+      type: type,
+    });
+    const savedAdminNotification = await adminNotification.save();
+
+    // Update each Admin with this notification
+    await Promise.all(
+      admins.map(ad => Admin.findByIdAndUpdate(ad._id, { $push: { notifications: savedAdminNotification._id } }))
+    );
+
+    // Create Notification for Medical Secretaries
+    const medSecNotification = new Notification({
+      message: message,
+      receiver: medSecRecipients,
+      receiverModel: 'MedicalSecretary',
+      recipientType: 'MedicalSecretary',
+      isRead: false,
+      link: '/medsec/doctors',
+      type: type,
+    });
+    const savedMedSecNotification = await medSecNotification.save();
+
+    // Update each Medical Secretary with this notification
+    await Promise.all(
+      medicalSecretaries.map(ms => MedicalSecretary.findByIdAndUpdate(ms._id, { $push: { notifications: savedMedSecNotification._id } }))
+    );
+
+    // Broadcast the notification in real-time to connected Admins
+    socket.broadcastNotificationToAdmins({
+      message: message,
+      notificationId: savedAdminNotification._id,
+      link: '/',
+    });
+
+    // Broadcast the notification in real-time to connected Medical Secretaries
+    socket.broadcastNotificationToMedSecs({
+      message: message,
+      notificationId: savedMedSecNotification._id,
+      link: '/medsec/doctors',
+    });
+
+    console.log(`Deactivation request for Doctor ${doctor.dr_firstName} ${doctor.dr_lastName} pending confirmation.`);
+
+    res.status(200).json({ message: 'Deactivation request sent successfully', doctor });
+  } catch (error) {
+    console.error('Error requesting deactivation:', error);
+    res.status(400).json({ message: error.message });
+  }
 };
 
 

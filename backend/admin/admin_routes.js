@@ -3,12 +3,14 @@ const AdminCountControllerDoctor = require('./counting/admin_countcontroller')
 console.log('Admin Routes Connected')
 
 module.exports = app => {
-
+    app.get('/api/admin/deactivation-requests', AdminController.getDeactivationRequests);
+    
     app.get('/api/admin/api/staff/all', AdminController.getAllStaff);
     app.put('/api/admin/api/staff/account-status/:id', AdminController.updateStaffAccountStatus);
     
     app.post('/api/admin/api/signup', AdminController.adminSignUp);
-
+    //Admin
+    app.get('/api/admin/:adminId', AdminController.findAdminById);
     // Admin change password route
     app.put('/api/admin/api/change-password/:adminId', AdminController.changeAdminPassword);
     app.get('/api/admin/api/alladmin', AdminController.findAllAdmin)
@@ -33,7 +35,7 @@ module.exports = app => {
     app.get('/api/admin/api/appointments/completed-by-month', AdminController.getCompletedAppointmentsByMonth)
     
     //For Deactivation of Appointment
-    app.get('/api/admin/deactivation-requests', AdminController.getDeactivationRequests);
+   
     app.post('/api/admin/confirm-deactivation/:doctorId', AdminController.confirmDeactivation);
     
 

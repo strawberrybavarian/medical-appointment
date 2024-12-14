@@ -21,12 +21,8 @@ module.exports = {
     io.on('connection', (socket) => {
       console.log('A user connected:', socket.id);
 
-      
-
       // Handle user identification
       socket.on('identify', async (userData) => {
-
-
         console.log('Identify event received:', userData);
 
         if (!userData.userId) {
@@ -64,7 +60,6 @@ module.exports = {
             },
             {
               $project: {
-                _id: 0,
                 _id: '$patientInfo._id',
                 name: {
                   $concat: [
@@ -89,7 +84,6 @@ module.exports = {
 
         if (data.senderModel === 'Patient') {
           // Patient is sending a message to staff
-          // Get all Medical Secretary and Admin IDs
           const medSecs = await MedicalSecretary.find({}, '_id');
           const admins = await Admin.find({}, '_id');
           receivers = [
@@ -136,22 +130,6 @@ module.exports = {
           createdAt: chatMessage.createdAt,
         };
 
-        // Function to get the sender's name based on their model
-        async function getSenderName(senderId, senderModel) {
-          if (senderModel === 'Patient') {
-            const patient = await Patient.findById(senderId);
-            return `${patient.patient_firstName} ${patient.patient_lastName}`;
-          } else if (senderModel === 'Medical Secretary') {
-            const medSec = await MedicalSecretary.findById(senderId);
-            return `${medSec.medSec_firstName} ${medSec.medSec_lastName}`;
-          } else if (senderModel === 'Admin') {
-            const admin = await Admin.findById(senderId);
-            return `${admin.admin_firstName} ${admin.admin_lastName}`;
-          } else {
-            return 'Unknown Sender';
-          }
-        }
-
         // Emit the message back to the sender
         const senderSocket = clients[data.senderId];
         if (senderSocket) {
@@ -165,7 +143,7 @@ module.exports = {
             const userSocket = clients[userId];
             if (
               (userSocket.userRole === 'Medical Secretary' || userSocket.userRole === 'Admin') &&
-              userId !== data.senderId // Exclude the sender
+              userId !== data.senderId
             ) {
               userSocket.emit('chat message', messageData);
             }
@@ -182,12 +160,18 @@ module.exports = {
             const userSocket = clients[userId];
             if (
               (userSocket.userRole === 'Medical Secretary' || userSocket.userRole === 'Admin') &&
-              userId !== data.senderId // Exclude the sender
+              userId !== data.senderId
             ) {
               userSocket.emit('chat message', messageData);
             }
           }
         }
+      });
+
+      // Handle 'notification read' event if needed
+      socket.on('notification read', (notificationId) => {
+        console.log(`Notification ${notificationId} marked as read by user ${socket.userId}`);
+        // Additional logic can be implemented here, if desired.
       });
 
       // Handle disconnection
@@ -207,5 +191,49 @@ module.exports = {
     }
     return io;
   },
-  clients: clients, // Export the clients map
+  clients: clients,
+
+  // Utility function to emit a general notification to all Admin and Medical Secretary users
+  broadcastGeneralNotification: (notificationData) => {
+    for (let userId in clients) {
+      const userSocket = clients[userId];
+      if (userSocket.userRole === 'Medical Secretary' || userSocket.userRole === 'Admin') {
+        userSocket.emit('newGeneralNotification', notificationData);
+      }
+    }
+  },
 };
+
+module.exports.broadcastNotificationToAdmins = (notificationData) => {
+  for (let userId in module.exports.clients) {
+    const userSocket = module.exports.clients[userId];
+    if (userSocket.userRole === 'Admin') {
+      userSocket.emit('newGeneralNotification', notificationData);
+    }
+  }
+};
+
+module.exports.broadcastNotificationToMedSecs = (notificationData) => {
+  for (let userId in module.exports.clients) {
+    const userSocket = module.exports.clients[userId];
+    if (userSocket.userRole === 'Medical Secretary') {
+      userSocket.emit('newGeneralNotification', notificationData);
+    }
+  }
+};
+
+// Helper function to get the sender's name based on their model
+async function getSenderName(senderId, senderModel) {
+  if (senderModel === 'Patient') {
+    const patient = await Patient.findById(senderId);
+    return `${patient.patient_firstName} ${patient.patient_lastName}`;
+  } else if (senderModel === 'Medical Secretary') {
+    const medSec = await MedicalSecretary.findById(senderId);
+    return `${medSec.ms_firstName} ${medSec.ms_lastName}`;
+  } else if (senderModel === 'Admin') {
+    const admin = await Admin.findById(senderId);
+    return `${admin.firstName} ${admin.lastName}`;
+  } else {
+    return 'Unknown Sender';
+  }
+}

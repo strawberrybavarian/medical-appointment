@@ -49,6 +49,6 @@ module.exports = app => {
     app.get('/api/medicalsecretary/api/patient-stats', MSController.getPatientStats);
     app.get('/api/medicalsecretary/api/findone/:msid', MSController.findMedSecById)
 
-
+    app.post('/api/notifications/general', MSController.createGeneralNotification);
 
 }

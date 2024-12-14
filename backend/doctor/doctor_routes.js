@@ -39,6 +39,8 @@ const upload = multer({
 
 
 module.exports = app => {
+
+ 
   //Biography
   app.get('/api/doctor/:id/gethmo', DoctorController.getDoctorHmo);
   app.put('/api/doctor/api/:id/updatebiography', DoctorController.updateDoctorBiography);  // Update Biography

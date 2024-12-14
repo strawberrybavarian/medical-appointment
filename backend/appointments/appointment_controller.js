@@ -60,32 +60,41 @@ const createAppointment = async (req, res) => {
   try {
     const { doctor, date, time, reason, medium, appointment_type } = req.body;
     const patientId = req.params.uid;
+
     if (!date || !time || !reason) {
       return res.status(400).json({ message: 'Date, Time, and Primary Concern are required.' });
     }
+
     const selectedDate = new Date(date);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
+
     if (selectedDate < today) {
       return res.status(400).json({ message: 'Cannot book an appointment in the past.' });
     }
+
     const existingAppointment = await Appointment.findOne({
       patient: patientId,
-      status: { $nin: ['Cancelled', 'Completed', 'Missed' , 'Rescheduled'] },
+      status: { $nin: ['Cancelled', 'Completed', 'Missed', 'Rescheduled'] },
     });
+
     if (existingAppointment) {
       return res.status(400).json({
         message: 'You already have an active appointment. Please complete or cancel it before booking a new one.'
       });
     }
+
     const [patientData, doctorData] = await Promise.all([
       Patient.findById(patientId).select('patient_firstName patient_lastName'),
       Doctors.findById(doctor).select('dr_firstName dr_lastName availability bookedSlots'),
     ]);
+
     if (!patientData) return res.status(404).json({ message: 'Patient not found.' });
     if (!doctorData) return res.status(404).json({ message: 'Doctor not found.' });
+
     const [startTime, endTime] = time.split(' - ').map(convertTo24HourFormat);
     const finalAppointmentType = appointment_type?.appointment_type || "Consultation";
+
     const newAppointment = new Appointment({
       patient: new mongoose.Types.ObjectId(patientId),
       doctor: new mongoose.Types.ObjectId(doctor),
@@ -96,17 +105,38 @@ const createAppointment = async (req, res) => {
       appointment_type: { appointment_type: finalAppointmentType, category: "General" },
       status: 'Pending',
     });
+
     const savedAppointment = await newAppointment.save();
+
     await Promise.all([
       Patient.findByIdAndUpdate(patientId, { $push: { patient_appointments: savedAppointment._id } }),
       Doctors.findByIdAndUpdate(doctor, { $push: { dr_appointments: savedAppointment._id } }),
     ]);
+
+    // Audit Logging for the Patient
+    const auditData = {
+      user: patientId,
+      userType: 'Patient',
+      action: 'Create Appointment',
+      description: `Appointment created for patient ${patientData.patient_firstName} ${patientData.patient_lastName} with Dr. ${doctorData.dr_firstName} ${doctorData.dr_lastName} on ${date} at ${time}. Reason: ${reason}`,
+      ipAddress: req.ip,
+      userAgent: req.get('User-Agent'),
+    };
+
+    const audit = new Audit(auditData);
+    await audit.save();
+
+    await Patient.findByIdAndUpdate(patientId, { $push: { audits: audit._id } });
+
+    // Notifications for Admins and Secretaries
     const [medicalSecretaries, admins] = await Promise.all([
       MedicalSecretary.find({}, '_id'),
       Admin.find({}, '_id'),
     ]);
+
     const recipients = [...medicalSecretaries.map(ms => ms._id), ...admins.map(ad => ad._id)];
     const notificationMessage = `New pending appointment created by ${patientData.patient_firstName} ${patientData.patient_lastName}.`;
+
     const notification = new Notification({
       message: notificationMessage,
       receiver: recipients,
@@ -116,23 +146,29 @@ const createAppointment = async (req, res) => {
       type: 'Appointment',
       recipientType: 'Admin',
     });
+
     await notification.save();
+
     await Promise.all(
       medicalSecretaries.map(ms => {
         return MedicalSecretary.findByIdAndUpdate(ms._id, { $push: { notifications: notification._id } });
       })
     );
+
     await Promise.all(
       admins.map(ad => {
         return Admin.findByIdAndUpdate(ad._id, { $push: { notifications: notification._id } });
       })
     );
+
     const io = socket.getIO();
     const clients = socket.clients;
+
     if (io && clients) {
       for (let userId in clients) {
         const userSocket = clients[userId];
         const userRole = userSocket.userRole;
+
         if (userRole === 'Medical Secretary' || userRole === 'Admin') {
           userSocket.emit('newAppointment', {
             message: notificationMessage,
@@ -146,12 +182,14 @@ const createAppointment = async (req, res) => {
         }
       }
     }
+
     res.status(201).json(savedAppointment);
   } catch (error) {
     console.error('Error creating appointment:', error);
     res.status(500).json({ message: `Failed to create appointment: ${error.message}` });
   }
 };
+
 
 const createServiceAppointment = async (req, res) => {
   try {
@@ -308,21 +346,47 @@ const updateAppointmentStatus = async (req, res) => {
   try {
     const { status } = req.body;
     const appointmentId = req.params.id;
-    const validStatuses = ['Pending', 'Scheduled', 'Completed', 'Cancelled', 'Ongoing', 'To-send', 'For Payment', 'Upcoming'];
+    const validStatuses = [
+      'Pending', 'Scheduled', 'Completed', 'Cancelled', 'Ongoing', 
+      'To-send', 'For Payment', 'Upcoming'
+    ];
+
     if (!validStatuses.includes(status)) {
       return res.status(400).json({ message: 'Invalid status update.' });
     }
+
     const appointment = await Appointment.findById(appointmentId)
       .populate('doctor', 'dr_firstName dr_lastName bookedSlots availability')
       .populate('patient', 'patient_firstName patient_lastName patient_email');
+
     if (!appointment) {
       return res.status(404).json({ message: 'Appointment not found.' });
     }
+
     const oldStatus = appointment.status;
     appointment.status = status;
     await appointment.save();
+
     const io = socket.getIO();
     const clients = socket.clients;
+
+    // Helper function to determine the notification type based on the appointment status
+    function getNotificationType(newStatus) {
+      switch (newStatus) {
+        case 'Scheduled':
+          return 'Scheduled';
+        case 'Ongoing':
+          return 'Ongoing';
+        case 'Completed':
+          return 'Completed';
+        case 'Cancelled':
+          return 'Cancelled';
+        default:
+          return 'StatusUpdate'; // fallback
+      }
+    }
+
+    // Notify Doctor if status is 'Scheduled' or 'Upcoming'
     if ((status === 'Scheduled' || status === 'Upcoming') && appointment.doctor) {
       const notificationMessage = `Appointment with ${appointment.patient.patient_firstName} ${appointment.patient.patient_lastName} is now ${status}.`;
       const doctorNotification = new Notification({
@@ -330,12 +394,16 @@ const updateAppointmentStatus = async (req, res) => {
         receiver: appointment.doctor._id,
         receiverModel: 'Doctor',
         isRead: false,
-        link: `/appointments/${appointment._id}`,
-        type: 'StatusUpdate',
+        link: `/mainappointment?outerTab=mypatients`,
+        type: getNotificationType(status),
         recipientType: 'Doctor',
       });
       await doctorNotification.save();
-      await Doctors.findByIdAndUpdate(appointment.doctor._id, { $push: { notifications: doctorNotification._id } });
+
+      await Doctors.findByIdAndUpdate(appointment.doctor._id, {
+        $push: { notifications: doctorNotification._id }
+      });
+
       const doctorSocket = clients[appointment.doctor._id.toString()];
       if (doctorSocket && doctorSocket.userRole === 'Doctor') {
         doctorSocket.emit('appointmentStatusUpdate', {
@@ -343,10 +411,12 @@ const updateAppointmentStatus = async (req, res) => {
           appointmentId: appointment._id,
           doctorId: appointment.doctor._id,
           status: status,
-          link: `/appointments/${appointment._id}`,
+          link: `/mainappointment?outerTab=mypatients`,
         });
       }
     }
+
+    // Notify Patient if status changes to one of the specified statuses
     if (['Scheduled', 'Ongoing', 'Completed', 'Cancelled'].includes(status) && oldStatus !== status) {
       const notificationMessage = `Your appointment ${appointment.appointment_ID || appointment._id} status has been updated to ${status}.`;
       const patientNotification = new Notification({
@@ -355,11 +425,15 @@ const updateAppointmentStatus = async (req, res) => {
         receiverModel: 'Patient',
         isRead: false,
         link: `/myappointment`,
-        type: 'StatusUpdate',
+        type: getNotificationType(status),
         recipientType: 'Patient',
       });
       await patientNotification.save();
-      await Patient.findByIdAndUpdate(appointment.patient._id, { $push: { notifications: patientNotification._id } });
+
+      await Patient.findByIdAndUpdate(appointment.patient._id, {
+        $push: { notifications: patientNotification._id }
+      });
+
       const patientSocket = clients[appointment.patient._id.toString()];
       if (patientSocket && patientSocket.userRole === 'Patient') {
         patientSocket.emit('appointmentStatusUpdate', {
@@ -371,6 +445,8 @@ const updateAppointmentStatus = async (req, res) => {
         });
       }
     }
+
+    // If status is 'Scheduled', send an email
     if (status === 'Scheduled') {
       const transporter = nodemailer.createTransport({
         service: 'gmail',
@@ -379,6 +455,7 @@ const updateAppointmentStatus = async (req, res) => {
           pass: staff_email.pass,
         },
       });
+
       const mailOptions = {
         from: staff_email.user,
         to: appointment.patient.patient_email,
@@ -388,6 +465,7 @@ Your appointment (${appointment.appointment_ID || appointment._id}) has been sch
 Best regards,
 Your Clinic Team`,
       };
+
       transporter.sendMail(mailOptions, (error, info) => {
         if (error) {
           console.error('Error sending email:', error);
@@ -396,12 +474,14 @@ Your Clinic Team`,
         }
       });
     }
+
     res.status(200).json(appointment);
   } catch (error) {
     console.error('Error updating appointment status:', error);
     res.status(500).json({ message: `Failed to update status: ${error.message}` });
   }
 };
+
 
 const getAppointmentById = async (req, res) => {
   try {

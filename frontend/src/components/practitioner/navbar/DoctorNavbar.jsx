@@ -161,8 +161,6 @@ function DoctorNavbar({ doctor_image, did }) {
 
             <Navbar.Toggle aria-controls="basic-navbar-nav" />
             <Navbar.Collapse id="basic-navbar-nav" className="justify-content-end">
-              
-
               <Nav>
                 <Nav.Link onClick={toggleNotifications} className="position-relative">
                   <Bell size={20} />
@@ -200,40 +198,27 @@ function DoctorNavbar({ doctor_image, did }) {
                 </Nav.Link>
               </Nav>
 
-              <Nav className="align-items-center">
-                <NavDropdown
-                  title={
-                    <div className="d-flex align-items-center justify-content-end">
-                      <div className="ms-2">
-                        <p className="m-0" style={{ fontSize: '14px', fontWeight: 'bold' }}>
-                          {fullName}
-                        </p>
-                        <p
-                          className="m-0"
-                          style={{ fontSize: '12px', color: 'gray', textAlign: 'end' }}
-                        >
-                          Doctor
-                        </p>
-                      </div>
-                      <img
-                        src={doctor_image ? `${ip.address}/${doctor_image}` : defaultImage}
-                        alt="Profile"
-                        className="profile-image ms-3"
-                        style={{ objectFit: 'cover' }}
-                      />
-                    </div>
-                  }
-                  id="basic-nav-dropdown"
-                  className="pnb-nav-link1"
-                >
-                  <NavDropdown.Item as={Link} to={`/doctor/profile/${did}`}>
-                    Profile
-                  </NavDropdown.Item>
-                  <NavDropdown.Divider />
-                  <NavDropdown.Item className="pnb-nav-link" onClick={onLogout}>
-                    Logout
-                  </NavDropdown.Item>
-                </NavDropdown>
+              <Nav className="d-flex align-items-center">
+                <div className="d-flex align-items-center justify-content-end">
+                  <div className="ms-2">
+                    <p className="m-0" style={{ fontSize: '14px', fontWeight: 'bold' }}>
+                      {fullName}
+                    </p>
+                    <p
+                      className="m-0"
+                      style={{ fontSize: '12px', color: 'gray', textAlign: 'end' }}
+                    >
+                      Doctor
+                    </p>
+                  </div>
+                  <img
+                    src={doctor_image ? `${ip.address}/${doctor_image}` : defaultImage}
+                    alt="Profile"
+                    className="profile-image ms-3"
+                    style={{ objectFit: 'cover' }}
+                  />
+                </div>
+                
               </Nav>
             </Navbar.Collapse>
           </Container>

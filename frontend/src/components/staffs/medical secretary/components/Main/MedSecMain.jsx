@@ -4,10 +4,11 @@ import MedSecTodaysApp from '../Appointments/MedSecTodaysApp';
 import MedSecPending from '../Appointments/MedSecPending';
 import MedSecOngoing from '../Appointments/MedSecOngoing';
 import MedSecForPayment from '../Appointments/MedSecForPayment';
-import MedSecLaboratoryApp from '../Appointments/MedSecLaboratoryApp';
+
 import MedSecToSend from '../Appointments/MedSecToSend';
 import CreatePatientForms from '../Add Patient/Forms/CreatePatientForms';
 import CreateAppointment from '../Add Patient/New Appointment/CreateAppointment';
+import MedSecCancelled from '../Appointments/MedSecCancelled';
 import { Container, Nav, Row, Button, Modal } from 'react-bootstrap';
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
@@ -85,6 +86,9 @@ function MedSecMain() {
                   </Nav.Item>
                   <Nav.Item>
                     <Nav.Link eventKey="tosend">To-send Lab Results</Nav.Link>
+                  </Nav.Item>
+                  <Nav.Item>
+                    <Nav.Link eventKey="cancelled">Cancelled</Nav.Link>
                   </Nav.Item>
              
                
@@ -190,34 +194,51 @@ function MedSecMain() {
                     )}
                     {activeTab === "tosend" && (
                       <>
-                       <Container fluid className='w-100 d-flex justify-content-end'>
-                      <Button variant="primary" onClick={handleShowAppointmentModal} className="mb-3">
-                        Create Doctor Appointment
-                      </Button>
-                      <Button variant="success" onClick={handleShowServiceModal} className="mb-3 ml-3">
-                        Create Service Appointment
-                      </Button>
-                      <Button variant="secondary" onClick={handleShowPatientModal} className="mb-3 ml-3">
-                        Add Patient
-                      </Button>
-                      
-                    </Container>
-                      <MedSecToSend
-                        msid={userId}
-                        allAppointments={allAppointments}
-                        setAllAppointments={setAllAppointments}
-                        selectedDoctor={selectedDoctor}
-                      />
-                      </>
-                    )}
+                        <Container fluid className='w-100 d-flex justify-content-end'>
+                          <Button variant="primary" onClick={handleShowAppointmentModal} className="mb-3">
+                            Create Doctor Appointment
+                          </Button>
+                          <Button variant="success" onClick={handleShowServiceModal} className="mb-3 ml-3">
+                            Create Service Appointment
+                          </Button>
+                          <Button variant="secondary" onClick={handleShowPatientModal} className="mb-3 ml-3">
+                            Add Patient
+                          </Button>
+                        
+                        </Container>
 
-                      {activeTab === "laboratory" && (
-                      <>
-                        <MedSecLaboratoryApp
+                        <MedSecToSend
+                          msid={userId}
                           allAppointments={allAppointments}
                           setAllAppointments={setAllAppointments}
                           selectedDoctor={selectedDoctor}
                         />
+                      </>
+                    )}
+
+                      {activeTab === "cancelled" && (
+                      <>
+                        <Container fluid className='w-100 d-flex justify-content-end'>
+                          <Button variant="primary" onClick={handleShowAppointmentModal} className="mb-3">
+                            Create Doctor Appointment
+                          </Button>
+                          <Button variant="success" onClick={handleShowServiceModal} className="mb-3 ml-3">
+                            Create Service Appointment
+                          </Button>
+                          <Button variant="secondary" onClick={handleShowPatientModal} className="mb-3 ml-3">
+                            Add Patient
+                          </Button>
+                        </Container>
+
+                        <MedSecCancelled
+                          msid={userId}
+                          allAppointments={allAppointments}
+                          setAllAppointments={setAllAppointments}
+                          selectedDoctor={selectedDoctor}
+                        />
+
+
+                 
                       </>
                     )}  
                     
