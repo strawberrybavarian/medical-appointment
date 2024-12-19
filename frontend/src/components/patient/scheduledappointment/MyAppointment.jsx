@@ -10,35 +10,35 @@ import CancelledAppointments from './CancelledAppointments';
 import CompleteAppointment from './CompleteAppointment';
 import PendingAppointments from './PendingAppointment';
 import RescheduledAppointment from './RescheduledAppointments';
-import { useLocation } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import Footer from '../../Footer';
 import { ip } from '../../../ContentExport';
 import AppointmentStepper from './AppointmentStepper';
 import socket from '../../../socket'; // Import the socket connection
-
+import { usePatient } from '../PatientContext';
+import { useNavigate } from 'react-router-dom';
 function MyAppointment() {
   const [activeTab, setActiveTab] = useState('pending');
   const [appointments, setAppointments] = useState([]);
-  const location = useLocation();
-  const { pid } = location.state || {};
+  const navigate = useNavigate();
 
+  const { patient } = usePatient(); 
   useEffect(() => {
-    // Fetch appointments
+    if (!patient) {
+      navigate('/medapp/login'); // Redirect to login if patient is not available
+    }
+  }, [patient, navigate]);
+  useEffect(() => {
     const fetchAppointments = () => {
       axios
-        .get(`${ip.address}/api/patient/api/onepatient/${pid}`)
+        .get(`${ip.address}/api/patient/api/onepatient/${patient._id}`)
         .then((res) => {
           const fetchedAppointments = res.data.thePatient.patient_appointments;
-
-          // Define inactive statuses
           const inactiveStatuses = ['Cancelled', 'Completed', 'Rescheduled', 'Missed'];
-
-          // Sort appointments to prioritize active ones
           const sortedAppointments = fetchedAppointments.sort((a, b) => {
             if (inactiveStatuses.includes(a.status) && !inactiveStatuses.includes(b.status)) return 1;
             if (!inactiveStatuses.includes(a.status) && inactiveStatuses.includes(b.status)) return -1;
-            // If both have the same status, sort by date descending
+    
             return new Date(b.date) - new Date(a.date);
           });
 
@@ -52,7 +52,7 @@ function MyAppointment() {
     fetchAppointments();
 
     // Set up Socket.IO
-    socket.emit('identify', { userId: pid, userRole: 'Patient' });
+    socket.emit('identify', { userId: patient._id, userRole: 'Patient' });
 
     // Listen for appointment status updates
     socket.on('appointmentStatusUpdate', (data) => {
@@ -70,12 +70,18 @@ function MyAppointment() {
     return () => {
       socket.off('appointmentStatusUpdate');
     };
-  }, [pid]);
+  }, [patient._id]);
 
   // Get the latest active appointment
   const latestAppointment = appointments.find(
     (appointment) => !['Missed'].includes(appointment.status)
   );
+
+
+
+  if (!patient) {
+    return null; // Optionally, display a loading spinner or placeholder
+  }
 
   return (
     <>
@@ -84,7 +90,7 @@ function MyAppointment() {
       </Helmet>
 
       <Container className="cont-fluid-no-gutter" fluid style={{ overflowY: 'scroll', height: '100vh' }}>
-        <PatientNavBar pid={pid} />
+        <PatientNavBar pid={patient._id} />
         <div className="maincolor-container">
           <div className="content-area">
             <Container>

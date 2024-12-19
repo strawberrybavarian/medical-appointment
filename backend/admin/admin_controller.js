@@ -8,6 +8,7 @@ const Admin = require('./admin_model')
 const Services = require('../services/service_model')
 const Specialty = require('../specialty/specialty_model')
 const nodemailer = require('nodemailer');
+const socket = require('../socket');
 const { staff_email } = require('../EmailExport');
 const generateRandomPassword = () => {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -114,7 +115,7 @@ const getAllStaff = async (req, res) => {
       res.status(500).json({ message: 'Error updating account status', error: error.message });
     }
   };
-const confirmDeactivation = async (req, res) => {
+  const confirmDeactivation = async (req, res) => {
     try {
         const { confirm } = req.body; 
         const doctor = await Doctors.findByIdAndUpdate(
@@ -128,6 +129,41 @@ const confirmDeactivation = async (req, res) => {
             },
             { new: true }
         );
+
+        const message = `Your deactivation request has been ${confirm ? 'approved' : 'rejected'}.`;
+        
+        // Create a new notification for the doctor
+        const newNotification = new Notification({
+            message,
+            receiver: doctor._id,
+            receiverModel: 'Doctor',
+            isRead: false,
+            link: '/dashboard', // or any relevant link
+            type: 'Deactivation Request',
+            recipientType: 'Doctor',
+        });
+
+        await newNotification.save();
+
+        // Add the notification to the doctor's notifications array
+        await Doctors.findByIdAndUpdate(doctor._id, { $push: { notifications: newNotification._id } });
+
+        // If Socket.IO is set up, and you have a global clients map:
+        // Emit socket.io event to Doctor (optional)
+        const io = socket.getIO(); // assuming socket.init(server) sets global.io
+        const clients = socket.clients; // map of userId -> socket instance
+        
+        const doctorSocket = clients[doctor._id.toString()];
+        if (doctorSocket && doctorSocket.userRole === 'Doctor') {
+            doctorSocket.emit('appointmentStatusUpdate', {
+                message,
+                doctorId: doctor._id,
+                status: confirm ? 'Deactivation Approved' : 'Deactivation Rejected',
+                link: '/dashboard',
+                notificationId: newNotification._id.toString(),
+            });
+        }
+
         console.log(`Deactivation ${confirm ? 'approved' : 'rejected'} for Doctor ${doctor.dr_firstName} ${doctor.dr_lastName}`);
         res.status(200).json({ message: `Deactivation ${confirm ? 'approved' : 'rejected'}`, doctor });
     } catch (error) {

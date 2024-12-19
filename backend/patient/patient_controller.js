@@ -177,7 +177,7 @@ const NewPatientSignUp = async (req, res) => {
   }
 };
 const loginPatient = async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, rememberMe } = req.body;
 
   try {
     const patient = await Patient.findOne({ patient_email: email });
@@ -192,43 +192,81 @@ const loginPatient = async (req, res) => {
       return res.status(401).json({ message: 'Invalid email or password' });
     }
 
-    // Exclude sensitive information before sending
+    // Exclude sensitive information
     const patientData = {
       _id: patient._id,
       patient_email: patient.patient_email,
       patient_firstName: patient.patient_firstName,
       patient_lastName: patient.patient_lastName,
-      // Include other necessary fields
     };
 
-    // Audit the successful login action
-    const auditData = {
-      user: patient._id,
-      userType: 'Patient', // Specify the user type
-      action: 'Login',  // The action performed
-      description: 'Patient logged in',  // Description of the action
-      ipAddress: req.ip,  // Get the IP address from the request
-      userAgent: req.get('User-Agent'),  // Get the User-Agent (browser/device info)
-    };
+    // Set session data
+    req.session.userId = patient._id;
+    req.session.role = 'Patient';
+    req.session.patient = patientData;
 
-    // Save the audit record to the database
-    const audit = await new Audit(auditData).save();
+    // Set session cookie expiration
+    if (rememberMe) {
+      req.session.cookie.maxAge = 30 * 24 * 60 * 60 * 1000; // 30 days
+    } else {
+      req.session.cookie.maxAge = 30 * 24 * 60 * 60 * 1000; // 30 days (adjust as needed)
+    }
 
-    // Add the audit ID to the patient's `audits` array
-    patient.audits.push(audit._id);
-    await patient.save();
 
-    // Respond to the client
     res.json({
       message: 'Successfully logged in',
-      patientId: patient._id,
-      patientData: patientData,
+      patientData,
     });
   } catch (error) {
-    // Handle error
+    console.error('Error during login:', error);
     res.status(500).json({ message: 'Error logging in', error });
   }
 };
+
+const logoutPatient = async (req, res) => {
+  try {
+    req.session.destroy((err) => {
+      if (err) {
+        console.error('Error clearing session:', err);
+        return res.status(500).json({ message: 'Failed to log out' });
+      }
+      res.clearCookie('connect.sid', { path: '/', httpOnly: true, sameSite: 'strict' });
+      res.json({ message: 'Logged out successfully' });
+    });
+  } catch (error) {
+    console.error('Error logging out:', error);
+    res.status(500).json({ message: 'Failed to log out' });
+  }
+};
+
+const getSessionData = async (req, res) => {
+  try {
+    // Check if a session exists
+    if (!req.session || !req.session.userId || req.session.role !== 'Patient') {
+      return res.status(401).json({ message: 'No active session found.' });
+    }
+
+    // Fetch the patient data stored in the session
+    const patient = req.session.patient;
+    if (!patient) {
+      return res.status(401).json({ message: 'Session invalid or expired.' });
+    }
+
+    // Respond with the patient session data
+    res.json({
+      message: 'Session data retrieved successfully.',
+      patient,
+    });
+
+
+
+    console.log('Session Get Data:', req.session);
+  } catch (error) {
+    console.error('Error fetching session data:', error);
+    res.status(500).json({ message: 'Error fetching session data.', error });
+  }
+};
+
 const updatePatientStatus = async (req, res) => {
   try {
       const { pid } = req.params;
@@ -815,5 +853,7 @@ module.exports = {
     updatePatientImage,
     createPatientSession,
     forgotPassword, resetPassword, loginPatient, getAllPatientEmails, getAllContactNumbers, getPatientWithAudits,
-    getPatientByPatientID
+    getPatientByPatientID,
+    getSessionData,
+    logoutPatient
 }

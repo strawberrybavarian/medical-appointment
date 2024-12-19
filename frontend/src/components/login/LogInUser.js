@@ -1,10 +1,7 @@
-// File: LogInUser.js
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { Row, Form, Col, Button, Container, Modal, Card } from 'react-bootstrap';
-
 import { image, ip } from '../../ContentExport';
 import { usePatient } from '../patient/PatientContext';
 import { useDoctor } from '../practitioner/DoctorContext';
@@ -32,6 +29,30 @@ const LogInUser = () => {
   const { setPatient } = usePatient();
   const { setDoctor } = useDoctor();
 
+  // Check session on component mount
+  useEffect(() => {
+    const checkSession = async () => {
+      try {
+        const response = await axios.get(`${ip.address}/api/getpatient/session`, {
+          withCredentials: true,
+        });
+
+        if (response.data.patient) {
+          // If there's an active patient session, redirect to homepage
+          console.log("Active session found. Redirecting to /homepage.");
+          setPatient(response.data.patient); // Update context with patient data
+          navigate('/homepage');
+        } else {
+          console.log("No active session found. Displaying login form.");
+        }
+      } catch (error) {
+        console.error("Error checking session:", error);
+      }
+    };
+
+    checkSession();
+  }, [navigate, setPatient]);
+
   const loginuser = async (e) => {
     e.preventDefault();
     if (userRole === "Patient") {
@@ -39,22 +60,19 @@ const LogInUser = () => {
         const response = await axios.post(`${ip.address}/api/patient/api/login`, {
           email,
           password,
+          rememberMe
+        }, {
+          withCredentials: true
         });
-
+  
         if (response.data.patientData) {
           const patientData = response.data.patientData;
-
-          if (rememberMe) {
-            localStorage.setItem('patient', JSON.stringify(patientData));
-          } else {
-            sessionStorage.setItem('patient', JSON.stringify(patientData));
-          }
-
           setPatient(patientData); // Update context with patient data
           window.alert("Successfully logged in");
-
-          // Navigate to homepage
-          await axios.post(`${ip.address}/api/patient/session`, { userId: patientData._id, role: userRole });
+          await axios.post(`${ip.address}/api/patient/session`, { userId: patientData._id, role: userRole }, {
+            withCredentials: true
+          });
+  
           navigate('/homepage');
         } else {
           window.alert(response.data.message || "Invalid email or password. Please try again.");
@@ -68,36 +86,32 @@ const LogInUser = () => {
         const response = await axios.post(`${ip.address}/api/doctor/api/login`, {
           email,
           password,
+          rememberMe
+        }, {
+          withCredentials: true
         });
-
+  
         if (response.data.doctorData) {
           const doctorDataResponse = response.data.doctorData;
-
-          // Check if the doctor's account is under review
+  
+      
           if (doctorDataResponse.accountStatus === 'Review') {
             window.alert('Your account is currently under review. You cannot log in at this time.');
             return;
           }
-
-          setDoctorData(doctorDataResponse); // Store doctor data locally
-
-          // Check if passwordChanged is false
+  
+  
           if (!doctorDataResponse.passwordChanged) {
-            // Show the modal to update password
+            setDoctorData(doctorDataResponse);
             setShowPasswordModal(true);
           } else {
-            // Proceed with normal login
-            if (rememberMe) {
-              localStorage.setItem('doctor', JSON.stringify(doctorDataResponse));
-            } else {
-              sessionStorage.setItem('doctor', JSON.stringify(doctorDataResponse));
-            }
-
-            setDoctor(doctorDataResponse); // Update context with doctor data
+            setDoctor(doctorDataResponse); 
             window.alert("Successfully logged in");
-
-            // Create a session for the doctor and navigate to the dashboard
-            await axios.post(`${ip.address}/api/doctor/session`, { userId: doctorDataResponse._id, role: userRole });
+  
+            await axios.post(`${ip.address}/api/doctor/session`, { userId: doctorDataResponse._id, role: userRole }, {
+              withCredentials: true
+            });
+  
             navigate('/dashboard');
           }
         } else {
@@ -109,6 +123,7 @@ const LogInUser = () => {
       }
     }
   };
+  
 
   // Function to handle password update
   const handlePasswordUpdate = async () => {
@@ -148,21 +163,12 @@ const LogInUser = () => {
       await axios.put(`${ip.address}/api/doctor/update-password/${doctorId}`, { newPassword });
       window.alert('Password updated successfully');
 
-      // After updating the password, proceed with normal login
       const updatedDoctorData = { ...doctorData, passwordChanged: true };
-
-      if (rememberMe) {
-        localStorage.setItem('doctor', JSON.stringify(updatedDoctorData));
-      } else {
-        sessionStorage.setItem('doctor', JSON.stringify(updatedDoctorData));
-      }
 
       setDoctor(updatedDoctorData); // Update context with updated doctor data
 
-      // Close the modal
       setShowPasswordModal(false);
 
-      // Navigate to dashboard
       await axios.post(`${ip.address}/api/doctor/session`, { userId: doctorId, role: userRole });
       window.location.reload()
     } catch (err) {
@@ -199,12 +205,12 @@ const LogInUser = () => {
 
   return (
     <>
-         <ForLoginAndSignupNavbar />
+      <ForLoginAndSignupNavbar />
       <Container
         fluid
         className="login-background cont-fluid-no-gutter"
         style={{
-          backgroundImage: `url(${ip.address}/images/Background-Login1.png)`, // Dynamically load the image URL
+          backgroundImage: `url(${ip.address}/images/Background-Login1.png)`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           height: 'calc(100vh-100px)',
@@ -215,10 +221,7 @@ const LogInUser = () => {
           width: '100%',
         }}
       >
-        
-        {/* Scrollable container */}
         <div style={{ width: '100%', maxHeight: '100vh', overflowY: 'auto', display: 'flex', flexDirection: 'column', minHeight: '100vh'}}>
-    
           <Container className="login-container cont-fluid-no-gutter">
             <Row className="justify-content-start">
               <Col md={5}>

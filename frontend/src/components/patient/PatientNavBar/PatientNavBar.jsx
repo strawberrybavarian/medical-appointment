@@ -110,23 +110,28 @@ function PatientNavBar({ pid }) {
       });
   }, [pid]);
 
-  const logoutUser = () => {
-    setPatient(null);
-    localStorage.removeItem('patient');
-    navigate('/medapp/login');
+  const logoutUser = async () => {
+    try {
+      await axios.post(`${ip.address}/api/patient/logout`, {}, { withCredentials: true });
+      setPatient(null); // Clear patient context
+      navigate('/medapp/login'); // Redirect to login page
+    } catch (error) {
+      console.error('Error logging out:', error);
+      alert('Failed to log out. Please try again.');
+    }
   };
 
-  const onClickHomepage = () => {
-    navigate(`/homepage`, { state: { pid: patient._id } });
-  };
+  // const onClickHomepage = () => {
+  //   navigate(`/homepage`, { state: { pid: patient._id } });
+  // };
 
-  const onButtonContainerClick = () => {
-    navigate(`/choosedoctor`, { state: { pid: patient._id } });
-  };
+  // const onButtonContainerClick = () => {
+  //   navigate(`/choosedoctor`, { state: { pid: patient._id } });
+  // };
 
-  const MyAppointment = () => {
-    navigate(`/myappointment`, { state: { pid: patient._id } });
-  };
+  // const MyAppointment = () => {
+  //   navigate(`/myappointment`, { state: { pid: patient._id } });
+  // };
 
   const toggleNotifications = () => {
     setShowNotifications(!showNotifications);
@@ -164,6 +169,17 @@ function PatientNavBar({ pid }) {
     }
   };
 
+  // useEffect(() => {
+  //   if (!patient) {
+  //     navigate('/medapp/login');
+  //   }
+  // }, [patient, navigate]);
+
+  if (!patient) {
+    // Render a placeholder or return null while redirecting
+    return null;
+  }
+
   // Calculate unread notifications count and set max to 9+
   const unreadCount = notifications.filter((notif) => !notif.isRead).length;
   const displayCount = unreadCount > 9 ? '9+' : unreadCount;
@@ -182,26 +198,29 @@ function PatientNavBar({ pid }) {
 
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar-nav" className="justify-content-end">
-          <Nav>
-            <Nav.Link
-              className={`pnb-nav-link ${location.pathname === '/homepage' ? 'active' : ''}`}
-              onClick={onClickHomepage}
-            >
-              Home
-            </Nav.Link>
-            <Nav.Link
-              className={`pnb-nav-link ${location.pathname === '/myappointment' ? 'active' : ''}`}
-              onClick={MyAppointment}
-            >
-              My Appointments
-            </Nav.Link>
-            <Nav.Link
-              className={`pnb-nav-link ${location.pathname === '/choosedoctor' ? 'active' : ''}`}
-              onClick={onButtonContainerClick}
-            >
-              Choose Doctor
-            </Nav.Link>
-          </Nav>
+        <Nav>
+          <Nav.Link
+            as={Link}
+            to={{ pathname: `/homepage`, state: { pid: patient._id } }}
+            className={`pnb-nav-link ${location.pathname === '/homepage' ? 'active' : ''}`}
+          >
+            Home
+          </Nav.Link>
+          <Nav.Link
+            as={Link}
+            to={{ pathname: `/myappointment`, state: { pid: patient._id } }}
+            className={`pnb-nav-link ${location.pathname === '/myappointment' ? 'active' : ''}`}
+          >
+            My Appointments
+          </Nav.Link>
+          <Nav.Link
+            as={Link}
+            to={{ pathname: `/choosedoctor`, state: { pid: patient._id } }}
+            className={`pnb-nav-link ${location.pathname === '/choosedoctor' ? 'active' : ''}`}
+          >
+            Choose Doctor
+          </Nav.Link>
+        </Nav>
 
           <Nav>
             <Nav.Link onClick={toggleNotifications} className="position-relative">

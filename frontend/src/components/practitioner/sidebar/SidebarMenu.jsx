@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from "react-router-dom";
 import './SidebarMenu.css';
@@ -7,8 +7,8 @@ import { ip } from '../../../ContentExport';
 import LogoutModal from './LogoutModal'; // Import the LogoutModal component
 
 const SidebarMenu = (props) => {
-    const [isLeftIcon, setIsLeftIcon] = useState(true);
-    const [showLogoutModal, setShowLogoutModal] = useState(false);
+    const [isLeftIcon, setIsLeftIcon] = React.useState(true);
+    const [showLogoutModal, setShowLogoutModal] = React.useState(false);
     const navigate = useNavigate();
 
     const toggleIcon = () => {
@@ -37,6 +37,19 @@ const SidebarMenu = (props) => {
     const cancelLogout = () => {
         setShowLogoutModal(false);
     };
+
+    useEffect(() => {
+        const handleBeforeUnload = () => {
+            // Attempt to set the doctor offline when the tab is closed or refreshed
+            navigator.sendBeacon(`${ip.address}/api/doctor/api/${props.did}/logout`);
+        };
+
+        window.addEventListener('beforeunload', handleBeforeUnload);
+
+        return () => {
+            window.removeEventListener('beforeunload', handleBeforeUnload);
+        };
+    }, [props.did]);
 
     return (
         <>
@@ -67,7 +80,6 @@ const SidebarMenu = (props) => {
                 </CDBSidebar>
             </div>
 
-            {/* Use the LogoutModal component */}
             <LogoutModal 
                 show={showLogoutModal} 
                 onCancel={cancelLogout} 

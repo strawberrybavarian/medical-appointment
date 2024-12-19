@@ -356,7 +356,7 @@ const updateAppointmentStatus = async (req, res) => {
     }
 
     const appointment = await Appointment.findById(appointmentId)
-      .populate('doctor', 'dr_firstName dr_lastName bookedSlots availability')
+      .populate('doctor', 'dr_firstName dr_lastName bookedSlots availability activityStatus')
       .populate('patient', 'patient_firstName patient_lastName patient_email');
 
     if (!appointment) {
@@ -383,6 +383,36 @@ const updateAppointmentStatus = async (req, res) => {
           return 'Cancelled';
         default:
           return 'StatusUpdate'; // fallback
+      }
+    }
+
+    // If appointment is now Ongoing, set the doctor's activity status to In Session
+    if (status === 'Ongoing') {
+      await Doctors.findByIdAndUpdate(appointment.doctor._id, { activityStatus: 'In Session' }, { new: true });
+      const updatedDoctor = await Doctors.findById(appointment.doctor._id).select('activityStatus');
+      
+      // Notify connected clients that this doctor's activity status changed
+      for (let userId in clients) {
+        const userSocket = clients[userId];
+        userSocket.emit('doctorStatusUpdate', {
+          doctorId: appointment.doctor._id.toString(),
+          activityStatus: updatedDoctor.activityStatus
+        });
+      }
+    }
+
+    // If appointment is Completed, revert the doctor's activity status to Online
+    if (status === 'For Payment') {
+      await Doctors.findByIdAndUpdate(appointment.doctor._id, { activityStatus: 'Online' }, { new: true });
+      const updatedDoctor = await Doctors.findById(appointment.doctor._id).select('activityStatus');
+      
+      // Notify connected clients that this doctor's activity status changed
+      for (let userId in clients) {
+        const userSocket = clients[userId];
+        userSocket.emit('doctorStatusUpdate', {
+          doctorId: appointment.doctor._id.toString(),
+          activityStatus: updatedDoctor.activityStatus
+        });
       }
     }
 
@@ -446,16 +476,16 @@ const updateAppointmentStatus = async (req, res) => {
       }
     }
 
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: staff_email.user,
+        pass: staff_email.pass,
+      },
+    });
+
     // If status is 'Scheduled', send an email
     if (status === 'Scheduled') {
-      const transporter = nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-          user: staff_email.user,
-          pass: staff_email.pass,
-        },
-      });
-
       const mailOptions = {
         from: staff_email.user,
         to: appointment.patient.patient_email,
@@ -475,12 +505,36 @@ Your Clinic Team`,
       });
     }
 
+    // If status is 'Completed', send an email
+    if (status === 'Completed') {
+      const mailOptions = {
+        from: staff_email.user,
+        to: appointment.patient.patient_email,
+        subject: 'Your Appointment is Completed',
+        text: `Dear ${appointment.patient.patient_firstName},
+Your appointment (${appointment.appointment_ID || appointment._id}) has been successfully completed.
+Thank you for choosing our services.
+Best regards,
+Your Clinic Team`,
+      };
+
+      transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+          console.error('Error sending email:', error);
+        } else {
+          console.log('Completion email sent:', info.response);
+        }
+      });
+    }
+
     res.status(200).json(appointment);
   } catch (error) {
     console.error('Error updating appointment status:', error);
     res.status(500).json({ message: `Failed to update status: ${error.message}` });
   }
 };
+
+
 
 
 const getAppointmentById = async (req, res) => {

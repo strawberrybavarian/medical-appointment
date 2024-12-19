@@ -28,11 +28,14 @@ require('./appointments/scheduler');
 
 app.use(
   session({
-    secret: 'your_secret_key',
+    secret: 'your_secret_key', // Use a secure key
     resave: false,
     saveUninitialized: true,
     cookie: {
-      maxAge: 24 * 60 * 60 * 1000,
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production', // Set to true in production with HTTPS
+      sameSite: 'strict', // Adjust based on frontend-backend domain
+      
     },
   })
 );
@@ -44,7 +47,8 @@ require('./config/mongoose');
 const cors = require('cors');
 app.use(
   cors({
-    origin: '*',
+    origin: 'http://localhost:3000',
+    credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
   })

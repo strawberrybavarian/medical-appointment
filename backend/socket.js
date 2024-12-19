@@ -5,6 +5,7 @@ const ChatMessage = require('./chat/chat_model');
 const Patient = require('./patient/patient_model');
 const MedicalSecretary = require('./medicalsecretary/medicalsecretary_model');
 const Admin = require('./admin/admin_model');
+const Doctor = require('./doctor/doctor_model'); // Make sure the path is correct
 
 let io;
 const clients = {}; // Map to keep track of connected users
@@ -17,6 +18,8 @@ module.exports = {
         methods: ['GET', 'POST'],
       },
     });
+
+    
 
     io.on('connection', (socket) => {
       console.log('A user connected:', socket.id);
@@ -175,9 +178,34 @@ module.exports = {
       });
 
       // Handle disconnection
-      socket.on('disconnect', () => {
+      socket.on('disconnect', async () => {
         console.log('User disconnected:', socket.id);
+
         if (socket.userId && clients[socket.userId]) {
+          // If user is a doctor, set them offline and update lastActive
+          if (socket.userRole === 'Doctor') {
+            try {
+              const updatedDoctor = await Doctor.findByIdAndUpdate(
+                socket.userId,
+                { activityStatus: 'Offline', lastActive: Date.now() },
+                { new: true }
+              );
+
+              if (updatedDoctor) {
+                // Notify all connected clients of the status change
+                for (let userId in clients) {
+                  const userSocket = clients[userId];
+                  userSocket.emit('doctorStatusUpdate', {
+                    doctorId: updatedDoctor._id.toString(),
+                    activityStatus: updatedDoctor.activityStatus,
+                  });
+                }
+              }
+            } catch (err) {
+              console.error('Error setting doctor offline on disconnect:', err);
+            }
+          }
+
           delete clients[socket.userId];
         }
       });
@@ -202,24 +230,24 @@ module.exports = {
       }
     }
   },
-};
 
-module.exports.broadcastNotificationToAdmins = (notificationData) => {
-  for (let userId in module.exports.clients) {
-    const userSocket = module.exports.clients[userId];
-    if (userSocket.userRole === 'Admin') {
-      userSocket.emit('newGeneralNotification', notificationData);
+  broadcastNotificationToAdmins: (notificationData) => {
+    for (let userId in clients) {
+      const userSocket = clients[userId];
+      if (userSocket.userRole === 'Admin') {
+        userSocket.emit('newGeneralNotification', notificationData);
+      }
     }
-  }
-};
+  },
 
-module.exports.broadcastNotificationToMedSecs = (notificationData) => {
-  for (let userId in module.exports.clients) {
-    const userSocket = module.exports.clients[userId];
-    if (userSocket.userRole === 'Medical Secretary') {
-      userSocket.emit('newGeneralNotification', notificationData);
+  broadcastNotificationToMedSecs: (notificationData) => {
+    for (let userId in clients) {
+      const userSocket = clients[userId];
+      if (userSocket.userRole === 'Medical Secretary') {
+        userSocket.emit('newGeneralNotification', notificationData);
+      }
     }
-  }
+  },
 };
 
 // Helper function to get the sender's name based on their model

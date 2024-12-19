@@ -155,7 +155,7 @@ function DoctorNavbar({ doctor_image, did }) {
       <div>
         <Navbar bg="" expand="lg" className="dn-navbar">
           <Container fluid style={{ padding: '0 4rem 0 4rem' }}>
-            <Link to={`/doctor/home/${did}`}>
+          <Link to={{pathname: '/dashboard', state: { did }}}>
               <img className="molino-logo" src={image.logo || defaultImage} alt="Logo" />
             </Link>
 

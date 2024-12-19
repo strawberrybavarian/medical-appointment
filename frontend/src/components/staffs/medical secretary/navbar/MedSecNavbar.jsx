@@ -176,31 +176,6 @@ function MedSecNavbar({ msid }) {
                   <Nav.Link className="pnb-nav-link" onClick={onNavigateDoctors}>Manage Doctors </Nav.Link>
                   <Nav.Link className="pnb-nav-link" onClick={onNavigatePatient}>Patients </Nav.Link>
                 </Nav>
-
-                <Nav>
-                  <NavDropdown
-                    title={
-                      <div className="d-flex align-items-center justify-content-end ">
-                        <div className="ms-2 ">
-                          <p className="m-0" style={{ fontSize: '14px', fontWeight: 'bold' }}>{name}</p>
-                          <p className="m-0" style={{ fontSize: '12px', color: 'gray', textAlign: 'end' }}>Medical Secretary</p>
-                        </div>
-                        <img
-                          src={defaultImage}
-                          alt="Profile"
-                          style={{ objectFit: 'cover' }}
-                          className="profile-image ms-3"
-                        />
-                      </div>
-                    }
-                    id="basic-nav-dropdown"
-                    className="pnb-nav-link1"
-                  >
-                    <NavDropdown.Item className="pnb-nav-link" onClick={onNavigateAccountInfo}>Account</NavDropdown.Item>
-                    <NavDropdown.Item className="pnb-nav-link" onClick={logOut}>Logout</NavDropdown.Item>
-                  </NavDropdown>
-                </Nav>
-
                 <Nav>
                   <Nav.Link onClick={toggleNotifications} className="position-relative">
                     <Bell size={20} />
@@ -237,6 +212,31 @@ function MedSecNavbar({ msid }) {
                     )}
                   </Nav.Link>
                 </Nav>
+                <Nav>
+                  <NavDropdown
+                    title={
+                      <div className="d-flex align-items-center justify-content-end ">
+                        <div className="ms-2 ">
+                          <p className="m-0" style={{ fontSize: '14px', fontWeight: 'bold' }}>{name}</p>
+                          <p className="m-0" style={{ fontSize: '12px', color: 'gray', textAlign: 'end' }}>Medical Secretary</p>
+                        </div>
+                        <img
+                          src={defaultImage}
+                          alt="Profile"
+                          style={{ objectFit: 'cover' }}
+                          className="profile-image ms-3"
+                        />
+                      </div>
+                    }
+                    id="basic-nav-dropdown"
+                    className="pnb-nav-link1"
+                  >
+                    <NavDropdown.Item className="pnb-nav-link" onClick={onNavigateAccountInfo}>Account</NavDropdown.Item>
+                    <NavDropdown.Item className="pnb-nav-link" onClick={logOut}>Logout</NavDropdown.Item>
+                  </NavDropdown>
+                </Nav>
+
+              
 
               </Navbar.Collapse>
             </Container>

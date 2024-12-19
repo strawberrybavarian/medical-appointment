@@ -34,16 +34,38 @@ const updateDoctorStatus = async (req, res) => {
 };
 
 const offlineActivityStatus = async (req, res) => {
-    const doctorId = req.params.id;
-    try {
-        console.log(`Setting doctor ${doctorId} status to Offline`);
-        await DoctorService.updateActivityStatus(doctorId, 'Offline');
-        res.status(200).json({ message: 'Doctor logged out and status set to Offline.' });
-    } catch (err) {
-        console.error('Error logging out doctor:', err);
-        res.status(500).json({ message: 'Error logging out doctor.', error: err });
-    }
+  const doctorId = req.params.id;
+  try {
+      console.log(`Setting doctor ${doctorId} status to Offline`);
+      // Update the doctor's activityStatus to 'Offline' and lastActive to now
+      const updatedDoctor = await Doctors.findByIdAndUpdate(
+          doctorId,
+          { activityStatus: 'Offline', lastActive: Date.now() },
+          { new: true }
+      );
+
+      if (!updatedDoctor) {
+          return res.status(404).json({ message: 'Doctor not found.' });
+      }
+
+      // Broadcast the doctor's updated status in real-time
+      const io = socket.getIO();
+      const clients = socket.clients;
+      for (let userId in clients) {
+          const userSocket = clients[userId];
+          userSocket.emit('doctorStatusUpdate', {
+              doctorId: updatedDoctor._id.toString(),
+              activityStatus: updatedDoctor.activityStatus
+          });
+      }
+
+      res.status(200).json({ message: 'Doctor logged out and status set to Offline.' });
+  } catch (err) {
+      console.error('Error logging out doctor:', err);
+      res.status(500).json({ message: 'Error logging out doctor.', error: err });
+  }
 };
+
 
 
 //For Email
@@ -332,27 +354,45 @@ const loginDoctor = async (req, res) => {
       return res.status(401).json({ message: 'Invalid email or password' });
     }
 
+    // At this point, the login is successful.
+    // Update the doctor's activity status to "Online"
+    const updatedDoctor = await Doctors.findByIdAndUpdate(
+      doctor._id,
+      { activityStatus: 'Online' },
+      { new: true }
+    );
+
+    // Broadcast the doctor's updated status in real-time
+    const io = socket.getIO();
+    const clients = socket.clients;
+    for (let userId in clients) {
+      const userSocket = clients[userId];
+      userSocket.emit('doctorStatusUpdate', {
+        doctorId: doctor._id.toString(),
+        activityStatus: updatedDoctor.activityStatus
+      });
+    }
+
     // Exclude sensitive information before sending
     const doctorData = {
-      _id: doctor._id,
-      dr_email: doctor.dr_email,
-      dr_firstName: doctor.dr_firstName,
-      dr_lastName: doctor.dr_lastName,
-      // Include the passwordChanged field
-      passwordChanged: doctor.passwordChanged,
-      // Include other necessary fields
+      _id: updatedDoctor._id,
+      dr_email: updatedDoctor.dr_email,
+      dr_firstName: updatedDoctor.dr_firstName,
+      dr_lastName: updatedDoctor.dr_lastName,
+      passwordChanged: updatedDoctor.passwordChanged,
+      // Include other necessary fields if needed
     };
 
     res.json({
       message: 'Successfully logged in',
-      doctorId: doctor._id,
+      doctorId: updatedDoctor._id,
       doctorData: doctorData,
     });
   } catch (error) {
+    console.error('Error logging in doctor:', error);
     res.status(500).json({ message: 'Error logging in', error });
   }
 };
-
   
 
 

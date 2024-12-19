@@ -3,9 +3,8 @@ import { ip } from './ContentExport';
 
 const token = localStorage.getItem('token'); // Adjust based on your auth strategy
 const socket = io(`${ip.address}`, {
-  auth: {
-    token: localStorage.getItem('token'), // Ensure token is stored in localStorage
-  },
-});
+    withCredentials: true, // Enables cookie-based authentication
+  });
+  
 
 export default socket;
