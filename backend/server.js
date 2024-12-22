@@ -9,6 +9,7 @@ const session = require('express-session');
 const http = require('http');
 const server = http.createServer(app); // Use this server for Socket.IO
 require('dotenv').config();
+const MongoStore = require('connect-mongo');
 
 // Import models
 const ChatMessage = require('./chat/chat_model');
@@ -28,15 +29,19 @@ require('./appointments/scheduler');
 
 app.use(
   session({
-    secret: 'your_secret_key', // Use a secure key
+    secret: 'session_secret_key', // Secure key
     resave: false,
-    saveUninitialized: true,
+    saveUninitialized: false,
     cookie: {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production', // Set to true in production with HTTPS
-      sameSite: 'strict', // Adjust based on frontend-backend domain
-      
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
     },
+    store: MongoStore.create({
+      mongoUrl: 'mongodb://localhost:27017/PIMSdb', // MongoDB connection
+      ttl: 30 * 24 * 60 * 60, // Session expiry in seconds
+    }),
   })
 );
 
@@ -97,6 +102,8 @@ app.get('/uploads/:filename', (req, res) => {
 
 app.use(express.static(path.join(__dirname, '../frontend/public')));
 
+const UserRoutes = require('./user/user_routes');
+UserRoutes(app);
 // Route Imports
 const DoctorRoutes = require('./doctor/doctor_routes');
 DoctorRoutes(app);

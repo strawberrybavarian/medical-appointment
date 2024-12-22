@@ -4,10 +4,10 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import './ChooseDoctor.css';
 import PatientNavBar from "../PatientNavBar/PatientNavBar";
-import { usePatient } from "../PatientContext";
 import { Helmet } from "react-helmet";
 import Footer from "../../Footer";
 import { ip } from "../../../ContentExport";
+import { useUser } from "../../UserContext";
 const defaultImage = "images/014ef2f860e8e56b27d4a3267e0a193a.jpg";
 function ChooseDoctor() {
     const [doctors, setDoctors] = useState([]);
@@ -23,8 +23,8 @@ function ChooseDoctor() {
     });
     const [clinicHoursRange, setClinicHoursRange] = useState({ start: '', end: '' });
 
-    const { patient } = usePatient();
-    const { setDoctorId } = usePatient();
+    const { user, role } = useUser();
+    const { setDoctorId } = useUser();
     const navigate = useNavigate();
 
     // Fetch all doctors and populate specializations
@@ -45,8 +45,8 @@ function ChooseDoctor() {
     }, []);
 
     const handleDoctorClick = (did) => {
-        setDoctorId(did);
-        navigate('/doctorprofile');
+  
+        navigate('/doctorprofile' , { state: { did } });
     };
 
     const handleSearchChange = (e) => {
@@ -140,7 +140,7 @@ function ChooseDoctor() {
                 fluid
                 style={{ overflowY: 'scroll', height: '100vh'}}
             >
-                  <PatientNavBar pid={patient._id} />
+                  <PatientNavBar pid={user._id} />
                 <div className="maincolor-container">
                     <div className="content-area">
                         <Container className="announcement-container white-background align-items-center mt-3 mb-3 shadow-sm p-5">

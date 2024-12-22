@@ -20,10 +20,7 @@ function DoctorNavbar({ doctor_image, did }) {
   const socketRef = useRef();
 
   useEffect(() => {
-    if (!did) {
-      console.warn('Doctor ID is undefined');
-      return;
-    }
+
 
     // Fetch doctor information and notifications
     axios

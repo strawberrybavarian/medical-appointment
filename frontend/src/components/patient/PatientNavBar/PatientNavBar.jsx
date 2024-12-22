@@ -3,14 +3,14 @@ import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { Container, Navbar, Nav, NavDropdown } from 'react-bootstrap';
 import { Bell } from 'react-bootstrap-icons';
 import './PatientNavBar.css';
-import { usePatient } from '../PatientContext';
 import { image, ip } from '../../../ContentExport';
 import axios from 'axios';
 import io from 'socket.io-client';
+import { useUser } from '../../UserContext';
 
 function PatientNavBar({ pid }) {
   const navigate = useNavigate();
-  const { patient, setPatient } = usePatient();
+  const { user, setUser } = useUser();
   const [showNotifications, setShowNotifications] = useState(false);
   const [theImage, setImage] = useState(null);
   const [notifications, setNotifications] = useState([]);
@@ -112,8 +112,8 @@ function PatientNavBar({ pid }) {
 
   const logoutUser = async () => {
     try {
-      await axios.post(`${ip.address}/api/patient/logout`, {}, { withCredentials: true });
-      setPatient(null); // Clear patient context
+      await axios.post(`${ip.address}/api/logout`, {}, { withCredentials: true });
+      setUser(null); // Clear patient context
       navigate('/medapp/login'); // Redirect to login page
     } catch (error) {
       console.error('Error logging out:', error);
@@ -175,7 +175,7 @@ function PatientNavBar({ pid }) {
   //   }
   // }, [patient, navigate]);
 
-  if (!patient) {
+  if (!user) {
     // Render a placeholder or return null while redirecting
     return null;
   }
@@ -192,7 +192,7 @@ function PatientNavBar({ pid }) {
       style={{ zIndex: '2' }}
     >
       <Container fluid>
-        <Link to={{ pathname: `/homepage`, state: { pid: patient._id } }}>
+        <Link to={{ pathname: `/homepage`, state: { pid: user._id } }}>
           <img className="molino-logo" src={image.logo || defaultImage} alt="Logo" />
         </Link>
 
@@ -201,21 +201,21 @@ function PatientNavBar({ pid }) {
         <Nav>
           <Nav.Link
             as={Link}
-            to={{ pathname: `/homepage`, state: { pid: patient._id } }}
+            to={{ pathname: `/homepage`, state: { pid: user._id } }}
             className={`pnb-nav-link ${location.pathname === '/homepage' ? 'active' : ''}`}
           >
             Home
           </Nav.Link>
           <Nav.Link
             as={Link}
-            to={{ pathname: `/myappointment`, state: { pid: patient._id } }}
+            to={{ pathname: `/myappointment`, state: { pid: user._id } }}
             className={`pnb-nav-link ${location.pathname === '/myappointment' ? 'active' : ''}`}
           >
             My Appointments
           </Nav.Link>
           <Nav.Link
             as={Link}
-            to={{ pathname: `/choosedoctor`, state: { pid: patient._id } }}
+            to={{ pathname: `/choosedoctor`, state: { pid: user._id } }}
             className={`pnb-nav-link ${location.pathname === '/choosedoctor' ? 'active' : ''}`}
           >
             Choose Doctor
@@ -267,7 +267,7 @@ function PatientNavBar({ pid }) {
                 <div className="d-flex align-items-center justify-content-end ">
                   <div className="ms-2 ">
                     <p className="m-0" style={{ fontSize: '14px', fontWeight: 'bold' }}>
-                      {patient.patient_firstName} {patient.patient_lastName}
+                      {user.firstName} {user.lastName}
                     </p>
                     <p
                       className="m-0"
@@ -299,7 +299,7 @@ function PatientNavBar({ pid }) {
               <NavDropdown.Item
                 as={Link}
                 to="/accinfo"
-                state={{ pid: patient._id }}
+                state={{ pid: user._id }}
               >
                 Account Information
               </NavDropdown.Item>

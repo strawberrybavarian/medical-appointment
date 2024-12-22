@@ -15,23 +15,25 @@ import Footer from '../../Footer';
 import { ip } from '../../../ContentExport';
 import AppointmentStepper from './AppointmentStepper';
 import socket from '../../../socket'; // Import the socket connection
-import { usePatient } from '../PatientContext';
 import { useNavigate } from 'react-router-dom';
+import { useUser } from '../../UserContext';
 function MyAppointment() {
   const [activeTab, setActiveTab] = useState('pending');
   const [appointments, setAppointments] = useState([]);
   const navigate = useNavigate();
 
-  const { patient } = usePatient(); 
+  const { user } = useUser(); 
+
   useEffect(() => {
-    if (!patient) {
+    if (!user) {
       navigate('/medapp/login'); // Redirect to login if patient is not available
     }
-  }, [patient, navigate]);
+  }, [user, navigate]);
+
   useEffect(() => {
     const fetchAppointments = () => {
       axios
-        .get(`${ip.address}/api/patient/api/onepatient/${patient._id}`)
+        .get(`${ip.address}/api/patient/api/onepatient/${user._id}`)
         .then((res) => {
           const fetchedAppointments = res.data.thePatient.patient_appointments;
           const inactiveStatuses = ['Cancelled', 'Completed', 'Rescheduled', 'Missed'];
@@ -52,7 +54,7 @@ function MyAppointment() {
     fetchAppointments();
 
     // Set up Socket.IO
-    socket.emit('identify', { userId: patient._id, userRole: 'Patient' });
+    socket.emit('identify', { userId: user._id, userRole: 'Patient' });
 
     // Listen for appointment status updates
     socket.on('appointmentStatusUpdate', (data) => {
@@ -70,7 +72,7 @@ function MyAppointment() {
     return () => {
       socket.off('appointmentStatusUpdate');
     };
-  }, [patient._id]);
+  }, [user._id]);
 
   // Get the latest active appointment
   const latestAppointment = appointments.find(
@@ -79,7 +81,7 @@ function MyAppointment() {
 
 
 
-  if (!patient) {
+  if (!user) {
     return null; // Optionally, display a loading spinner or placeholder
   }
 
@@ -90,7 +92,7 @@ function MyAppointment() {
       </Helmet>
 
       <Container className="cont-fluid-no-gutter" fluid style={{ overflowY: 'scroll', height: '100vh' }}>
-        <PatientNavBar pid={patient._id} />
+        <PatientNavBar pid={user._id} />
         <div className="maincolor-container">
           <div className="content-area">
             <Container>

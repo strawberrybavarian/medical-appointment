@@ -6,7 +6,9 @@ import { CDBSidebar, CDBSidebarContent, CDBSidebarHeader, CDBSidebarMenu, CDBSid
 import { ip } from '../../../ContentExport';
 import LogoutModal from './LogoutModal'; // Import the LogoutModal component
 
+import { useUser } from '../../UserContext';
 const SidebarMenu = (props) => {
+    const {user, setUser} = useUser();
     const [isLeftIcon, setIsLeftIcon] = React.useState(true);
     const [showLogoutModal, setShowLogoutModal] = React.useState(false);
     const navigate = useNavigate();
@@ -19,20 +21,18 @@ const SidebarMenu = (props) => {
         setShowLogoutModal(true); // Show the logout confirmation modal
     };
 
-    const confirmLogout = () => {
-        // Call the backend to set the doctor to offline and then navigate
-        axios.put(`${ip.address}/api/doctor/api/${props.did}/logout`)
-            .then(res => {
-                console.log('Doctor status updated to Offline');
-                setShowLogoutModal(false);
-                navigate('/');
-            })
-            .catch(err => {
-                console.error('Error updating doctor status', err);
-                setShowLogoutModal(false);
-                navigate('/'); 
-            });
-    };
+    const confirmLogout = async () => {
+        try {
+          await axios.post(`${ip.address}/api/logout`, {}, { withCredentials: true });
+          setUser(null); // Clear patient context
+          navigate('/medapp/login'); // Redirect to login page
+        } catch (error) {
+          console.error('Error logging out:', error);
+          alert('Failed to log out. Please try again.');
+        }
+      };
+
+
 
     const cancelLogout = () => {
         setShowLogoutModal(false);

@@ -169,7 +169,7 @@ const DoctorSchema = new Schema({
   }],
   role: {
     type: String,
-    default: 'Patient'
+    default: 'Physician'
   },
 }, { timestamps: true });
 

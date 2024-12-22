@@ -15,7 +15,7 @@ export const PatientProvider = ({ children }) => {
   useEffect(() => {
     const fetchPatientSession = async () => {
       try {
-        const response = await axios.get(`${ip.address}/api/getpatient/session`, {
+        const response = await axios.get(`${ip.address}/api/patient/get/session`, {
           withCredentials: true,
         });
         if (response.data.patient) {
@@ -23,12 +23,12 @@ export const PatientProvider = ({ children }) => {
         } else {
           console.log('Session expired: Clearing patient context');
           setPatient(null);
-          navigate('/medapp/login'); // Redirect to login if session is expired
+          // navigate('/medapp/login'); // Redirect to login if session is expired
         }
       } catch (error) {
         console.error('Failed to fetch patient session:', error);
         setPatient(null);
-        navigate('/medapp/login'); // Redirect to login on error
+        // navigate('/medapp/login'); // Redirect to login on error
       } finally {
         setLoading(false);
       }
@@ -38,20 +38,20 @@ export const PatientProvider = ({ children }) => {
 
     const interval = setInterval(async () => {
       try {
-        const response = await axios.get(`${ip.address}/api/getpatient/session`, {
+        const response = await axios.get(`${ip.address}/api/patient/get/session`, {
           withCredentials: true,
         });
         if (!response.data.patient) {
           console.log('Session expired: Clearing patient context');
           clearInterval(interval);
           setPatient(null); // Clear patient context
-          navigate('/medapp/login'); // Redirect to login when session expires
+          // navigate('/medapp/login'); // Redirect to login when session expires
         }
       } catch (error) {
         console.error('Session check failed:', error);
         clearInterval(interval);
         setPatient(null); // Clear patient context on error
-        navigate('/medapp/login'); // Redirect to login on error
+        // navigate('/medapp/login'); // Redirect to login on error
       }
     }, 3000); // Poll every 3 seconds
 

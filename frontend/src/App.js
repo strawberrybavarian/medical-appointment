@@ -62,7 +62,7 @@ import ResetPassword from './components/login/ResetPassword';
 import { PatientProvider } from './components/patient/PatientContext';
 import { DoctorProvider } from './components/practitioner/DoctorContext';
 import AdminNewsManagement from './components/staffs/admin/news/AdminNewsManagement';
-
+import { UserProvider } from './components/UserContext';
 
 function App() {
 
@@ -70,8 +70,7 @@ function App() {
     <>
 
     <Router>
-      <PatientProvider>
-        <DoctorProvider>
+      <UserProvider>
           <Routes>
 
             <Route path={'/'} element={<LandingPage/>}></Route>
@@ -121,8 +120,7 @@ function App() {
           
           </Routes>
 
-        </DoctorProvider> 
-      </PatientProvider> 
+          </UserProvider>
     </Router>
 
     </>

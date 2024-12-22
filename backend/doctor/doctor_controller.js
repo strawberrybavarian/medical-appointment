@@ -334,7 +334,7 @@ const NewDoctorSignUp = async (req, res) => {
 
 
 const loginDoctor = async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, rememberMe } = req.body;
 
   try {
     const doctor = await Doctors.findOne({ dr_email: email });
@@ -352,6 +352,26 @@ const loginDoctor = async (req, res) => {
 
     if (!isMatch) {
       return res.status(401).json({ message: 'Invalid email or password' });
+    }
+
+    const doctorData = {
+      _id: doctor._id,
+      dr_email: doctor.dr_email,
+      dr_firstName: doctor.dr_firstName,
+      dr_lastName: doctor.dr_lastName,
+    };
+
+    delete req.session.doctorId;
+    delete req.session.doctor;
+    delete req.session.patient;
+    req.session.userId = doctor._id;
+    req.session.role = 'Physician';
+    req.session.doctorId = doctorData;
+
+    if (rememberMe) { // If rememberMe is checked, set the cookie to expire in 30 days
+      req.session.cookie.maxAge = 30 * 24 * 60 * 60 * 1000; // 30 days in milliseconds
+    } else {
+      req.session.cookie.maxAge = 30 * 24 * 60 * 60 * 1000; 
     }
 
     // At this point, the login is successful.
@@ -374,14 +394,7 @@ const loginDoctor = async (req, res) => {
     }
 
     // Exclude sensitive information before sending
-    const doctorData = {
-      _id: updatedDoctor._id,
-      dr_email: updatedDoctor.dr_email,
-      dr_firstName: updatedDoctor.dr_firstName,
-      dr_lastName: updatedDoctor.dr_lastName,
-      passwordChanged: updatedDoctor.passwordChanged,
-      // Include other necessary fields if needed
-    };
+    doctorData.passwordChanged = updatedDoctor.passwordChanged;
 
     res.json({
       message: 'Successfully logged in',
@@ -394,6 +407,80 @@ const loginDoctor = async (req, res) => {
   }
 };
   
+const getSessionData = (req, res) => {
+  try {
+    if (!req.session || !req.session.userId || req.session.role !== 'Physician') {
+      return res.status(401).json({ message: 'No active session found.' });
+    }
+
+    const doctor = req.session.doctor;
+    if (!doctor) {
+      return res.status(404).json({ message: 'Session invalid or expired.' });
+    }
+
+    res.json({
+      message: 'Session data retrieved successfully',
+      doctor,
+    });
+  
+
+  } catch (error) {
+    console.error('Error fetching session data:', error);
+    res.status(500).json({ message: 'Error fetching session data', error });
+  }
+};
+
+
+const createDoctorSession = (req, res) => {
+  const { userId, role } = req.body;
+
+  if (role === "Physician") {
+      req.session.userId = userId;  
+      req.session.role = role;      
+      
+      // Log the session data in the backend console
+      console.log('Session Data:', req.session);
+
+      res.json({ message: "Session created successfully" });
+  } else {
+      res.status(403).json({ message: "Unauthorized role" });
+  }
+};
+
+const logoutDoctor = async (req, res) => { 
+  const doctorId = req.params.id;
+
+  try {
+    // Update doctor status to 'Offline'
+    await DoctorService.updateActivityStatus(doctorId, 'Offline');
+
+    // Explicitly delete session from the database
+
+    req.session.destroy((err) => {
+      if (err) {
+        console.error('Error destroying session:', err);
+        return res.status(500).json({ message: 'Error destroying session' });
+      }
+      res.clearCookie('connect.sid');
+      
+
+      // Broadcast the doctor's updated status
+      const io = socket.getIO();
+      const clients = socket.clients;
+      for (let userId in clients) {
+        const userSocket = clients[userId];
+        userSocket.emit('doctorStatusUpdate', {
+          doctorId: doctorId,
+          activityStatus: 'Offline',
+        });
+      }
+      res.json({ message: 'Logged out successfully' });
+    });
+  } catch (error) {
+    console.error('Error logging out doctor:', error);
+    res.status(500).json({ message: 'Error logging out doctor', error });
+  }
+};
 
 
 const updateDoctorDetails = (req, res) => {
@@ -1099,21 +1186,7 @@ const deleteDoctorBiography = async (req, res) => {
   };
   
 
-  const createDoctorSession = (req, res) => {
-    const { userId, role } = req.body;
-  
-    if (role === "Physician") {
-        req.session.userId = userId;  
-        req.session.role = role;      
-        
-        // Log the session data in the backend console
-        console.log('Session Data:', req.session);
-  
-        res.json({ message: "Session created successfully" });
-    } else {
-        res.status(403).json({ message: "Unauthorized role" });
-    }
-  };
+
 
 
   const forgotPassword = async (req, res) => {
@@ -1380,6 +1453,7 @@ module.exports = {
     resetPassword, forgotPassword, 
     getDoctorHmo,
     getAllDoctorEmails, getAllDoctorEmailse, getAllContactNumbers,
-    getDoctorSlots, updateDoctorSlots, changeDoctorPassword, updateDoctorPassword
+    getDoctorSlots, updateDoctorSlots, changeDoctorPassword, updateDoctorPassword,
+    getSessionData, logoutDoctor
 
 };

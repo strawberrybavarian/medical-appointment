@@ -253,6 +253,7 @@ const createServiceAppointment = async (req, res) => {
       message: notificationMessage,
       recipient: recipients,
       recipientType: 'Admin',
+      receiverModel: 'Admin',
       type: 'Appointment',
     });
     await notification.save();
