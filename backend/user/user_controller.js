@@ -1,15 +1,15 @@
-// unified_controller.js
+
 const bcrypt = require('bcryptjs');
 const Doctors = require('../doctor/doctor_model');
 const Patients = require('../patient/patient_model');
 const DoctorService = require('../doctor/doctor_service');
 const socket = require('../socket');
-// Possibly import any other needed modules
 
-// Unified Login
+
+
 const unifiedLogin = async (req, res) => {
   const { email, password, rememberMe, role } = req.body; 
-  // role: 'Physician' or 'Patient'
+
 
   try {
     let user;
@@ -21,12 +21,12 @@ const unifiedLogin = async (req, res) => {
       if (user.accountStatus === 'Review') {
         return res.status(403).json({ message: 'Your account is under review.' });
       }
-      // Compare hashed password
+
       const match = await bcrypt.compare(password, user.dr_password);
       if (!match) {
         return res.status(401).json({ message: 'Invalid email or password' });
       }
-      // Build doctor data to store in session
+
       req.session.user = {
         _id: user._id,
         email: user.dr_email,
@@ -34,7 +34,7 @@ const unifiedLogin = async (req, res) => {
         lastName: user.dr_lastName,
         role: 'Physician',
       };
-      // If needed, update activity status, etc.
+  
       user.activityStatus = 'Online';
       await user.save();
     } else if (role === 'Patient') {
