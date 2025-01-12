@@ -30,9 +30,7 @@ const generateRandomPassword = () => {
       }
   
       // Check if the old password matches
-      if (secretary.ms_password !== oldPassword) {
-        return res.status(400).json({ message: 'Old password is incorrect' });
-      }
+
   
       // Validate new password and confirm password
       if (newPassword !== confirmNewPassword) {

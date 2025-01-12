@@ -23,11 +23,11 @@ export const UserProvider = ({ children }) => {
         if (response.data.user) {
           setUser(response.data.user);
           setRole(response.data.role);
-          console.log('Active session found:', response.data.user);
+   
         } else {
           setUser(null);
           setRole(null);
-          console.log('No active session found');
+
         }
       } catch (error) {
         console.error('Failed to fetch session:', error);

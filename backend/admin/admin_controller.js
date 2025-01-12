@@ -10,6 +10,9 @@ const Specialty = require('../specialty/specialty_model')
 const nodemailer = require('nodemailer');
 const socket = require('../socket');
 const { staff_email } = require('../EmailExport');
+const bcrypt = require('bcryptjs');
+
+
 const generateRandomPassword = () => {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     let password = '';
@@ -25,9 +28,6 @@ const changeAdminPassword = async (req, res) => {
         const admin = await Admin.findById(adminId);
         if (!admin) {
             return res.status(404).json({ message: 'Admin not found' });
-        }
-        if (admin.password !== oldPassword) {
-            return res.status(400).json({ message: 'Old password is incorrect' });
         }
         if (newPassword !== confirmNewPassword) {
             return res.status(400).json({ message: 'New passwords do not match' });

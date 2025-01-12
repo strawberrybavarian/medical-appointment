@@ -11,16 +11,20 @@ import AppointmentFullCalendar from '../Calendar/AppointmentFullCalendar';
 import { ip } from '../../../../../ContentExport';
 import ChatComponent from '../../../../chat/ChatComponent';
 import { BsChatDotsFill } from 'react-icons/bs'; // Chat icon
+import { useUser } from '../../../../UserContext';
 function MedSecMainDashboard() {
     const location = useLocation();  // Retrieve state from location
     const { userId, userName, role } = location.state || {};  // Destructure the passed data
     const [showChat, setShowChat] = useState(false);
     const [medSecData, setMedSecData] = useState(null); 
     const [error, setError] = useState(null);  // Handle error state
-    console.log(role)
+
+    const {user} = useUser();
+    console.log(user._id)
+
     useEffect(() => {
-        if (userId) {
-            axios.get(`${ip.address}/api/medicalsecretary/api/findone/${userId}`)
+        if (user._id) {
+            axios.get(`${ip.address}/api/medicalsecretary/api/findone/${user._id}`)
             .then((res) => {
                 const medsec = res.data.theMedSec;
                 setMedSecData(medsec); 
@@ -30,13 +34,13 @@ function MedSecMainDashboard() {
                 setError('Failed to fetch data');
             });
         }
-    }, [userId]);
+    }, [user._id]);
 
     return (
         <>
             <div>
                 <div>
-                    <MedSecNavbar msid={userId}/>
+                    <MedSecNavbar msid={user._id}/>
                     <Container fluid style={{ overflowY: 'auto', height: 'calc(100vh - 100px)', width: '100%', paddingBottom: '1.5rem' }}>
                         <div className="maincolor-container p-0">
                             <div className="content-area p-0">
@@ -64,8 +68,8 @@ function MedSecMainDashboard() {
                                             {showChat && (
                                             <div className="chat-overlay">
                                                 <ChatComponent
-                                                userId={userId}
-                                                userRole={role}
+                                                userId={user._id}
+                                                userRole={user.role}
                                                 closeChat={() => setShowChat(false)}
                                                 />
                                             </div>
@@ -84,10 +88,10 @@ function MedSecMainDashboard() {
                                 <Container fluid className='px-5'>
                                     <Row className="mt-4 w-100 p-0 m-0">
                                         <Col md={4} className="mb-3">
-                                            <AppointmentFullCalendar msid={userId} />
+                                            <AppointmentFullCalendar msid={user._id} />
                                         </Col>
                                         <Col md={4} className="mb-3 mt-3">
-                                        <NewsAnnouncement role={role} user_id={userId} user_name={userName} /> {/* News announcements */}
+                                        <NewsAnnouncement role={user.role} user_id={user._id} user_name={userName} /> {/* News announcements */}
                                            
                                            
                                         </Col>

@@ -4,7 +4,8 @@ const Doctors = require('../doctor/doctor_model');
 const Patients = require('../patient/patient_model');
 const DoctorService = require('../doctor/doctor_service');
 const socket = require('../socket');
-
+const MedicalSecretary = require('../medicalsecretary/medicalsecretary_model')
+const Admin = require('../admin/admin_model')
 
 
 const unifiedLogin = async (req, res) => {
@@ -53,6 +54,42 @@ const unifiedLogin = async (req, res) => {
         firstName: user.patient_firstName,
         lastName: user.patient_lastName,
         role: 'Patient',
+      };
+    }  else if (role === 'Medical Secretary') {
+      user = await MedicalSecretary.findOne({ ms_email: email });
+      if (!user) {
+        return res.status(404).json({ message: 'No medical secretary with that email found' });
+      }
+      const match = await bcrypt.compare(password, user.ms_password);
+      if (!match) {
+        return res.status(401).json({ message: 'Invalid email or password' });
+      }
+      // set session
+      req.session.user = {
+        _id: user._id,
+        email: user.ms_email,
+        firstName: user.ms_firstName,
+        lastName: user.ms_lastName,
+        status: user.status,  // or anything else you store
+        role: 'Medical Secretary',
+      };
+    } else if (role === 'Admin') {
+      user = await Admin.findOne({ email });
+      if (!user) {
+        return res.status(404).json({ message: 'No admin with that email found' });
+      }
+      const match = await bcrypt.compare(password, user.password);
+      if (!match) {
+        return res.status(401).json({ message: 'Invalid email or password' });
+      }
+      // set session
+      req.session.user = {
+        _id: user._id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        status: user.status,
+        role: 'Admin',
       };
     } else {
       return res.status(400).json({ message: 'Invalid role provided' });

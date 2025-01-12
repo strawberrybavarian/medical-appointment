@@ -28,7 +28,7 @@ function ForLoginAndSignupNavbar({ scrollToServices }) {
         <Navbar bg="light" expand="lg" className="nav-bar-no-color navbar-fixed-top fixed-top px-5 py-0">
             <Container>
                 {/* Logo */}
-                <Navbar.Brand href="#hero">
+                <Navbar.Brand href="/">
                     <img src={image.logo} alt="Logo" className="molino-logo mx-3" />
                 </Navbar.Brand>
 
@@ -38,21 +38,14 @@ function ForLoginAndSignupNavbar({ scrollToServices }) {
                 {/* Navbar Links */}
                 <Navbar.Collapse id="navbarNav">
                     <Nav className="ms-auto align-items-center">
-                        <Nav.Link href="/">Home</Nav.Link>
+                        <Button className="button1 ms-3" onClick={onMemberLoginClick}>Log In</Button>
+                        <Nav.Link onClick={onSignUpClick}>Sign Up</Nav.Link>
         
-                        <Button className="button1 ms-3" onClick={onSignUpClick}>Sign Up</Button>
+                      
+                        
 
                         {/* Dropdown as a Button for Login */}
-                        <Dropdown className="ms-3" autoClose="outside">
-                            <Dropdown.Toggle as={Button} variant="primary" id="dropdown-basic">
-                                Login
-                            </Dropdown.Toggle>
-
-                            <Dropdown.Menu className="login-dropdown-menu">
-                                <Dropdown.Item onClick={onMemberLoginClick}>Doctor & Patient</Dropdown.Item>
-                                <Dropdown.Item onClick={onStaffLoginClick}>Staffs</Dropdown.Item>
-                            </Dropdown.Menu>
-                        </Dropdown>
+                        
                     </Nav>
                 </Navbar.Collapse>
             </Container>
