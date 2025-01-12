@@ -20,7 +20,12 @@ function PatientNavBar({ pid }) {
   // Use useRef to maintain the socket instance
   const socketRef = useRef();
   const location = useLocation();
-
+  useEffect(() => {
+    if(!pid){
+      navigate('/medapp/login');
+    }
+  }, [pid, navigate]);
+ 
   // Initialize socket.io client
   useEffect(() => {
     socketRef.current = io(ip.address);

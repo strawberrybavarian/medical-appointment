@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const { Schema, model } = mongoose;
-
+const bcrypt = require('bcryptjs');
 const MedicalSecretarySchema = new Schema({
   ms_firstName: {
     type: String,
@@ -49,7 +49,17 @@ const MedicalSecretarySchema = new Schema({
   }],
 }, { timestamps: true });
 
-// Virtual property for full name
+MedicalSecretarySchema.pre('save', async function (next){
+  if (!this.isModified('ms_password')){
+    return next();
+  } try {
+    const salt = await bcrypt.genSalt(10);
+    this.ms_password = await bcrypt.hash(this.ms_password, salt);
+    next();
+  } catch (error){
+    next(error);
+  }
+})
 
 const MedicalSecretary = model('MedicalSecretary', MedicalSecretarySchema);
 

@@ -8,7 +8,6 @@ import LandingPage from './components/landpage/LandingPage';
 import LogInUser from './components/login/LogInUser';
 import NewSignUp from './components/login/NewSignUp';
 import VerifyOTP from './components/login/VerifyOTP';
-
 //Practitioner
 import DashboardMain from './components/practitioner/dashboard/DashboardMain';
 
@@ -64,6 +63,8 @@ import { DoctorProvider } from './components/practitioner/DoctorContext';
 import AdminNewsManagement from './components/staffs/admin/news/AdminNewsManagement';
 import { UserProvider } from './components/UserContext';
 
+import DoubleSliderLogin from './components/login/DoubleSliderLogin';
+
 function App() {
 
   return (
@@ -75,7 +76,8 @@ function App() {
 
             <Route path={'/'} element={<LandingPage/>}></Route>
             <Route path={'/medapp/signup'} element={<NewSignUp/>}> </Route>
-            <Route path={'/medapp/login'} element={<LogInUser/>}> </Route>
+            <Route path={'/medapp/login'} element={<DoubleSliderLogin
+              />}> </Route>
             <Route path={'/verify-otp'} element={<VerifyOTP/>}> </Route>
             <Route path="/reset-password/:role/:token" element={<ResetPassword />} />
             <Route path={'/news/:id'} element={<NewsDetailPage/>}/>

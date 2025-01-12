@@ -142,7 +142,7 @@ const createAppointment = async (req, res) => {
       receiver: recipients,
       receiverModel: 'Admin',
       isRead: false,
-      link: `/appointments/${savedAppointment._id}`,
+      link: `/admin/appointments`,
       type: 'Appointment',
       recipientType: 'Admin',
     });
@@ -177,7 +177,7 @@ const createAppointment = async (req, res) => {
             doctorName: `${doctorData.dr_firstName} ${doctorData.dr_lastName}`,
             date: savedAppointment.date,
             time: savedAppointment.time,
-            link: `/appointments/${savedAppointment._id}`,
+            link: `/medsec/appointments`,
           });
         }
       }

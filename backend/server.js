@@ -11,14 +11,8 @@ const server = http.createServer(app); // Use this server for Socket.IO
 require('dotenv').config();
 const MongoStore = require('connect-mongo');
 
-// Import models
-const ChatMessage = require('./chat/chat_model');
-const Patient = require('./patient/patient_model');
-const MedicalSecretary = require('./medicalsecretary/medicalsecretary_model');
-const Admin = require('./admin/admin_model');
-const Notification = require('./notifications/notifications_model');
-const Appointment = require('./appointments/appointment_model');
-const News = require('./news/news_model');
+
+
 
 // Initialize Socket.IO
 const socket = require('./socket'); // Import the socket module
