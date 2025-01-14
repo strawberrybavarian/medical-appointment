@@ -359,11 +359,12 @@ const loginDoctor = async (req, res) => {
       dr_email: doctor.dr_email,
       dr_firstName: doctor.dr_firstName,
       dr_lastName: doctor.dr_lastName,
+      passwordChanged: doctor.passwordChanged,  
     };
 
     delete req.session.doctorId;
     delete req.session.doctor;
-    delete req.session.patient;
+    delete req.session.patient; 
     req.session.userId = doctor._id;
     req.session.role = 'Physician';
     req.session.doctorId = doctorData;

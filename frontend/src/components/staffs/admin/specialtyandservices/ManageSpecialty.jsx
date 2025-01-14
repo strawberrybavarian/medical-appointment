@@ -23,7 +23,7 @@ function ManageSpecialty({ aid }) {
     // Fetch all specialties from the server
     const fetchSpecialties = async () => {
         try {
-            const res = await axios.get(`${ip.address}/api/admin/specialties`);
+            const res = await axios.get(`${ip.address}/api/find/admin/specialties`);
             setSpecialties(res.data);
         } catch (err) {
             console.error('Error fetching specialties:', err);

@@ -8,7 +8,7 @@ import { Row, Form, Col, Button, Container, Modal, Card } from 'react-bootstrap'
 import { image, ip } from '../../ContentExport';
 import PasswordValidation from './PasswordValidation'; 
 import { useUser } from '../UserContext';
-
+import Swal from 'sweetalert2';
 const LogInUser = ({hideOuterStyles }) => {
   const navigate = useNavigate();
   const { setUser, setRole } = useUser();
@@ -71,24 +71,48 @@ const LogInUser = ({hideOuterStyles }) => {
         const role = response.data.role;
         setUser(loggedInUser);
         setRole(role);
-        window.alert("Successfully logged in");
+        
 
         if (role === 'Physician') {
           if (loggedInUser.passwordChanged === false) {
             setDoctorData(loggedInUser);
             setShowPasswordModal(true);
           } else {
+            Swal.fire({
+              icon: 'success',
+              title: 'Successfully logged in',
+              showConfirmButton: true,
+              timer: 1500,
+            });
+
             navigate('/dashboard');
           }
         } else {
+
+          //Patient
+          Swal.fire({
+            icon: 'success',
+            toast: true,
+            position: 'top-end',
+
+            title: 'Successfully logged in',
+            showConfirmButton: false,
+            timer: 1500,
+          });
           navigate('/homepage');
         }
       } else {
+        console.log('Error logging in:', response.data.message);
         window.alert(response.data.message || "Invalid email or password.");
       }
     } catch (err) {
       console.error('Error logging in:', err);
-      window.alert(err.response?.data?.message || "An error occurred while logging in.");
+
+      Swal.fire({
+        icon: 'error',
+        title: 'Oops...',
+        text: err.response?.data?.message || 'An error occurred while logging in.',
+      })
     }
   };
 
@@ -160,7 +184,7 @@ const LogInUser = ({hideOuterStyles }) => {
              
             <h1 className="">User Login</h1>
 
-            <p className="text-muted" style={{ marginLeft: '4px' }}>
+            <p className="text-muted" >
               For Patient or Physician
             </p>
 

@@ -5,6 +5,7 @@ import { Button, Form, Col } from "react-bootstrap";
 import './UploadImageModal.css';
 import CropResizeTiltModal from './CropResizeTiltModal'; // Import the CropResizeTiltModal
 import { ip } from '../../../../ContentExport';
+import Swal from 'sweetalert2';
 const ImageUploadModal = ({ isOpen, onRequestClose, did }) => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [imageSrc, setImageSrc] = useState(null); // For previewing the selected image
@@ -43,6 +44,15 @@ const ImageUploadModal = ({ isOpen, onRequestClose, did }) => {
       const blob = await response.blob();
       const file = new File([blob], 'edited-image.png', { type: 'image/png' });
       formData.append('image', file); // Append the cropped image to formData
+                  Swal.fire({ 
+                      icon: 'success',
+                      position: 'top-end',
+                      toast: true,
+                      title: 'Image uploaded successfully',
+                      showConfirmButton: false,
+                      timer: 1500,
+                      timerProgressBar: true
+                  }); 
     } else if (selectedFile) {
       formData.append('image', selectedFile); // If no edited image, use the original selected file
     }

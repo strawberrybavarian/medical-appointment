@@ -34,6 +34,7 @@ const unifiedLogin = async (req, res) => {
         firstName: user.dr_firstName,
         lastName: user.dr_lastName,
         role: 'Physician',
+        passwordChanged: user.passwordChanged,
       };
   
       user.activityStatus = 'Online';

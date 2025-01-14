@@ -3,9 +3,9 @@ import axios from 'axios';
 import { Form, Button, Row, Col } from 'react-bootstrap';
 import DeactivationModal from './modal/DeactivationModal';
 import { ip } from '../../../ContentExport';
+import Swal from 'sweetalert2';
 
-
-const initialTimeSlot = { startTime: '', endTime: '', available: false, maxPatients: 0 }; // Removed interval and added maxPatients
+const initialTimeSlot = { startTime: '', endTime: '', available: false, maxPatients: 0 };
 
 const initialAvailability = {
     monday: { morning: { ...initialTimeSlot }, afternoon: { ...initialTimeSlot } },
@@ -20,17 +20,33 @@ const initialAvailability = {
 function DoctorAvailability({ doctorId }) {
     const [availability, setAvailability] = useState(initialAvailability);
     const [activeAppointmentStatus, setActiveAppointmentStatus] = useState(true);
-    const [showModal, setShowModal] = useState(false); // To control modal visibility
+    const [showModal, setShowModal] = useState(false);
+    const [formErrors, setFormErrors] = useState({});
 
     useEffect(() => {
         axios.get(`${ip.address}/api/doctor/${doctorId}/available`)
             .then(res => {
                 const { availability, activeAppointmentStatus } = res.data;
-                setAvailability(availability || initialAvailability); // Set default if undefined
+                setAvailability(availability || initialAvailability);
                 setActiveAppointmentStatus(activeAppointmentStatus);
             })
             .catch(err => console.log(err));
     }, [doctorId]);
+
+    const validatePeriod = (day, period) => {
+        const slot = availability[day][period];
+        const errorsCopy = { ...formErrors };
+        if (slot.available) {
+            if (!slot.startTime || !slot.endTime || slot.maxPatients <= 0) {
+                errorsCopy[`${day}-${period}`] = 'Please fill out valid Start/End Time and Max Patients.';
+            } else {
+                delete errorsCopy[`${day}-${period}`];
+            }
+        } else {
+            delete errorsCopy[`${day}-${period}`];
+        }
+        setFormErrors(errorsCopy);
+    };
 
     const handleTimeChange = (day, period, field, value) => {
         setAvailability(prev => ({
@@ -43,6 +59,8 @@ function DoctorAvailability({ doctorId }) {
                 }
             }
         }));
+        // Real-time validation
+        setTimeout(() => validatePeriod(day, period), 0);
     };
 
     const handleAvailabilityChange = (day, period, value) => {
@@ -56,9 +74,9 @@ function DoctorAvailability({ doctorId }) {
                 }
             }
         }));
+        setTimeout(() => validatePeriod(day, period), 0);
     };
 
-    // New function to handle maxPatients input
     const handleMaxPatientsChange = (day, period, value) => {
         setAvailability(prev => ({
             ...prev,
@@ -66,30 +84,68 @@ function DoctorAvailability({ doctorId }) {
                 ...prev[day],
                 [period]: {
                     ...prev[day][period],
-                    maxPatients: value // Update the maxPatients for each period (morning or afternoon)
+                    maxPatients: value
                 }
             }
         }));
+        setTimeout(() => validatePeriod(day, period), 0);
     };
 
     const handleSubmit = () => {
+        // Final check before submitting
+        let hasError = false;
+        for (const day of Object.keys(availability)) {
+            const morning = availability[day].morning;
+            const afternoon = availability[day].afternoon;
+
+            if (morning.available) {
+                if (!morning.startTime || !morning.endTime || morning.maxPatients <= 0) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: 'Please fill in all the fields for morning availability',
+                    });
+                    hasError = true;
+                    break;
+                }
+            }
+            if (afternoon.available) {
+                if (!afternoon.startTime || !afternoon.endTime || afternoon.maxPatients <= 0) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: 'Please fill in all the fields for afternoon availability',
+                    });
+                    hasError = true;
+                    break;
+                }
+            }
+        }
+
+        if (hasError) return;
+
         axios.put(`${ip.address}/api/doctor/${doctorId}/availability`, { availability })
             .then(res => {
-                alert('Availability updated successfully');
+                Swal.fire({
+                    title: 'Success!',
+                    text: 'Availability updated successfully',
+                    icon: 'success',
+                    confirmButtonText: 'Confirm'
+                });
             })
             .catch(err => console.log(err));
     };
 
     const handleStatusChange = () => {
         if (activeAppointmentStatus) {
-            setShowModal(true); // Show modal for deactivation
+            setShowModal(true);
         } else {
             axios
                 .put(`${ip.address}/api/doctor/${doctorId}/appointmentstatus`, {
                     activeAppointmentStatus: !activeAppointmentStatus
                 })
                 .then((res) => {
-                    setActiveAppointmentStatus(res.data.activeAppointmentStatus); 
+                    setActiveAppointmentStatus(res.data.activeAppointmentStatus);
                 })
                 .catch((err) => console.log(err));
         }
@@ -98,7 +154,7 @@ function DoctorAvailability({ doctorId }) {
     const handleModalConfirm = (reason) => {
         axios
             .post(`${ip.address}/api/doctor/${doctorId}/request-deactivation`, { reason })
-            .then((res) => {
+            .then(() => {
                 setShowModal(false);
                 alert('Deactivation request sent. Awaiting confirmation.');
             })
@@ -125,6 +181,7 @@ function DoctorAvailability({ doctorId }) {
                                     </Form.Group>
                                 </Col>
                             </Row>
+
                             {availability[day]?.morning?.available && (
                                 <Row>
                                     <Col>
@@ -135,6 +192,9 @@ function DoctorAvailability({ doctorId }) {
                                                 value={availability[day]?.morning?.startTime || ''}
                                                 onChange={(e) => handleTimeChange(day, 'morning', 'startTime', e.target.value)}
                                             />
+                                            {formErrors[`${day}-morning`] && (
+                                                <Form.Text className="text-danger">{formErrors[`${day}-morning`]}</Form.Text>
+                                            )}
                                         </Form.Group>
                                     </Col>
                                     <Col>
@@ -152,13 +212,14 @@ function DoctorAvailability({ doctorId }) {
                                             <Form.Label>Max Patients (Morning)</Form.Label>
                                             <Form.Control
                                                 type="number"
-                                                value={availability[day]?.morning?.maxPatients || 0}
+                                                value={availability[day]?.morning?.maxPatients}
                                                 onChange={(e) => handleMaxPatientsChange(day, 'morning', e.target.value)}
                                             />
                                         </Form.Group>
                                     </Col>
                                 </Row>
                             )}
+
                             <Row>
                                 <Col>
                                     <Form.Group controlId={`${day}AfternoonAvailable`}>
@@ -171,6 +232,7 @@ function DoctorAvailability({ doctorId }) {
                                     </Form.Group>
                                 </Col>
                             </Row>
+
                             {availability[day]?.afternoon?.available && (
                                 <Row>
                                     <Col>
@@ -181,6 +243,9 @@ function DoctorAvailability({ doctorId }) {
                                                 value={availability[day]?.afternoon?.startTime || ''}
                                                 onChange={(e) => handleTimeChange(day, 'afternoon', 'startTime', e.target.value)}
                                             />
+                                            {formErrors[`${day}-afternoon`] && (
+                                                <Form.Text className="text-danger">{formErrors[`${day}-afternoon`]}</Form.Text>
+                                            )}
                                         </Form.Group>
                                     </Col>
                                     <Col>
@@ -198,24 +263,24 @@ function DoctorAvailability({ doctorId }) {
                                             <Form.Label>Max Patients (Afternoon)</Form.Label>
                                             <Form.Control
                                                 type="number"
-                                                value={availability[day]?.afternoon?.maxPatients || 0}
+                                                value={availability[day]?.afternoon?.maxPatients}
                                                 onChange={(e) => handleMaxPatientsChange(day, 'afternoon', e.target.value)}
                                             />
                                         </Form.Group>
                                     </Col>
                                 </Row>
                             )}
+                            <hr />
                         </div>
                     ))}
                     <Button onClick={handleSubmit}>Save Availability</Button>
                 </Form>
+
                 <hr />
                 <Button onClick={handleStatusChange}>
                     {activeAppointmentStatus ? 'Deactivate Appointments' : 'Activate Appointments'}
                 </Button>
 
-                
-                {/* Render the modal for deactivation reason */}
                 <DeactivationModal
                     show={showModal}
                     handleClose={() => setShowModal(false)}

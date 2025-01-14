@@ -1,4 +1,3 @@
-// StaffLogin.jsx
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
@@ -6,7 +5,7 @@ import { Row, Form, Col, Button, Container, Card } from 'react-bootstrap';
 import CreateStaffModal from './CreateStaffModal'; 
 import AdminPasswordModal from './AdminPasswordModal'; 
 import { ip } from '../../../ContentExport';
-
+import Swal from 'sweetalert2';
 // If you want to store staff in the same context
 import { useUser } from '../../UserContext';
 
@@ -50,7 +49,7 @@ const StaffLogin = ({hideOuterStyles}) => {
 
   const handleLogIn = async (e) => {
     e.preventDefault();
-    setErrorMessage("");
+   
 
     try {
       const response = await axios.post(
@@ -95,15 +94,18 @@ const StaffLogin = ({hideOuterStyles}) => {
             });
           }
         } else {
-          setErrorMessage("Cannot log in: unknown user status.");
+          window.alert("Cannot log in: unknown user status.");
         }
-
       } else {
-        setErrorMessage(response.data.message || "Invalid email or password. Please try again.");
+        window.alert(response.data.message || "Invalid email or password. Please try again.");
       }
     } catch (err) {
       console.error('Error logging in:', err);
-      setErrorMessage(err.response?.data?.message || "An error occurred while logging in.");
+      Swal.fire({
+        icon: 'error',
+        title: 'Error logging in',
+        text: err.response?.data?.message || 'An error occurred. Please try again.',
+      });
     }
   };
 
@@ -114,56 +116,56 @@ const StaffLogin = ({hideOuterStyles}) => {
 
   return (
     <Container className="login-container cont-fluid-no-gutter">
- {hideOuterStyles ? (
-  <Row>
-        <Col>
-          <Form onSubmit={handleLogIn} className="p-4 pt-5 form-signin">
-            <h1 className="text-center">Staff Login</h1>
-            <p className="text-center text-muted mb-4">For Medical Secretary or Admin</p>
+      {hideOuterStyles ? (
+        <Row>
+          <Col>
+            <Form onSubmit={handleLogIn} className="form-signin">
+              <h1 className="">Staff Login</h1>
+              <p className="text-muted" >For Medical Secretary or Admin</p>
 
-            {/* Email Field */}
-            <Form.Group controlId="formEmail" className="mb-3">
-              <Form.Label>Email</Form.Label>
-              <Form.Control
-                type="email"
-                placeholder="Enter email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </Form.Group>
+              {/* Email Field */}
+              <Form.Group controlId="formEmail" className="mb-3">
+                <Form.Label>Email</Form.Label>
+                <Form.Control
+                  type="email"
+                  placeholder="Enter email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </Form.Group>
 
-            {/* Password Field */}
-            <Form.Group controlId="formPassword" className="mb-3">
-              <Form.Label>Password</Form.Label>
-              <Form.Control
-                type="password"
-                placeholder="Enter password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </Form.Group>
+              {/* Password Field */}
+              <Form.Group controlId="formPassword" className="mb-3">
+                <Form.Label>Password</Form.Label>
+                <Form.Control
+                  type="password"
+                  placeholder="Enter password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+              </Form.Group>
 
-            {/* Role Dropdown */}
-            <Form.Group controlId="formRole" className="mb-3">
-              <Form.Label>Role</Form.Label>
-              <Form.Select
-                value={userRole}
-                onChange={(e) => setUserRole(e.target.value)}
-              >
-                <option value="Medical Secretary">Medical Secretary</option>
-                <option value="Admin">Admin</option>
-              </Form.Select>
-            </Form.Group>
+              {/* Role Dropdown */}
+              <Form.Group controlId="formRole" className="mb-3">
+                <Form.Label>Role</Form.Label>
+                <Form.Select
+                  value={userRole}
+                  onChange={(e) => setUserRole(e.target.value)}
+                >
+                  <option value="Medical Secretary">Medical Secretary</option>
+                  <option value="Admin">Admin</option>
+                </Form.Select>
+              </Form.Group>
 
-            {/* Submit Button */}
-            <Button variant="primary" type="submit" className="w-100 mt-3">
-              Log In
-            </Button>
-          </Form>
-        </Col>
-      </Row>
+              {/* Submit Button */}
+              <Button variant="primary" type="submit" className="w-100 mt-3">
+                Log In
+              </Button>
+            </Form>
+          </Col>
+        </Row>
       ) : (
         // Original container + card code if we do NOT pass hideOuterStyles
         <div>Original styling here</div>
