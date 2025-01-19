@@ -125,7 +125,7 @@ const deleteNews = (newsId) => {
   };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", width: "100%" }} className="mt-2">
+    <div style={{ display: "flex", flexDirection: "column", width: "100%" }} className="medsec-news-container p-3"  >
       <div className="mb-2">
         <h2> Share News </h2>
         <hr/>

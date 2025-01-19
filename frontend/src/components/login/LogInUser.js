@@ -251,8 +251,7 @@ const LogInUser = ({hideOuterStyles }) => {
         </Col>
       </Row>
       ) : (
-        // Original container + card code if we do NOT pass hideOuterStyles
-        // ...
+
         <div>Original styling here</div>
       )}
 

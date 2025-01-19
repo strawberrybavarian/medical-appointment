@@ -92,7 +92,6 @@ function DoctorAvailability({ doctorId }) {
     };
 
     const handleSubmit = () => {
-        // Final check before submitting
         let hasError = false;
         for (const day of Object.keys(availability)) {
             const morning = availability[day].morning;

@@ -4,7 +4,8 @@ import { Form, Button, Row, Col, Card, Toast, ToastContainer } from 'react-boots
 import { useLocation, useParams } from 'react-router-dom';
 import './Styles.css';
 import { ip } from '../../../../../ContentExport';
-const initialTimeSlot = { startTime: '', endTime: '', available: false };
+import Swal from 'sweetalert2'
+const initialTimeSlot = { startTime: '', endTime: '', available: false, maxPatients: 0 };
 
 const initialAvailability = {
     monday: { morning: { ...initialTimeSlot }, afternoon: { ...initialTimeSlot } },
@@ -25,7 +26,7 @@ function DoctorScheduleManagement() {
     const [docInfo, setDocInfo] = useState(null);  // Initialize with null
     const [error, setError] = useState(''); // To handle validation errors
     const [showToast, setShowToast] = useState(false); // Toast visibility state
-
+    const [formErrors , setFormErrors] = useState({});
     // Fetch doctor information and availability
     useEffect(() => {
         const fetchDoctorData = async () => {
@@ -70,18 +71,15 @@ function DoctorScheduleManagement() {
         }));
     };
 
-    // Validate start and end times for all available slots
     const validateAvailability = () => {
         for (const day of Object.keys(availability)) {
             const periods = ['morning', 'afternoon'];
             for (const period of periods) {
                 const slot = availability[day][period];
                 if (slot.available) {
-                    // Check if both start and end times are set
                     if (!slot.startTime || !slot.endTime) {
                         return `${day.charAt(0).toUpperCase() + day.slice(1)}: Start and End times must be set for ${period}`;
                     }
-                    // Check if start time is before end time
                     if (slot.startTime >= slot.endTime) {
                         return `${day.charAt(0).toUpperCase() + day.slice(1)}: Start time must be earlier than End time for ${period}`;
                     }
@@ -92,21 +90,50 @@ function DoctorScheduleManagement() {
     };
 
     const handleSubmit = async () => {
-        const validationError = validateAvailability();
-        if (validationError) {
-            setError(validationError);
-            setShowToast(true); // Show toast on error
-            return;
-        }
-        setError(''); // Clear error if no validation issues
-        setShowToast(false); // Hide toast if no error
 
-        try {
-            await axios.put(`${ip.address}/api/doctor/${did}/availability`, { availability });
-            alert('Availability updated successfully');
-        } catch (err) {
-            console.error('Error updating availability:', err);
+        let hasError = false;
+        for(const day of Object.keys(availability)) {
+            const morning = availability[day].morning;
+            const afternoon = availability[day].afternoon;
+            
+            if(morning.available) {
+                if(!morning.startTime || !morning.endTime || morning.maxPatients <= 0) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: 'Please fill in all the field for morning availability',
+                    });
+                    hasError = true;
+                    break;
+                }
+            }
+
+            if(afternoon.available){
+                if(!afternoon.startTime || !afternoon.endTime || afternoon.maxPatients <= 0) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: 'Please fill in all the field for afternoon availability',
+                    })
+                    hasError = true;
+                    break;
+                }
+            }
         }
+
+
+        if(hasError) return;
+        
+        axios.put(`${ip.address}/api/doctor/${did}/availability`, { availability })
+        .then(res => {
+            Swal.fire({
+                title: 'Success!',
+                text: 'Availability updated successfully',
+                icon: 'success',
+                confirmButtonText: 'Confirm'
+            });
+        })
+        .catch(err => console.log(err));
     };
 
     const handleStatusChange = async () => {
@@ -118,9 +145,38 @@ function DoctorScheduleManagement() {
         }
     };
 
+    const validatePeriod = (day, period) => {
+        const slot = availability[day][period];
+        const errorsCopy = {...formErrors};
+        if (slot.available) {
+            if (!slot.startTime || !slot.endTime || slot.maxPatients <= 0) {
+                errorsCopy[`${day}-${period}`] = "Please fill out valid Start/End Time and Max Patients"
+            } else {
+                delete errorsCopy[`${day}-${period}`]
+            }
+        } else {
+            delete errorsCopy[`${day}-${period}`];
+        }
+        setFormErrors(errorsCopy)
+    }
+
+    const handleMaxPatientsChange = (day, period, field, value) => {
+        setAvailability(prev => ({
+            ...prev,
+            [day]: {
+                ...prev[day],
+                [period]: {
+                    ...prev[day][period],
+                    maxPatients: value
+                }
+            }   
+        }));
+
+        setTimeout(() => validatePeriod(day, period), 0);   
+    }
+
     return (
         <>
-            {/* Toast Notification for errors */}
             <ToastContainer position="bottom-end" className="p-3 margin-right">
                 <Toast onClose={() => setShowToast(false)} show={showToast} bg="danger" delay={5000} autohide>
                     <Toast.Header>
@@ -171,6 +227,16 @@ function DoctorScheduleManagement() {
                                                 />
                                             </Form.Group>
                                         </Col>
+                                        <Col>
+                                            <Form.Group controlId= {`${day}MorningMaxPatients`}>
+                                                <Form.Label>Max Patients (Morning) </Form.Label>
+                                                <Form.Control
+                                                    type="number"
+                                                    value={availability[day]?.morning?.maxPatients}
+                                                    onChange={(e) => handleMaxPatientsChange(day,'morning', e.target.value)}
+                                                />
+                                            </Form.Group>
+                                        </Col>
                                     </Row>
                                 )}
                                 <Row>
@@ -185,6 +251,8 @@ function DoctorScheduleManagement() {
                                         </Form.Group>
                                     </Col>
                                 </Row>
+
+
                                 {availability[day]?.afternoon?.available && (
                                     <Row>
                                         <Col>
@@ -204,6 +272,17 @@ function DoctorScheduleManagement() {
                                                     type="time" 
                                                     value={availability[day]?.afternoon?.endTime || ''} 
                                                     onChange={(e) => handleTimeChange(day, 'afternoon', 'endTime', e.target.value)} 
+                                                />
+                                            </Form.Group>
+                                        </Col>
+
+                                        <Col>
+                                            <Form.Group controlId={`${day}AfternoonMaxPatients`}>
+                                                <Form.Label>Max Patients (Afternoon) </Form.Label>
+                                                <Form.Control
+                                                    type="number"
+                                                    value={availability[day]?.afternoon?.maxPatients }
+                                                    onChange={(e) => handleMaxPatientsChange(day, 'afternoon', e.target.value)}
                                                 />
                                             </Form.Group>
                                         </Col>
