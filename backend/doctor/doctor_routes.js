@@ -51,7 +51,7 @@ module.exports = app => {
   app.get('/api/doctor/:id', DoctorController.findOneDoctor);
   //Activity Status
   app.put('/api/doctor/api/:id/logout', DoctorController.offlineActivityStatus);
-  app.put('/api/doctor/:id/status', DoctorController.updateDoctorStatus);
+
 
   
   // For Registration

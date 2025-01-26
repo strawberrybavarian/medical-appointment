@@ -368,3 +368,7 @@
   height: 50px;
   border-radius: 100px;
 }
+
+.custom-wide-modal {
+  max-width: 1200px;
+}

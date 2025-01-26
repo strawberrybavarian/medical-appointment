@@ -12,6 +12,9 @@ import { ip } from '../../../../../ContentExport';
 import ChatComponent from '../../../../chat/ChatComponent';
 import { BsChatDotsFill } from 'react-icons/bs'; // Chat icon
 import { useUser } from '../../../../UserContext';
+import DeactivationRequestMedSec from './DeactivationRequestMedSec';
+
+
 function MedSecMainDashboard() {
     const location = useLocation();  // Retrieve state from location
     const { userId, userName, role } = location.state || {};  // Destructure the passed data
@@ -42,9 +45,10 @@ function MedSecMainDashboard() {
         <>
             <div>
                 <div>
-                    <MedSecNavbar msid={user._id} />
-                    <Container fluid className='px-0' style={{ overflowY: 'auto', height: 'calc(100vh - 100px)', width: '100%', paddingBottom: '1.5rem', overflowX: 'hidden' }} >
+                   
+                    <Container fluid className='px-0' style={{ overflowY: 'auto', height: 'calc(100vh)', width: '100%', paddingBottom: '1.5rem', overflowX: 'hidden' }} >
                         <div className="maincolor-container p-0" style={{ overflowX: 'hidden' }}>
+                        <MedSecNavbar msid={user._id} />
                             <div className="content-area p-0">
                                 <Row>
                                     <Col>
@@ -84,39 +88,33 @@ function MedSecMainDashboard() {
                                 </Row>
 
                                 <Container fluid className=' w-100 px-5 pt-5'>
-                                    <Row>
-
-
-                                        <Col md={2}>
+                                    <Row >
+                                        <Col md={2} className='pt-3'>
                                             <MedSecDashboard />
                                         </Col>
-                                        <Col md={5}>
+                                        <Col md={5} className='pt-3'>
                                             <BarAppointment />
                                         </Col>
-                                        <Col md={5}>
+                                        <Col md={5} className='pt-3'>
                                             <LineCompletedAppointments />
 
                                         </Col>
-
-
-
-
-
-
-
-
                                     </Row>
                                 </Container>
 
                                 <Container fluid className='px-5 pt-4'>
-                                    <Row >
-                                        <Col md={6} className="">
+                                    <Row className='pt-3' >
+                                        <Col md={4} className='pt-3'>
                                             <AppointmentFullCalendar msid={user._id} />
                                         </Col>
-                                        <Col md={6} className=" ">
+                                        <Col md={5} className='pt-3'>
                                             <NewsAnnouncement role={user.role} user_id={user._id} user_name={userName} /> {/* News announcements */}
 
 
+                                        </Col>
+
+                                        <Col md={3} className='pt-3'>
+                                            <DeactivationRequestMedSec />
                                         </Col>
 
                                     </Row>

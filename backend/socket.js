@@ -14,7 +14,6 @@ module.exports = {
   init: (server) => {
     io = new Server(server, {
       cors: {
-        origin: '*', // Adjust as needed
         methods: ['GET', 'POST'],
       },
     });
@@ -37,7 +36,29 @@ module.exports = {
         socket.userRole = userData.userRole;
         clients[socket.userId] = socket; // Store the socket instance
 
-        console.log(`${socket.userRole} connected: ${socket.userId}`);
+        if (socket.userRole === 'Doctor') {
+          const updatedDoctor = await Doctor.findByIdAndUpdate(
+            socket.userId,
+            { activityStatus: 'Online' },
+            { new: true }
+          );
+          if (updatedDoctor) {
+
+ 
+              io.emit("doctorStatusUpdate", {
+                doctorId: updatedDoctor._id.toString(),
+                activityStatus: updatedDoctor.activityStatus,
+                lastActive: updatedDoctor.lastActive,
+              });
+        
+
+            console.log("Emitting doctorStatusUpdate:", {
+              doctorId: updatedDoctor._id.toString(),
+              activityStatus: updatedDoctor.activityStatus,
+              lastActive: updatedDoctor.lastActive,
+            });
+          }
+        }
 
         if (socket.userRole === 'Medical Secretary' || socket.userRole === 'Admin') {
           // Send the list of patients who have chatted
@@ -181,32 +202,28 @@ module.exports = {
       socket.on('disconnect', async () => {
         console.log('User disconnected:', socket.id);
 
-        if (socket.userId && clients[socket.userId]) {
-          // If user is a doctor, set them offline and update lastActive
-          if (socket.userRole === 'Doctor') {
-            try {
-              const updatedDoctor = await Doctor.findByIdAndUpdate(
-                socket.userId,
-                { activityStatus: 'Offline', lastActive: Date.now() },
-                { new: true }
-              );
+        if (socket.userRole === 'Doctor') {
+          const updatedDoctor = await Doctor.findByIdAndUpdate(
+            socket.userId,
+            { activityStatus: 'Offline', lastActive: Date.now() },
+            { new: true }
+          );
+          if (updatedDoctor) {
 
-              if (updatedDoctor) {
-                // Notify all connected clients of the status change
-                for (let userId in clients) {
-                  const userSocket = clients[userId];
-                  userSocket.emit('doctorStatusUpdate', {
-                    doctorId: updatedDoctor._id.toString(),
-                    activityStatus: updatedDoctor.activityStatus,
-                  });
-                }
-              }
-            } catch (err) {
-              console.error('Error setting doctor offline on disconnect:', err);
-            }
+      
+            io.emit('doctorStatusUpdate', {
+                doctorId: updatedDoctor._id.toString(),
+                activityStatus: updatedDoctor.activityStatus,
+                lastActive: updatedDoctor.lastActive
+              });
+          
+
+            console.log("Emitting doctorStatusUpdate:", {
+              doctorId: updatedDoctor._id.toString(),
+              activityStatus: updatedDoctor.activityStatus,
+              lastActive: updatedDoctor.lastActive,
+            });
           }
-
-          delete clients[socket.userId];
         }
       });
     });
@@ -221,6 +238,8 @@ module.exports = {
   },
   clients: clients,
 
+  //Utility function to emit a activityStatus of Doctor to Admin, Patient, and Medical Secretary users
+  
   // Utility function to emit a general notification to all Admin and Medical Secretary users
   broadcastGeneralNotification: (notificationData) => {
     for (let userId in clients) {

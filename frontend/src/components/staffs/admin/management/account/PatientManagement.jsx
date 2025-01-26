@@ -1,25 +1,31 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Container, Modal, Dropdown } from 'react-bootstrap';
+import { Button, Container, Modal, Dropdown, Form, Table, Pagination } from 'react-bootstrap';
 import { useLocation } from 'react-router-dom';
 import axios from 'axios';
 import AdminNavbar from '../../navbar/AdminNavbar';
 import SidebarAdmin from '../../sidebar/SidebarAdmin';
-import DataTable from 'react-data-table-component';
-import { ip } from '../../../../../ContentExport';
 import { ThreeDots } from 'react-bootstrap-icons';
 import PatientDetailsModal from './patientmodal/PatientDetailsModal';
 import PatientEditModal from './patientmodal/PatientEditModal';
+import { ip } from '../../../../../ContentExport';
+
 function PatientManagement() {
   const [patients, setPatients] = useState([]);
   const [selectedPatient, setSelectedPatient] = useState(null);
   const [showActionModal, setShowActionModal] = useState(false);
   const [modalAction, setModalAction] = useState("");
-  const [selectedPatientId, setSelectedPatientId] = useState(null); // For PatientDetailsModal
+  const [selectedPatientId, setSelectedPatientId] = useState(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [entriesPerPage, setEntriesPerPage] = useState(10);
+  const [sortConfig, setSortConfig] = useState({ key: '', direction: '' });
+
   const location = useLocation();
   const { userId, userName, role } = location.state || {};
 
+  // Fetch patients data
   useEffect(() => {
     axios.get(`${ip.address}/api/patient/api/allpatient`)
       .then((result) => {
@@ -30,6 +36,7 @@ function PatientManagement() {
       });
   }, []);
 
+  // Handle modals and actions
   const handleShowActionModal = (patient, action) => {
     setSelectedPatient(patient);
     setModalAction(action);
@@ -42,17 +49,22 @@ function PatientManagement() {
   };
 
   const handleAction = () => {
-    let status;
-    if (modalAction === 'register') status = 'Registered';
-    else if (modalAction === 'deactivate') status = 'Deactivated';
-    else if (modalAction === 'unregister') status = 'Unregistered';
-    else if (modalAction === 'archive') status = 'Archived';
+    const statusMap = {
+      register: 'Registered',
+      deactivate: 'Deactivated',
+      unregister: 'Unregistered',
+      archive: 'Archived',
+    };
+
+    const status = statusMap[modalAction];
 
     axios.put(`${ip.address}/api/admin/patient/account-status/${selectedPatient._id}`, { status })
       .then(() => {
-        setPatients(patients.map(pat =>
-          pat._id === selectedPatient._id ? { ...pat, accountStatus: status } : pat
-        ));
+        setPatients((prevPatients) =>
+          prevPatients.map((pat) =>
+            pat._id === selectedPatient._id ? { ...pat, accountStatus: status } : pat
+          )
+        );
         handleCloseActionModal();
       })
       .catch((error) => {
@@ -60,7 +72,6 @@ function PatientManagement() {
       });
   };
 
-  // View patient details
   const handleViewDetails = (patient) => {
     setSelectedPatientId(patient._id);
     setShowDetailsModal(true);
@@ -71,7 +82,6 @@ function PatientManagement() {
     setSelectedPatientId(null);
   };
 
-  // Edit patient details
   const handleEditPatient = (patient) => {
     setSelectedPatient(patient);
     setShowEditModal(true);
@@ -83,82 +93,157 @@ function PatientManagement() {
   };
 
   const handleUpdatePatient = (patientId, updatedData) => {
-    setPatients(patients.map(pat =>
-      pat._id === patientId ? { ...pat, ...updatedData } : pat
-    ));
+    setPatients((prevPatients) =>
+      prevPatients.map((pat) =>
+        pat._id === patientId ? { ...pat, ...updatedData } : pat
+      )
+    );
   };
 
-  const columns = [
-    { name: 'First Name', selector: row => row.patient_firstName, sortable: true },
-    { name: 'Middle Initial', selector: row => row.patient_middleInitial || '', sortable: true },
-    { name: 'Last Name', selector: row => row.patient_lastName, sortable: true },
-    { name: 'Email', selector: row => row.patient_email || 'No Email', sortable: true },
-    { name: 'Gender', selector: row => row.patient_gender, sortable: true },
-    { name: 'Account Status', selector: row => row.accountStatus, sortable: true, className: 'mode' },
-    {
-      name: 'Actions',
-      cell: (row) => (
-        <Dropdown>
-          <Dropdown.Toggle variant="link" className="p-0">
-            <ThreeDots size={24} />
-          </Dropdown.Toggle>
+  // Sorting
+  const handleSort = (key) => {
+    setSortConfig((prevSortConfig) => ({
+      key,
+      direction: prevSortConfig.key === key && prevSortConfig.direction === 'ascending' ? 'descending' : 'ascending',
+    }));
+  };
 
-          <Dropdown.Menu>
-            <Dropdown.Item onClick={() => handleViewDetails(row)}>
-              View Details
-            </Dropdown.Item>
-            <Dropdown.Item onClick={() => handleEditPatient(row)}>
-              Edit
-            </Dropdown.Item>
-            <Dropdown.Item
-              onClick={() => handleShowActionModal(row, 'register')}
-              disabled={row.accountStatus === 'Registered'}
-            >
-              Register
-            </Dropdown.Item>
-            <Dropdown.Item
-              onClick={() => handleShowActionModal(row, 'unregister')}
-              disabled={row.accountStatus === 'Unregistered'}
-            >
-              Unregister
-            </Dropdown.Item>
-            <Dropdown.Item
-              onClick={() => handleShowActionModal(row, 'deactivate')}
-              disabled={row.accountStatus === 'Deactivated'}
-            >
-              Deactivate
-            </Dropdown.Item>
-            <Dropdown.Item
-              onClick={() => handleShowActionModal(row, 'archive')}
-              disabled={row.accountStatus === 'Archived'}
-            >
-              Archive
-            </Dropdown.Item>
-          </Dropdown.Menu>
-        </Dropdown>
-      ),
-    },
-  ];
+  const sortedPatients = [...patients].sort((a, b) => {
+    if (!sortConfig.key) return 0;
+    if (a[sortConfig.key] < b[sortConfig.key]) return sortConfig.direction === 'ascending' ? -1 : 1;
+    if (a[sortConfig.key] > b[sortConfig.key]) return sortConfig.direction === 'ascending' ? 1 : -1;
+    return 0;
+  });
+
+  // Filtering and Pagination
+  const filteredPatients = sortedPatients.filter((pat) =>
+    `${pat.patient_firstName} ${pat.patient_middleInitial || ''} ${pat.patient_lastName}`
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase())
+  );
+
+  const indexOfLastEntry = currentPage * entriesPerPage;
+  const indexOfFirstEntry = indexOfLastEntry - entriesPerPage;
+  const currentEntries = filteredPatients.slice(indexOfFirstEntry, indexOfLastEntry);
+
+  const pageNumbers = Array.from({ length: Math.ceil(filteredPatients.length / entriesPerPage) }, (_, i) => i + 1);
 
   return (
-    <div className='d-flex justify-content-center'>
+    <div className="d-flex justify-content-center">
       <SidebarAdmin userId={userId} userName={userName} role={role} />
-      <div style={{ width: '100%' }}>
+      <Container fluid className="cont-fluid-no-gutter" style={{ width: '100%', height: '100vh', overflowY: 'auto' }}>
         <AdminNavbar userId={userId} userName={userName} role={role} />
-        <Container className='ad-container' style={{ height: 'calc(100vh - 56px)', overflowY: 'auto', padding: '20px' }}>
+        <Container className="ad-container" style={{ height: 'calc(100vh - 56px)', overflowY: 'auto', padding: '20px' }}>
           <h1>Patient Management</h1>
+          <hr />
 
-          <DataTable
-            columns={columns}
-            data={patients}
-            pagination
-            highlightOnHover
-            striped
-            responsive
-            noDataComponent="No patients available"
-          />
+          {/* Search and Entries */}
+          <Form className="mb-3 d-flex flex-row">
+            <Form.Group style={{ marginRight: '10px' }}>
+              <Form.Label>Search by Name:</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="Search..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </Form.Group>
+            <Form.Group>
+              <Form.Label>Entries per page:</Form.Label>
+              <Form.Control
+                as="select"
+                value={entriesPerPage}
+                onChange={(e) => setEntriesPerPage(parseInt(e.target.value))}
+              >
+                {[5, 10, 15, 30, 50].map((num) => (
+                  <option key={num} value={num}>
+                    {num}
+                  </option>
+                ))}
+              </Form.Control>
+            </Form.Group>
+          </Form>
 
-          {/* Action Modal */}
+          {/* Table */}
+          <Table responsive striped variant="light" className="mt-3">
+            <thead>
+              <tr>
+                <th onClick={() => handleSort('patient_firstName')}>
+                  Name {sortConfig.key === 'patient_firstName' &&  (sortConfig.direction === 'ascending' ? '↑' : '↓')}
+                </th>
+                <th>Email</th>
+                <th>Gender</th>
+                <th>Account Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {currentEntries.map((row) => {
+                const fullName = `${row.patient_firstName} ${row.patient_middleInitial || ''} ${row.patient_lastName}`;
+                return (
+                <tr key={row._id}>
+                  <td>{fullName}</td>
+       
+                  <td>{row.patient_email || 'No Email'}</td>
+                  <td>{row.patient_gender}</td>
+                  <td>{row.accountStatus}</td>
+                  <td>
+                    <Dropdown>
+                      <Dropdown.Toggle variant="link" className="p-0">
+                        <ThreeDots size={24} />
+                      </Dropdown.Toggle>
+                      <Dropdown.Menu>
+                        <Dropdown.Item onClick={() => handleViewDetails(row)}>View Details</Dropdown.Item>
+                        <Dropdown.Item onClick={() => handleEditPatient(row)}>Edit</Dropdown.Item>
+                        <Dropdown.Item
+                          onClick={() => handleShowActionModal(row, 'register')}
+                          disabled={row.accountStatus === 'Registered'}
+                        >
+                          Register
+                        </Dropdown.Item>
+                        <Dropdown.Item
+                          onClick={() => handleShowActionModal(row, 'unregister')}
+                          disabled={row.accountStatus === 'Unregistered'}
+                        >
+                          Unregister
+                        </Dropdown.Item>
+                        <Dropdown.Item
+                          onClick={() => handleShowActionModal(row, 'deactivate')}
+                          disabled={row.accountStatus === 'Deactivated'}
+                        >
+                          Deactivate
+                        </Dropdown.Item>
+                        <Dropdown.Item
+                          onClick={() => handleShowActionModal(row, 'archive')}
+                          disabled={row.accountStatus === 'Archived'}
+                        >
+                          Archive
+                        </Dropdown.Item>
+                      </Dropdown.Menu>
+                    </Dropdown>
+                  </td>
+                </tr>
+              )})}
+            </tbody>
+          </Table>
+
+          {/* Pagination */}
+          <Pagination className="mt-3">
+            <Pagination.First onClick={() => setCurrentPage(1)} disabled={currentPage === 1} />
+            <Pagination.Prev onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))} disabled={currentPage === 1} />
+            {pageNumbers.map((number) => (
+              <Pagination.Item key={number} active={number === currentPage} onClick={() => setCurrentPage(number)}>
+                {number}
+              </Pagination.Item>
+            ))}
+            <Pagination.Next
+              onClick={() => setCurrentPage((prev) => Math.min(prev + 1, pageNumbers.length))}
+              disabled={currentPage === pageNumbers.length}
+            />
+            <Pagination.Last onClick={() => setCurrentPage(pageNumbers.length)} disabled={currentPage === pageNumbers.length} />
+          </Pagination>
+
+          {/* Modals */}
           <Modal show={showActionModal} onHide={handleCloseActionModal}>
             <Modal.Header closeButton>
               <Modal.Title>Confirm Action</Modal.Title>
@@ -184,23 +269,20 @@ function PatientManagement() {
             </Modal.Footer>
           </Modal>
 
-          {/* View Details Modal */}
           <PatientDetailsModal
             patientId={selectedPatientId}
             show={showDetailsModal}
             handleClose={handleCloseDetailsModal}
           />
 
-          {/* Edit Patient Modal */}
           <PatientEditModal
             patient={selectedPatient}
             show={showEditModal}
             handleClose={handleCloseEditModal}
             handleUpdate={handleUpdatePatient}
           />
-
         </Container>
-      </div>
+      </Container>
     </div>
   );
 }

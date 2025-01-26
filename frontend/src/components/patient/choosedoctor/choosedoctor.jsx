@@ -1,13 +1,15 @@
 import { useNavigate } from "react-router-dom";
 import { Card, Form, Row, Col, Button, Container } from 'react-bootstrap';
 import axios from "axios";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import './ChooseDoctor.css';
 import PatientNavBar from "../PatientNavBar/PatientNavBar";
 import { Helmet } from "react-helmet";
 import Footer from "../../Footer";
 import { ip } from "../../../ContentExport";
 import { useUser } from "../../UserContext";
+import { io } from "socket.io-client"; // Ensure proper import of Socket.IO client
+
 const defaultImage = "images/014ef2f860e8e56b27d4a3267e0a193a.jpg";
 function ChooseDoctor() {
     const [doctors, setDoctors] = useState([]);
@@ -22,27 +24,83 @@ function ChooseDoctor() {
         am: false, pm: false
     });
     const [clinicHoursRange, setClinicHoursRange] = useState({ start: '', end: '' });
-
+    const socketRef = useRef(null);
     const { user, role } = useUser();
     const { setDoctorId } = useUser();
     const navigate = useNavigate();
 
     // Fetch all doctors and populate specializations
-    useEffect(() => {
-        axios.get(`${ip.address}/api/doctor/api/alldoctor`)
-            .then((res) => {
-                const doctorsData = res.data.theDoctor;
-                setDoctors(doctorsData);
-                setFilteredDoctors(doctorsData); // Set initial filtered list to all doctors
+useEffect(() => {
+  // Fetch doctors and initialize state
+  const fetchDoctors = async () => {
+    try {
+      const response = await axios.get(`${ip.address}/api/doctor/api/alldoctor`);
+      const doctorsData = response.data.theDoctor;
 
-                // Extract unique specializations
-                const uniqueSpecializations = [...new Set(doctorsData.map(doctor => doctor.dr_specialty))];
-                setSpecializations(uniqueSpecializations);
-            })
-            .catch((err) => {
-                console.log(err);
-            });
-    }, []);
+      // Set all doctors and filtered list
+      setDoctors(doctorsData);
+      setFilteredDoctors(doctorsData); // Initially show all doctors
+
+      // Extract unique specializations
+      const uniqueSpecializations = [
+        ...new Set(doctorsData.map((doctor) => doctor.dr_specialty)),
+      ];
+      setSpecializations(uniqueSpecializations);
+    } catch (error) {
+      console.error("Error fetching doctors:", error);
+    }
+  };
+
+  fetchDoctors(); // Initial fetch of doctor data
+
+  // Initialize Socket.IO connection
+  socketRef.current = io(ip.address);
+
+  // Log socket connection
+  socketRef.current.on("connect", () => {
+    console.log("Socket connected:", socketRef.current.id);
+  });
+
+  // Listen for doctor activity status updates
+  socketRef.current.on("doctorStatusUpdate", (updatedDoctor) => {
+    console.log("Received doctorStatusUpdate:", updatedDoctor); // Debug log
+
+    // Update the relevant doctor's activity status and last active time
+    setDoctors((prevDoctors) =>
+      prevDoctors.map((doctor) =>
+        doctor._id === updatedDoctor.doctorId
+          ? {
+              ...doctor,
+              activityStatus: updatedDoctor.activityStatus,
+              lastActive: updatedDoctor.lastActive,
+            }
+          : doctor
+      )
+    );
+
+    // Also update the filtered doctors list, if applicable
+    setFilteredDoctors((prevFilteredDoctors) =>
+      prevFilteredDoctors.map((doctor) =>
+        doctor._id === updatedDoctor.doctorId
+          ? {
+              ...doctor,
+              activityStatus: updatedDoctor.activityStatus,
+              lastActive: updatedDoctor.lastActive,
+            }
+          : doctor
+      )
+    );
+  });
+
+  // Cleanup on unmount
+  return () => {
+    if (socketRef.current) {
+      socketRef.current.off("doctorStatusUpdate");
+      socketRef.current.disconnect();
+    }
+  };
+}, []); // Empty dependency array
+
 
     const handleDoctorClick = (did) => {
   

@@ -5,9 +5,9 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { ip } from '../../../../../ContentExport';
 import AppointmentModal from '../Add Patient/New Appointment/AppointmentModal';
 const defaultImage = "images/014ef2f860e8e56b27d4a3267e0a193a.jpg";
-function MSDoctorProfile() {
-    const location = useLocation();
-    const { did } = location.state;
+function MSDoctorProfile({did,msid}) {
+
+
     const [theDoctor, setTheDoctor] = useState({});
     const [theImage, setTheImage] = useState("");
     const [fullName, setFullName] = useState("");

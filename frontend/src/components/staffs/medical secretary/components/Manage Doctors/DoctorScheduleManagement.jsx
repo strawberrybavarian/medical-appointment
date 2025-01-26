@@ -17,9 +17,8 @@ const initialAvailability = {
     sunday: { morning: { ...initialTimeSlot }, afternoon: { ...initialTimeSlot } },
 };
 
-function DoctorScheduleManagement() {
-    const location = useLocation();
-    const { did } = location.state; // Get the doctor ID from the route parameters
+function DoctorScheduleManagement({did}) {
+
     
     const [availability, setAvailability] = useState(initialAvailability);
     const [activeAppointmentStatus, setActiveAppointmentStatus] = useState(true);

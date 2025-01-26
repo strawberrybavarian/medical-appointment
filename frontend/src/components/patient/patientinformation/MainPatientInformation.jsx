@@ -10,17 +10,15 @@ function MainPatientInformation() {
 
     return (
         <>
-            <Container fluid className="cont-fluid-no-gutter" style={{ overflowY: 'scroll', height: '100vh' }}>
-                <PatientNavBar pid={user._id} />
+            <div >
+                    <PatientNavBar pid={user._id} />
                 
-                <Container fluid>
-                <PatientInformationSidebar pid={user._id}/>
-               
-                  
-            
-                </Container>
-               
-            </Container>
+             
+           
+                            <PatientInformationSidebar pid={user._id}/>
+                 
+      
+            </div>
         </>
     );
 }
