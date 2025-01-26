@@ -21,17 +21,7 @@ const { staff_email } = require('../EmailExport');
 
 
 // Define the route handler function
-const updateDoctorStatus = async (req, res) => {
-    const { id } = req.params;
-    const { status } = req.body;  // 'Online' or 'Offline'
 
-    try {
-        await DoctorService.updateActivityStatus(id, status);
-        res.status(200).json({ message: `Doctor ${id} status updated to ${status}.` });
-    } catch (err) {
-        res.status(500).json({ message: 'Failed to update status', error: err.message });
-    }
-};
 
 const offlineActivityStatus = async (req, res) => {
   const doctorId = req.params.id;
@@ -359,11 +349,12 @@ const loginDoctor = async (req, res) => {
       dr_email: doctor.dr_email,
       dr_firstName: doctor.dr_firstName,
       dr_lastName: doctor.dr_lastName,
+      passwordChanged: doctor.passwordChanged,  
     };
 
     delete req.session.doctorId;
     delete req.session.doctor;
-    delete req.session.patient;
+    delete req.session.patient; 
     req.session.userId = doctor._id;
     req.session.role = 'Physician';
     req.session.doctorId = doctorData;
@@ -1442,7 +1433,7 @@ module.exports = {
     rescheduledStatus,
     findOneDoctor,
     offlineActivityStatus,
-    updateDoctorStatus,
+
     requestDeactivation,
     specificAppointmentsforDoctor,
     updateDoctorBiography,

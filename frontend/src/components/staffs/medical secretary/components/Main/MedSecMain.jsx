@@ -63,7 +63,7 @@ function MedSecMain() {
 
 <MedSecNavbar msid={userId} /> 
         
-        <div className='maincolor-container'>
+        <div className='maincolor-container pt-5'>
           <div className='content-area'>
             <Container className="d-flex justify-content-center ">
               <Row>

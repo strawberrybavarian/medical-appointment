@@ -47,9 +47,11 @@ function PatientMain() {
   return (
     <div className="d-flex justify-content-center">
       <SidebarAdmin userId={userId} userName={userName} role={role} />
-      <div style={{ width: '100%' }}>
+      <Container className='cont-fluid-no-gutter'fluid style={{ width: '100%', height: '100vh', overflowY: 'auto' }}> 
+        
+        
         <AdminNavbar userId={userId} userName={userName} role={role} />
-        <Container fluid className="ad-container p-5" style={{ height: 'calc(100vh - 56px)', overflowY: 'auto' }}>
+        <Container fluid className="ad-container p-5" style={{  overflowY: 'hidden' }}>
           <PatientStatsCards 
             totalPatients={totalPatients} 
             registeredPatients={registeredPatients} 
@@ -81,7 +83,7 @@ function PatientMain() {
             </Col>
           </Row>
         </Container>
-      </div>
+      </Container>
     </div>
   );
 }

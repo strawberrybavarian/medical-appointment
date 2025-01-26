@@ -53,9 +53,9 @@ function DoctorMain() {
    <>
         <div className="d-flex justify-content-center">
                 <SidebarAdmin userId={userId} userName={userName} role={role} />
-                <div style={{ width: '100%' }}>
+                <Container className='cont-fluid-no-gutter'fluid style={{ width: '100%', height: '100vh', overflowY: 'auto' }}>
                     <AdminNavbar userId={userId} userName={userName} role={role} />
-                    <Container fluid className='ad-container p-5' style={{ height: 'calc(100vh - 56px)', overflowY: 'auto', padding: '20px' }}>
+                    <Container fluid className="ad-container p-5" style={{  overflowY: 'hidden' }}>
                         <DoctorStatsCards 
                             totalDoctors={totalDoctors} 
                             registeredDoctors={registeredDoctors} 
@@ -71,7 +71,7 @@ function DoctorMain() {
 
                         </div>
                     </Container>
-                </div>
+                </Container>
         </div>
    
    </>

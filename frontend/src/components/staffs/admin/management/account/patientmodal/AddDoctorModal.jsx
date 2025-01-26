@@ -23,7 +23,7 @@ const AddDoctorModal = ({ show, handleClose, setDoctors }) => {
         // Fetch specialties from services
         const fetchSpecialties = async () => {
             try {
-                const response = await axios.get(`${ip.address}/api/admin/specialties`);
+                const response = await axios.get(`${ip.address}/api/find/admin/specialties`);
                 const services = response.data;
                 // Extract unique categories
                 const categories = [...new Set(services.map(service => service.name))];

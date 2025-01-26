@@ -197,7 +197,7 @@ const convertTo12HourFormat = (time) => {
     <>
       <Container fluid className="w-100">
        
-          <h3>Pending Appointments</h3>
+          <h3>Pendings Appointments</h3>
           <hr/>
           <div >
             <Row>

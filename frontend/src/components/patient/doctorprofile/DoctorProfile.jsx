@@ -99,9 +99,7 @@ function DoctorProfile() {
   }, [did]);
 
   // 5. If no doctor ID or no doctor data yet, show fallback
-  if (!did) {
-    return <p>Please select a doctor.</p>;
-  }
+
 
   // If doctor data not loaded yet, you can show a loading or just do:
   if (!theDoctor) {

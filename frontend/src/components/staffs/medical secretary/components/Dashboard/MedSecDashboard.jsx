@@ -30,38 +30,36 @@ function MedSecDashboard() {
   }, []);
 
   return (
-    <div className="mt-4 flex-column">
-      <Row className="g-3 pt-5 flex-column align-items-end  w-100">
-        <Col >
-          <Card className="shadow-sm border-left-blue" style={{ minHeight: '100px', padding: '10px' }}>
+    <div className='align-card-items' >
+
+          <Card className="shadow-sm border-left-blue card-width shadow" style={{ padding: '16px', paddingTop:'20px' }}>
             <Card.Header className="msd-cardtitle">Total Pending Patients</Card.Header>
             <Card.Body className="d-flex justify-content-between align-items-center">
               <div className="h5 text-gray-800 mb-0">{stats.pendingPatients}</div>
               <People size="30px" className="text-gray-300" />
             </Card.Body>
           </Card>
-        </Col>
 
-        <Col>
-          <Card className="shadow-sm border-left-green" style={{ minHeight: '100px', padding: '10px' }}>
+
+                <Card className="shadow-sm border-left-green card-width shadow" style={{  padding: '10px', paddingTop:'20px' }}>
             <Card.Header className="msd-cardtitle">Total Today's Patients</Card.Header>
             <Card.Body className="d-flex justify-content-between align-items-center">
               <div className="h5 text-gray-800 mb-0">{stats.todaysPatients}</div>
               <People size="30px" className="text-gray-300" />
             </Card.Body>
           </Card>
-        </Col>
+    
 
-        <Col>
-          <Card className="shadow-sm border-left-yellow" style={{ minHeight: '100px', padding: '10px' }}>
+
+          <Card className="shadow-sm border-left-yellow card-width shadow" style={{  padding: '10px', paddingTop:'20px' }}>
             <Card.Header className="msd-cardtitle">Total Ongoing Patients</Card.Header>
             <Card.Body className="d-flex justify-content-between align-items-center">
               <div className="h5 text-gray-800 mb-0">{stats.ongoingPatients}</div>
               <People size="30px" className="text-gray-300" />
             </Card.Body>
           </Card>
-        </Col>
-      </Row>
+  
+   
     </div>
   );
 }

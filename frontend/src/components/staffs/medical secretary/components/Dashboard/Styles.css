@@ -14,6 +14,19 @@
     
 }
 
+.card-width{
+    width: 100% !important;
+    height: 30% !important;
+} 
+.align-card-items{
+    display: flex;
+    justify-content: space-between;
+    flex-direction: column;
+    height: 100%;
+
+    
+
+}
 
 .dash-box1 {
     position: relative;
@@ -47,6 +60,11 @@
 }
 
 
+.medsec-news-container{
+  background-color: #ffffff;
+  border-radius: 7px;
+  border: #dbdbdb solid 1px;
+}
 
 .dash-content {
     margin-top: 20px; 

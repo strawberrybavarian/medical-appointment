@@ -13,10 +13,9 @@ const { staff_email } = require('../EmailExport');
 const crypto = require('crypto');
 const Audit = require('../audit/audit_model')
 
-//For Email
 
 
-// Generate and send OTP
+
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
@@ -24,7 +23,7 @@ const transporter = nodemailer.createTransport({
       pass: 'vqbi dqjv oupi qndp'
   }
 });
-// Generate and send OTP
+
 const sendOTP = async (req, res) => {
   try {
       const patient = await Patient.findOne({ patient_email: req.body.email });

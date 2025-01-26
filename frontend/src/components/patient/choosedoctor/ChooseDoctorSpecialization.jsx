@@ -5,6 +5,7 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import PatientNavBar from "../PatientNavBar/PatientNavBar";
 import { ip } from "../../../ContentExport";
+import { io } from "socket.io-client"; // Ensure proper import of Socket.IO client
 
 
 import { useUser } from "../../UserContext"; 
@@ -14,6 +15,8 @@ function ChooseDoctorSpecialization() {
   const { specialty } = useParams();
   const { user, role } = useUser(); 
   const [theDoctors, setAllDoctors] = useState([]);
+
+
   const defaultImage = "images/014ef2f860e8e56b27d4a3267e0a193a.jpg";
 
   useEffect(() => {

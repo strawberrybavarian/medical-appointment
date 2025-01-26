@@ -74,7 +74,7 @@ function DoctorManagement() {
       name: 'Actions',
       cell: (row) => (
         <Dropdown>
-          <Dropdown.Toggle variant="link" className="p-0">
+          <Dropdown.Toggle variant="link" className="p-0 ">
             <ThreeDots size={24} />
           </Dropdown.Toggle>
 
@@ -100,9 +100,9 @@ function DoctorManagement() {
   return (
     <div className="d-flex">
       <SidebarAdmin userId={userId} userName={userName} role={role} />
-      <div style={{ width: '100%' }}>
+      <Container className='cont-fluid-no-gutter'fluid style={{ width: '100%', height: '100vh', overflowY: 'auto' }}>
         <AdminNavbar userId={userId} userName={userName} role={role} />
-        <Container className="ad-container" style={{ height: 'calc(100vh - 56px)', overflowY: 'auto', padding: '20px' }}>
+        <Container fluid className="ad-container p-5" style={{  overflowY: 'hidden' }}>
           <h1>Doctor Management</h1>
 
           <Button variant="primary" onClick={handleShowAddDoctorModal} className="mb-3">
@@ -150,7 +150,7 @@ function DoctorManagement() {
             </Modal.Footer>
           </Modal>
         </Container>
-      </div>
+      </Container>
     </div>
   );
 }

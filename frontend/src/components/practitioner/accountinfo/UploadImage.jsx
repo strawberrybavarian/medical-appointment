@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { ip } from '../../../ContentExport';
-
+import Swal from 'sweetalert2';
 const UploadImage = ({did}) => {
     const [selectedFile, setSelectedFile] = useState(null);
 
@@ -21,7 +21,14 @@ const UploadImage = ({did}) => {
                     'Content-Type': 'multipart/form-data'
                 }
             });
-            
+            Swal.fire({ 
+                icon: 'success',
+                toast: true,
+                title: 'Image uploaded successfully',
+                showConfirmButton: false,
+                timer: 1500
+            }); 
+
             console.log('Image uploaded successfully:', response.data);
         } catch (error) {
             console.error('Error uploading image:', error);

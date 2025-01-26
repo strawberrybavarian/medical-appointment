@@ -69,7 +69,7 @@ function PatientInformationSidebar({pid}) {
             </CDBSidebar>
 
             
-            <Container fluid className='cont-fluid-no-gutter'>
+            <Container fluid className='cont-fluid-no-gutter' style={{ overflowY: 'auto', height: 'calc(100vh)', width: '100%', paddingBottom: '1.5rem', overflowX: 'hidden' }} >
                 <div>
                     <div className="content-area mb-5">
                         {activeTab === 'profile' && <PatientInformation pid={pid} />}

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Navbar, Nav, Container, Button, Dropdown } from "react-bootstrap";
 import "./Landing.css";
-import "./navbar.css";
+
 import { image } from "../../ContentExport";
 import LabResultModal from "./LabResultModal"; // Import the LabResultModal component
 

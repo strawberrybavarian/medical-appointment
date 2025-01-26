@@ -16,7 +16,7 @@ function HomePagePatient() {
   const navigate = useNavigate();
   const { user } = useUser();
 
-  console.log('Patient:', user);
+
   const [showChat, setShowChat] = useState(false);
   const [tooltipMessage, setTooltipMessage] = useState('');
 
@@ -55,16 +55,16 @@ function HomePagePatient() {
 
   return (
     <>
-    
       <Container
         className="cont-fluid-no-gutter"
         fluid
-        style={{ overflowY: 'scroll', height: '100vh' }}
+        style={{ overflowY: 'auto', height: '100vh' }}
       >
         <PatientNavBar pid={user._id} />
         <div className="maincolor-container">
           {/* Main Content Area */}
           <div className="content-area p-0 m-0">
+            
             <div fluid className="background-hpp">
               <DoctorCarousel fluid className="w-100" pid={user._id} />
             </div>

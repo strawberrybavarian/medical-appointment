@@ -14,6 +14,7 @@ import MedSecForPayment from '../../medical secretary/components/Appointments/Me
 import SidebarAdmin from '../sidebar/SidebarAdmin';
 import AdminNavbar from '../navbar/AdminNavbar';
 import AdminPending from './AdminPending';
+import MedSecPending from '../../medical secretary/components/Appointments/MedSecPending';
 
 function AdminAppointmentMain() {
   const containerStyle = {
@@ -85,7 +86,7 @@ function AdminAppointmentMain() {
           <AdminNavbar userId={userId} userName={userName} role={role} />
           <div className='maincolor-container'>
           <div className='content-area'>
-            <Container className="d-flex justify-content-center ">
+            <Container className="d-flex justify-content-center pt-5 ">
               <Row>
                 <Nav fill variant="tabs" className="app-navtabs" activeKey={activeTab} onSelect={setActiveTab}>
                   {/* <Nav.Item>
@@ -158,7 +159,7 @@ function AdminAppointmentMain() {
                             Add Patient
                           </Button>
                         </Container>
-                        <AdminPending
+                        <MedSecPending
                         allAppointments={allappointments}
                         setAllAppointments={setallappointments}
                         selectedDoctor={selectedDoctor}
