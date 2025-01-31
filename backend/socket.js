@@ -1,14 +1,12 @@
-// socket.js
-
 const { Server } = require('socket.io');
 const ChatMessage = require('./chat/chat_model');
 const Patient = require('./patient/patient_model');
 const MedicalSecretary = require('./medicalsecretary/medicalsecretary_model');
 const Admin = require('./admin/admin_model');
-const Doctor = require('./doctor/doctor_model'); // Make sure the path is correct
+const Doctor = require('./doctor/doctor_model'); 
 
 let io;
-const clients = {}; // Map to keep track of connected users
+const clients = {}; 
 
 module.exports = {
   init: (server) => {
@@ -18,12 +16,9 @@ module.exports = {
       },
     });
 
-    
-
     io.on('connection', (socket) => {
-      console.log('A user connected:', socket.id);
+      // console.log('A user connected:', socket.id);
 
-      // Handle user identification
       socket.on('identify', async (userData) => {
         console.log('Identify event received:', userData);
 
@@ -34,34 +29,53 @@ module.exports = {
 
         socket.userId = userData.userId.toString();
         socket.userRole = userData.userRole;
-        clients[socket.userId] = socket; // Store the socket instance
+        clients[socket.userId] = socket;
 
+        // If user is a doctor, check their ongoing session
         if (socket.userRole === 'Doctor') {
-          const updatedDoctor = await Doctor.findByIdAndUpdate(
-            socket.userId,
-            { activityStatus: 'Online' },
-            { new: true }
-          );
-          if (updatedDoctor) {
+          const doctor = await Doctor.findById(socket.userId).populate('dr_appointments');
+          
+          if (doctor) {
+            const lastAppointment = doctor.dr_appointments[doctor.dr_appointments.length - 1];  // Get the last appointment
+            console.log("Last appointment:", lastAppointment.status);  
+            // Check if the last appointment is "Ongoing"
+            if (lastAppointment && lastAppointment.status === 'Ongoing') {
+              const updatedDoctor = await Doctor.findByIdAndUpdate(
+                socket.userId, 
+                { activityStatus: 'In Session' }, 
+                { new: true });
+                if(updatedDoctor) {
+                  io.emit("doctorStatusUpdate", {
+                    doctorId: updatedDoctor._id.toString(),
+                    activityStatus: 'In Session',
+                    patientId: updatedDoctor.patientId, // track patient ID if in session
+                  });
+    
+                }
+   
+              console.log("Doctor is in session:", updatedDoctor.activityStatus);
+             
+            } else {
+              const updatedDoctor = await Doctor.findByIdAndUpdate(
+                socket.userId,
+                { activityStatus: 'Online' },
+                { new: true }
+              );
+              if (updatedDoctor) {
+                io.emit("doctorStatusUpdate", {
+                  doctorId: updatedDoctor._id.toString(),
+                  activityStatus: updatedDoctor.activityStatus,
+              
+                });
 
- 
-              io.emit("doctorStatusUpdate", {
-                doctorId: updatedDoctor._id.toString(),
-                activityStatus: updatedDoctor.activityStatus,
-                lastActive: updatedDoctor.lastActive,
-              });
-        
-
-            console.log("Emitting doctorStatusUpdate:", {
-              doctorId: updatedDoctor._id.toString(),
-              activityStatus: updatedDoctor.activityStatus,
-              lastActive: updatedDoctor.lastActive,
-            });
+                console.log("Doctor is in session:", updatedDoctor.activityStatus);
+              }
+            }
           }
         }
 
+        // Handle other roles like Medical Secretary or Admin
         if (socket.userRole === 'Medical Secretary' || socket.userRole === 'Admin') {
-          // Send the list of patients who have chatted
           const patients = await ChatMessage.aggregate([
             {
               $match: {
@@ -100,107 +114,8 @@ module.exports = {
         }
       });
 
-      // Handle incoming chat messages
-      socket.on('chat message', async (data) => {
-        console.log('Message received:', data);
-
-        let receivers = [];
-
-        if (data.senderModel === 'Patient') {
-          // Patient is sending a message to staff
-          const medSecs = await MedicalSecretary.find({}, '_id');
-          const admins = await Admin.find({}, '_id');
-          receivers = [
-            ...medSecs.map((medSec) => medSec._id.toString()),
-            ...admins.map((admin) => admin._id.toString()),
-          ];
-          data.receiverModel = 'Staff';
-        } else if (data.senderModel === 'Medical Secretary' || data.senderModel === 'Admin') {
-          if (data.receiverId) {
-            // Staff is sending a message to a patient
-            receivers = [data.receiverId.toString()];
-            data.receiverModel = 'Patient';
-          } else {
-            console.error('Receiver ID is required for staff messages');
-            return;
-          }
-        } else {
-          console.error('Invalid sender model');
-          return;
-        }
-
-        const chatMessage = new ChatMessage({
-          sender: data.senderId,
-          senderModel: data.senderModel,
-          receiver: receivers,
-          receiverModel: data.receiverModel,
-          message: data.message,
-        });
-
-        // Get sender's name
-        const senderName = await getSenderName(chatMessage.sender, chatMessage.senderModel);
-        chatMessage.senderName = senderName;
-
-        await chatMessage.save();
-
-        const messageData = {
-          _id: chatMessage._id.toString(),
-          sender: chatMessage.sender.toString(),
-          senderModel: chatMessage.senderModel,
-          senderName: senderName,
-          receiver: chatMessage.receiver.map((id) => id.toString()),
-          receiverModel: chatMessage.receiverModel,
-          message: chatMessage.message,
-          createdAt: chatMessage.createdAt,
-        };
-
-        // Emit the message back to the sender
-        const senderSocket = clients[data.senderId];
-        if (senderSocket) {
-          senderSocket.emit('chat message', messageData);
-        }
-
-        // Emit the message to the appropriate receivers, excluding the sender
-        if (data.senderModel === 'Patient') {
-          // Emit to all connected Medical Secretaries and Admins
-          for (let userId in clients) {
-            const userSocket = clients[userId];
-            if (
-              (userSocket.userRole === 'Medical Secretary' || userSocket.userRole === 'Admin') &&
-              userId !== data.senderId
-            ) {
-              userSocket.emit('chat message', messageData);
-            }
-          }
-        } else if (data.senderModel === 'Medical Secretary' || data.senderModel === 'Admin') {
-          // Emit to the patient if connected
-          const receiverSocket = clients[data.receiverId];
-          if (receiverSocket && receiverSocket.userRole === 'Patient') {
-            receiverSocket.emit('chat message', messageData);
-          }
-
-          // Emit to other staff members (excluding the sender)
-          for (let userId in clients) {
-            const userSocket = clients[userId];
-            if (
-              (userSocket.userRole === 'Medical Secretary' || userSocket.userRole === 'Admin') &&
-              userId !== data.senderId
-            ) {
-              userSocket.emit('chat message', messageData);
-            }
-          }
-        }
-      });
-
-      // Handle 'notification read' event if needed
-      socket.on('notification read', (notificationId) => {
-        console.log(`Notification ${notificationId} marked as read by user ${socket.userId}`);
-        // Additional logic can be implemented here, if desired.
-      });
-
-      // Handle disconnection
       socket.on('disconnect', async () => {
-        console.log('User disconnected:', socket.id);
+        // console.log('User disconnected:', socket.id);
 
         if (socket.userRole === 'Doctor') {
           const updatedDoctor = await Doctor.findByIdAndUpdate(
@@ -209,20 +124,12 @@ module.exports = {
             { new: true }
           );
           if (updatedDoctor) {
-
-      
             io.emit('doctorStatusUpdate', {
-                doctorId: updatedDoctor._id.toString(),
-                activityStatus: updatedDoctor.activityStatus,
-                lastActive: updatedDoctor.lastActive
-              });
-          
-
-            console.log("Emitting doctorStatusUpdate:", {
               doctorId: updatedDoctor._id.toString(),
               activityStatus: updatedDoctor.activityStatus,
               lastActive: updatedDoctor.lastActive,
             });
+            console.log("Doctor disconnected, status updated:", updatedDoctor.activityStatus);
           }
         }
       });
@@ -238,9 +145,6 @@ module.exports = {
   },
   clients: clients,
 
-  //Utility function to emit a activityStatus of Doctor to Admin, Patient, and Medical Secretary users
-  
-  // Utility function to emit a general notification to all Admin and Medical Secretary users
   broadcastGeneralNotification: (notificationData) => {
     for (let userId in clients) {
       const userSocket = clients[userId];
@@ -269,7 +173,6 @@ module.exports = {
   },
 };
 
-// Helper function to get the sender's name based on their model
 async function getSenderName(senderId, senderModel) {
   if (senderModel === 'Patient') {
     const patient = await Patient.findById(senderId);

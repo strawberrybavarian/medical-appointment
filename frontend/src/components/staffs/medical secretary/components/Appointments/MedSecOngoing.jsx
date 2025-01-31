@@ -5,6 +5,7 @@ import './Styles.css';
 import { ip } from '../../../../../ContentExport';
 import { toast, ToastContainer } from 'react-toastify';
 import { ThreeDots } from 'react-bootstrap-icons';
+import io from "socket.io-client";
 function MedSecOngoing({ allAppointments, setAllAppointments }) {
   const [currentPage, setCurrentPage] = useState(1);
   const [entriesPerPage, setEntriesPerPage] = useState(5);
@@ -13,6 +14,7 @@ function MedSecOngoing({ allAppointments, setAllAppointments }) {
   const [selectedDoctor, setSelectedDoctor] = useState("");
   const [selectedAccountStatus, setSelectedAccountStatus] = useState("");
   const [error, setError] = useState("");
+  const [socket] = useState(io(ip.address));
   useEffect(() => {
     axios.get(`${ip.address}/api/doctor/api/alldoctor`)
       .then((result) => {
@@ -21,22 +23,23 @@ function MedSecOngoing({ allAppointments, setAllAppointments }) {
       .catch((error) => {
         console.log(error);
       });
-  }, []);
-
-  const ongoingAppointment = (appointmentID) => {
-    const newStatus = { status: 'Ongoing' };
-    axios.put(`${ip.address}/api/medicalsecretary/api/${appointmentID}/ongoing`, newStatus)
-      .then((response) => {
-        setAllAppointments(prevAppointments =>
+      socket.on('doctorStatusUpdate', (updatedDoctor) => {
+        setAllAppointments(prevAppointments => 
           prevAppointments.map(appointment =>
-            appointment._id === appointmentID ? { ...appointment, status: 'Ongoing' } : appointment
+            appointment.doctor._id === updatedDoctor.doctorId
+              ? { ...appointment, doctor: { ...appointment.doctor, activityStatus: updatedDoctor.activityStatus } }
+              : appointment
           )
         );
-      })
-      .catch((err) => {
-        console.log(err);
       });
-  };
+  
+      return () => {
+        socket.off('doctorStatusUpdate');
+      };
+
+
+  }, [socket]);
+
 
   // Function to convert 24-hour time to 12-hour format with AM/PM
   const convertTimeRangeTo12HourFormat = (timeRange) => {
@@ -126,6 +129,15 @@ function MedSecOngoing({ allAppointments, setAllAppointments }) {
               : appointment
           )
         );
+
+
+
+        if (newStatus === 'Scheduled') 
+          // Emit real-time update to change doctor's status to "Online"
+          socket.emit('doctorStatusUpdate', {
+            doctorId: allAppointments.find(app => app._id === appointmentId)?.doctor?._id,
+            activityStatus: 'Online',
+          });
   
         console.log('Appointment status updated successfully:', updatedAppointment);
       } else {

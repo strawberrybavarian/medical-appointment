@@ -371,6 +371,9 @@ const updateAppointmentStatus = async (req, res) => {
     const io = socket.getIO();
     const clients = socket.clients;
 
+
+
+
     // Helper function to determine the notification type based on the appointment status
     function getNotificationType(newStatus) {
       switch (newStatus) {
@@ -391,31 +394,27 @@ const updateAppointmentStatus = async (req, res) => {
     if (status === 'Ongoing') {
       await Doctors.findByIdAndUpdate(appointment.doctor._id, { activityStatus: 'In Session' }, { new: true });
       const updatedDoctor = await Doctors.findById(appointment.doctor._id).select('activityStatus');
-      
-      // Notify connected clients that this doctor's activity status changed
-      for (let userId in clients) {
-        const userSocket = clients[userId];
-        userSocket.emit('doctorStatusUpdate', {
-          doctorId: appointment.doctor._id.toString(),
-          activityStatus: updatedDoctor.activityStatus
-        });
-      }
+    
+      // Emit to all clients (including doctors) to notify the doctor that their status is "In Session"
+      io.emit('doctorStatusUpdate', {
+        doctorId: appointment.doctor._id.toString(),
+        activityStatus: updatedDoctor.activityStatus,
+      });
     }
 
-    // If appointment is Completed, revert the doctor's activity status to Online
-    if (status === 'For Payment') {
+    // If appointment is Completed or For Payment, revert the doctor's activity status to Online
+    if (status === 'Completed' || status === 'For Payment' || status === 'Cancelled' || status === 'Scheduled') {
       await Doctors.findByIdAndUpdate(appointment.doctor._id, { activityStatus: 'Online' }, { new: true });
       const updatedDoctor = await Doctors.findById(appointment.doctor._id).select('activityStatus');
-      
-      // Notify connected clients that this doctor's activity status changed
-      for (let userId in clients) {
-        const userSocket = clients[userId];
-        userSocket.emit('doctorStatusUpdate', {
-          doctorId: appointment.doctor._id.toString(),
-          activityStatus: updatedDoctor.activityStatus
-        });
-      }
+    
+      // Emit to all clients to notify that the doctor's status is back to "Online"
+      io.emit('doctorStatusUpdate', {
+        doctorId: appointment.doctor._id.toString(),
+        activityStatus: updatedDoctor.activityStatus,
+      });
     }
+
+
 
     // Notify Doctor if status is 'Scheduled' or 'Upcoming'
     if ((status === 'Scheduled' || status === 'Upcoming') && appointment.doctor) {
@@ -449,26 +448,24 @@ const updateAppointmentStatus = async (req, res) => {
 
     // Notify Patient if status changes to one of the specified statuses
     if (['Scheduled', 'Ongoing', 'Completed', 'Cancelled'].includes(status) && oldStatus !== status) {
-      const notificationMessage = `Your appointment ${appointment.appointment_ID || appointment._id} status has been updated to ${status}.`;
+      // Notify patient
       const patientNotification = new Notification({
-        message: notificationMessage,
+        message: `Your appointment ${appointment.appointment_ID || appointment._id} status has been updated to ${status}.`,
         receiver: appointment.patient._id,
         receiverModel: 'Patient',
         isRead: false,
         link: `/myappointment`,
-        type: getNotificationType(status),
+        type: 'StatusUpdate',
         recipientType: 'Patient',
       });
       await patientNotification.save();
-
-      await Patient.findByIdAndUpdate(appointment.patient._id, {
-        $push: { notifications: patientNotification._id }
-      });
-
+    
+      await Patient.findByIdAndUpdate(appointment.patient._id, { $push: { notifications: patientNotification._id } });
+    
       const patientSocket = clients[appointment.patient._id.toString()];
       if (patientSocket && patientSocket.userRole === 'Patient') {
         patientSocket.emit('appointmentStatusUpdate', {
-          message: notificationMessage,
+          message: `Your appointment ${appointment.appointment_ID || appointment._id} status has been updated to ${status}.`,
           appointmentId: appointment._id,
           patientId: appointment.patient._id,
           status: status,
@@ -534,6 +531,7 @@ Your Clinic Team`,
     res.status(500).json({ message: `Failed to update status: ${error.message}` });
   }
 };
+
 
 
 
