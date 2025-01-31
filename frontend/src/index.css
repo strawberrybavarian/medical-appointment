@@ -2400,7 +2400,7 @@ background-color: #0056b3;
 transform: scale(1.1); /* Slightly larger on hover */
 }
 
-.modal-body{
+.modal-body-for-patient{
   width: 100%;
   display: flex;
 }

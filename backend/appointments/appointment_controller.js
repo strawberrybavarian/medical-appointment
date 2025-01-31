@@ -608,6 +608,7 @@ const updateAppointmentDetails = async (req, res) => {
       recipient: [updatedAppointment.patient._id],
       recipientType: 'Patient',
       type: 'AppointmentUpdate',
+      receiverModel: 'Patient'
     });
     await patientNotification.save();
     await Patient.findByIdAndUpdate(updatedAppointment.patient._id, { $push: { notifications: patientNotification._id } });

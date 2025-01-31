@@ -32,7 +32,7 @@ function DoctorCards({ msid }) {
       setDoctors((prevDoctors) =>
         prevDoctors.map((doctor) =>
           doctor._id === updatedDoctor.doctorId
-            ? { ...doctor, activityStatus: updatedDoctor.activityStatus }
+            ? { ...doctor, activityStatus: updatedDoctor.activityStatus, lastActive: updatedDoctor.lastActive }
             : doctor
         )
       );

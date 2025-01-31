@@ -72,7 +72,7 @@ function PastAppointmentsModal({ patientId, show, onClose }) {
       <Modal.Header className="am-header" closeButton>
         <Modal.Title>Past Completed Appointments</Modal.Title>
       </Modal.Header>
-      <Modal.Body className="modal-body">
+      <Modal.Body className="modal-body-for-patient">
         <Container fluid>
           <Row>
             {/* Left Side - Appointments List */}
