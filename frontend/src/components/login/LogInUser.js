@@ -8,7 +8,7 @@ import { Row, Form, Col, Button, Container, Modal, Card } from 'react-bootstrap'
 import { image, ip } from '../../ContentExport';
 import PasswordValidation from './PasswordValidation'; 
 import { useUser } from '../UserContext';
-
+import Swal from 'sweetalert2';
 const LogInUser = ({hideOuterStyles }) => {
   const navigate = useNavigate();
   const { setUser, setRole } = useUser();
@@ -44,7 +44,7 @@ const LogInUser = ({hideOuterStyles }) => {
 
           if (existingRole === 'Patient') {
             navigate('/homepage');
-          } else if (existingRole === 'Physician') {
+          } else if (existingRole === 'Doctor') {
             navigate('/dashboard');
           }
           return; 
@@ -71,24 +71,48 @@ const LogInUser = ({hideOuterStyles }) => {
         const role = response.data.role;
         setUser(loggedInUser);
         setRole(role);
-        window.alert("Successfully logged in");
+        
 
-        if (role === 'Physician') {
+        if (role === 'Doctor') {
           if (loggedInUser.passwordChanged === false) {
             setDoctorData(loggedInUser);
             setShowPasswordModal(true);
           } else {
+            Swal.fire({
+              icon: 'success',
+              title: 'Successfully logged in',
+              showConfirmButton: true,
+              timer: 1500,
+            });
+
             navigate('/dashboard');
           }
         } else {
+
+          //Patient
+          Swal.fire({
+            icon: 'success',
+            toast: true,
+            position: 'top-end',
+
+            title: 'Successfully logged in',
+            showConfirmButton: false,
+            timer: 1500,
+          });
           navigate('/homepage');
         }
       } else {
+        console.log('Error logging in:', response.data.message);
         window.alert(response.data.message || "Invalid email or password.");
       }
     } catch (err) {
       console.error('Error logging in:', err);
-      window.alert(err.response?.data?.message || "An error occurred while logging in.");
+
+      Swal.fire({
+        icon: 'error',
+        title: 'Oops...',
+        text: err.response?.data?.message || 'An error occurred while logging in.',
+      })
     }
   };
 
@@ -160,8 +184,8 @@ const LogInUser = ({hideOuterStyles }) => {
              
             <h1 className="">User Login</h1>
 
-            <p className="text-muted" style={{ marginLeft: '4px' }}>
-              For Patient or Physician
+            <p className="text-muted" >
+              For Patient or Doctor
             </p>
 
             {/* Email field */}
@@ -196,7 +220,7 @@ const LogInUser = ({hideOuterStyles }) => {
                 onChange={(e) => setUserRole(e.target.value)}
               >
                 <option value="Patient">Patient</option>
-                <option value="Physician">Physician</option>
+                <option value="Doctor">Doctor</option>
               </Form.Select>
             </Form.Group>
 
@@ -227,8 +251,7 @@ const LogInUser = ({hideOuterStyles }) => {
         </Col>
       </Row>
       ) : (
-        // Original container + card code if we do NOT pass hideOuterStyles
-        // ...
+
         <div>Original styling here</div>
       )}
 
@@ -259,7 +282,7 @@ const LogInUser = ({hideOuterStyles }) => {
                   onChange={(e) => setModalRole(e.target.value)}
                 >
                   <option value="Patient">Patient</option>
-                  <option value="Physician">Physician</option>
+                  <option value="Doctor">Doctor</option>
                 </Form.Select>
               </Form.Group>
               <Button type="submit" variant="primary" className="mt-3">
@@ -270,7 +293,7 @@ const LogInUser = ({hideOuterStyles }) => {
         </Modal.Body>
       </Modal>
 
-      {/* Password Update Modal (for Physician if passwordChanged == false) */}
+      {/* Password Update Modal (for Doctor if passwordChanged == false) */}
       <Modal show={showPasswordModal} onHide={() => setShowPasswordModal(false)}>
         <Modal.Header>
           <Modal.Title>Update Your Password</Modal.Title>

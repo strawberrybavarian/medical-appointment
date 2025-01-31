@@ -554,6 +554,28 @@ const getAppointmentById = async (req, res) => {
   }
 };
 
+// AppointmentController.js
+
+const getPastAppointments = async (req, res) => {
+  try {
+    const { patientId, doctorName } = req.query; // doctorName for search filter
+    const appointments = await Appointment.find({ patient: patientId, date: { $lt: new Date() } })
+      .populate('doctor')
+      .populate('patient');
+
+    // Filter by doctor name if provided
+    const filteredAppointments = doctorName
+      ? appointments.filter(app => app.doctor.name.toLowerCase().includes(doctorName.toLowerCase()))
+      : appointments;
+
+    res.status(200).json(filteredAppointments);
+  } catch (error) {
+    console.error('Error fetching past appointments:', error);
+    res.status(500).json({ message: 'Failed to fetch past appointments' });
+  }
+};
+
+
 const updateAppointmentDetails = async (req, res) => {
   try {
     const { doctor, date, time, appointment_type, reason } = req.body;
@@ -674,4 +696,5 @@ module.exports = {
   createServiceAppointment,
   updateFollowUpStatus,
   updatePatientAppointmentDetails,
+  getPastAppointments,  
 };

@@ -215,20 +215,20 @@ const addNewNewsByUserId = async (req, res) => {
 
 // Retrieve all news
 const getAllNewsByUserId = (req, res) => {
-    const { id, role } = req.params;
-    const UserModel = role === 'Medical Secretary' ? MedicalSecretary : Admin;
+  const { id, role } = req.params;
+  const UserModel = role === 'Medical Secretary' ? MedicalSecretary : Admin;
 
-    UserModel.findOne({ _id: id })
-        .populate('news')
-        .then((user) => {
-            if (!user) {
-                res.json({ message: `${role} not found` });
-            }
-            res.json({ news: user.news });
-        })
-        .catch((err) => {
-            res.json({ message: 'Error retrieving news', error: err });
-        });
+  UserModel.findOne({ _id: id })
+      .populate('news')
+      .then((user) => {
+          if (!user) {
+              return res.json({ message: `${role} not found` }); // Add return here
+          }
+          res.json({ news: user.news });
+      })
+      .catch((err) => {
+          res.json({ message: 'Error retrieving news', error: err });
+      });
 };
 
 // Delete news by its _id
@@ -316,7 +316,7 @@ const updateNewsAtIndex = async (req, res) => {
         // Save the updated news
         const updatedNews = await news.save();
 
-        res.json({ updatedNews, message: 'News updated successfully' });
+        return res.json({ updatedNews, message: 'News updated successfully' });
     } catch (error) {
         console.error('Error updating news:', error);
         res.status(500).json({ message: 'Error updating news', error });

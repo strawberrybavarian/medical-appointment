@@ -356,7 +356,7 @@ const loginDoctor = async (req, res) => {
     delete req.session.doctor;
     delete req.session.patient; 
     req.session.userId = doctor._id;
-    req.session.role = 'Physician';
+    req.session.role = 'Doctor';
     req.session.doctorId = doctorData;
 
     if (rememberMe) { // If rememberMe is checked, set the cookie to expire in 30 days
@@ -400,7 +400,7 @@ const loginDoctor = async (req, res) => {
   
 const getSessionData = (req, res) => {
   try {
-    if (!req.session || !req.session.userId || req.session.role !== 'Physician') {
+    if (!req.session || !req.session.userId || req.session.role !== 'Doctor') {
       return res.status(401).json({ message: 'No active session found.' });
     }
 
@@ -425,7 +425,7 @@ const getSessionData = (req, res) => {
 const createDoctorSession = (req, res) => {
   const { userId, role } = req.body;
 
-  if (role === "Physician") {
+  if (role === "Doctor") {
       req.session.userId = userId;  
       req.session.role = role;      
       

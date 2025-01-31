@@ -28,6 +28,8 @@ export default function DoubleSliderLogin() {
 
   return (
     <>
+    <div style={{overflowY: "auto", overflowX: "hidden", height: "calc(100vh)"}}>
+
       <ForLoginAndSignupNavbar />
 
       <Container
@@ -79,6 +81,7 @@ export default function DoubleSliderLogin() {
 
 
       </Container>
+      </div>
     </>
   );
 }

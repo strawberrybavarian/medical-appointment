@@ -2399,3 +2399,8 @@ transition: background-color 0.3s ease-in-out, transform 0.2s ease-in-out;
 background-color: #0056b3;
 transform: scale(1.1); /* Slightly larger on hover */
 }
+
+.modal-body{
+  width: 100%;
+  display: flex;
+}

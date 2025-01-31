@@ -62,12 +62,13 @@ function DashboardMain() {
     <div className="d-flex justify-content-center m-0 p-0">
       <SidebarMenu doctor_image={doctorData.image} doctor_name={doctorData.name} did={did} />
       <div style={{ width: "100%" }}>
-        <DoctorNavbar doctor_image={doctorData.image} did={did} />
         <Container
           fluid
           className="cont-fluid-no-gutter  m-0 p-0"
           style={{ overflowY: "scroll", height: "100vh", paddingBottom: "100px", paddingTop: "1.5rem" }}
         >
+                  <DoctorNavbar doctor_image={doctorData.image} did={did} />
+
           <div className="w-100 d-flex justify-content-center mt-5 position-relative">
             <div className="position-relative">
               <img

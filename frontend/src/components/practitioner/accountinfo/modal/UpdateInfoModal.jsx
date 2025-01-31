@@ -23,7 +23,7 @@ const UpdateInfoModal = ({ show, handleClose, doctorData, handleUpdate }) => {
 
   const fetchSpecialties = async () => {
     try {
-      const response = await axios.get(`${ip.address}/api/admin/specialties`); // Replace with your actual backend URL
+      const response = await axios.get(`${ip.address}/api/find/admin/specialties`); // Replace with your actual backend URL
       if (Array.isArray(response.data)) {
         setSpecialties(response.data); // Assuming the data is an array of specialties
       } else {

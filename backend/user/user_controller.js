@@ -14,7 +14,7 @@ const unifiedLogin = async (req, res) => {
 
   try {
     let user;
-    if (role === 'Physician') {
+    if (role === 'Doctor') {
       user = await Doctors.findOne({ dr_email: email });
       if (!user) {
         return res.status(404).json({ message: 'No doctor with that email found' });
@@ -33,7 +33,7 @@ const unifiedLogin = async (req, res) => {
         email: user.dr_email,
         firstName: user.dr_firstName,
         lastName: user.dr_lastName,
-        role: 'Physician',
+        role: 'Doctor',
       };
   
       user.activityStatus = 'Online';
@@ -140,14 +140,14 @@ const unifiedLogout = async (req, res) => {
       return res.status(401).json({ message: 'No active session found' });
     }
 
-    // 2. If the role is 'Physician', set them Offline
-    if (req.session.role === 'Physician') {
+    // 2. If the role is 'Doctor', set them Offline
+    if (req.session.role === 'Doctor') {
       const doctorId = req.session.user ? req.session.user._id : null; 
       // Or if you stored doctor ID differently:
       // const doctorId = req.session.userId;
 
       if (doctorId) {
-        console.log(`Physician logout. Setting doctor ${doctorId} offline`);
+        console.log(`Doctor logout. Setting doctor ${doctorId} offline`);
         await DoctorService.updateActivityStatus(doctorId, 'Offline');
 
         // Broadcast the doctor's updated status in real-time

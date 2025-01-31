@@ -457,6 +457,10 @@ const findPatientById = (req, res) => {
         path: 'payment',
         model: 'Payment'
       },
+      {
+        path: 'findings',
+        model: 'Findings'
+      }
     ]
   })
   .populate({
