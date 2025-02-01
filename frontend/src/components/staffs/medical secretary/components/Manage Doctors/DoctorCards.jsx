@@ -122,7 +122,7 @@ function DoctorCards({ msid }) {
         onHide={() => setShowModal(false)}
         size="xl"
         backdrop="static"
-        className="am-overlay custom-wide-modal"
+        className="am-overlay"
       >
         <Modal.Header className="am-header" closeButton>
           <Modal.Title>Manage Doctor</Modal.Title>

@@ -15,7 +15,7 @@ function ManageDoctorMain({did, msid, showModal}) {
     
     const navigate = useNavigate();
     console.log('Received did:', did);
-    console.log('Received msid:', msid);
+
     
     const [activeTab, setActiveTab] = useState('profile');
     const [show, setShow] = useState(!!showModal); // Use modal state
@@ -24,7 +24,7 @@ function ManageDoctorMain({did, msid, showModal}) {
 
     return (
 
-                <div>
+             
                     
                     <Container fluid style={{ overflowY: 'auto', height: 'calc(100vh - 100px)', width: '100%', paddingBottom: '1.5rem' }}>
                         <div style={{ paddingLeft: '5rem', paddingRight: '5rem' }} className='pt-5'>
@@ -37,10 +37,10 @@ function ManageDoctorMain({did, msid, showModal}) {
                                         <Container>
                                         </Container>
                                         <Col md={6}>
-                                            <MSDoctorProfile did={did} msid={msid} />
+                                            <MSDoctorProfile did={did}  />
                                         </Col>
                                         <Col md={6}>
-                                            <DoctorScheduleManagement did={did} msid={msid} />
+                                            <DoctorScheduleManagement did={did}  />
                                         </Col>
                                     </>
                                 )}
@@ -48,7 +48,7 @@ function ManageDoctorMain({did, msid, showModal}) {
                             </Row>
                         </div>
                     </Container>
-                </div>
+           
 
     );
 }

@@ -3,6 +3,7 @@ import React, { createContext, useState, useContext, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { ip } from '../ContentExport';
+
 const UserContext = createContext();
 
 export const useUser = () => useContext(UserContext);
@@ -23,14 +24,12 @@ export const UserProvider = ({ children }) => {
         if (response.data.user) {
           setUser(response.data.user);
           setRole(response.data.role);
-   
         } else {
           setUser(null);
           setRole(null);
-
         }
       } catch (error) {
-        console.error('Failed to fetch session:', error);
+        // Avoid logging error if no session
         setUser(null);
         setRole(null);
       } finally {

@@ -137,7 +137,7 @@ const createAppointment = async (req, res) => {
     const recipients = [...medicalSecretaries.map(ms => ms._id), ...admins.map(ad => ad._id)];
     const notificationMessage = `New pending appointment created by ${patientData.patient_firstName} ${patientData.patient_lastName}.`;
 
-    const notification = new Notification({
+    const notificationAdmin = new Notification({
       message: notificationMessage,
       receiver: recipients,
       receiverModel: 'Admin',
@@ -147,17 +147,29 @@ const createAppointment = async (req, res) => {
       recipientType: 'Admin',
     });
 
-    await notification.save();
+    const notificationMedsec = new Notification({
+      message: notificationMessage,
+      receiver: recipients,
+      receiverModel: 'Medical Secretary',
+      isRead: false,
+      link: `/medsec/appointments`,
+      type: 'Appointment',
+      recipientType: 'Medical Secretary',
+    });
+
+
+    await notificationMedsec.save();
+    await notificationAdmin.save();
 
     await Promise.all(
       medicalSecretaries.map(ms => {
-        return MedicalSecretary.findByIdAndUpdate(ms._id, { $push: { notifications: notification._id } });
+        return MedicalSecretary.findByIdAndUpdate(ms._id, { $push: { notifications: notificationMedsec._id } });
       })
     );
 
     await Promise.all(
       admins.map(ad => {
-        return Admin.findByIdAndUpdate(ad._id, { $push: { notifications: notification._id } });
+        return Admin.findByIdAndUpdate(ad._id, { $push: { notifications: notificationAdmin._id } });
       })
     );
 
@@ -311,37 +323,48 @@ const countBookedPatients = async (req, res) => {
   try {
     const doctor = await Doctors.findById(doctorId).select('bookedSlots');
     if (!doctor) return res.status(404).json({ message: 'Doctor not found.' });
+
     const formattedDate = new Date(date).toISOString().split('T')[0];
+    
     let bookedSlot = doctor.bookedSlots.find(
       (slot) => slot.date.toISOString().split('T')[0] === formattedDate
     );
+    
     if (!bookedSlot) {
       bookedSlot = { date: new Date(date), morning: 0, afternoon: 0 };
       doctor.bookedSlots.push(bookedSlot);
       await doctor.save();
     }
+
+    // Define the statuses to be included in the count
+    const statuses = ['Scheduled', 'Completed', 'Cancelled', 'Ongoing', 'To-send', 'For Payment', 'Upcoming'];
+
     const morningCount = await Appointment.countDocuments({
       doctor: doctorId,
       date: new Date(date),
-      time: { $regex: /^(0[0-9]|1[01]):[0-5][0-9]/ },
-      status: 'Scheduled',
+      time: { $regex: /^(0[0-9]|1[01]):[0-5][0-9]/ }, // Morning time regex
+      status: { $in: statuses }, // Include all desired statuses
     });
+
     const afternoonCount = await Appointment.countDocuments({
       doctor: doctorId,
       date: new Date(date),
-      time: { $regex: /^(1[2-9]|2[0-3]):[0-5][0-9]/ },
-      status: 'Scheduled',
+      time: { $regex: /^(1[2-9]|2[0-3]):[0-5][0-9]/ }, // Afternoon time regex
+      status: { $in: statuses }, // Include all desired statuses
     });
+
     bookedSlot.morning = morningCount;
     bookedSlot.afternoon = afternoonCount;
     doctor.markModified('bookedSlots');
     await doctor.save();
+
     res.json({ morning: bookedSlot.morning, afternoon: bookedSlot.afternoon });
   } catch (error) {
     console.error('Error counting booked patients:', error);
     res.status(500).json({ message: 'Error counting booked patients' });
   }
 };
+
 
 const updateAppointmentStatus = async (req, res) => {
   try {

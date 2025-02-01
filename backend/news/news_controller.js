@@ -11,49 +11,54 @@ const Doctor = require('../doctor/doctor_model');
 const socket = require('../socket'); // Import the socket module;
 
 const getGeneralNews = async (req, res) => {
-    try {
-        const newsPosts = await News.aggregate([
-            {
-                $lookup: {
-                    from: 'medicalsecretaries',
-                    localField: 'posted_by',
-                    foreignField: '_id',
-                    as: 'medicalSecretaryInfo'
-                }
-            },
-            {
-                $lookup: {
-                    from: 'admins',
-                    localField: 'posted_by',
-                    foreignField: '_id',
-                    as: 'adminInfo'
-                }
-            },
-            {
-                $project: {
-                    news_ID: 1,
-                    content: 1,
-                    headline: 1,
-                    images: 1,
-                    role: 1,
-                    posted_by: 1,
-                    postedByInfo: {
-                        $cond: {
-                            if: { $eq: ['$role', 'Medical Secretary'] },
-                            then: { $arrayElemAt: ['$medicalSecretaryInfo', 0] },
-                            else: { $arrayElemAt: ['$adminInfo', 0] }
-                        }
-                    }
-                }
+  try {
+    const newsPosts = await News.aggregate([
+      {
+        $lookup: {
+          from: 'medicalsecretaries',  // Look for the medical secretary in the 'medicalsecretaries' collection
+          localField: 'posted_by',  // This is the field from 'News'
+          foreignField: '_id',  // This is the field in 'medicalsecretaries' to match the 'posted_by' value
+          as: 'medicalSecretaryInfo'  // The name of the array to store the result
+        }
+      },
+      {
+        $lookup: {
+          from: 'admins',  // Look for the admin in the 'admins' collection
+          localField: 'posted_by',
+          foreignField: '_id',
+          as: 'adminInfo'  // The name of the array to store the result
+        }
+      },
+      {
+        $project: {
+          news_ID: 1,
+          content: 1,
+          headline: 1,
+          images: 1,
+          role: 1,
+          posted_by: 1,
+          postedByInfo: {
+            $cond: {
+              if: { $eq: ['$role', 'Medical Secretary'] },  // Check if the role is 'Medical Secretary'
+              then: {  // If it is a Medical Secretary
+                $arrayElemAt: ['$medicalSecretaryInfo', 0],  // Use the first element of the array (which contains the populated info)
+              },
+              else: {  // Otherwise, it's an Admin
+                $arrayElemAt: ['$adminInfo', 0],  // Use the first element of the adminInfo array
+              }
             }
-        ]);
+          }
+        }
+      }
+    ]);
 
-        res.json({ news: newsPosts });
-    } catch (error) {
-        console.error('Error fetching general news posts:', error);
-        res.status(500).json({ message: 'Error fetching general news posts', error });
-    }
+    res.json({ news: newsPosts });
+  } catch (error) {
+    console.error('Error fetching general news posts:', error);
+    res.status(500).json({ message: 'Error fetching general news posts', error });
+  }
 };
+
 
 const findNewsByUserId = (req, res) => {
     const { id, role } = req.params;
@@ -349,6 +354,58 @@ const markAsRead = async (req, res) => {
     }
   };
 
+  const updateNewsByAdmin = async (req, res) => {
+    const { newsId } = req.params;
+
+    try {
+        // Find the news by its newsId
+        const news = await News.findById(newsId);
+        if (!news) {
+            return res.status(404).json({ message: 'News not found' });
+        }
+
+        // Handle new image uploads
+        let imagePaths = [];
+        if (req.files && req.files.length > 0) {
+            imagePaths = req.files.map(file => {
+                const imagePath = `images/${file.filename}`;
+                return imagePath;
+            });
+        }
+
+        // Handle deleted images
+        let deletedImages = [];
+        if (req.body.deletedImages) {
+            try {
+                deletedImages = JSON.parse(req.body.deletedImages); // Safely parse if the value exists
+            } catch (error) {
+                console.error('Error parsing deletedImages:', error);
+                deletedImages = []; // If there's an error in parsing, fallback to empty array
+            }
+            // Remove the images listed in deletedImages from the news' images array
+            news.images = news.images.filter(image => !deletedImages.includes(image));
+        } else {
+            deletedImages = []; // Default to empty array if no deleted images
+        }
+        // Add new images to the news (if any)
+        if (imagePaths.length > 0) {
+            news.images.push(...imagePaths);
+        }
+
+        // Update the content and headline
+        news.content = req.body.content || news.content;
+        news.headline = req.body.headline || news.headline;
+
+        // Save the updated news
+        const updatedNews = await news.save();
+
+        return res.json({ updatedNews, message: 'News updated successfully' });
+    } catch (error) {
+        console.error('Error updating news:', error);
+        res.status(500).json({ message: 'Error updating news', error });
+    }
+};
+
 module.exports = {
     addNewNewsByUserId,
     getAllNewsByUserId,
@@ -357,5 +414,6 @@ module.exports = {
     findNewsByUserId,
     getGeneralNews,
     getNewsById,
-    markAsRead
+    markAsRead,
+    updateNewsByAdmin,
 };

@@ -41,13 +41,21 @@ app.use(
 
 // Connect to MongoDB
 require('./config/mongoose');
-
+//FrontendOrigins
+const allowedOrigins = ['http://localhost:3000','https://psgc.gitlab.io'];
 // CORS Configuration
 const cors = require('cors');
 app.use(
   cors({
-    origin: 'http://localhost:3000',
-    credentials: true,
+    origin: (origin, callback) => {
+      // Only allow specific origins, or allow when origin is null (e.g., server-to-server requests)
+      if (allowedOrigins.includes(origin) || !origin) {
+        callback(null, true); // Allow the request
+      } else {
+        callback(new Error('Not allowed by CORS'), false); // Block the request
+      }
+    },
+    credentials: true, // Allow credentials (cookies, authorization headers, etc.)
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
   })
@@ -69,16 +77,7 @@ app.use('/images', express.static(path.join(__dirname, 'services', 'images')));
 
 app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 
-app.use(
-  '/uploads',
-  cors({
-    origin: '*',
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true,
-  }),
-  express.static(path.join(__dirname, 'public/uploads'))
-);
+
 
 app.get('/uploads/:filename', (req, res) => {
   const fileName = req.params.filename;
@@ -132,6 +131,9 @@ const HmoRoutes = require('./hmo/hmo_routes');
 HmoRoutes(app);
 const ChatRoutes = require('./chat/chat_routes');
 ChatRoutes(app);
+const ProxyRoutes = require('./proxy/proxyRoutes');
+ProxyRoutes(app);
+
 
 // Serve frontend
 app.get('*', (req, res) => {

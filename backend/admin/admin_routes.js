@@ -25,11 +25,16 @@ module.exports = app => {
     app.get('/api/admin/api/patients/registered/count', AdminCountControllerDoctor.countRegisteredPatients);
     app.get('/api/admin/api/patients/unregistered/count', AdminCountControllerDoctor.countUnregisteredPatients);
     app.get('/api/admin/api/appointments/stats', AdminController.getAppointmentStats);
-
+    app.get('/api/admin/api/patients/todays-patient/count', AdminCountControllerDoctor.countTodaysPatient)
+    app.get('/api/admin/api/patients/ongoing-appointment/count', AdminCountControllerDoctor.countOngoingPatient)
     //Counting Doctors
     app.get('/api/admin/api/doctors/count', AdminCountControllerDoctor.countTotalDoctors)
     app.get('/api/admin/api/doctors/registered/count', AdminCountControllerDoctor.countRegisteredDoctors)
     app.get('/api/admin/api/doctors/reviewed/count', AdminCountControllerDoctor.countReviewedDoctors)
+    app.get('/api/admin/api/doctors/online-status/count', AdminCountControllerDoctor.countOnlineDoctors)
+    app.get('/api/admin/api/doctors/online-status/count', AdminCountControllerDoctor.countOnlineDoctors)
+    app.get('/api/admin/api/doctors/insession-status/count', AdminCountControllerDoctor.countInSessionDoctors)
+
     //Appointment Stats
     app.get('/api/api/doctor-specialty-stats', AdminController.getDoctorSpecialtyStats)
     app.get('/api/admin/api/appointments/completed-by-month', AdminController.getCompletedAppointmentsByMonth)
