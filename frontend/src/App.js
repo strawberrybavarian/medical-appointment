@@ -53,7 +53,7 @@ import NewsDetailPage from './components/staffs/news/NewsDetailPage';
 import AdminAppointmentMain from './components/staffs/admin/appointment/AdminAppointmentMain';
 import SasMain from './components/staffs/admin/specialtyandservices/SasMain';
 import StaffsManagement from './components/staffs/admin/management/account/StaffsManagement';
-
+import AdminPersonalInfo from './components/staffs/admin/personalinfo/AdminPersonalInfo';
 import ChooseDoctorServices from './components/patient/homepage/ChooseDoctorServices';
 import MedSecAccInfo from './components/staffs/medical secretary/components/Account/MedSecAccInfo';
 import ResetPassword from './components/login/ResetPassword';
@@ -119,7 +119,7 @@ function App() {
             <Route path={"/admin/appointments/"} element={<AdminAppointmentMain />}/>
             <Route path={"/admin/sas/"} element={<SasMain />}/>
             <Route path={"/admin/news-management"} element={<AdminNewsManagement />}/>
-          
+            <Route path={"/admin/account"} element={<AdminPersonalInfo/>}/>
           </Routes>
 
           </UserProvider>

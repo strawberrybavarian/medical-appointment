@@ -9,6 +9,8 @@ import { ip } from '../../../../../ContentExport';
 import BarAppointment from '../Charts/BarAppointment';
 import SidebarAdmin from '../../sidebar/SidebarAdmin';
 import LineCompletedAppointments from '../Charts/LineCompletedAppointments';
+import BarPatientAgeGroup from '../Charts/PatientAgeGroupChart';
+
 import ChatComponent from '../../../../chat/ChatComponent';
 import { BsChatDotsFill } from 'react-icons/bs'; // Chat icon
 function PatientMain() {
@@ -66,10 +68,14 @@ function PatientMain() {
             todaysPatients={todaysPatients}
           />
           <Row className="mt-4">
-            <Col md={6}>
+            <Col md={4}>
               <BarAppointment />
             </Col>
-            <Col md={6}>
+
+            <Col md={4}>
+              <BarPatientAgeGroup/>
+            </Col>
+            <Col md={4}>
               <LineCompletedAppointments />
 
               <button
@@ -89,6 +95,8 @@ function PatientMain() {
                 </div>
               )}
             </Col>
+
+            
           </Row>
         </Container>
       </Container>

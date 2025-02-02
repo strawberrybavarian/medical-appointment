@@ -275,6 +275,12 @@ function MedSecOngoing({ allAppointments, setAllAppointments }) {
                             {appointment.patient.accountStatus === "Unregistered" && (
                               <>
                                 <Dropdown.Item
+                                  onClick={() => handleUpdateStatus(appointment._id, "For Payment")}
+                                  className="action-item"
+                                >
+                                  For Payment
+                                </Dropdown.Item>
+                                <Dropdown.Item
                                   onClick={() => handleUpdateStatus(appointment._id, "Scheduled")}
                                   className="action-item"
                                 >
@@ -287,6 +293,12 @@ function MedSecOngoing({ allAppointments, setAllAppointments }) {
                             )}
                             {appointment.patient.accountStatus === "Registered" && (
                               <>
+                                <Dropdown.Item
+                                  onClick={() => handleUpdateStatus(appointment._id, "For Payment")}
+                                  className="action-item"
+                                >
+                                  For Payment
+                                </Dropdown.Item>
                                 <Dropdown.Item
                                   onClick={() => handleUpdateStatus(appointment._id, "Scheduled")}
                                   className="action-item"

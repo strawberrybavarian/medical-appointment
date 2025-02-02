@@ -175,102 +175,7 @@ const NewPatientSignUp = async (req, res) => {
     res.status(500).json({ message: 'Error registering patient', error });
   }
 };
-const loginPatient = async (req, res) => {
-  const { email, password, rememberMe } = req.body;
 
-  try {
-    const patient = await Patient.findOne({ patient_email: email });
-
-    if (!patient) {
-      return res.status(404).json({ message: 'No patient with that email found' });
-    }
-
-    const isMatch = await bcrypt.compare(password, patient.patient_password);
-    if (!isMatch) {
-      return res.status(401).json({ message: 'Invalid email or password' });
-    }
-
-    // Build patient data
-    const patientData = {
-      _id: patient._id,
-      patient_email: patient.patient_email,
-      patient_firstName: patient.patient_firstName,
-      patient_lastName: patient.patient_lastName,
-    };
-
-    // Clear any doctor data from the session
-    delete req.session.doctorId;
-    delete req.session.doctor;
-
-    // Set patient session data
-    req.session.userId = patient._id;
-    req.session.role = 'Patient';
-    req.session.patient = patientData;
-
-    // Set cookie expiration based on rememberMe
-    if (rememberMe) {
-      req.session.cookie.maxAge = 30 * 24 * 60 * 60 * 1000; // 30 days
-    } else {
-      // If you want a shorter session for patients without rememberMe,
-      // set a different maxAge or make it a session cookie
-      req.session.cookie.maxAge = 30 * 24 * 60 * 60 * 1000; 
-    }
-
-    return res.json({
-      message: 'Successfully logged in',
-      patientData: patientData
-    });
-  } catch (error) {
-    console.error('Error logging in patient:', error);
-    return res.status(500).json({ message: 'Error logging in', error });
-  }
-};
-
-
-const logoutPatient = async (req, res) => {
-  try {
-    req.session.destroy((err) => {
-      if (err) {
-        console.error('Error clearing session:', err);
-        return res.status(500).json({ message: 'Failed to log out' });
-      }
-      res.clearCookie('patient.sid', { path: '/', httpOnly: true, sameSite: 'strict' });
-      res.json({ message: 'Logged out successfully' });
-      console.log('Patient logged out');
-    });
-  } catch (error) {
-    console.error('Error logging out:', error);
-    res.status(500).json({ message: 'Failed to log out' });
-  }
-};
-
-const getSessionData = async (req, res) => {
-  try {
-    // Check if a session exists
-    if (!req.session || !req.session.userId || req.session.role !== 'Patient') {
-      return res.status(401).json({ message: 'No active session found.' });
-    }
-
-    // Fetch the patient data stored in the session
-    const patient = req.session.patient;
-    if (!patient) {
-      return res.status(401).json({ message: 'Session invalid or expired.' });
-    }
-
-    // Respond with the patient session data
-    res.json({
-      message: 'Session data retrieved successfully.',
-      patient,
-    });
-
-
-
-    console.log('Session Get Data:', req.session);
-  } catch (error) {
-    console.error('Error fetching session data:', error);
-    res.status(500).json({ message: 'Error fetching session data.', error });
-  }
-};
 
 const updatePatientStatus = async (req, res) => {
   try {
@@ -861,8 +766,7 @@ module.exports = {
     createUnregisteredPatient,
     updatePatientImage,
     createPatientSession,
-    forgotPassword, resetPassword, loginPatient, getAllPatientEmails, getAllContactNumbers, getPatientWithAudits,
+    forgotPassword, resetPassword, getAllPatientEmails, getAllContactNumbers, getPatientWithAudits,
     getPatientByPatientID,
-    getSessionData,
-    logoutPatient
+
 }

@@ -24,10 +24,8 @@ function ManageDoctorMain({did, msid, showModal}) {
 
     return (
 
-             
-                    
-                    <Container fluid style={{ overflowY: 'auto', height: 'calc(100vh - 100px)', width: '100%', paddingBottom: '1.5rem' }}>
-                        <div style={{ paddingLeft: '5rem', paddingRight: '5rem' }} className='pt-5'>
+                    <div className='p-0'>
+                        <>
                          
 
 
@@ -46,8 +44,8 @@ function ManageDoctorMain({did, msid, showModal}) {
                                 )}
                                
                             </Row>
-                        </div>
-                    </Container>
+                        </>
+                    </div>
            
 
     );

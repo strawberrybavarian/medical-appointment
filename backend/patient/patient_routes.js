@@ -37,18 +37,15 @@ module.exports = app => {
     //For Logging In
     app.get('/api/patient/getallemails', PatientController.getAllPatientEmails); 
     app.get('/api/patient/getcontactnumber', PatientController.getAllContactNumbers); 
-    app.post('/api/patient/api/login', PatientController.loginPatient);
     //ResetPassword Forgot Password
     app.post('/api/patient/forgot-password', PatientController.forgotPassword);
     app.post('/api/patient/reset-password/:token', PatientController.resetPassword);
     
     //New Patient Sign Up with BCRYPT
     app.post('/api/patient/api/signup', PatientController.NewPatientSignUp);
-    app.post('/api/patient/logout', PatientController.logoutPatient);
     app.post('/api/patient/api/:id/updateimage', upload.single('image'), PatientController.updatePatientImage);
     app.get('/api/patient/api/test',(req,res)=>{res.json({message:"the api is working"})});
     app.post('/api/patient/session', PatientController.createPatientSession);
-    app.get('/api/patient/get/session', PatientController.getSessionData);
 
     //
     app.post(`/api/patient/api/unregistered`, PatientController.createUnregisteredPatient);

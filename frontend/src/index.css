@@ -26,6 +26,16 @@ html, body, #root {
   border-radius: 10px !important;
 }
 
+.table td {
+  text-align: left;
+  font-size: 12px !important;
+}
+
+.table th {
+  text-align: left;
+  font-size: 14px;
+}
+
 .select-dropdown{
   border-radius: 10px;
 

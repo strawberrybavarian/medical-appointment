@@ -11,9 +11,10 @@ import MedSecLaboratoryApp from '../../medical secretary/components/Appointments
 import CreateAppointment from '../../medical secretary/components/Add Patient/New Appointment/CreateAppointment';
 import CreatePatientForms from '../../medical secretary/components/Add Patient/Forms/CreatePatientForms';
 import MedSecForPayment from '../../medical secretary/components/Appointments/MedSecForPayment';
+import MedSecCancelled from '../../medical secretary/components/Appointments/MedSecCancelled';
 import SidebarAdmin from '../sidebar/SidebarAdmin';
 import AdminNavbar from '../navbar/AdminNavbar';
-import AdminPending from './AdminPending';
+
 import MedSecPending from '../../medical secretary/components/Appointments/MedSecPending';
 
 function AdminAppointmentMain() {
@@ -107,6 +108,9 @@ function AdminAppointmentMain() {
                   </Nav.Item>
                   <Nav.Item>
                     <Nav.Link eventKey="tosend">To-send Lab Results</Nav.Link>
+                  </Nav.Item>
+                  <Nav.Item>
+                    <Nav.Link eventKey="cancelled">Cancelled</Nav.Link>
                   </Nav.Item>
              
                
@@ -228,6 +232,18 @@ function AdminAppointmentMain() {
                       {activeTab === "laboratory" && (
                       <>
                         <MedSecLaboratoryApp
+                          allAppointments={allappointments}
+                          setAllAppointments={setallappointments}
+                          selectedDoctor={selectedDoctor}
+                        />
+                      </>
+                    )}  
+
+
+                    
+                  {activeTab === "cancelled" && (
+                      <>
+                        <MedSecCancelled
                           allAppointments={allappointments}
                           setAllAppointments={setallappointments}
                           selectedDoctor={selectedDoctor}

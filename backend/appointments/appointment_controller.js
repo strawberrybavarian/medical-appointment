@@ -73,14 +73,17 @@ const createAppointment = async (req, res) => {
       return res.status(400).json({ message: 'Cannot book an appointment in the past.' });
     }
 
+    // Check if the patient already has an active appointment
     const existingAppointment = await Appointment.findOne({
       patient: patientId,
-      status: { $nin: ['Cancelled', 'Completed', 'Missed', 'Rescheduled'] },
+      status: { $nin: ['Cancelled', 'Completed', 'Missed', 'Rescheduled'] }, // Excluding finished statuses
     });
+
+    console.log(existingAppointment); // Debugging log to see if there are any existing appointments
 
     if (existingAppointment) {
       return res.status(400).json({
-        message: 'You already have an active appointment. Please complete or cancel it before booking a new one.'
+        message: 'You already have an active appointment. Please complete or cancel it before booking a new one.',
       });
     }
 
@@ -157,7 +160,6 @@ const createAppointment = async (req, res) => {
       recipientType: 'Medical Secretary',
     });
 
-
     await notificationMedsec.save();
     await notificationAdmin.save();
 
@@ -201,6 +203,7 @@ const createAppointment = async (req, res) => {
     res.status(500).json({ message: `Failed to create appointment: ${error.message}` });
   }
 };
+
 
 
 const createServiceAppointment = async (req, res) => {
@@ -337,7 +340,7 @@ const countBookedPatients = async (req, res) => {
     }
 
     // Define the statuses to be included in the count
-    const statuses = ['Scheduled', 'Completed', 'Cancelled', 'Ongoing', 'To-send', 'For Payment', 'Upcoming'];
+    const statuses = ['Scheduled', 'Completed', 'Ongoing', 'To-send', 'For Payment', 'Upcoming'];
 
     const morningCount = await Appointment.countDocuments({
       doctor: doctorId,
@@ -394,9 +397,6 @@ const updateAppointmentStatus = async (req, res) => {
     const io = socket.getIO();
     const clients = socket.clients;
 
-
-
-
     // Helper function to determine the notification type based on the appointment status
     function getNotificationType(newStatus) {
       switch (newStatus) {
@@ -413,8 +413,8 @@ const updateAppointmentStatus = async (req, res) => {
       }
     }
 
-    // If appointment is now Ongoing, set the doctor's activity status to In Session
-    if (status === 'Ongoing') {
+    // If appointment is now Ongoing, set the doctor's activity status to In Session (only if doctor exists)
+    if (status === 'Ongoing' && appointment.doctor) {
       await Doctors.findByIdAndUpdate(appointment.doctor._id, { activityStatus: 'In Session' }, { new: true });
       const updatedDoctor = await Doctors.findById(appointment.doctor._id).select('activityStatus');
     
@@ -425,11 +425,15 @@ const updateAppointmentStatus = async (req, res) => {
       });
     }
 
-    // If appointment is Completed or For Payment, revert the doctor's activity status to Online
-    if (status === 'Completed' || status === 'For Payment' || status === 'Cancelled' || status === 'Scheduled') {
-      await Doctors.findByIdAndUpdate(appointment.doctor._id, { activityStatus: 'Online' }, { new: true });
+    // If appointment is Completed, For Payment, Cancelled, or Scheduled, revert the doctor's activity status to Online (only if doctor exists)
+    if ((status === 'Completed' || status === 'For Payment' || status === 'Cancelled' || status === 'Scheduled') && appointment.doctor) {
       const updatedDoctor = await Doctors.findById(appointment.doctor._id).select('activityStatus');
-    
+      if (!updatedDoctor) {
+        await Doctors.findByIdAndUpdate(appointment.doctor._id, { activityStatus: 'Online' }, { new: true });
+      } else {
+        await Doctors.findByIdAndUpdate(appointment.doctor._id, { activityStatus: 'Online' }, { new: true });
+      }
+
       // Emit to all clients to notify that the doctor's status is back to "Online"
       io.emit('doctorStatusUpdate', {
         doctorId: appointment.doctor._id.toString(),
@@ -437,9 +441,7 @@ const updateAppointmentStatus = async (req, res) => {
       });
     }
 
-
-
-    // Notify Doctor if status is 'Scheduled' or 'Upcoming'
+    // Notify Doctor if status is 'Scheduled' or 'Upcoming' (only if doctor exists)
     if ((status === 'Scheduled' || status === 'Upcoming') && appointment.doctor) {
       const notificationMessage = `Appointment with ${appointment.patient.patient_firstName} ${appointment.patient.patient_lastName} is now ${status}.`;
       const doctorNotification = new Notification({
@@ -469,7 +471,7 @@ const updateAppointmentStatus = async (req, res) => {
       }
     }
 
-    // Notify Patient if status changes to one of the specified statuses
+    // Notify Patient if status changes to one of the specified statuses (and oldStatus is different from new status)
     if (['Scheduled', 'Ongoing', 'Completed', 'Cancelled'].includes(status) && oldStatus !== status) {
       // Notify patient
       const patientNotification = new Notification({
@@ -505,7 +507,7 @@ const updateAppointmentStatus = async (req, res) => {
       },
     });
 
-    // If status is 'Scheduled', send an email
+    // If status is 'Scheduled', send an email to the patient
     if (status === 'Scheduled') {
       const mailOptions = {
         from: staff_email.user,
@@ -526,7 +528,7 @@ Your Clinic Team`,
       });
     }
 
-    // If status is 'Completed', send an email
+    // If status is 'Completed', send an email to the patient
     if (status === 'Completed') {
       const mailOptions = {
         from: staff_email.user,

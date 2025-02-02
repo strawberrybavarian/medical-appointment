@@ -6,7 +6,7 @@ const DoctorService = require('../doctor/doctor_service');
 const socket = require('../socket');
 const MedicalSecretary = require('../medicalsecretary/medicalsecretary_model')
 const Admin = require('../admin/admin_model')
-
+const Audit = require('../audit/audit_model')
 
 const unifiedLogin = async (req, res) => {
   const { email, password, rememberMe, role } = req.body; 
@@ -43,6 +43,7 @@ const unifiedLogin = async (req, res) => {
       if (!user) {
         return res.status(404).json({ message: 'No patient with that email found' });
       }
+
       const match = await bcrypt.compare(password, user.patient_password);
       if (!match) {
         return res.status(401).json({ message: 'Invalid email or password' });
@@ -55,6 +56,21 @@ const unifiedLogin = async (req, res) => {
         lastName: user.patient_lastName,
         role: 'Patient',
       };
+
+      //Audit Logging In for the Patient
+      const auditPatient = {
+        user: user._id,
+        userType: 'Patient',
+        action: 'Login',
+        description: 'Patient has logged in',
+        ipAddress: req.ip,
+        userAgen: req.get('User-Agent'),
+      };
+
+      const newPatientAudit = new Audit(auditPatient);
+      await newPatientAudit.save();
+
+      await Patients.findByIdAndUpdate(user._id, { $push: {audits : newPatientAudit._id}});
     }  else if (role === 'Medical Secretary') {
       user = await MedicalSecretary.findOne({ ms_email: email });
       if (!user) {
@@ -101,8 +117,11 @@ const unifiedLogin = async (req, res) => {
 
     // If rememberMe => set maxAge
     if (rememberMe) {
+      // req.session.cookie.maxAge = 5*1000;
       req.session.cookie.maxAge = 30 * 24 * 60 * 60 * 1000; 
     } else {
+      // req.session.cookie.maxAge = 5*1000;
+
       // session cookie or shorter
       req.session.cookie.maxAge = 30 * 24 * 60 * 60 * 1000; 
     }

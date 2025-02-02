@@ -8,7 +8,7 @@ import axios from 'axios';
 import io from 'socket.io-client';
 
 function AdminNavbar({ userId, userName, role }) {
-  const defaultImage = "images/014ef2f860e8e56b27d4a3267e0a193a.jpg";
+  const defaultImage = "images/Admin-Icon.jpg";
   const navigate = useNavigate();
 
   const [notifications, setNotifications] = useState([]);

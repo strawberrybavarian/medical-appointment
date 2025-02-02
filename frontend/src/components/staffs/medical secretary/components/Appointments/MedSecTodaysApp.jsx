@@ -111,8 +111,9 @@ function MedSecTodaysApp({ allAppointments, setAllAppointments }) {
     }
   
     const doctorId = appointment.doctor?._id;
+    // If no doctorId is found, skip the socket emission part but still update the status
     if (!doctorId) {
-      return console.log('Doctor ID not found');
+      console.log('No doctor ID found, skipping status update for doctor.');
     }
   
     try {
@@ -133,18 +134,21 @@ function MedSecTodaysApp({ allAppointments, setAllAppointments }) {
           )
         );
   
-        // Emit real-time update to change doctor's status
-        if (newStatus === 'Ongoing') {
-          socket.emit('doctorStatusUpdate', {
-            doctorId,
-            activityStatus: 'In Session',
-          });
-        } else if (newStatus === 'Scheduled') {
-          socket.emit('doctorStatusUpdate', {
-            doctorId,
-            activityStatus: 'Online',
-          });
+        // Emit real-time update to change doctor's status only if doctorId exists
+        if (doctorId) {
+          if (newStatus === 'Ongoing') {
+            socket.emit('doctorStatusUpdate', {
+              doctorId,
+              activityStatus: 'In Session',
+            });
+          } else if (newStatus === 'Scheduled') {
+            socket.emit('doctorStatusUpdate', {
+              doctorId,
+              activityStatus: 'Online',
+            });
+          }
         }
+  
       } else {
         throw new Error('Unexpected server response');
       }
@@ -153,6 +157,7 @@ function MedSecTodaysApp({ allAppointments, setAllAppointments }) {
       setError("Failed to update the appointment status.");
     }
   };
+  
   
 
   const getUniqueCategories = () => {

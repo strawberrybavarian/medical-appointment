@@ -182,7 +182,7 @@ function PatientManagement() {
                 const fullName = `${row.patient_firstName} ${row.patient_middleInitial || ''} ${row.patient_lastName}`;
                 return (
                 <tr key={row._id}>
-                  <td>{fullName}</td>
+                  <td className="text-start">{fullName}</td>
        
                   <td>{row.patient_email || 'No Email'}</td>
                   <td>{row.patient_gender}</td>

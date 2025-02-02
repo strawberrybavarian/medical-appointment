@@ -25,6 +25,12 @@ const AdminSchema = new mongoose.Schema({
         type: Boolean,
         default: true,
     },
+    contactNumber: {
+        type: String,
+    },
+    birthdate: {
+        type: Date,
+    },
     role: {
         type: String,
         default: 'Admin',

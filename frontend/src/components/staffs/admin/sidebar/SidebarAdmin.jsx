@@ -150,6 +150,16 @@ const SidebarAdmin = ({ userId, userName, role }) => {
                 </CDBSidebarMenuItem>
               </div>
 
+              
+              <div
+                onClick={() => navigateWithState('/admin/account')}
+                style={{ cursor: 'pointer' }}
+              >
+                <CDBSidebarMenuItem icon="user" className="font-style-poppins">
+                  Account
+                </CDBSidebarMenuItem>
+              </div>
+
               {/* <CDBSidebarMenu>
   {/* Existing menu items */}
   

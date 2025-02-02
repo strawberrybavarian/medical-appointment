@@ -167,13 +167,13 @@ function DoctorManagement() {
 
           {/* Action Confirmation Modal */}
           <Modal show={showActionModal} onHide={handleCloseActionModal}>
-            <Modal.Header closeButton>
+            <Modal.Header className='am-header' closeButton>
               <Modal.Title>Confirm Action</Modal.Title>
             </Modal.Header>
-            <Modal.Body>
+            <Modal.Body style={{ width: '100%' }}>  
               Are you sure you want to {modalAction} the doctor "{selectedDoctor?.dr_firstName} {selectedDoctor?.dr_lastName}"?
             </Modal.Body>
-            <Modal.Footer>
+            <Modal.Footer style={{ width: '100%' }}>
               <Button variant="secondary" onClick={handleCloseActionModal}>
                 Cancel
               </Button>
@@ -188,10 +188,10 @@ function DoctorManagement() {
 
           {/* Manage Doctor Modal */}
           <Modal show={showManageDoctorModal} onHide={handleCloseManageDoctorModal} size="xl" backdrop="static">
-            <Modal.Header closeButton>
-              <Modal.Title>Manage Doctor</Modal.Title>
+            <Modal.Header style={{ width: '100%' }} closeButton>
+              <Modal.Title >Manage Doctor</Modal.Title>
             </Modal.Header>
-            <Modal.Body>
+            <Modal.Body className="p-0" style={{ width: '100%' }}>
               {selectedDoctor && (
                 <ManageDoctorMain
                   did={selectedDoctor._id}
@@ -199,7 +199,7 @@ function DoctorManagement() {
                 />
               )}
             </Modal.Body>
-            <Modal.Footer>
+            <Modal.Footer style={{ width: '100%' }}>
               <Button variant="secondary" onClick={handleCloseManageDoctorModal}>
                 Close
               </Button>

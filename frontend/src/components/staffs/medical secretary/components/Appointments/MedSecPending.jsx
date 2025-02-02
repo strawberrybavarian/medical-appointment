@@ -319,7 +319,7 @@ const MedSecPending = ({ allAppointments, setAllAppointments }) => {
               </Col>
             </Row>
           </div>
-          <p><em>*</em></p>
+      
           <Table responsive striped variant="light" className="mt-3">
             <thead>
               <tr>

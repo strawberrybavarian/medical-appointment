@@ -22,24 +22,68 @@ const generateRandomPassword = () => {
     return password;
 };
 const changeAdminPassword = async (req, res) => {
-    const { adminId } = req.params;
-    const { oldPassword, newPassword, confirmNewPassword } = req.body;
+    const { adminId } = req.params; // Get the adminId from the URL parameters
+    const { email, confirmEmail, oldPassword, newPassword, confirmNewPassword } = req.body;
+
     try {
+        // Check if the email fields match
+        if (email !== confirmEmail) {
+            return res.status(400).json({ message: "Email addresses do not match." });
+        }
+
+        // Check if the new passwords match
+        if (newPassword !== confirmNewPassword) {
+            return res.status(400).json({ message: "New passwords do not match." });
+        }
+
+        // Find the admin by adminId
         const admin = await Admin.findById(adminId);
         if (!admin) {
-            return res.status(404).json({ message: 'Admin not found' });
+            return res.status(404).json({ message: "Admin not found." });
         }
-        if (newPassword !== confirmNewPassword) {
-            return res.status(400).json({ message: 'New passwords do not match' });
+
+        // Check if the old password matches using bcrypt to compare hashed passwords
+        const isOldPasswordCorrect = await bcrypt.compare(oldPassword, admin.password);
+        if (!isOldPasswordCorrect) {
+            return res.status(400).json({ message: "Old password is incorrect." });
         }
-        admin.password = newPassword;
-        admin.status = 'registered';
-        admin.isActive = true;
+
+        // Update the admin password without hashing it
+        admin.password = newPassword; // No hashing needed here for the new password
         await admin.save();
-        res.status(200).json({ message: 'Password changed successfully' });
+
+        return res.status(200).json({ message: "Password updated successfully." });
     } catch (error) {
-        console.error('Error changing password:', error);
-        res.status(500).json({ message: 'Server error' });
+        console.error("Error updating password:", error);
+        return res.status(500).json({ message: "Server error, please try again." });
+    }
+};
+
+const updateAdminInfo = async (req, res) => {
+    const { adminId } = req.params; // Get the adminId from the URL parameters
+    const { firstName, lastName, email, contactNumber, birthdate } = req.body;
+
+    try {
+        // Find the admin by adminId
+        const admin = await Admin.findById(adminId);
+        if (!admin) {
+            return res.status(404).json({ message: "Admin not found." });
+        }
+
+        // Update the admin's information with the new values
+        admin.firstName = firstName || admin.firstName;
+        admin.lastName = lastName || admin.lastName;
+        admin.email = email || admin.email;
+        admin.contactNumber = contactNumber || admin.contactNumber;
+        admin.birthdate = birthdate || admin.birthdate;
+
+        // Save the updated admin info
+        await admin.save();
+
+        return res.status(200).json({ message: "Admin information updated successfully.", admin });
+    } catch (error) {
+        console.error("Error updating admin info:", error);
+        return res.status(500).json({ message: "Server error, please try again." });
     }
 };
 const adminSignUp = async (req, res) => {
@@ -354,5 +398,6 @@ module.exports = {
     updateStaffAccountStatus,
     adminSignUp,
     changeAdminPassword,
-    findAdminById
+    findAdminById,
+    updateAdminInfo
 };
