@@ -42,7 +42,7 @@ app.use(
 // Connect to MongoDB
 require('./config/mongoose');
 //FrontendOrigins
-const allowedOrigins = ['http://localhost:3000','https://psgc.gitlab.io'];
+const allowedOrigins = ['http://localhost:3000','http://localhost:3001'];
 // CORS Configuration
 const cors = require('cors');
 app.use(

@@ -369,11 +369,13 @@ const MedSecPending = ({ allAppointments, setAllAppointments }) => {
 
                     <td style={{fontSize: '14px'}}>{appointment.patient.accountStatus}</td>
                     <td>
-                      <div className="d-flex justify-content-center">
+                      <>
                       <div className="pending-appointment" style={{fontSize: '12px'}}>
                             {appointment.status}
                       </div>
-                      </div>
+                      </>
+
+               
                     </td>
 
                     <td>

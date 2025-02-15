@@ -162,7 +162,43 @@ const countPatientAgeGroup = async (req, res) => {
         res.status(500).json({ message: 'Error counting patients by age group', error });
     }
 };
-    
+
+
+const countDoctorAgeGroup = async (req, res) => {
+    try {
+        const today = new Date();
+
+        // Define age groups
+        const ageGroups = [
+            { label: 'Under 30', min: 0, max: 29 },
+            { label: '30-39', min: 30, max: 39 },
+            { label: '40-49', min: 40, max: 49 },
+            { label: '50-59', min: 50, max: 59 },
+            { label: 'Above 60', min: 60, max: 200 }
+        ];
+
+        // Query doctors and group by age
+        const doctorCounts = await Promise.all(
+            ageGroups.map(async (group) => {
+                const count = await Doctors.countDocuments({
+                    dr_dob: { 
+                        $gte: new Date(today.getFullYear() - group.max, today.getMonth(), today.getDate()),
+                        $lt: new Date(today.getFullYear() - group.min, today.getMonth(), today.getDate())
+                    }
+                });
+                return {
+                    label: group.label,
+                    count: count
+                };
+            })
+        );
+
+        res.json({ data: doctorCounts });
+    } catch (error) {
+        console.error('Error counting doctors by age group:', error);
+        res.status(500).json({ message: 'Error counting doctors by age group', error });
+    }
+}
     
 
 
@@ -179,5 +215,6 @@ module.exports = {
     countOnlineDoctors,
     countInSessionDoctors,
     countPatientAgeGroup,
+    countDoctorAgeGroup
 
 };

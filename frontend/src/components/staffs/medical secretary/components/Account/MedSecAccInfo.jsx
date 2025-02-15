@@ -5,7 +5,7 @@ import { useLocation } from 'react-router-dom';
 import { Container, Row, Col } from 'react-bootstrap';
 import MedSecNavbar from '../../navbar/MedSecNavbar';
 import MedicalSecretaryInfoForm from './MedicalSecretaryInfoForm'; // Import the form component
-
+import AuditMedSec from './AuditMedSec';
 const MedSecAccInfo = () => {
   const location = useLocation(); 
   const { userId, userName, role } = location.state || {};
@@ -27,12 +27,20 @@ const MedSecAccInfo = () => {
                   >
                     My details
                   </a>
+
+                  <a
+                    onClick={() => setActiveTab("audit")}
+                    className={activeTab === "audit" ? "active" : ""}
+                  >
+                    Activity Log
+                  </a>
                 </div>    
               </Row>
             </Container>
 
             <Container className='border-top'>
               {activeTab === 'info' && <MedicalSecretaryInfoForm msid={userId} />} {/* Render the form */}
+              {activeTab === 'audit' && <AuditMedSec msid={userId} />} {/* Render the audit */}
             </Container>
           </div>
         </div>

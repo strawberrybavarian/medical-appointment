@@ -64,7 +64,8 @@ import AdminNewsManagement from './components/staffs/admin/news/AdminNewsManagem
 import { UserProvider } from './components/UserContext';
 
 import DoubleSliderLogin from './components/login/DoubleSliderLogin';
-
+import PatientDetailsInformation from './components/staffs/admin/management/account/patientmodal/PatientDetailsInformation';
+import DoctorDetailsInformation from './components/staffs/admin/management/account/patientmodal/DoctorDetailsInformation';
 function App() {
 
   return (
@@ -120,6 +121,8 @@ function App() {
             <Route path={"/admin/sas/"} element={<SasMain />}/>
             <Route path={"/admin/news-management"} element={<AdminNewsManagement />}/>
             <Route path={"/admin/account"} element={<AdminPersonalInfo/>}/>
+            <Route path={"/admin/account/patient/personal-details"} element={<PatientDetailsInformation />}/>
+            <Route path={"/admin/account/doctor/personal-details"} element={<DoctorDetailsInformation />}/>
           </Routes>
 
           </UserProvider>

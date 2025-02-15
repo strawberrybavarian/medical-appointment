@@ -11,7 +11,7 @@ const Audit = require('../audit/audit_model')
 const unifiedLogin = async (req, res) => {
   const { email, password, rememberMe, role } = req.body; 
 
-
+ 
   try {
     let user;
     if (role === 'Doctor') {
@@ -37,6 +37,22 @@ const unifiedLogin = async (req, res) => {
       };
   
       user.activityStatus = 'Online';
+
+      const auditDoctor = {
+        user: user._id,
+        userType: 'Doctor',
+        action: 'Login',
+        description: 'Doctor has logged in',
+        ipAddress: req.ip,
+        userAgen: req.get('User-Agent'),
+      };
+
+      const newDoctorAudit = new Audit(auditDoctor);
+      await newDoctorAudit.save();
+
+      await Doctors.findByIdAndUpdate(user._id, { $push: {audits : newDoctorAudit._id}});
+
+
       await user.save();
     } else if (role === 'Patient') {
       user = await Patients.findOne({ patient_email: email });
@@ -89,6 +105,21 @@ const unifiedLogin = async (req, res) => {
         status: user.status,  // or anything else you store
         role: 'Medical Secretary',
       };
+
+      const auditMedSec = {
+        user: user._id,
+        userType: 'Medical Secretary',
+        action: 'Login',
+        description: 'Medical Secretary has logged in',
+        ipAddress: req.ip,
+        userAgen: req.get('User-Agent'),
+      };
+
+      const newMedSecAudit = new Audit(auditMedSec);
+      await newMedSecAudit.save();
+
+      await MedicalSecretary.findByIdAndUpdate(user._id, { $push: {audits : newMedSecAudit._id}});
+      
     } else if (role === 'Admin') {
       user = await Admin.findOne({ email });
       if (!user) {
@@ -107,6 +138,21 @@ const unifiedLogin = async (req, res) => {
         status: user.status,
         role: 'Admin',
       };
+
+      const auditAdmin = {
+        user: user._id,
+        userType: 'Admin',
+        action: 'Login',
+        description: 'Admin has logged in',
+        ipAddress: req.ip,
+        userAgen: req.get('User-Agent'),
+      };  
+
+      const newAdminAudit = new Audit(auditAdmin);
+      await newAdminAudit.save();
+
+      await Admin.findByIdAndUpdate(user._id, { $push: {audits : newAdminAudit._id}});
+      
     } else {
       return res.status(400).json({ message: 'Invalid role provided' });
     }

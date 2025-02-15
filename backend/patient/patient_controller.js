@@ -248,9 +248,9 @@ const updatePatientInfo = async (req, res) => {
     const daysSinceLastUpdate = Math.floor((now - lastUpdate) / (1000 * 60 * 60 * 24));
     console.log(`Days since last update: ${daysSinceLastUpdate}`);
     // Uncomment if you want to enforce the 30-day restriction
-    // if (daysSinceLastUpdate < 30) {
-    //   return res.status(400).json({ message: 'You can only update your information every 30 days.' });
-    // }
+    if (daysSinceLastUpdate < 30) {
+      return res.status(400).json({ message: 'You can only update your information every 30 days.' });
+    }
 
     // Capture changes before updating
     const changes = [];

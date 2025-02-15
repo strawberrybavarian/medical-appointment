@@ -45,13 +45,8 @@ function HomePagePatient() {
   useEffect(() => {
     const randomMessage = tooltips[Math.floor(Math.random() * tooltips.length)];
     setTooltipMessage(randomMessage);
-  }, []);
+  }, [tooltipMessage]);
 
-
-
-
-  // Extract patient information
-  const fullName = `${user.firstName} ${user.lastName}`;
 
   return (
     <>

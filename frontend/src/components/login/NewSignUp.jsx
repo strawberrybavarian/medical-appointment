@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Row, Col, Button, Form, Container, Card } from "react-bootstrap";
 import PasswordValidation from "./PasswordValidation";
-import "./SignUp.css";
 import { image, ip } from "../../ContentExport";
 import ForLoginAndSignupNavbar from "../landpage/ForLoginAndSignupNavbar";
 import TermsAndConditionsModal from "./TermsAndConditionsModal";

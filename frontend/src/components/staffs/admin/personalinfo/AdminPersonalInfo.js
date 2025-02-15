@@ -11,7 +11,7 @@ import * as Icon from "react-bootstrap-icons";
 
 import AdminEditInfoModal from './AdminEditInfoModal';
 import AdminChangePasswordModal from './AdminChangePasswordModal';
-
+import AuditAdmin from './AuditAdmin';
 
 const AdminPersonalInfo = () => {
 
@@ -24,11 +24,13 @@ const AdminPersonalInfo = () => {
         lastName: '',
         email: '',
         birthdate: '',
+        contactNumber: ''
     });
 
     const [showInfoModal, setShowInfoModal] = useState(false);
     const [showPasswordModal, setShowPasswordModal] = useState(false);
 
+    console.log(admin.contactNumber)
     useEffect(() => {  
         axios.get(`${ip.address}/api/admin/${userId}`)
             .then(response => {
@@ -104,7 +106,7 @@ const AdminPersonalInfo = () => {
                                     </Form.Group>
                                     <Form.Group as={Col} controlId="contactNumber">
                                     <Form.Label>Contact Number:</Form.Label>
-                                    <Form.Control className="form-picontrol"  disabled />
+                                    <Form.Control value={admin.contactNumber} className="form-picontrol"  disabled />
                                     </Form.Group>
                                 </Row>
                                 <Row>
@@ -121,6 +123,13 @@ const AdminPersonalInfo = () => {
                                 </Row>
                                 </div>
                             </Form>
+
+                            <Container fluid className="pi-container2 shadow-sm mb-5">
+                            
+                                <h4>Activity Log</h4>
+                                <hr />
+                                <AuditAdmin adminId={userId} />
+                            </Container>
                     
                     
                     

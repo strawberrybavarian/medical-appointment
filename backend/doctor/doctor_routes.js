@@ -52,7 +52,8 @@ module.exports = app => {
   //Activity Status
   app.put('/api/doctor/api/:id/logout', DoctorController.offlineActivityStatus);
 
-
+  // app.get('/api/doctor/api/:id/getactivitystatus', DoctorController.getActivityStatus);
+app.get('/api/doctor/api/getaudit/:doctorId', DoctorController.getDoctorWithAudits);
   
   // For Registration
   app.post('/api/doctor/api/signup', DoctorController.NewDoctorSignUp);
@@ -61,10 +62,10 @@ module.exports = app => {
   
   app.post('/api/doctor/forgot-password', DoctorController.forgotPassword);
   app.post('/api/doctor/reset-password/:token', DoctorController.resetPassword);
-  app.get('/api/doctor/get/session', DoctorController.getSessionData);
+
   app.post('/api/doctor/session', DoctorController.createDoctorSession);
-  app.post('/api/doctor/api/login', DoctorController.loginDoctor);
-  app.post('/api/doctor/logout/:id', DoctorController.logoutDoctor)
+
+
   app.get('/api/doctor/api/alldoctor', DoctorController.findAllDoctors);
   app.post('/api/doctor/api/setup-2fa/:id', DoctorController.setupTwoFactorForDoctor);
   app.post('/api/doctor/api/verify-2fa', DoctorController.verifyTwoFactor);

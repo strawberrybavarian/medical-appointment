@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Modal, Form, Table, Pagination, InputGroup, Button, Card, Row, Col, Container } from "react-bootstrap";
 import axios from "axios";
 import { ip } from "../../../../../ContentExport";
-
+import GeneratePDF from "../../../../patient/patientinformation/Patient History/GeneratePDF";
 function PastAppointmentsModal({ patientId, show, onClose }) {
   const [appointments, setAppointments] = useState([]);
   const [filteredAppointments, setFilteredAppointments] = useState([]);
@@ -11,13 +11,13 @@ function PastAppointmentsModal({ patientId, show, onClose }) {
   const [currentPage, setCurrentPage] = useState(1);
   const [appointmentsPerPage] = useState(5);
   const [selectedFindings, setSelectedFindings] = useState(null);
-
+  console.log('selected findings',selectedFindings);
   useEffect(() => {
     if (show) {
       axios
         .get(`${ip.address}/api/patient/api/onepatient/${patientId}`)
         .then((result) => {
-          console.log("Past Appointments:", result.data);
+
           if (result.data?.thePatient?.patient_appointments) {
             const completedAppointments = result.data.thePatient.patient_appointments.filter(
               (appt) => appt.status === "Completed"
@@ -110,7 +110,7 @@ function PastAppointmentsModal({ patientId, show, onClose }) {
                         <td>{appointmentDate}</td>
                         <td>{appointment.doctor?.dr_firstName} {appointment.doctor?.dr_lastName}</td>
                         <td>
-                          <Button variant="info" onClick={() => setSelectedFindings(appointment.findings)}>
+                          <Button variant="info" onClick={() => setSelectedFindings(appointment)}>
                             View Information
                           </Button>
                         </td>
@@ -147,43 +147,51 @@ function PastAppointmentsModal({ patientId, show, onClose }) {
                     <Table striped bordered>
                       <tbody>
                         <tr>
+                          <td>Doctor Name</td>
+                          <td>
+                            {selectedFindings.doctor?.dr_firstName} {selectedFindings.doctor?.dr_lastName}
+                          </td>
+                        </tr>
+                        <tr>
                           <td><strong>Assessment:</strong></td>
-                          <td>{selectedFindings.assessment || "?"}</td>
+                          <td>{selectedFindings.findings?.assessment || "?"}</td>
                         </tr>
                         <tr>
                           <td><strong>Blood Pressure:</strong></td>
                           <td>
-                            {selectedFindings.bloodPressure
-                              ? `${selectedFindings.bloodPressure.systole}/${selectedFindings.bloodPressure.diastole}`
+                            {selectedFindings.findings?.bloodPressure
+                              ? `${selectedFindings.findings?.bloodPressure.systole}/${selectedFindings.findings?.bloodPressure.diastole}`
                               : "?"}
                           </td>
                         </tr>
                         <tr>
                           <td><strong>Pulse Rate:</strong></td>
-                          <td>{selectedFindings.pulseRate || "?"}</td>
+                          <td>{selectedFindings.findings?.pulseRate || "?"}</td>
                         </tr>
                         <tr>
                           <td><strong>Temperature:</strong></td>
-                          <td>{selectedFindings.temperature || "?"}</td>
+                          <td>{selectedFindings.findings?.temperature || "?"}</td>
                         </tr>
                         <tr>
                           <td><strong>Height:</strong></td>
-                          <td>{selectedFindings.height || "?"}</td>
+                          <td>{selectedFindings.findings?.height || "?"}</td>
                         </tr>
                         <tr>
                           <td><strong>Weight:</strong></td>
-                          <td>{selectedFindings.weight || "?"}</td>
+                          <td>{selectedFindings.findings?.weight || "?"}</td>
                         </tr>
                         <tr>
                           <td><strong>History of Present Illness:</strong></td>
-                          <td>{selectedFindings.historyOfPresentIllness?.chiefComplaint || "?"}</td>
+                          <td>{selectedFindings.findings?.historyOfPresentIllness?.chiefComplaint || "?"}</td>
                         </tr>
                         <tr>
                           <td><strong>Recommendations:</strong></td>
-                          <td>{selectedFindings.recommendations || "?"}</td>
+                          <td>{selectedFindings.findings?.recommendations || "?"}</td>
                         </tr>
                       </tbody>
                     </Table>
+
+                    <GeneratePDF record={selectedFindings.findings} doctorFullName={`${selectedFindings.doctor?.dr_firstName} ${selectedFindings.doctor?.dr_lastName}`}  />
                   </Card.Body>
                 </Card>
               )}

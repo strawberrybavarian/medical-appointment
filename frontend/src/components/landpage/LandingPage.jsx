@@ -1,7 +1,6 @@
 import React, { useRef, useState, useEffect } from "react";
 import NavigationalBar from "./navbar";
-import './Landing.css';
-import './LandingPage.css';
+
 import Footer from "../Footer";
 import NewsSection from "../staffs/news/NewsSection";
 import { ip } from "../../ContentExport";

@@ -63,7 +63,7 @@ function ChatComponent({ userId, userRole, closeChat }) {
 
   const handleChatMessage = (data) => {
     console.log('Received chat message:', data);
-
+  
     if (isMedSecOrAdmin) {
       if (
         selectedPatientRef.current &&
@@ -77,10 +77,11 @@ function ChatComponent({ userId, userRole, closeChat }) {
           return prevMessages;
         });
       }
-
+  
+      // Do not add a new patient if already in the list
       if (
         data.senderModel === 'Patient' &&
-        !patientList.find((p) => p._id === data.sender)
+        !patientList.some((p) => p._id === data.sender)
       ) {
         setPatientList((prevList) => [
           ...prevList,
@@ -98,6 +99,7 @@ function ChatComponent({ userId, userRole, closeChat }) {
       }
     }
   };
+  
 
   useEffect(() => {
     if (isPatient) {
@@ -186,19 +188,19 @@ function ChatComponent({ userId, userRole, closeChat }) {
     <div className="chat-container">
       {isMedSecOrAdmin && (
         <div className="patient-list">
-          <h3>Patients</h3>
-          <ul>
-            {patientList.map((patient) => (
-              <li
-                key={patient._id}
-                onClick={() => handlePatientSelect(patient)}
-                className={selectedPatient?._id === patient._id ? 'active' : ''}
-              >
-                {patient.name}
-              </li>
-            ))}
-          </ul>
-        </div>
+  <h3>Patients</h3>
+  <ul>
+    {patientList.map((patient) => (
+      <li
+        key={patient._id}
+        onClick={() => handlePatientSelect(patient)}
+        className={selectedPatient?._id === patient._id ? 'active' : ''}
+      >
+        {patient.name}
+      </li>
+    ))}
+  </ul>
+</div>
       )}
 
       <div className="chat-box">

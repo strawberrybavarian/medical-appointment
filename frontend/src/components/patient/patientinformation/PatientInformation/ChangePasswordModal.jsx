@@ -10,27 +10,22 @@ const ChangePasswordModal = ({ show, handleClose, pid, email: propsEmail, passwo
     const [newPassword, setNewPassword] = useState("");
     const [confirmNewPassword, setConfirmNewPassword] = useState("");
 
-    // State for validation errors
+
     const [emailError, setEmailError] = useState("");
     const [passwordError, setPasswordError] = useState("");
     const [oldPasswordError, setOldPasswordError] = useState("");
 
-    // Handle change password submission
     const handleChangePassword = async () => {
-        // Reset errors before validation
+
         setEmailError("");
         setPasswordError("");
         setOldPasswordError("");
-    
-        // Validate emails match
+
         if (email !== confirmEmail) {
             setEmailError("Emails do not match!");
             return;
         }
     
-        // No need to validate email against propsEmail here (server-side should handle this)
-        
-        // Ensure old password is entered
         if (!oldPassword) {
             setOldPasswordError("Old password is required!");
             return;

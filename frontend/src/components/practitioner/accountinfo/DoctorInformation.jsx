@@ -13,6 +13,7 @@ import { ChevronLeft } from "react-bootstrap-icons";
 import './AccountInfo.css';
 import { ip } from "../../../ContentExport";
 import DoctorHMO from "./DoctorManageHMO";
+import AuditDoctor from "./AuditDoctor";
 function DoctorInformation() {
     const location = useLocation();
     const { did } = location.state || {};
@@ -23,6 +24,7 @@ function DoctorInformation() {
     const [activeTab, setActiveTab] = useState("info");
     const defaultImage = "images/014ef2f860e8e56b27d4a3267e0a193a.jpg";
 
+    console.log('Doctor ID:', did);
     useEffect(() => {
         axios
             .get(`${ip.address}/api/doctor/api/finduser/${did}`)
@@ -46,14 +48,19 @@ function DoctorInformation() {
     }, [did]);
 
     return (
-        <div className="d-flex justify-content-center">
+        <div className="d-flex justify-content-center m-0 p-0">
             {/* <SidebarMenu doctor_image={theImage} doctor_name={theName} did={theId} /> */}
             <div style={{ width: '100%' }}> 
-                <DoctorNavbar doctor_image={theImage} did={did}/>
-                <Container fluid className='cont-fluid-no-gutter' style={{overflowY: 'scroll', height: '100vh', paddingBottom: '100px', paddingTop: '1.5rem'}}>
-                        
+                
+                    <Container
+                        fluid
+                        className="cont-fluid-no-gutter  m-0 p-0"
+                        style={{ overflowY: "scroll", height: "100vh", paddingBottom: "100px", paddingTop: "1.5rem" }}
+                    >
+                    
+                    <DoctorNavbar doctor_image={theImage} did={did}/>
                     <div className="maincolor-container">
-                        <div className="content-area">
+                        <div className="content-area px-5 mt-3">
                             
                             <Container>
                                 <Link
@@ -97,6 +104,13 @@ function DoctorInformation() {
                                     >
                                         HMO
                                     </a>
+
+                                    <a
+                                        onClick={() => setActiveTab("audit")}
+                                        className={activeTab === "audit" ? "active" : ""}
+                                    >
+                                        Audit
+                                    </a>
                                 </div> 
                             </Container>
                        
@@ -106,13 +120,16 @@ function DoctorInformation() {
                                 {activeTab === 'availability' && <DoctorAvailability doctorId={did} />} 
                                 {activeTab === 'services' && <DoctorManageServices doctorId={did} />}
                                 {activeTab === 'hmo' && <DoctorHMO doctorId={did} />}
+                                {activeTab === 'audit' && <AuditDoctor doctorId={did} />}
                             </Container>
                         </div>
 
-                        <Container fluid className="footer-container cont-fluid-no-gutter w-100 mt-5">
+              
+                    </div>
+
+                    <Container fluid className="footer-container cont-fluid-no-gutter w-100 mt-5">
                             <Footer />
                         </Container>
-                    </div>
                 </Container>
             </div>
         </div>

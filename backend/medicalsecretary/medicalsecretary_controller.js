@@ -405,6 +405,26 @@ const createGeneralNotification = async (req, res) => {
   }
 };
 
+
+ const getMedSecWithAudits = async (req, res) => {
+    try {
+      const {medsecId} = req.params;
+
+      const medsec = await MedicalSecretary.findById(medsecId)
+        .populate({
+          path: 'audits',
+          options: {sort: {createdAt: -1}},
+        })
+      
+        if(!medsec){
+          return res.status(404).json({message: 'Medical Secretary not found'});
+        }
+
+        res.status(200).json({medsec});
+    } catch (error) {
+        res.status(500).json({message: 'Server error', error: error.message});
+    }
+ };
 module.exports = {
     // NewMedicalSecretaryignUp,
     findAllMedicalSecretary,
@@ -418,7 +438,8 @@ module.exports = {
     changePassword,
     NewMedicalSecretarySignUp,
     changePassword, 
-    createGeneralNotification
+    createGeneralNotification,
+    getMedSecWithAudits
 
 
 };

@@ -10,7 +10,7 @@ import axios from 'axios';
 import io from 'socket.io-client';
 
 function DoctorNavbar({ doctor_image, did }) {
-  console.log('Doctor ID:', did);
+
   const defaultImage = `${ip.address}/images/default-profile.jpg`;
   const [fullName, setFullName] = useState('');
   const [notifications, setNotifications] = useState([]);

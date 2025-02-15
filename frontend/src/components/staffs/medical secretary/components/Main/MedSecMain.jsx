@@ -4,7 +4,6 @@ import MedSecTodaysApp from '../Appointments/MedSecTodaysApp';
 import MedSecPending from '../Appointments/MedSecPending';
 import MedSecOngoing from '../Appointments/MedSecOngoing';
 import MedSecForPayment from '../Appointments/MedSecForPayment';
-
 import MedSecToSend from '../Appointments/MedSecToSend';
 import CreatePatientForms from '../Add Patient/Forms/CreatePatientForms';
 import CreateAppointment from '../Add Patient/New Appointment/CreateAppointment';
@@ -16,6 +15,7 @@ import { ip } from '../../../../../ContentExport';
 
 import './MedSecMain.css';
 import CreateServiceForm from '../Services/CreateServiceForm';
+import MedSecCompleted from '../Appointments/MedSecCompleted';
 
 function MedSecMain() {
   const location = useLocation();
@@ -89,6 +89,9 @@ function MedSecMain() {
                   </Nav.Item>
                   <Nav.Item>
                     <Nav.Link eventKey="cancelled">Cancelled</Nav.Link>
+                  </Nav.Item>
+                  <Nav.Item>
+                    <Nav.Link eventKey="completed">Completed</Nav.Link>
                   </Nav.Item>
              
                
@@ -215,6 +218,33 @@ function MedSecMain() {
                         />
                       </>
                     )}
+
+
+                  {activeTab === "completed" && (
+                      <>
+                        <Container fluid className='w-100 d-flex justify-content-end'>
+                          <Button variant="primary" onClick={handleShowAppointmentModal} className="mb-3">
+                            Create Doctor Appointment
+                          </Button>
+                          <Button variant="success" onClick={handleShowServiceModal} className="mb-3 ml-3">
+                            Create Service Appointment
+                          </Button>
+                          <Button variant="secondary" onClick={handleShowPatientModal} className="mb-3 ml-3">
+                            Add Patient
+                          </Button>
+                        </Container>
+
+                        <MedSecCompleted
+                          msid={userId}
+                          allAppointments={allAppointments}
+                          setAllAppointments={setAllAppointments}
+                          selectedDoctor={selectedDoctor}
+                        />
+
+
+                 
+                      </>
+                    )}  
 
                       {activeTab === "cancelled" && (
                       <>

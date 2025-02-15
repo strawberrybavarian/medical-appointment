@@ -369,8 +369,8 @@ const MedSecCancelled = ({ allAppointments, setAllAppointments }) => {
 
                     <td style={{fontSize: '14px'}}>{appointment.patient.accountStatus}</td>
                     <td>
-                      <div className="d-flex justify-content-center">
-                      <div className="pending-appointment" style={{fontSize: '12px'}}>
+                      <div className="">
+                      <div className="cancelled-appointment" style={{fontSize: '12px'}}>
                             {appointment.status}
                       </div>
                       </div>

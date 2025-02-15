@@ -59,12 +59,14 @@ function MedSecTodaysApp({ allAppointments, setAllAppointments }) {
       socket.on('doctorStatusUpdate', (updatedDoctor) => {
         setAllAppointments(prevAppointments => 
           prevAppointments.map(appointment =>
-            appointment.doctor._id === updatedDoctor.doctorId
+            // Check if appointment.doctor exists before accessing its properties
+            appointment.doctor?._id === updatedDoctor.doctorId
               ? { ...appointment, doctor: { ...appointment.doctor, activityStatus: updatedDoctor.activityStatus } }
               : appointment
           )
         );
       });
+      
   
       return () => {
         socket.off('doctorStatusUpdate');
@@ -170,19 +172,19 @@ function MedSecTodaysApp({ allAppointments, setAllAppointments }) {
   const uniqueCategories = getUniqueCategories();
 
   const filteredAppointments = allAppointments
-    .filter(appointment => appointment.status === 'Scheduled')
-    .filter(appointment => {
-      const appointmentDate = new Date(appointment.date).toISOString().split('T')[0];
-      return appointmentDate === todayDate;
-    })
-    .filter(appointment => 
-      `${appointment.patient.patient_firstName} ${appointment.patient.patient_middleInitial}. ${appointment.patient.patient_lastName}`
+  .filter(appointment => appointment.status === 'Scheduled')
+  .filter(appointment => {
+    const appointmentDate = new Date(appointment.date).toISOString().split('T')[0];
+    return appointmentDate === todayDate;
+  })
+  .filter(appointment =>
+    `${appointment.patient.patient_firstName} ${appointment.patient.patient_middleInitial}. ${appointment.patient.patient_lastName}`
       .toLowerCase()
       .includes(searchTerm.toLowerCase())
-    )
-    .filter(appointment => selectedDoctor === "" || appointment?.doctor._id === selectedDoctor)
-    .filter(appointment => selectedAccountStatus === "" || appointment.patient.accountStatus === selectedAccountStatus)
-    .filter(appointment => selectedCategory === "" || appointment.appointment_type.some(typeObj => typeObj.category === selectedCategory)); // Category filter
+  )
+  .filter(appointment => selectedDoctor === "" || appointment?.doctor?._id === selectedDoctor) // Optional chaining added
+  .filter(appointment => selectedAccountStatus === "" || appointment.patient.accountStatus === selectedAccountStatus)
+  .filter(appointment => selectedCategory === "" || appointment.appointment_type.some(typeObj => typeObj.category === selectedCategory)); // Category filter
 
   const indexOfLastAppointment = currentPage * entriesPerPage;
   const indexOfFirstAppointment = indexOfLastAppointment - entriesPerPage;
@@ -323,92 +325,89 @@ function MedSecTodaysApp({ allAppointments, setAllAppointments }) {
             </tr>
           </thead>
           <tbody>
-            {currentAppointments.map((appointment) => {
-              const patient = appointment.patient;
-              const patientName = `${patient.patient_firstName} ${patient.patient_middleInitial}. ${patient.patient_lastName}`;
+  {currentAppointments.map((appointment) => {
+    const patient = appointment.patient;
+    const patientName = `${patient.patient_firstName} ${patient.patient_middleInitial}. ${patient.patient_lastName}`;
+    
+    // Safe access to doctor
+    const doctor = appointment?.doctor;
+    const doctorName = doctor
+      ? `${doctor?.dr_firstName} ${doctor?.dr_middleInitial}. ${doctor?.dr_lastName}`
+      : 'Not Assigned'; // Default value if no doctor is assigned
+    
+    // If appointment_type is an array of objects, extract the type names
+    const appointmentTypes = appointment.appointment_type
+      .map(typeObj => typeObj.appointment_type)
+      .join(', ');
 
-              const doctor = appointment.doctor;
-              const doctorName = doctor
-              ? `${doctor?.dr_firstName} ${doctor?.dr_middleInitial}. ${doctor?.dr_lastName}`
-              : "Not Assigned";
-              
-              const appointmentTypes = appointment.appointment_type
-              .map(typeObj => typeObj.appointment_type)
-              .join(', ');
+    const categoryTypes = appointment.appointment_type
+      .map(typeObj => typeObj.category)
+      .join(', ');
 
-              const categoryTypes = appointment.appointment_type
-              .map(typeObj => typeObj.category)
-              .join(', ');
+    return (
+      <tr key={appointment._id}>
+        <td style={{fontSize: '14px'}}>{patientName}</td>
+        <td style={{fontSize: '14px'}}>{doctorName}</td>
+        <td style={{fontSize: '14px'}}>{categoryTypes}</td>
+        <td style={{fontSize: '14px'}}>{appointmentTypes}</td>
+        <td style={{fontSize: '14px'}}>{new Date(appointment.date).toLocaleDateString()}</td>
+        <td style={{fontSize: '14px'}}>{appointment.time ? convertTimeRangeTo12HourFormat(appointment.time) : 'Not Assigned'}</td> {/* Convert time to 12-hour AM/PM format */}
+        <td>
+          <div className="scheduled-appointment" style={{fontSize: '12px'}}>
+            {appointment.status}
+          </div>
+        </td>
+        <td>
+          <Form.Check
+            type="checkbox"
+            disabled={true}
+            checked={appointment.followUp || false}
+            onChange={(e) => handleFollowUpChange(appointment._id, e.target.checked)}
+          />
+        </td>
+        <td>
+          <Dropdown>
+            <Dropdown.Toggle as={Button} variant="light" className="action-button">
+              <ThreeDots size={20} />
+            </Dropdown.Toggle>
 
-              return (
-                <tr key={appointment._id}>
-                  <td style={{fontSize: '14px'}}>{patientName}</td>
-                  <td style={{fontSize: '14px'}}>{doctorName}</td>
-                  <td style={{fontSize: '14px'}}>{categoryTypes}</td>
-                  <td style={{fontSize: '14px'}}>{appointmentTypes}</td>
-                  <td style={{fontSize: '14px'}}>{new Date(appointment.date).toLocaleDateString()}</td>
-                  <td style={{fontSize: '14px'}}>  {appointment.time ? convertTimeRangeTo12HourFormat(appointment.time) : 'Not Assigned'}</td> {/* Convert time to 12-hour AM/PM format */}
-              
-                  <td >
-                    <div className="d-flex justify-content-center">
-                      <div className="scheduled-appointment" style={{fontSize: '12px'}}>
-                        {appointment.status}
-                      </div>
-                    </div>
-                  </td>
-                  <td>
-                    <Form.Check
-                      type="checkbox"
-                      disabled={true}
-                      checked={appointment.followUp || false}
-                      onChange={(e) => {
-                        e.stopPropagation();
-                        handleFollowUpChange(appointment._id, e.target.checked);
-                      }}
-                    />
-                  </td>
-                  <td>
-                    <Dropdown >
-                      <Dropdown.Toggle as={Button} variant="light" className="action-button">
-                        <ThreeDots size={20} />
-                      </Dropdown.Toggle>
+            <Dropdown.Menu>
+              <Dropdown.Item
+                onClick={() => handleUpdateStatus(appointment._id, "Ongoing")}
+                className="action-item"
+              >
+                Ongoing
+              </Dropdown.Item>
 
-                      <Dropdown.Menu>
-                        <Dropdown.Item
-                          onClick={() => handleUpdateStatus(appointment._id, "Ongoing")}
-                          className="action-item"
-                        >
-                          Ongoing
-                        </Dropdown.Item>
+              <Dropdown.Item
+                onClick={() => handleReschedule(appointment)}
+                className="action-item"
+              >
+                Reschedule
+              </Dropdown.Item>
 
-                        <Dropdown.Item
-                          onClick={() => handleReschedule(appointment)}
-                          className="action-item"
-                        >
-                          Reschedule
-                        </Dropdown.Item>
+              <Dropdown.Item
+                onClick={() => handleUpdateStatus(appointment._id, "Cancelled")}
+                className="action-item"
+              >
+                Cancel
+              </Dropdown.Item>
 
-                        <Dropdown.Item
-                          onClick={() => handleUpdateStatus(appointment._id, "Cancelled")}
-                          className="action-item"
-                        >
-                          Cancel
-                        </Dropdown.Item>
+              {/* Add Findings Option */}
+              <Dropdown.Item
+                onClick={() => handleAddFindings(appointment)}
+                className="action-item"
+              >
+                Add Findings
+              </Dropdown.Item>
+            </Dropdown.Menu>
+          </Dropdown>
+        </td>
+      </tr>
+    );
+  })}
+</tbody>
 
-                        {/* Add Findings Option */}
-                        <Dropdown.Item
-                          onClick={() => handleAddFindings(appointment)}
-                          className="action-item"
-                        >
-                          Add Findings
-                        </Dropdown.Item>
-                      </Dropdown.Menu>
-                    </Dropdown>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
         </Table>
 
         <Container className="d-flex justify-content-between p-0">

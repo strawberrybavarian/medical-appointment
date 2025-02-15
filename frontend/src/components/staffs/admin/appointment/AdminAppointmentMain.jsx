@@ -1,7 +1,7 @@
-import { useParams, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import MedSecTodaysApp from '../../medical secretary/components/Appointments/MedSecTodaysApp';
 import MedSecOngoing from '../../medical secretary/components/Appointments/MedSecOngoing';
-import { Container, Nav, Row, Col, Button, Modal } from 'react-bootstrap';
+import { Container, Nav, Row, Button, Modal } from 'react-bootstrap';
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 // import './AdminAppointmentMain.css';
@@ -16,7 +16,7 @@ import SidebarAdmin from '../sidebar/SidebarAdmin';
 import AdminNavbar from '../navbar/AdminNavbar';
 
 import MedSecPending from '../../medical secretary/components/Appointments/MedSecPending';
-
+import MedSecCompleted from '../../medical secretary/components/Appointments/MedSecCompleted';
 function AdminAppointmentMain() {
   const containerStyle = {
     display: 'flex',
@@ -24,11 +24,7 @@ function AdminAppointmentMain() {
     overflow: 'hidden', // Prevents scrolling issues for the main layout
   };
 
-  const sidebarWrapperStyle = {
-    flex: '0 0 250px', // Sidebar fixed width
-    height: '100vh',
-    overflowY: 'auto', // Make sidebar scrollable if necessary
-  };
+
 
   const contentWrapperStyle = {
     width: '100%',
@@ -38,16 +34,11 @@ function AdminAppointmentMain() {
     flexDirection: 'column', // Navbar on top, content below
   };
 
-  const announcementWrapperStyle = {
-    flex: '1', // Take available space for announcements
-    overflowY: 'auto', // Ensure the announcements scroll properly
-    padding: '3rem', // Add padding for better layout
-  };
   const location = useLocation(); 
   const { userId, userName, role } = location.state || {};
 
   const [allappointments, setallappointments] = useState([]);
-  const [selectedDoctor, setSelectedDoctor] = useState("");
+  const [selectedDoctor] = useState("");
   const [activeTab, setActiveTab] = useState("pending");
   const [showPatientModal, setShowPatientModal] = useState(false); // Modal for Add Patient
   const [showAppointmentModal, setShowAppointmentModal] = useState(false); // Modal for Create Appointment
@@ -108,6 +99,9 @@ function AdminAppointmentMain() {
                   </Nav.Item>
                   <Nav.Item>
                     <Nav.Link eventKey="tosend">To-send Lab Results</Nav.Link>
+                  </Nav.Item>
+                  <Nav.Item>
+                    <Nav.Link eventKey="completed">Completed</Nav.Link>
                   </Nav.Item>
                   <Nav.Item>
                     <Nav.Link eventKey="cancelled">Cancelled</Nav.Link>
@@ -232,6 +226,17 @@ function AdminAppointmentMain() {
                       {activeTab === "laboratory" && (
                       <>
                         <MedSecLaboratoryApp
+                          allAppointments={allappointments}
+                          setAllAppointments={setallappointments}
+                          selectedDoctor={selectedDoctor}
+                        />
+                      </>
+                    )}  
+
+
+                    {activeTab === "completed" && (
+                      <>
+                        <MedSecCompleted
                           allAppointments={allappointments}
                           setAllAppointments={setallappointments}
                           selectedDoctor={selectedDoctor}

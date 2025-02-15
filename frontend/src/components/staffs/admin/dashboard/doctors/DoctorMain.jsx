@@ -9,7 +9,9 @@ import PieSpecialization from '../Charts/PieSpecialization';
 import DoctorStatsCards from '../cards/DoctorStatsCards';
 import { ip } from '../../../../../ContentExport';
 import AdminNavbar from '../../navbar/AdminNavbar';
+
 import DeactivationRequests from '../../appointment/doctors/DeactivationRequests';
+import DoctorAgeGroupChart from '../Charts/DoctorAgeGroupChart';
 function DoctorMain() {
     const [totalDoctors, setTotalDoctors] = useState(0);
     const [registeredDoctors, setRegisteredDoctors] = useState(0);
@@ -85,16 +87,20 @@ function DoctorMain() {
                             totalDoctors={totalDoctors}
                         /> */}
                         <Row>
-                            <Col md={6}>
+                            <Col md={4}>
                                 <div className="d-flex justify-content-between" style={{ paddingTop: '1.5rem' }}> 
                                     <PieSpecialization/>
 
                                 </div>
                             </Col>
 
-                   
+                            <Col md={4}>
+                                <div className="d-flex justify-content-between" style={{ paddingTop: '1.5rem' }}> 
+                                    <DoctorAgeGroupChart/>
+                                </div>
+                            </Col>
 
-                            <Col>
+                            <Col md={4}>
 
                                 <div className="d-flex justify-content-between" style={{ paddingTop: '1.5rem', width: '100%' }}> 
                                     

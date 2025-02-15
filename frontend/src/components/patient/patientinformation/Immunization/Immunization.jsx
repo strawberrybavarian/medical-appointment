@@ -12,7 +12,7 @@ const Immunization = ({ immunizations }) => {
         <Container>
             <h1 className="my-4">Immunization Records</h1>
             {sortedImmunizations.length > 0 ? (
-                <Table responsive striped variant="light" className="mt-3">
+                <Table bordered responsive striped  variant="light" className="mt-3">
                     <thead>
                         <tr>
                             <th>Date Administered</th>
