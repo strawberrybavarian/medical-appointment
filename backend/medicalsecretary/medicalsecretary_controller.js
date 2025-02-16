@@ -425,6 +425,37 @@ const createGeneralNotification = async (req, res) => {
         res.status(500).json({message: 'Server error', error: error.message});
     }
  };
+
+
+ const changePendingMedSecPassword = async (req, res) => {
+  const { medsecId } = req.params;
+  const { newPassword, confirmNewPassword } = req.body;
+
+  try {
+      if (!newPassword || !confirmNewPassword) {
+          return res.status(400).json({ message: "Both password fields are required." });
+      }
+
+      if (newPassword !== confirmNewPassword) {
+          return res.status(400).json({ message: "Passwords do not match." });
+      }
+
+      const medsec = await MedicalSecretary.findById(medsecId);
+      if (!medsec) {
+          return res.status(404).json({ message: "Admin not found." });
+      }
+
+      // Store the new password in plain text (not recommended for production)
+      medsec.password = newPassword;
+      medsec.status = 'registered';
+      await medsec.save();
+
+      return res.status(200).json({ message: "Password updated and account activated successfully." });
+  } catch (error) {
+      console.error("Error updating password:", error);
+      return res.status(500).json({ message: "Server error, please try again." });
+  }
+};
 module.exports = {
     // NewMedicalSecretaryignUp,
     findAllMedicalSecretary,
@@ -439,7 +470,8 @@ module.exports = {
     NewMedicalSecretarySignUp,
     changePassword, 
     createGeneralNotification,
-    getMedSecWithAudits
+    getMedSecWithAudits,
+    changePendingMedSecPassword
 
 
 };

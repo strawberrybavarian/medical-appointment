@@ -1,19 +1,49 @@
 import axios from 'axios';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import './TwoFactorAuth.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Modal, Button } from 'react-bootstrap';
 import { ip } from '../../../../ContentExport';
+
 function TwoFactorAuth() {
-    const { pid } = useParams();
+    
     const [qrCode, setQrCode] = useState(null);
     const [secretKey, setSecretKey] = useState(null);
     const [showModal, setShowModal] = useState(false);
+    const [sessionActive, setSessionActive] = useState(true); // Track session activity
+    const [user, setUser] = useState(''); // Store user data
 
-    const setupTwoFactor = async (userId, regenerate = false) => {
+    console.log('User:', user._id);
+    // Check session status when component mounts
+    useEffect(() => {
+        const checkSession = async () => {
+            try {
+                const response = await axios.get(`${ip.address}/api/get/session`);
+                if (!response.data || !response.data.user) {
+                    console.log('Session expired or no user data:', response.data);
+                    setSessionActive(false);
+                } else {
+                    setUser(response.data.user); // Assuming `response.data.user` contains the user object with role and id
+                    console.log(response.data.user);
+                }
+            } catch (error) {
+                console.error('Error checking session:', error);
+            }
+        };
+        checkSession();
+    }, []);
+
+    // Setup 2FA function
+    const setupTwoFactor = async (regenerate = false) => {
         try {
-            const response = await axios.post(`${ip.address}/api/patient/api/setup-2fa/${userId}`, { regenerate });
+            // Sending both user ID and role in the body
+            const response = await axios.post(`${ip.address}/api/set-up-2fa`, { 
+                regenerate,
+                id: user?._id, // Patient ID from URL
+                role: user?.role // Send the user role (e.g., "Patient")
+            });
+
             if (response.data.qrCode && response.data.secret) {
                 setQrCode(response.data.qrCode);
                 setSecretKey(response.data.secret);
@@ -21,7 +51,7 @@ function TwoFactorAuth() {
                 window.alert("Error setting up 2FA");
             }
         } catch (error) {
-            console.error('Error setting up 2FA:', error); // Log the error
+            console.error('Error setting up 2FA:', error);
             window.alert("Error setting up 2FA");
         }
     };
@@ -31,7 +61,7 @@ function TwoFactorAuth() {
     };
 
     const confirmRegenerate = () => {
-        setupTwoFactor(pid, true);
+        setupTwoFactor(true); // Regenerate the 2FA secret
         setQrCode(null); // Clear the QR code when regenerating
         setSecretKey(null); // Clear the secret key when regenerating
         setShowModal(false); // Hide confirmation modal
@@ -63,7 +93,9 @@ function TwoFactorAuth() {
                 </div>
             )}
             <div className="text-center mb-4">
-                <button className="btn btn-primary" onClick={handleRegenerate}>Generate New Secret Key</button>
+                <button className="btn btn-primary" onClick={handleRegenerate} disabled={!sessionActive}>
+                    {sessionActive ? 'Generate New Secret Key' : 'Session Expired'}
+                </button>
             </div>
 
             {/* Confirmation Modal */}

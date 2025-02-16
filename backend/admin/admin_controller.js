@@ -407,6 +407,36 @@ const getAdminWithAudits = async (req, res) => {
     }
 }
 
+const changePendingAdminPassword = async (req, res) => {
+    const { adminId } = req.params;
+    const { newPassword, confirmNewPassword } = req.body;
+
+    try {
+        if (!newPassword || !confirmNewPassword) {
+            return res.status(400).json({ message: "Both password fields are required." });
+        }
+
+        if (newPassword !== confirmNewPassword) {
+            return res.status(400).json({ message: "Passwords do not match." });
+        }
+
+        const admin = await Admin.findById(adminId);
+        if (!admin) {
+            return res.status(404).json({ message: "Admin not found." });
+        }
+
+        // Store the new password in plain text (not recommended for production)
+        admin.password = newPassword;
+        admin.status = 'registered';
+        await admin.save();
+
+        return res.status(200).json({ message: "Password updated and account activated successfully." });
+    } catch (error) {
+        console.error("Error updating password:", error);
+        return res.status(500).json({ message: "Server error, please try again." });
+    }
+};
+
 module.exports = {
     NewAdminSignUp,
     findAllAdmin,
@@ -423,5 +453,6 @@ module.exports = {
     changeAdminPassword,
     findAdminById,
     updateAdminInfo,
-    getAdminWithAudits
+    getAdminWithAudits, 
+    changePendingAdminPassword
 };

@@ -2,18 +2,16 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { useParams, useLocation, Link } from "react-router-dom";
 import { Nav, Container } from 'react-bootstrap';
-import SidebarMenu from "../sidebar/SidebarMenu";
 import AccountInfo from "./AccountInfo";
-import DrTwoFactorAuth from "./DrTwoFactorAuth";
 import DoctorAvailability from "./DoctorAvailability"; 
 import DoctorNavbar from "../navbar/DoctorNavbar";
-import DoctorManageServices from "./DoctorManageServices";  // Import the new component
 import Footer from "../../Footer";
 import { ChevronLeft } from "react-bootstrap-icons";
 import './AccountInfo.css';
 import { ip } from "../../../ContentExport";
 import DoctorHMO from "./DoctorManageHMO";
 import AuditDoctor from "./AuditDoctor";
+import TwoFactorAuth from "../../patient/patientinformation/TwoFactorAuth/TwoFactorAuth";
 function DoctorInformation() {
     const location = useLocation();
     const { did } = location.state || {};
@@ -87,16 +85,10 @@ function DoctorInformation() {
                                         Availability
                                     </a>
                                     <a
-                                        onClick={() => setActiveTab("DrTwoFactorAuth")}
-                                        className={activeTab === "DrTwoFactorAuth" ? "active" : ""}
+                                        onClick={() => setActiveTab("authentication")}
+                                        className={activeTab === "authentication" ? "active" : ""}
                                     >
                                         Authentication
-                                    </a>
-                                    <a
-                                        onClick={() => setActiveTab("services")}
-                                        className={activeTab === "services" ? "active" : ""}
-                                    >
-                                        Services
                                     </a>
                                     <a
                                         onClick={() => setActiveTab("hmo")}
@@ -116,9 +108,9 @@ function DoctorInformation() {
                        
                             <Container className="border-top">
                                 {activeTab === 'info' && <AccountInfo did={did} />}
-                                {activeTab === 'DrTwoFactorAuth' && <DrTwoFactorAuth setId={did} />}
+                                {activeTab === 'authentication' && <TwoFactorAuth setId={did} />}
                                 {activeTab === 'availability' && <DoctorAvailability doctorId={did} />} 
-                                {activeTab === 'services' && <DoctorManageServices doctorId={did} />}
+                            
                                 {activeTab === 'hmo' && <DoctorHMO doctorId={did} />}
                                 {activeTab === 'audit' && <AuditDoctor doctorId={did} />}
                             </Container>

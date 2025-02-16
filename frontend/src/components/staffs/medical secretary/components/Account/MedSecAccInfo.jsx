@@ -6,6 +6,7 @@ import { Container, Row, Col } from 'react-bootstrap';
 import MedSecNavbar from '../../navbar/MedSecNavbar';
 import MedicalSecretaryInfoForm from './MedicalSecretaryInfoForm'; // Import the form component
 import AuditMedSec from './AuditMedSec';
+import TwoFactorAuth from '../../../../patient/patientinformation/TwoFactorAuth/TwoFactorAuth';
 const MedSecAccInfo = () => {
   const location = useLocation(); 
   const { userId, userName, role } = location.state || {};
@@ -29,6 +30,14 @@ const MedSecAccInfo = () => {
                   </a>
 
                   <a
+                    onClick={() => setActiveTab("authentication")}
+                    className={activeTab === "authentication" ? "active" : ""}
+                  >
+                    Authentication
+                  </a>
+
+
+                  <a
                     onClick={() => setActiveTab("audit")}
                     className={activeTab === "audit" ? "active" : ""}
                   >
@@ -41,6 +50,7 @@ const MedSecAccInfo = () => {
             <Container className='border-top'>
               {activeTab === 'info' && <MedicalSecretaryInfoForm msid={userId} />} {/* Render the form */}
               {activeTab === 'audit' && <AuditMedSec msid={userId} />} {/* Render the audit */}
+              {activeTab === 'authentication' && <TwoFactorAuth />} 
             </Container>
           </div>
         </div>

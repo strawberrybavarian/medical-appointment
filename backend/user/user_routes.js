@@ -2,6 +2,8 @@ const UserController = require ('../user/user_controller');
 // const { validationResult } = require('express-validator');
 
 module.exports = app => { 
+    app.post('/api/set-up-2fa', UserController.setupTwoFactor);
+    app.post('/api/verify-2fa', UserController.verifyTwoFactor);  
     app.get('/api/test',(req,res)=>{res.json({message:"the api is working"})});
     app.post('/api/login', UserController.unifiedLogin);
 
@@ -10,7 +12,8 @@ module.exports = app => {
   
     // POST /api/logout => clears the session
     app.post('/api/logout', UserController.unifiedLogout);
-
+    app.post('/api/verify-email-otp', UserController.verifyEmailOTP);
+    
     //For Post
    
 }

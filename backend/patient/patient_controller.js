@@ -280,8 +280,7 @@ const updatePatientInfo = async (req, res) => {
     patient.patient_email = updatedInfo.patient_email || patient.patient_email;
     // Update other fields similarly
 
-    // Create the audit description based on changes
-    const auditDescription = changes.length > 0 ? changes.join(', ') : 'No significant changes made.';
+    // Create the audit description based on changes3    const auditDescription = changes.length > 0 ? changes.join(', ') : 'No significant changes made.';
 
     // Create the audit record
     const auditData = {

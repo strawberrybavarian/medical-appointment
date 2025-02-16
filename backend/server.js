@@ -11,15 +11,15 @@ const server = http.createServer(app); // Use this server for Socket.IO
 require('dotenv').config();
 const MongoStore = require('connect-mongo');
 
-
-
-
-// Initialize Socket.IO
-const socket = require('./socket'); // Import the socket module
-socket.init(server); // Initialize Socket.IO with the server
-
-// Import the scheduler after initializing Socket.IO
-require('./appointments/scheduler');
+const cors = require('cors');
+app.use(
+  cors({
+    origin: 'http://localhost:3000',
+    credentials: true, // Allow credentials (cookies, authorization headers, etc.)
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+  })
+);
 
 app.use(
   session({
@@ -29,7 +29,8 @@ app.use(
     cookie: {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      sameSite: 'lax',
+      secure: false,
       maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
     },
     store: MongoStore.create({
@@ -39,27 +40,21 @@ app.use(
   })
 );
 
+
+// Initialize Socket.IO
+const socket = require('./socket'); // Import the socket module
+socket.init(server); // Initialize Socket.IO with the server
+
+// Import the scheduler after initializing Socket.IO
+require('./appointments/scheduler');
+
+
 // Connect to MongoDB
 require('./config/mongoose');
 //FrontendOrigins
 const allowedOrigins = ['http://localhost:3000','http://localhost:3001'];
 // CORS Configuration
-const cors = require('cors');
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      // Only allow specific origins, or allow when origin is null (e.g., server-to-server requests)
-      if (allowedOrigins.includes(origin) || !origin) {
-        callback(null, true); // Allow the request
-      } else {
-        callback(new Error('Not allowed by CORS'), false); // Block the request
-      }
-    },
-    credentials: true, // Allow credentials (cookies, authorization headers, etc.)
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-  })
-);
+
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

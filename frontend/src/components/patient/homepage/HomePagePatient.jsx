@@ -16,7 +16,7 @@ function HomePagePatient() {
   const navigate = useNavigate();
   const { user } = useUser();
 
-
+  console.log(user)
   const [showChat, setShowChat] = useState(false);
   const [tooltipMessage, setTooltipMessage] = useState('');
 

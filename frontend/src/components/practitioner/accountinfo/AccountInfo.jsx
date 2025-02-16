@@ -10,7 +10,6 @@ import './AccountInfo.css';
 import { PencilFill } from "react-bootstrap-icons";
 import DoctorBiography from "./DoctorBiography";
 import { ip } from "../../../ContentExport";
-
 const AccountInfo = () => {
   const location = useLocation();
   const { did } = location.state || {};

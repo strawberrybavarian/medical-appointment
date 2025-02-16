@@ -46,7 +46,7 @@ module.exports = app => {
    
     app.post('/api/admin/confirm-deactivation/:doctorId', AdminController.confirmDeactivation);
     
-
+    app.post('/api/admin/change-password/pending/:adminId', AdminController.changePendingAdminPassword); 
 
 
 }

@@ -14,28 +14,29 @@ export const UserProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   const navigate = useNavigate();
-
+  console.log(user)
   useEffect(() => {
-    const fetchSession = async () => {
-      try {
-        const response = await axios.get(`${ip.address}/api/get/session`, {
-          withCredentials: true,
-        });
-        if (response.data.user) {
-          setUser(response.data.user);
-          setRole(response.data.role);
-        } else {
-          setUser(null);
-          setRole(null);
-        }
-      } catch (error) {
-        // Avoid logging error if no session
-        setUser(null);
-        setRole(null);
-      } finally {
-        setLoading(false);
-      }
-    };
+const fetchSession = async () => {
+  try {
+    const response = await axios.get(`${ip.address}/api/get/session`, {
+      withCredentials: true
+    });
+    if (response.data.user) {
+      setUser(response.data.user);
+      setRole(response.data.role);
+    } else {
+      setUser(null);
+      setRole(null);
+    }
+  } catch (error) {
+    // Handle unauthorized error and clear session if not authorized
+    setUser(null);
+    setRole(null);
+    console.log("Error fetching session", error);
+  } finally {
+    setLoading(false);
+  }
+};
 
     fetchSession();
     

@@ -13,9 +13,15 @@ import BarPatientAgeGroup from '../Charts/PatientAgeGroupChart';
 
 import ChatComponent from '../../../../chat/ChatComponent';
 import { BsChatDotsFill } from 'react-icons/bs'; // Chat icon
+import { useUser } from '../../../../UserContext';
 function PatientMain() {
-  const location = useLocation();
-  const { userId, userName, role } = location.state || {};
+  
+
+  const { user } = useUser();
+  const userId = user._id;
+  const userName = user.firstName + ' ' + user.lastName;
+  const role = user.role;
+  console.log('user', user)
   const navigate = useNavigate();
   const [showChat, setShowChat] = useState(false);
   // Retrieve state from location

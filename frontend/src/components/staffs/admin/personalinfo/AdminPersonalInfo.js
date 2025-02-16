@@ -66,19 +66,10 @@ const AdminPersonalInfo = () => {
     return (
         <>
             <div className="d-flex justify-content-center">
-                <SidebarAdmin userId={userId} userName={userName} role={role} />
-
-                <Container className="cont-fluid-no-gutter" fluid style={{ width: '100%', height: '100vh', overflowY: 'auto' }}>
-                    <AdminNavbar userId={userId} userName={userName} role={role} />
-                        <Container fluid className="ad-container p-5" style={{  overflowY: 'hidden' }}>
+               
                         <div className="content-area p-0 m-0">
-                            <div className="p-3">
-                            <h3 className="m-0">Account Details</h3>
-                            <p className="m-0">Manage your Profile</p>
-                            <hr />
-                            </div>
+                            
                     
-                            <Container fluid>
                             
               
                     
@@ -134,13 +125,10 @@ const AdminPersonalInfo = () => {
                     
                     
                             
-                            </Container>
-                    
-                            </div>
-                        </Container>
+   
                 
                 
-                </Container>
+            </div>
 
                 <AdminChangePasswordModal 
                     show={showPasswordModal} 

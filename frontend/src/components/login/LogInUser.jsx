@@ -1,5 +1,5 @@
-// UserLogin.jsx
-// (This is basically your existing "LogInUser" code, unchanged except for the file name)
+
+
 
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
@@ -13,7 +13,7 @@ const LogInUser = ({hideOuterStyles }) => {
   const navigate = useNavigate();
   const { setUser, setRole } = useUser();
 
-  // ... all your existing states
+  
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [userRole, setUserRole] = useState("Patient");
@@ -30,7 +30,7 @@ const LogInUser = ({hideOuterStyles }) => {
   const [passwordErrors, setPasswordErrors] = useState({});
   const [doctorData, setDoctorData] = useState(null);
 
-  // Check session on mount
+  
   useEffect(() => {
     const checkSession = async () => {
       try {
@@ -57,66 +57,64 @@ const LogInUser = ({hideOuterStyles }) => {
     checkSession();
   }, [navigate, setUser, setRole]);
 
-  // login
+  
   const loginuser = async (e) => {
     e.preventDefault();
+  
     try {
-      const response = await axios.post(
-        `${ip.address}/api/login`,
-        { email, password, rememberMe, role: userRole },
-        { withCredentials: true }
-      );
-      if (response.data.user) {
-        const loggedInUser = response.data.user; 
-        const role = response.data.role;
-        setUser(loggedInUser);
-        setRole(role);
+      const response = await axios.post(`${ip.address}/api/login`, {
+        email,
+        password,
+        role: userRole, 
+      }, { withCredentials: true });
+  
+      if (response.data.twoFactorRequired) {
         
-
-        if (role === 'Doctor') {
-          if (loggedInUser.passwordChanged === false) {
-            setDoctorData(loggedInUser);
-            setShowPasswordModal(true);
-          } else {
-            Swal.fire({
-              icon: 'success',
-              title: 'Successfully logged in',
-              showConfirmButton: true,
-              timer: 1500,
-            });
-
-            navigate('/dashboard');
-          }
+        const { userId, role } = response.data;
+        console.log('2FA required for:', userId, role);
+        if (userId && role) {
+          
+          navigate('/medapp/login/2fa', { state: { userId, role } });
         } else {
-
-          //Patient
-          Swal.fire({
-            icon: 'success',
-            toast: true,
-            position: 'top-end',
-
-            title: 'Successfully logged in',
-            showConfirmButton: false,
-            timer: 1500,
-          });
-          navigate('/homepage');
+          console.error('Error: UserId or Role is missing in the response.');
+        }
+      } else if (response.data.emailVerificationRequired) {
+        
+        const { userId, role } = response.data;
+        console.log('Email OTP required for:', userId, role);
+        if (userId && role) {
+          
+          navigate('/medapp/login/email-otp', { state: { userId, role } });
+        } else {
+          console.error('Error: UserId or Role is missing in the response.');
         }
       } else {
-        console.log('Error logging in:', response.data.message);
-        window.alert(response.data.message || "Invalid email or password.");
+        
+        setUser(response.data.user);
+        setRole(response.data.user.role);
+        if (response.data.user.role === 'Patient') {
+          navigate('/homepage');
+        } else if (response.data.user.role === 'Doctor') {
+          navigate('/dashboard');
+        }
       }
     } catch (err) {
       console.error('Error logging in:', err);
-
       Swal.fire({
         icon: 'error',
         title: 'Oops...',
         text: err.response?.data?.message || 'An error occurred while logging in.',
-      })
+      });
     }
   };
+  
+  
+  
+  
+  
+  
 
-  // handle password update for doctor
+  
   const handlePasswordUpdate = async () => {
     const errors = {};
     const validations = {
@@ -157,7 +155,7 @@ const LogInUser = ({hideOuterStyles }) => {
     }
   };
 
-  // forgot password
+  
   const handleForgotPassword = async (e) => {
     e.preventDefault();
     try {
@@ -177,7 +175,7 @@ const LogInUser = ({hideOuterStyles }) => {
   return (
     <>
       {hideOuterStyles ? (
-        // In the slider, we'll just return a <form> that replicates your fields:
+        
         <Row>
         <Col>
           <Form onSubmit={loginuser} className=" user-signin-container">

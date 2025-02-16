@@ -47,6 +47,14 @@ const MedicalSecretarySchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: 'Audit',
   }],
+  twoFactorSecret: { type: String },
+  twoFactorEnabled: { type: Boolean, default: false },
+    otp: {
+        type: String
+    },
+    otpExpires: {
+        type: Date
+    },
 }, { timestamps: true });
 
 MedicalSecretarySchema.pre('save', async function (next){
