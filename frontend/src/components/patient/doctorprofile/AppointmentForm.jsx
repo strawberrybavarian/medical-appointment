@@ -17,7 +17,7 @@ import { ip } from "../../../ContentExport";
 function AppointmentForm({ pid, did }) {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
-  const [date, setDate] = useState(""); // Automatically set today's date in useEffect
+  const [date, setDate] = useState(""); 
   const [time, setTime] = useState("");
   const [reason, setReason] = useState("");
   const [availableTimes, setAvailableTimes] = useState([]);
@@ -27,7 +27,7 @@ function AppointmentForm({ pid, did }) {
     morning: 0,
     afternoon: 0,
   });
-  const [loading, setLoading] = useState(true); // Loading state
+  const [loading, setLoading] = useState(true); 
 
   const formatTicketDate = (dateString) => {
     const date = new Date(dateString);
@@ -43,7 +43,7 @@ function AppointmentForm({ pid, did }) {
     const today = getTodayDate();
     setDate(today);
 
-    // Fetch doctor's availability and name
+    
     axios
       .get(`${ip.address}/api/doctor/${did}`)
       .then((response) => {
@@ -62,7 +62,7 @@ function AppointmentForm({ pid, did }) {
     if (date) {
       const fetchAppointments = async () => {
         try {
-          setLoading(true); // Set loading before fetching data
+          setLoading(true); 
   
           const selectedDate = new Date(date);
           const daysOfWeek = [
@@ -76,7 +76,7 @@ function AppointmentForm({ pid, did }) {
           ];
           const day = daysOfWeek[selectedDate.getDay()];
   
-          // Fetch booked patients for the selected date
+          
           const response = await axios.get(
             `${ip.address}/api/appointments/doctor/${did}/count?date=${date}`
           );
@@ -86,21 +86,21 @@ function AppointmentForm({ pid, did }) {
   
           setBookedPatients({ morning, afternoon });
   
-          // Once booked patients are set, update the available times
+          
           const updatedTimes = getAvailableTimes(day, morning, afternoon);
           setAvailableTimes(updatedTimes);
   
         } catch (err) {
           console.log("Error fetching appointments:", err);
         } finally {
-          setLoading(false); // Always set loading to false after fetching
+          setLoading(false); 
         }
       };
   
-      fetchAppointments(); // Invoke the async function
+      fetchAppointments(); 
     } else {
-      setAvailableTimes([]); // Reset if no date selected
-      setLoading(false); // Ensure loading state is set to false
+      setAvailableTimes([]); 
+      setLoading(false); 
     }
   }, [date, availability, did]);
 
@@ -161,8 +161,8 @@ function AppointmentForm({ pid, did }) {
       time: time || null,
       reason,
       appointment_type: {
-        appointment_type: "Consultation", // Default to Consultation
-        category: "General", // Optional category if required
+        appointment_type: "Consultation", 
+        category: "General", 
       },
     };
   
@@ -171,7 +171,7 @@ function AppointmentForm({ pid, did }) {
       .then(() => {
         window.alert("Created an appointment!");
   
-        // After successful booking, update available slots based on selected time
+        
         const updatedAvailableTimes = availableTimes.map((slot) => {
           if (slot.timeRange === time) {
             return { ...slot, availableSlots: slot.availableSlots - 1 };
@@ -179,15 +179,15 @@ function AppointmentForm({ pid, did }) {
           return slot;
         });
   
-        setAvailableTimes(updatedAvailableTimes); // Update state with decreased slot
+        setAvailableTimes(updatedAvailableTimes); 
   
-        // Update morning or afternoon bookedPatients count
+        
         const period = updatedAvailableTimes.find(
           (slot) => slot.timeRange === time
         )?.period;
         setBookedPatients((prev) => ({
           ...prev,
-          [period]: prev[period] + 1, // Increment the specific period's count
+          [period]: prev[period] + 1, 
         }));
   
         navigate("/myappointment", { state: { pid } });

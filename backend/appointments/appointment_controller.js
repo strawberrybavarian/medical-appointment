@@ -416,7 +416,7 @@ const countBookedPatients = async (req, res) => {
     }
 
     // Define the statuses to be included in the count
-    const statuses = ['Scheduled', 'Completed', 'Ongoing', 'To-send', 'For Payment', 'Upcoming', 'Pending'];
+    const statuses = ['Scheduled', 'Completed', 'Ongoing', 'To-send', 'For Payment', 'Upcoming',];
 
     const morningCount = await Appointment.countDocuments({
       doctor: doctorId,

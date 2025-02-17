@@ -13,17 +13,18 @@ function FollowUpModal({ show, handleClose, appointment, pid, setAppointments })
     const [reason, setReason] = useState(appointment.reason || '');
 
     const doctorId = appointment.doctor._id;
-    const todayDate = new Date().toISOString().split('T')[0]; // Today's date
+    const todayDate = new Date().toISOString().split('T')[0]; 
+
     const convertTo24HourFormat = (time) => {
         const [hours, minutes, period] = time.match(/(\d+):(\d+) (AM|PM)/).slice(1);
         let hour24 = parseInt(hours, 10);
         if (period === 'PM' && hour24 !== 12) hour24 += 12;
         if (period === 'AM' && hour24 === 12) hour24 = 0;
         return `${String(hour24).padStart(2, '0')}:${minutes}`;
-      };
+    };
+
     useEffect(() => {
         if (appointment && doctorId) {
-            // Fetch doctor's availability
             axios.get(`${ip.address}/api/doctor/${doctorId}`)
                 .then(response => {
                     const doctor = response.data.doctor;
@@ -43,22 +44,15 @@ function FollowUpModal({ show, handleClose, appointment, pid, setAppointments })
             const dayAvailability = availability[day];
 
             if (dayAvailability) {
-                // Fetch booked slots for the selected date and doctor
+                // Fetch the booked slots count for the selected date and doctor
                 axios
-                    .get(`${ip.address}/api/doctor/${doctorId}/booked-slots?date=${date}`)
+                    .get(`${ip.address}/api/appointments/doctor/${doctorId}/count?date=${date}`)
                     .then((response) => {
-                        const bookedTimes = response.data.bookedSlots || [];
+                        const { morning, afternoon } = response.data;
 
-                        // Count morning and afternoon bookings
-                        const morningBookedCount = bookedTimes.filter((time) => {
-                            const hour = parseInt(time.split(':')[0], 10);
-                            return hour < 12;
-                        }).length;
-
-                        const afternoonBookedCount = bookedTimes.filter((time) => {
-                            const hour = parseInt(time.split(':')[0], 10);
-                            return hour >= 12;
-                        }).length;
+                        // Calculate the booked count for morning and afternoon
+                        const morningBookedCount = morning;
+                        const afternoonBookedCount = afternoon;
 
                         // Calculate available slots
                         let morningAvailableSlots = 0;
@@ -111,31 +105,48 @@ function FollowUpModal({ show, handleClose, appointment, pid, setAppointments })
 
     const handleSubmit = () => {
         if (!date || !time) {
-          alert('Please select a date and time.');
-          return;
+            alert('Please select a date and time.');
+            return;
         }
-      
+
         const [startTime, endTime] = time.split(' - ').map(convertTo24HourFormat);
-      
+
         const followUpData = {
-          doctor: doctorId,
-          date,
-          time: `${startTime} - ${endTime}`, // Store in 24-hour format
-          reason,
-          appointment_type: appointment.appointment_type,
+            doctor: doctorId,
+            date,
+            time: `${startTime} - ${endTime}`, // Store in 24-hour format
+            reason,
+            appointment_type: appointment.appointment_type,
         };
-      
+
+        // Create the follow-up appointment
         axios.post(`${ip.address}/api/appointments/${appointment._id}/schedulefollowup`, followUpData)
-          .then((response) => {
-            const newAppointment = response.data;
-            alert('Follow-up appointment scheduled successfully.');
-            handleClose();
-          })
-          .catch((error) => {
-            console.error('Error scheduling follow-up appointment:', error.response ? error.response.data : error.message);
-            alert('Failed to schedule follow-up appointment.');
-          });
-      };
+            .then((response) => {
+                const newAppointment = response.data;
+
+                // Decrement available slot count in backend
+                axios
+                    .post(`${ip.address}/api/doctor/${doctorId}/update-available-slots`, { date, time })
+                    .then(() => {
+                        // Update available slots locally by mimicking the AppointmentForm logic
+                        const updatedSlots = { ...availableSlots };
+                        const timePeriod = time.includes("AM") ? "morning" : "afternoon";
+                        updatedSlots[timePeriod] -= 1;
+                        setAvailableSlots(updatedSlots);
+
+                        alert('Follow-up appointment scheduled successfully.');
+                        handleClose();
+                    })
+                    .catch((err) => {
+                        console.error("Error updating available slots in backend", err);
+                        alert("Failed to update available slots.");
+                    });
+            })
+            .catch((error) => {
+                console.error('Error scheduling follow-up appointment:', error.response ? error.response.data : error.message);
+                alert('Failed to schedule follow-up appointment.');
+            });
+    };
 
     return (
         <Modal show={show} onHide={handleClose}>
@@ -194,17 +205,6 @@ function FollowUpModal({ show, handleClose, appointment, pid, setAppointments })
                             rows={3}
                         />
                     </Form.Group>
-                    {/* Uncomment the following if you want to make updating followUp optional */}
-                    {/* 
-                    <Form.Group as={Col} className="mb-3">
-                        <Form.Check 
-                            type="checkbox"
-                            label="Mark Follow-Up as Completed"
-                            checked={updateFollowUp}
-                            onChange={(e) => setUpdateFollowUp(e.target.checked)}
-                        />
-                    </Form.Group>
-                    */}
                 </Form>
             </Modal.Body>
             <Modal.Footer>
