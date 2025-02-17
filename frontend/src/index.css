@@ -5117,3 +5117,73 @@ button.ghost {
 .font-16{
   font-size: 16px;
 }
+/* Custom styles for the 2FA page */
+.container-auth {
+  display: flex;
+  justify-content: center;  /* Centers content horizontally */
+  align-items: center;      /* Centers content vertically */
+  flex-direction: column;
+  max-width: 400px;
+  margin: 0 auto;
+  margin-bottom: 30px;
+  padding: 20px;
+  text-align: center;
+  height: 80vh;  /* Takes full viewport height to center content vertically */
+}
+
+
+.title {
+  font-size: 1.8rem;
+  margin-bottom: 20px;
+}
+
+.subheading {
+  font-size: 1rem;
+  margin-bottom: 40px;
+}
+
+.input-container {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 30px;
+}
+
+.code-input {
+  width: 50px;
+  height: 50px;
+  font-size: 1.5rem;
+  text-align: center;
+  border: 2px solid #ddd;
+  border-radius: 10px;
+  transition: border-color 0.3s;
+}
+
+.code-input:focus {
+  border-color: #007bff;
+  outline: none;
+}
+
+.submit-container {
+  margin-top: 20px;
+}
+
+.submit-button {
+  width: 100%;
+  padding: 12px;
+  font-size: 1.2rem;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.submit-button:disabled {
+  background-color: #aaa;
+}
+
+.submit-button:hover:enabled {
+  background-color: #0056b3;
+}

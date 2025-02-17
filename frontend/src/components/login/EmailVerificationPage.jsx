@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ip } from '../../ContentExport';
-import { Button, Form, Row, Col } from 'react-bootstrap';
 import Swal from 'sweetalert2';
 import axios from 'axios';
 import { useUser } from '../UserContext';
+import ForLoginAndSignupNavbar from '../landpage/ForLoginAndSignupNavbar';
 
 const EmailVerificationPage = () => {
   const navigate = useNavigate();
@@ -28,6 +28,15 @@ const EmailVerificationPage = () => {
     // Focus next input field when the current one is filled
     if (value && index < 5) {
       document.getElementById(`code-input-${index + 1}`).focus();
+    }
+  };
+
+  // Handle backspace functionality
+  const handleKeyDown = (e, index) => {
+    if (e.key === 'Backspace' && code[index] === '') {
+      if (index > 0) {
+        document.getElementById(`code-input-${index - 1}`).focus();
+      }
     }
   };
 
@@ -104,38 +113,41 @@ const EmailVerificationPage = () => {
   };
 
   return (
-    <div className="container mt-5">
-      <h2 className="text-center mb-4">Enter OTP Code</h2>
-      <p className="text-center">Please enter the 6-digit code sent to your email.</p>
+    <>
+    <ForLoginAndSignupNavbar/>
+    <div className="container-auth">
+      <h2 className="title">Enter OTP Code</h2>
+      <p className="subheading">Please enter the 6-digit code sent to your email.</p>
 
-      <Form onSubmit={handleSubmit}>
-        <Row className="justify-content-center">
+      <form onSubmit={handleSubmit}>
+        <div className="input-container">
           {code.map((digit, index) => (
-            <Col xs={2} key={index} className="mx-1">
-              <Form.Control
-                type="text"
-                maxLength="1"
-                value={digit}
-                onChange={(e) => handleChange(e, index)}
-                id={`code-input-${index}`}
-                className="text-center"
-                autoFocus={index === 0}
-              />
-            </Col>
+            <input
+              key={index}
+              type="text"
+              maxLength="1"
+              value={digit}
+              onChange={(e) => handleChange(e, index)}
+              onKeyDown={(e) => handleKeyDown(e, index)}
+              id={`code-input-${index}`}
+              className="code-input"
+              autoFocus={index === 0}
+            />
           ))}
-        </Row>
-        <div className="text-center mt-3">
-          <Button
-            variant="primary"
+        </div>
+        <div className="submit-container">
+          <button
             type="submit"
             disabled={isSubmitting}
-            className="w-100"
+            className="submit-button"
           >
             {isSubmitting ? 'Verifying...' : 'Verify Code'}
-          </Button>
+          </button>
         </div>
-      </Form>
+      </form>
     </div>
+    </>
+
   );
 };
 
