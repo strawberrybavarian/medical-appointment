@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Container, Row, Col } from 'react-bootstrap';
+import { Container, Row, Col, Button } from 'react-bootstrap';
 import '../../AdminStyles.css';
 import AdminNavbar from '../../navbar/AdminNavbar';
 import PatientStatsCards from '../cards/PatientStatsCards';
@@ -12,7 +12,7 @@ import LineCompletedAppointments from '../Charts/LineCompletedAppointments';
 import BarPatientAgeGroup from '../Charts/PatientAgeGroupChart';
 
 import ChatComponent from '../../../../chat/ChatComponent';
-import { BsChatDotsFill } from 'react-icons/bs'; // Chat icon
+import { ChatDotsFill } from 'react-bootstrap-icons';
 import { useUser } from '../../../../UserContext';
 function PatientMain() {
   
@@ -21,7 +21,7 @@ function PatientMain() {
   const userId = user._id;
   const userName = user.firstName + ' ' + user.lastName;
   const role = user.role;
-  console.log('user', user)
+  // console.log('user', user)
   const navigate = useNavigate();
   const [showChat, setShowChat] = useState(false);
   // Retrieve state from location
@@ -84,22 +84,28 @@ function PatientMain() {
             <Col md={4}>
               <LineCompletedAppointments />
 
-              <button
-                className="chat-toggle-btn"
-                onClick={() => setShowChat(!showChat)}
-              >
-                <BsChatDotsFill />
-              </button>
-
-              {showChat && (
-                <div className="chat-overlay">
-                  <ChatComponent
-                    userId={userId}
-                    userRole={role}
-                    closeChat={() => setShowChat(false)}
-                  />
+              <div className="chat-btn-container">
+                  <Button
+                    className="chat-toggle-btn"
+                    onClick={() => setShowChat(!showChat)}
+                  >
+                    <ChatDotsFill size={30} />
+                  </Button>
                 </div>
-              )}
+
+                {showChat && (
+                  <div className="chat-overlay">
+                    {showChat && (
+                      <div className="chat-overlay">
+                        <ChatComponent
+                          userId={userId}
+                          userRole={role}
+                          closeChat={() => setShowChat(false)}
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
             </Col>
 
             

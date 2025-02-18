@@ -60,7 +60,7 @@ function DoctorInformation() {
                     <div className="maincolor-container">
                         <div className="content-area px-5 mt-3">
                             
-                            <Container>
+                            <Container className="mt-3">
                                 <Link
                                     to="/dashboard"
                                     state={{ did }}
@@ -101,7 +101,7 @@ function DoctorInformation() {
                                 </div> 
                             </Container>
                        
-                            <Container className="border-top">
+                            <Container className="border-top mb-5">
                                 {activeTab === 'info' && <AccountInfo did={did} />}
                                 {activeTab === 'availability' && <DoctorAvailability doctorId={did} />} 
                             
@@ -113,9 +113,7 @@ function DoctorInformation() {
               
                     </div>
 
-                    <Container fluid className="footer-container cont-fluid-no-gutter w-100 mt-5">
-                            <Footer />
-                        </Container>
+
                 </Container>
             </div>
         </div>

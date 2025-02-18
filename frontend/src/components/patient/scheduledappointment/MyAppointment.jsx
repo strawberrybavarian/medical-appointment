@@ -167,9 +167,6 @@ function MyAppointment() {
               </Row>
             </Container>
           </div>
-          <Container fluid className="footer-container cont-fluid-no-gutter">
-            <Footer />
-          </Container>
         </div>
       </Container>
     </>

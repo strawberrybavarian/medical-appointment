@@ -14,9 +14,10 @@ import MedSecForPayment from '../../medical secretary/components/Appointments/Me
 import MedSecCancelled from '../../medical secretary/components/Appointments/MedSecCancelled';
 import SidebarAdmin from '../sidebar/SidebarAdmin';
 import AdminNavbar from '../navbar/AdminNavbar';
-
 import MedSecPending from '../../medical secretary/components/Appointments/MedSecPending';
 import MedSecCompleted from '../../medical secretary/components/Appointments/MedSecCompleted';
+import { ChatDotsFill } from 'react-bootstrap-icons';
+import ChatComponent from '../../../chat/ChatComponent';
 function AdminAppointmentMain() {
   const containerStyle = {
     display: 'flex',
@@ -42,7 +43,7 @@ function AdminAppointmentMain() {
   const [activeTab, setActiveTab] = useState("pending");
   const [showPatientModal, setShowPatientModal] = useState(false); // Modal for Add Patient
   const [showAppointmentModal, setShowAppointmentModal] = useState(false); // Modal for Create Appointment
-
+  const [showChat, setShowChat] = useState(false);
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const tab = params.get("tab");
@@ -267,7 +268,28 @@ function AdminAppointmentMain() {
     </div>
      
      
-        
+    <div className="chat-btn-container">
+                  <Button
+                    className="chat-toggle-btn"
+                    onClick={() => setShowChat(!showChat)}
+                  >
+                    <ChatDotsFill size={30} />
+                  </Button>
+                </div>
+
+                {showChat && (
+                  <div className="chat-overlay">
+                    {showChat && (
+                      <div className="chat-overlay">
+                        <ChatComponent
+                          userId={userId}
+                          userRole={role}
+                          closeChat={() => setShowChat(false)}
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
         
         
         {/* Modal for creating a patient */}

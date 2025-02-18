@@ -109,9 +109,7 @@ function DashboardMain() {
               </Row>
             </div>
 
-            <Container fluid className="footer-container cont-fluid-no-gutter w-100">
-              <Footer />
-            </Container>
+
           </div>
         </Container>
       </div>

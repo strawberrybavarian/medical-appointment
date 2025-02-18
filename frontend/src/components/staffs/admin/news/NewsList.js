@@ -7,14 +7,18 @@ import { Link } from "react-router-dom";
 import EditNewsModal from "../../news/EditNewsModal";
 import { ip } from "../../../../ContentExport";
 import EditNewsModalByAdmin from "./EditNewsModalByAdmin";
+import { ChatDotsFill } from "react-bootstrap-icons";
+import ChatComponent from "../../../chat/ChatComponent";
+
 function NewsList({ user_id, role }) {
   const [newsList, setNewsList] = useState([]);
   const [showEditNewsModal, setShowEditNewsModal] = useState(false);
   const [editNewsId, setEditNewsId] = useState(null);
   const [editNewsContent, setEditNewsContent] = useState("");
   const [editNewsImages, setEditNewsImages] = useState([]);
+  const [showChat, setShowChat] = useState(false);
   const [currentImageIndexes, setCurrentImageIndexes] = useState({}); // Store individual image indexes for each news
-    console.log(newsList);  // Check if userId is correct
+    // console.log(newsList);  // Check if userId is correct
   // Fetch all general news posts
   useEffect(() => {
     axios
@@ -178,6 +182,30 @@ function NewsList({ user_id, role }) {
           </div>
         ))}
       </Container>
+
+
+      <div className="chat-btn-container">
+                  <Button
+                    className="chat-toggle-btn"
+                    onClick={() => setShowChat(!showChat)}
+                  >
+                    <ChatDotsFill size={30} />
+                  </Button>
+                </div>
+
+                {showChat && (
+                  <div className="chat-overlay">
+                    {showChat && (
+                      <div className="chat-overlay">
+                        <ChatComponent
+                          userId={user_id}
+                          userRole={role}
+                          closeChat={() => setShowChat(false)}
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
 
       {/* Edit News Modal */}
       <EditNewsModalByAdmin

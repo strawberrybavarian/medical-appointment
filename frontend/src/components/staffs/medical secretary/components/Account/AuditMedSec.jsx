@@ -32,7 +32,7 @@ const AuditMedSec = ({msid}) => {
     const [error, setError] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
 
-    console.log(medsecData);
+    // console.log(medsecData);
 
     useEffect (() => {
         const fetchMedSecData = async () => {   

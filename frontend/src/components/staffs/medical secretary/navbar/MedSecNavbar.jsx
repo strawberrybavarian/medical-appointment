@@ -33,7 +33,7 @@ function MedSecNavbar({ msid }) {
         
         const fullName = medsec.ms_firstName + ' ' + medsec.ms_lastName;
         setName(fullName);
-        console.log(medsec);
+        // console.log(medsec);
 
         // If the medsec data includes notifications, load them
         if (medsec.notifications && Array.isArray(medsec.notifications)) {
@@ -59,7 +59,7 @@ function MedSecNavbar({ msid }) {
 
     socketRef.current = io(ip.address);
     socketRef.current.on('connect', () => {
-      console.log('Socket connected:', socketRef.current.id);
+      // console.log('Socket connected:', socketRef.current.id);
     });
 
     socketRef.current.on('connect_error', (error) => {
@@ -88,11 +88,11 @@ function MedSecNavbar({ msid }) {
     });
 
     socketRef.current.on('disconnect', () => {
-      console.log('Socket disconnected');
+      // console.log('Socket disconnected');
     });
 
     socketRef.current.io.on('reconnect', () => {
-      console.log('Socket reconnected');
+      // console.log('Socket reconnected');
       if (msid) {
         socketRef.current.emit('identify', { userId: msid, userRole: 'Medical Secretary' });
       }

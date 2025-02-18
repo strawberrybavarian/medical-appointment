@@ -4,13 +4,14 @@ import { useLocation } from 'react-router-dom';
 import axios from 'axios';
 import AdminNavbar from '../../navbar/AdminNavbar';
 import SidebarAdmin from '../../sidebar/SidebarAdmin';
-import { ThreeDots } from 'react-bootstrap-icons';
+import { ChatDotsFill, ThreeDots } from 'react-bootstrap-icons';
 
 import PatientEditModal from './patientmodal/PatientEditModal';
 import { ip } from '../../../../../ContentExport';
 import PastAppointmentsModal from '../../../medical secretary/components/All Patient/PastAppointmentsModal';
 import PatientDetailsInformation from './patientmodal/PatientDetailsInformation';
 import { useNavigate } from "react-router-dom";
+import ChatComponent from '../../../../chat/ChatComponent';
 
 function PatientManagement() {
   const [patients, setPatients] = useState([]);
@@ -25,6 +26,7 @@ function PatientManagement() {
   const [entriesPerPage, setEntriesPerPage] = useState(10);
   const [sortConfig, setSortConfig] = useState({ key: '', direction: '' });
   const [showPastAppointmentsModal, setShowPastAppointmentsModal] = useState(false); // For PastAppointmentsModal
+  const [showChat, setShowChat] = useState(false);
   const location = useLocation();
   const { userId, userName, role } = location.state || {};
   const navigate = useNavigate();
@@ -268,6 +270,30 @@ function PatientManagement() {
             />
             <Pagination.Last onClick={() => setCurrentPage(pageNumbers.length)} disabled={currentPage === pageNumbers.length} />
           </Pagination>
+
+          
+          <div className="chat-btn-container">
+                  <Button
+                    className="chat-toggle-btn"
+                    onClick={() => setShowChat(!showChat)}
+                  >
+                    <ChatDotsFill size={30} />
+                  </Button>
+                </div>
+
+                {showChat && (
+                  <div className="chat-overlay">
+                    {showChat && (
+                      <div className="chat-overlay">
+                        <ChatComponent
+                          userId={userId}
+                          userRole={role}
+                          closeChat={() => setShowChat(false)}
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
 
           {/* Modals */}
           <Modal show={showActionModal} onHide={handleCloseActionModal}>

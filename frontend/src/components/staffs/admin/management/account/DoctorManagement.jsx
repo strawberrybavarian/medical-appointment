@@ -5,15 +5,17 @@ import axios from 'axios';
 import { ip } from '../../../../../ContentExport';
 import AdminNavbar from '../../navbar/AdminNavbar';
 import SidebarAdmin from '../../sidebar/SidebarAdmin';
-import { ThreeDots } from 'react-bootstrap-icons';
+import { ChatDotsFill, ThreeDots } from 'react-bootstrap-icons';
 import AddDoctorModal from './patientmodal/AddDoctorModal';
 import Select from 'react-select'; // Import react-select
 import ManageDoctorMain from '../../../medical secretary/components/Manage Doctors/ManageDoctorMain';
 import UpdateInfoModal from '../../../../practitioner/accountinfo/modal/UpdateInfoModal';
 import EditDoctorDetails from './patientmodal/EditDoctorDetails';
+import ChatComponent from '../../../../chat/ChatComponent';
 function DoctorManagement() {
   const [doctors, setDoctors] = useState([]);
   const [selectedDoctor, setSelectedDoctor] = useState(null);
+  const [showChat, setShowChat] = useState(false);
 
   // For confirming "Register" or "Deactivate"
   const [showActionModal, setShowActionModal] = useState(false);
@@ -278,6 +280,30 @@ function DoctorManagement() {
             doctorData={selectedDoctor}
             handleUpdate={handleUpdate}
           />
+
+          
+<div className="chat-btn-container">
+                  <Button
+                    className="chat-toggle-btn"
+                    onClick={() => setShowChat(!showChat)}
+                  >
+                    <ChatDotsFill size={30} />
+                  </Button>
+                </div>
+
+                {showChat && (
+                  <div className="chat-overlay">
+                    {showChat && (
+                      <div className="chat-overlay">
+                        <ChatComponent
+                          userId={userId}
+                          userRole={role}
+                          closeChat={() => setShowChat(false)}
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
         </Container>
       </Container>
     </div>

@@ -9,7 +9,7 @@ const ChangePasswordModal = ({ show, handleClose, msid, password }) => {
     const [oldPassword, setOldPassword] = useState("");
     const [newPassword, setNewPassword] = useState("");
     const [confirmNewPassword, setConfirmNewPassword] = useState("");
-    console.log(password);
+    // console.log(password);
     // State for validation errors
     const [emailError, setEmailError] = useState("");
     const [passwordError, setPasswordError] = useState("");

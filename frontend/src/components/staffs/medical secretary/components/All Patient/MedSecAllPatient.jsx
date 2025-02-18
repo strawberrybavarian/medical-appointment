@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Modal, Dropdown, Table, Form, Pagination } from 'react-bootstrap';
+import { Container, Modal, Dropdown, Table, Form, Pagination, Button } from 'react-bootstrap';
 import axios from 'axios';
-import { ThreeDots } from 'react-bootstrap-icons';
+import { ChatDotsFill, ThreeDots } from 'react-bootstrap-icons';
 import { ip } from '../../../../../ContentExport';
 import CreateServiceForm from '../Services/CreateServiceForm';
 import CreateAppointment from '../Add Patient/New Appointment/CreateAppointment';
 import { useLocation } from 'react-router-dom';
 import MedSecNavbar from '../../navbar/MedSecNavbar';
 import PastAppointmentsModal from './PastAppointmentsModal'; 
+import ChatComponent from '../../../../chat/ChatComponent';
 
 function MedSecAllPatient() {
   const [patients, setPatients] = useState([]);
@@ -20,7 +21,8 @@ function MedSecAllPatient() {
   const [selectedPatient, setSelectedPatient] = useState(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const location = useLocation();
-  const { userId } = location.state || {};
+  const { userId, role } = location.state || {};
+  const [showChat, setShowChat] = useState(false);
 
   useEffect(() => {
     axios.get(`${ip.address}/api/patient/api/allpatient`)
@@ -204,6 +206,29 @@ function MedSecAllPatient() {
         onClose={handleCloseDetailsModal}
       />
     </Container>
+
+    <div className="chat-btn-container">
+                  <Button
+                    className="chat-toggle-btn"
+                    onClick={() => setShowChat(!showChat)}
+                  >
+                    <ChatDotsFill size={30} />
+                  </Button>
+                </div>
+
+                {showChat && (
+                  <div className="chat-overlay">
+                    {showChat && (
+                      <div className="chat-overlay">
+                        <ChatComponent
+                          userId={userId}
+                          userRole={role}
+                          closeChat={() => setShowChat(false)}
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
     </Container>
   );
 }

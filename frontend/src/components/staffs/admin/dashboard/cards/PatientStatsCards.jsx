@@ -31,7 +31,7 @@ const PatientStatsCards = ({ totalPatients, registeredPatients, unregisteredPati
         
         }, []);
 
-        console.log(todayPatients);
+        // console.log(todayPatients);
 
 
 

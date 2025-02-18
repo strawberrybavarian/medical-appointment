@@ -1,17 +1,13 @@
 import { useState } from 'react';
-import { useNavigate, useParams, Link, useLocation } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { CDBSidebar, CDBSidebarContent, CDBSidebarHeader, CDBSidebarMenu, CDBSidebarMenuItem, CDBSidebarFooter } from 'cdbreact';
 import './PatientInformationSidebar.css';
 import PatientInformation from "../PatientInformation/PatientInformation";
-import PatientPrescriptions from '../PatientPrescriptions/PatientPrescriptions';
-import TwoFactorAuth from '../TwoFactorAuth/TwoFactorAuth';
 import { Container } from "react-bootstrap";
 import PatientMedicalRecord from '../Medical Record/PatientMedicalRecord';
-import Footer from '../../../Footer';
 import AuditPatient from '../Audit/AuditPatient';
 
 function PatientInformationSidebar({pid}) {
-    const navigate = useNavigate();
        
 
 

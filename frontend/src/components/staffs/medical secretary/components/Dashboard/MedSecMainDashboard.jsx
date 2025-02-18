@@ -10,7 +10,7 @@ import LineCompletedAppointments from '../../../admin/dashboard/Charts/LineCompl
 import AppointmentFullCalendar from '../Calendar/AppointmentFullCalendar';
 import { ip } from '../../../../../ContentExport';
 import ChatComponent from '../../../../chat/ChatComponent';
-import { BsChatDotsFill } from 'react-icons/bs'; // Chat icon
+import { ChatDotsFill } from 'react-bootstrap-icons';
 import { useUser } from '../../../../UserContext';
 import DeactivationRequestMedSec from './DeactivationRequestMedSec';
 
@@ -65,20 +65,26 @@ function MedSecMainDashboard() {
                                             </div>
                                         </div>
 
-                                        <button
-                                            className="chat-toggle-btn"
-                                            onClick={() => setShowChat(!showChat)}
-                                        >
-                                            <BsChatDotsFill />
-                                        </button>
+                                        <div className="chat-btn-container">
+                                            <Button
+                                                className="chat-toggle-btn"
+                                                onClick={() => setShowChat(!showChat)}
+                                            >
+                                                <ChatDotsFill size={30} />
+                                            </Button>
+                                        </div>
 
                                         {showChat && (
                                             <div className="chat-overlay">
-                                                <ChatComponent
-                                                    userId={user._id}
-                                                    userRole={user.role}
+                                                  {showChat && (
+                                                <div className="chat-overlay">
+                                                    <ChatComponent
+                                                        userId={user._id}
+                                                        userRole={user.role}
                                                     closeChat={() => setShowChat(false)}
-                                                />
+                                                    />
+                                                </div>
+                                                )}
                                             </div>
                                         )}
 

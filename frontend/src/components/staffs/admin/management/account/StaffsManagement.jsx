@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Container, Modal, Form, Dropdown, Table, Pagination } from 'react-bootstrap';
-import { ThreeDots } from 'react-bootstrap-icons';
+import { ChatDotsFill, ThreeDots } from 'react-bootstrap-icons';
 import { useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { ip } from '../../../../../ContentExport';
@@ -8,6 +8,7 @@ import AdminNavbar from '../../navbar/AdminNavbar';
 import SidebarAdmin from '../../sidebar/SidebarAdmin';
 import CreateStaffModal from '../modals/CreateStaffModal';
 import MedicalSecretaryDetailsModal from './patientmodal/MedicalSecretaryDetailsModal';
+import ChatComponent from '../../../../chat/ChatComponent';
 
 function StaffsManagement() {
   const [staff, setStaff] = useState([]);
@@ -19,7 +20,7 @@ function StaffsManagement() {
   const [currentPage, setCurrentPage] = useState(1);
   const [entriesPerPage, setEntriesPerPage] = useState(10);
   const [sortConfig, setSortConfig] = useState({ key: '', direction: '' });
-
+  const [showChat, setShowChat] = useState(false);
   const location = useLocation();
   const { userId, userName, role } = location.state || {};
 
@@ -194,6 +195,29 @@ function StaffsManagement() {
             </Modal.Footer>
           </Modal>
 
+            
+          <div className="chat-btn-container">
+                  <Button
+                    className="chat-toggle-btn"
+                    onClick={() => setShowChat(!showChat)}
+                  >
+                    <ChatDotsFill size={30} />
+                  </Button>
+                </div>
+
+                {showChat && (
+                  <div className="chat-overlay">
+                    {showChat && (
+                      <div className="chat-overlay">
+                        <ChatComponent
+                          userId={userId}
+                          userRole={role}
+                          closeChat={() => setShowChat(false)}
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
           <CreateStaffModal
             show={showCreateModal}
             handleClose={() => setShowCreateModal(false)}

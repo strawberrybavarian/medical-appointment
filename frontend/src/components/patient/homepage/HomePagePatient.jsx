@@ -8,7 +8,7 @@ import Footer from '../../Footer';
 import DoctorServices from './DoctorServices';
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import ReactTooltip from 'react-tooltip'; // Tooltip library
+import ReactTooltip from 'react-tooltip'; 
 import { ChatDotsFill } from 'react-bootstrap-icons';
 import ChatComponent from '../../chat/ChatComponent';
 import { useUser } from '../../UserContext';
@@ -16,7 +16,7 @@ function HomePagePatient() {
   const navigate = useNavigate();
   const { user } = useUser();
 
-  // console.log(user)
+  
   const [showChat, setShowChat] = useState(false);
   const [tooltipMessage, setTooltipMessage] = useState('');
 
@@ -27,7 +27,7 @@ function HomePagePatient() {
   }, [user._id, navigate]);
 
 
-  // Tooltip messages array
+  
   const tooltips = [
     "Chat with us!",
     "Need help? Click here to chat!",
@@ -70,7 +70,7 @@ function HomePagePatient() {
               <Button
                 className="chat-toggle-btn"
                 onClick={() => setShowChat(!showChat)}
-                data-tip={tooltipMessage} // Attach the tooltip message
+                data-tip={tooltipMessage} 
                 data-for="chatTooltip"
               >
                 <ChatDotsFill size={30} />

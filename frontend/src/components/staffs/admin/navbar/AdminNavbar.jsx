@@ -24,7 +24,7 @@ function AdminNavbar({ userId, userName, role }) {
     // Initialize socket
     socketRef.current = io(ip.address);
     socketRef.current.on('connect', () => {
-      console.log('Socket connected:', socketRef.current.id);
+      // console.log('Socket connected:', socketRef.current.id);
     });
 
     socketRef.current.on('connect_error', (error) => {
@@ -51,11 +51,11 @@ function AdminNavbar({ userId, userName, role }) {
     });
 
     socketRef.current.on('disconnect', () => {
-      console.log('Socket disconnected');
+      // console.log('Socket disconnected');
     });
 
     socketRef.current.io.on('reconnect', () => {
-      console.log('Socket reconnected');
+      // console.log('Socket reconnected');
       if (userId) {
         socketRef.current.emit('identify', { userId, userRole: 'Admin' });
       }

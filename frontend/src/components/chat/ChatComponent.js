@@ -49,7 +49,7 @@ function ChatComponent({ userId, userRole, closeChat }) {
 
     if (isMedSecOrAdmin) {
       newSocket.on('patient list', (patients) => {
-        console.log('Received patient list:', patients);
+        // console.log('Received patient list:', patients);
         setPatientList(patients);
       });
     }
@@ -62,8 +62,8 @@ function ChatComponent({ userId, userRole, closeChat }) {
   }, [userId, userRole]);
 
   const handleChatMessage = (data) => {
-    console.log('Received chat message:', data);
-  
+    // console.log('Received chat message:', data);
+
     if (isMedSecOrAdmin) {
       if (
         selectedPatientRef.current &&
@@ -77,7 +77,7 @@ function ChatComponent({ userId, userRole, closeChat }) {
           return prevMessages;
         });
       }
-  
+
       // Do not add a new patient if already in the list
       if (
         data.senderModel === 'Patient' &&
@@ -99,7 +99,7 @@ function ChatComponent({ userId, userRole, closeChat }) {
       }
     }
   };
-  
+
 
   useEffect(() => {
     if (isPatient) {
@@ -188,56 +188,56 @@ function ChatComponent({ userId, userRole, closeChat }) {
     <div className="chat-container">
       {isMedSecOrAdmin && (
         <div className="patient-list">
-  <h3>Patients</h3>
-  <ul>
-    {patientList.map((patient) => (
-      <li
-        key={patient._id}
-        onClick={() => handlePatientSelect(patient)}
-        className={selectedPatient?._id === patient._id ? 'active' : ''}
-      >
-        {patient.name}
-      </li>
-    ))}
-  </ul>
-</div>
+          <h3>Patients</h3>
+          <ul>
+            {patientList.map((patient) => (
+              <li
+                key={patient._id}
+                onClick={() => handlePatientSelect(patient)}
+                className={selectedPatient?._id === patient._id ? 'active' : ''}
+              >
+                {patient.name}
+              </li>
+            ))}
+          </ul>
+        </div>
       )}
 
       <div className="chat-box">
         <div className="messages">
-        {messages.map((msg) => {
-  const isSentByCurrentUser = msg.sender === userId.toString();
-  const displayName = isSentByCurrentUser ? 'You' : `${msg.senderModel}`;
+          {messages.map((msg) => {
+            const isSentByCurrentUser = msg.sender === userId.toString();
+            const displayName = isSentByCurrentUser ? 'You' : `${msg.senderModel}`;
 
-  return (
-    <>
-      <div>
-        {!isSentByCurrentUser && (
-          <p style={{ fontSize: '12px', paddingLeft: '4px' }} className="sender-name">
-            {displayName}
-          </p>
-        )}
-      </div>
+            return (
+              <>
+                <div>
+                  {!isSentByCurrentUser && (
+                    <p style={{ fontSize: '12px', paddingLeft: '4px' }} className="sender-name">
+                      {displayName}
+                    </p>
+                  )}
+                </div>
 
-      <div
-        key={msg._id}
-        className={`message ${isSentByCurrentUser ? 'sent' : 'received'}`}
-      >
-        <p>{msg.message} <br /></p>
-        <div>
-          <p
-            style={{
-              fontSize: '10px',
-              color: isSentByCurrentUser ? 'white' : 'gray',
-            }}
-          >
-            Sent | {formatTimestamp(msg.createdAt)}
-          </p>
-        </div>
-      </div>
-    </>
-  );
-})}
+                <div
+                  key={msg._id}
+                  className={`message ${isSentByCurrentUser ? 'sent' : 'received'}`}
+                >
+                  <p>{msg.message} <br /></p>
+                  <div>
+                    <p
+                      style={{
+                        fontSize: '10px',
+                        color: isSentByCurrentUser ? 'white' : 'gray',
+                      }}
+                    >
+                      Sent | {formatTimestamp(msg.createdAt)}
+                    </p>
+                  </div>
+                </div>
+              </>
+            );
+          })}
           <div ref={messagesEndRef} /> {/* Scroll to this element */}
         </div>
 
