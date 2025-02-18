@@ -14,7 +14,7 @@ export const UserProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   const navigate = useNavigate();
-  console.log(user)
+  // console.log(user)
   useEffect(() => {
 const fetchSession = async () => {
   try {
@@ -40,8 +40,8 @@ const fetchSession = async () => {
 
     fetchSession();
     
-    const interval = setInterval(fetchSession, 3000);
-    return () => clearInterval(interval);
+    // const interval = setInterval(fetchSession, 3000);
+    // return () => clearInterval(interval);
   }, [navigate]);
 
   if (loading) {

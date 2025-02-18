@@ -31,7 +31,7 @@ function PatientNavBar({ pid }) {
     socketRef.current = io(ip.address);
 
     socketRef.current.on('connect', () => {
-      console.log('Socket connected:', socketRef.current.id);
+      // console.log('Socket connected:', socketRef.current.id);
     });
 
     socketRef.current.on('connect_error', (error) => {
@@ -73,11 +73,11 @@ function PatientNavBar({ pid }) {
     });
 
     socketRef.current.on('disconnect', () => {
-      console.log('Socket disconnected');
+      // console.log('Socket disconnected');
     });
 
     socketRef.current.io.on('reconnect', () => {
-      console.log('Socket reconnected');
+      // console.log('Socket reconnected');
       if (pid) {
         socketRef.current.emit('identify', { userId: pid, userRole: 'Patient' });
       }
@@ -191,7 +191,7 @@ function PatientNavBar({ pid }) {
 
   return (
     <Navbar
-      fluid
+      
       expand="md"
       className="nav-bar-no-color navbar-fixed-top fixed-top px-5 py-0"
       style={{ zIndex: '2' }}
@@ -228,42 +228,45 @@ function PatientNavBar({ pid }) {
         </Nav>
 
           <Nav>
-            <Nav.Link onClick={toggleNotifications} className="position-relative">
-              <Bell size={20} />
-              {unreadCount > 0 && (
-                <span className="notification-badge">{displayCount}</span>
+          <Nav.Link onClick={toggleNotifications} className="position-relative">
+  <Bell size={20} className={unreadCount > 0 ? 'sway' : ''} /> {/* Apply sway class when unread messages */}
+  {unreadCount > 0 && (
+    <span className="notification-dot"></span>
+  )}
+  {showNotifications && (
+    <div className="notification-overlay">
+      {notifications.length > 0 ? (
+        notifications.map((notification, index) => (
+          <div
+            key={notification._id}
+            className={`notification-item ${
+              !notification.isRead ? 'unread' : 'read'
+            }`}
+            onClick={(e) => {
+              e.preventDefault();
+              markAsRead(notification);
+            }}
+          >
+            <span className="notification-circle">
+              {notification.isRead ? (
+                <span className="circle read"></span>
+              ) : (
+                <span className="circle unread"></span>
               )}
-              {showNotifications && (
-                <div className="notification-overlay">
-                  {notifications.length > 0 ? (
-                    notifications.map((notification, index) => (
-                      <div
-                        key={notification._id}
-                        className={`notification-item ${
-                          !notification.isRead ? 'unread' : 'read'
-                        }`}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          markAsRead(notification);
-                        }}
-                      >
-                        <span className="notification-circle">
-                          {notification.isRead ? (
-                            <span className="circle read"></span>
-                          ) : (
-                            <span className="circle unread"></span>
-                          )}
-                        </span>
-                        <span className="notification-message">{notification.message}</span>
-                        {index < notifications.length - 1 && <hr />}
-                      </div>
-                    ))
-                  ) : (
-                    <div>No new notifications</div>
-                  )}
-                </div>
-              )}
-            </Nav.Link>
+            </span>
+            <span className="notification-message">{notification.message}</span>
+            {index < notifications.length - 1 && <hr />}
+          </div>
+        ))
+      ) : (
+        <div>No new notifications</div>
+      )}
+    </div>
+  )}
+</Nav.Link>
+
+
+
           </Nav>
 
           <Nav className="align-items-center">

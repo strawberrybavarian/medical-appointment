@@ -597,6 +597,40 @@ const verifyEmailOTP = async (req, res) => {
   }
 };
 
+const unableTwoFactorEnabled = async (req, res) => {
+  const { userId, role } = req.body;
+  
+  try {
+    let user;
+
+    // Retrieve user based on the role
+    if (role === 'Patient') {
+      user = await Patients.findById(userId);
+    } else if (role === 'Doctor') {
+      user = await Doctors.findById(userId);
+    } else if (role === 'Medical Secretary') {
+      user = await MedicalSecretary.findById(userId);
+    } else if (role === 'Admin') {
+      user = await Admin.findById(userId);
+    }
+
+    // If the user is not found, return an error
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Disable 2FA for the user
+    user.twoFactorEnabled = false;
+    user.twoFactorSecret = undefined;
+    await user.save();
+
+    res.json({ message: '2FA disabled successfully' });
+  } catch (error) {
+    console.error('Error disabling 2FA:', error);
+    res.status(500).json({ message: 'Error disabling 2FA', error });
+  }
+};
+
 
 
 
@@ -609,4 +643,5 @@ module.exports = {
   setupTwoFactor,
   verifyTwoFactor,
   verifyEmailOTP,
+  unableTwoFactorEnabled,
 };

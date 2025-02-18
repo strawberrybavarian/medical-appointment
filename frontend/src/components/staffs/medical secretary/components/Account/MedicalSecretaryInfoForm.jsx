@@ -4,13 +4,15 @@ import axios from 'axios';
 import { ip } from '../../../../../ContentExport';
 import UpdateInfoModal from './Modals/UpdateInfoModal';
 import ChangePasswordModal from './Modals/ChangePasswordModal';
-
+import TwoFactorAuth from '../../../../patient/patientinformation/TwoFactorAuth/TwoFactorAuth';
 const MedicalSecretaryInfoForm = ({ msid }) => {
   const [medSecData, setMedSecData] = useState({});
   const [isLoading, setIsLoading] = useState(true);
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] = useState(false);
-  
+  const [twoFaEnabled, setTwoFaEnabled] = useState(false);
+  const [showTwoFactorAuthModal, setShowTwoFactorAuthModal] = useState(false);  // New state for the 2FA modal
+
   useEffect(() => {
     // Fetch the Medical Secretary's information
     axios.get(`${ip.address}/api/medicalsecretary/api/findone/${msid}`)
@@ -46,12 +48,43 @@ const MedicalSecretaryInfoForm = ({ msid }) => {
     setIsChangePasswordModalOpen(false);
   };
 
+
+  const handleEnableDisableTwoFa = async () => {
+    if (twoFaEnabled) {
+      // Disable 2FA if already enabled
+      try {
+        const response = await axios.post(`${ip.address}/api/disable-2fa`, { 
+          userId: medSecData._id, 
+          role: medSecData.role 
+        });
+        if (response.data.message === '2FA disabled successfully') {
+          setTwoFaEnabled(false);
+          alert('2FA Disabled Successfully');
+        }
+      } catch (error) {
+        console.error('Error disabling 2FA:', error);
+        alert('Error disabling 2FA');
+      }
+    } else {
+      // If 2FA is disabled, show the TwoFactorAuth modal to enable it
+      setShowTwoFactorAuthModal(true);  // Open the 2FA modal
+    }
+  };
   if (isLoading) return <p>Loading...</p>;
 
   return (
     <div className="ai-container2 shadow-sm">
       <div className='d-flex justify-content-start align-items-center'>
         <div className='d-flex justify-content-end w-100'>
+            {twoFaEnabled ? (
+              <Button variant="danger" className="mt-3" onClick={handleEnableDisableTwoFa}>
+                Disable 2FA
+              </Button>
+            ) : (
+              <Button variant="success" className="mt-3" onClick={handleEnableDisableTwoFa}>
+                Enable 2FA
+              </Button>
+            )}
           <Button variant="primary" onClick={openUpdateModal} className="mt-3">
             Update Information
           </Button>
@@ -61,7 +94,7 @@ const MedicalSecretaryInfoForm = ({ msid }) => {
         </div>
       </div>
 
-      <Form>
+      <Form className='mt-5'> 
         <Row>
           <Col md={6}>
             <Form.Group controlId="formFirstName">
@@ -107,6 +140,14 @@ const MedicalSecretaryInfoForm = ({ msid }) => {
           </Col>
         </Row>
       </Form>
+
+      {showTwoFactorAuthModal && (
+        <TwoFactorAuth 
+          show={showTwoFactorAuthModal} 
+          handleClose={() => setShowTwoFactorAuthModal(false)} 
+    
+        />
+      )}
 
       <UpdateInfoModal
         show={isUpdateModalOpen}

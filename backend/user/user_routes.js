@@ -13,7 +13,7 @@ module.exports = app => {
     // POST /api/logout => clears the session
     app.post('/api/logout', UserController.unifiedLogout);
     app.post('/api/verify-email-otp', UserController.verifyEmailOTP);
-    
+    app.post('/api/disable-2fa', UserController.unableTwoFactorEnabled);
     //For Post
    
 }

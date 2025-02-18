@@ -12,7 +12,7 @@ function DoctorSpecialty({ pid, did }) {
     useEffect(() => {
         axios.get(`${ip.address}/api/doctor/api/specialties`)
             .then((res) => {
-                console.log("API Response:", res.data);
+                // console.log("API Response:", res.data);
                 const data = res.data.specialties;  // Extract the array from the response object
                 if (Array.isArray(data)) {
                     setSpecialties(data);  // Set the state with the extracted array

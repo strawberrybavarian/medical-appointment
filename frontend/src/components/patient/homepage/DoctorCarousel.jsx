@@ -20,7 +20,7 @@ function DoctorCarousel({ pid }) {
       try {
         const response = await axios.get(`${ip.address}/api/doctor/api/alldoctor`);
         setDoctors(response.data.theDoctor);
-        console.log("Fetched doctors:", response.data.theDoctor); // Debug log
+        // console.log("Fetched doctors:", response.data.theDoctor); // Debug log
       } catch (error) {
         console.error("Error fetching doctors:", error);
       }
@@ -33,7 +33,7 @@ function DoctorCarousel({ pid }) {
 
     // Log socket connection
     socketRef.current.on("connect", () => {
-      console.log("Socket connected:", socketRef.current.id);
+      // console.log("Socket connected:", socketRef.current.id);
     });
 
     // Listen for doctor activity status updates

@@ -110,13 +110,13 @@ function NewsList({ user_id, role }) {
                     >
                     {/* Check if the role is 'Admin' or 'Medical Secretary' */}
                     {newsItem.postedByInfo.role === "Admin"
-                        ? (`${newsItem.postedByInfo.firstName} ${newsItem.postedByInfo.lastName} `)  // If Admin, show firstName
-                        : (`${newsItem.postedByInfo.ms_firstName} ${newsItem.postedByInfo.ms_lastName} `)}  
+                        ? (`${newsItem.postedByInfo?.firstName} ${newsItem.postedByInfo?.lastName} `)  // If Admin, show firstName
+                        : (`${newsItem.postedByInfo?.ms_firstName} ${newsItem.postedByInfo?.ms_lastName} `)}  
                     </span>
 
 
                   <p style={{ fontSize: "12px", margin: "1.2px 0", lineHeight: "1.2" }}>
-                    <span>{newsItem.role}</span>
+                    <span>{newsItem?.role}</span>
                   </p>
                 </div>
               </div>

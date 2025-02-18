@@ -44,13 +44,6 @@ function PatientInformationSidebar({pid}) {
                             </CDBSidebarMenuItem>
                         </Link>
 
-                        
-
-                        <Link onClick={() => handleTabClick('twofactor')}>
-                            <CDBSidebarMenuItem icon="lock" className="pisb-name">
-                                Two Factor
-                            </CDBSidebarMenuItem>
-                        </Link>
 
                         <Link onClick={() => handleTabClick('audit')}>
                             <CDBSidebarMenuItem icon="file-alt" className="pisb-name">
@@ -74,7 +67,6 @@ function PatientInformationSidebar({pid}) {
                     <div className="content-area mb-5">
                         {activeTab === 'profile' && <PatientInformation pid={pid} />}
                         {activeTab === 'records' && <PatientMedicalRecord pid={pid} />}
-                        {activeTab === 'twofactor' && <TwoFactorAuth pid={pid} />}
                         {activeTab === 'audit' && <AuditPatient pid={pid} />}
 
                     </div>

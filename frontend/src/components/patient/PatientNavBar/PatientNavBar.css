@@ -179,4 +179,44 @@
     border: none;
     border-top: 1px solid #f0f0f0;
   }
+
+
+
+
+  .notification-dot {
+    position: absolute;
+    top: 10px;
+    right: 8px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: red;
+    animation: pulse 1.5s ease-in-out infinite; /* Add pulsating animation */
+  }
+  
+  /* Pulsing effect */
+  @keyframes pulse {
+    0% {
+      transform: scale(1); /* Initial size */
+    }
+    50% {
+      transform: scale(1.5); /* Grow to 1.5x the original size */
+    }
+    100% {
+      transform: scale(1); /* Return to original size */
+    }
+  }
+  
+  @keyframes sway {
+    0% { transform: rotate(0deg); }
+    25% { transform: rotate(-5deg); }
+    50% { transform: rotate(5deg); }
+    75% { transform: rotate(-5deg); }
+    100% { transform: rotate(0deg); }
+  }
+  
+  /* Apply sway animation */
+  .sway {
+    animation: sway 1s ease-in-out infinite;
+  }
   

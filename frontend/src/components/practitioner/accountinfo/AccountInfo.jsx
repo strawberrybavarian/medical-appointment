@@ -10,6 +10,7 @@ import './AccountInfo.css';
 import { PencilFill } from "react-bootstrap-icons";
 import DoctorBiography from "./DoctorBiography";
 import { ip } from "../../../ContentExport";
+import TwoFactorAuth from "../../patient/patientinformation/TwoFactorAuth/TwoFactorAuth";
 const AccountInfo = () => {
   const location = useLocation();
   const { did } = location.state || {};
@@ -23,13 +24,15 @@ const AccountInfo = () => {
     cnumber: "",
     password: "",
     dob: "",
-    specialty: ""
+    specialty: "",
+    role:'',
   });
   const [fullname, setFullname] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] = useState(false); // State for Change Password modal
-
+  const [showTwoFactorAuthModal, setShowTwoFactorAuthModal] = useState(false);  // New state for the 2FA modal
+  const [twoFaEnabled, setTwoFaEnabled] = useState(false);  // State to manage 2FA enabled/disabled
   // State to manage biography collapse
   const [biographyCollapseOpen, setBiographyCollapseOpen] = useState(false);
 
@@ -47,8 +50,11 @@ const AccountInfo = () => {
           cnumber: data.dr_contactNumber,
           dob: data.dr_dob,
           password: data.dr_password,
-          specialty: data.dr_specialty
+          specialty: data.dr_specialty,
+          role: data.role
         });
+
+        setTwoFaEnabled(data.twoFactorEnabled);
 
         setFullname(`${data.dr_firstName} ${data.dr_middleInitial}. ${data.dr_lastName}`);
       })
@@ -56,6 +62,30 @@ const AccountInfo = () => {
         console.log(err);
       });
   }, [did]);
+
+
+  const handleEnableDisableTwoFa = async () => {
+    if (twoFaEnabled) {
+      // Disable 2FA if already enabled
+      try {
+        const response = await axios.post(`${ip.address}/api/disable-2fa`, { 
+          userId: did, 
+          role: doctorData.role 
+        });
+        if (response.data.message === '2FA disabled successfully') {
+          setTwoFaEnabled(false);
+          alert('2FA Disabled Successfully');
+        }
+      } catch (error) {
+        console.error('Error disabling 2FA:', error);
+        alert('Error disabling 2FA');
+      }
+    } else {
+      // If 2FA is disabled, show the TwoFactorAuth modal to enable it
+      setShowTwoFactorAuthModal(true);  // Open the 2FA modal
+    }
+  };
+
 
   const openImageModal = () => {
     setIsModalOpen(true);
@@ -94,6 +124,8 @@ const AccountInfo = () => {
       });
   };
 
+  
+
   // Function to mask email
   const maskEmail = (email) => {
     if (!email) return '';
@@ -118,6 +150,15 @@ const AccountInfo = () => {
               </div>
 
               <div>
+                  {twoFaEnabled ? (
+                    <Button variant="danger" className="mr-2" onClick={handleEnableDisableTwoFa}>
+                      Disable 2FA
+                    </Button>
+                  ) : (
+                    <Button variant="success" className="mr-2" onClick={handleEnableDisableTwoFa}>
+                      Enable 2FA
+                    </Button>
+                  )}
                 <Button onClick={openImageModal}>Upload Image<Icon.Upload style={{ marginLeft: '0.4rem' }} /></Button>
               </div>
             </div>
@@ -206,7 +247,13 @@ const AccountInfo = () => {
           </div>
         </div>
       </div>
-
+      {showTwoFactorAuthModal && (
+        <TwoFactorAuth 
+          show={showTwoFactorAuthModal} 
+          handleClose={() => setShowTwoFactorAuthModal(false)} 
+    
+        />
+      )}
       <ImageUploadModal
         isOpen={isModalOpen}
         onRequestClose={closeImageModal}

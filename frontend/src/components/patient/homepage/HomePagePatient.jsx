@@ -16,7 +16,7 @@ function HomePagePatient() {
   const navigate = useNavigate();
   const { user } = useUser();
 
-  console.log(user)
+  // console.log(user)
   const [showChat, setShowChat] = useState(false);
   const [tooltipMessage, setTooltipMessage] = useState('');
 
@@ -60,11 +60,11 @@ function HomePagePatient() {
           {/* Main Content Area */}
           <div className="content-area p-0 m-0">
             
-            <div fluid className="background-hpp">
-              <DoctorCarousel fluid className="w-100" pid={user._id} />
+            <div  className="background-hpp">
+              <DoctorCarousel  className="w-100" pid={user._id} />
             </div>
-            <DoctorSpecialty fluid className="w-100" pid={user._id} />
-            <DoctorServices fluid className="w-100" pid={user._id} />
+            <DoctorSpecialty  className="w-100" pid={user._id} />
+            <DoctorServices  className="w-100" pid={user._id} />
             {/* Chat Button */}
             <div className="chat-btn-container">
               <Button
@@ -87,10 +87,7 @@ function HomePagePatient() {
               </div>
             )}
           </div>
-          {/* Footer at the bottom */}
-          <Container fluid className="footer-container cont-fluid-no-gutter">
-            <Footer />
-          </Container>
+
         </div>
       </Container>
     </>

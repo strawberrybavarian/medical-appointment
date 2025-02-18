@@ -12,6 +12,7 @@ import * as Icon from "react-bootstrap-icons";
 import AdminEditInfoModal from './AdminEditInfoModal';
 import AdminChangePasswordModal from './AdminChangePasswordModal';
 import AuditAdmin from './AuditAdmin';
+import TwoFactorAuth from '../../../patient/patientinformation/TwoFactorAuth/TwoFactorAuth';
 
 const AdminPersonalInfo = () => {
 
@@ -25,12 +26,15 @@ const AdminPersonalInfo = () => {
         email: '',
         birthdate: '',
         contactNumber: ''
+    
     });
 
     const [showInfoModal, setShowInfoModal] = useState(false);
     const [showPasswordModal, setShowPasswordModal] = useState(false);
-
-    console.log(admin.contactNumber)
+    const [twoFaEnabled, setTwoFaEnabled] = useState(false);
+    const [showTwoFactorAuthModal, setShowTwoFactorAuthModal] = useState(false);  // New state for the 2FA modal
+    
+    // console.log(admin.contactNumber)
     useEffect(() => {  
         axios.get(`${ip.address}/api/admin/${userId}`)
             .then(response => {
@@ -63,6 +67,30 @@ const AdminPersonalInfo = () => {
         setShowInfoModal(false);
         setShowPasswordModal(false);
     }
+
+
+    
+  const handleEnableDisableTwoFa = async () => {
+    if (twoFaEnabled) {
+      // Disable 2FA if already enabled
+      try {
+        const response = await axios.post(`${ip.address}/api/disable-2fa`, { 
+          userId: userId, 
+          role: role 
+        });
+        if (response.data.message === '2FA disabled successfully') {
+          setTwoFaEnabled(false);
+          alert('2FA Disabled Successfully');
+        }
+      } catch (error) {
+        console.error('Error disabling 2FA:', error);
+        alert('Error disabling 2FA');
+      }
+    } else {
+      // If 2FA is disabled, show the TwoFactorAuth modal to enable it
+      setShowTwoFactorAuthModal(true);  // Open the 2FA modal
+    }
+  };
     return (
         <>
             <div className="d-flex justify-content-center">
@@ -74,7 +102,27 @@ const AdminPersonalInfo = () => {
               
                     
                             <Form className='pi-container2 shadow-sm mb-5 '>
-                                <div className="justify-content-end">
+                                 <div className='d-flex justify-content-end w-100'>
+                                            {twoFaEnabled ? (
+                                              <Button variant="danger" className="mt-3" onClick={handleEnableDisableTwoFa}>
+                                                Disable 2FA
+                                              </Button>
+                                            ) : (
+                                              <Button variant="success" className="mt-3" onClick={handleEnableDisableTwoFa}>
+                                                Enable 2FA
+                                              </Button>
+                                            )}
+
+                                            <Button variant="primary" className="mt-3" onClick={() => setShowInfoModal(true)}  >
+                                                Edit Information
+                                            </Button>
+                                            {/* Change Password link */}
+                                            <Button variant="link"  className="mt-3" onClick={() => setShowPasswordModal(true) } >
+                                                Change Password
+                                            </Button>
+                                
+                                        </div>
+                                <div className="justify-content-end mt-5">
                                 <Row>
                                     <Form.Group as={Col} controlId="firstName">
                                     <Form.Label>First Name:</Form.Label>
@@ -103,13 +151,7 @@ const AdminPersonalInfo = () => {
                                 <Row>
                                     <Col className="text-center mt-3">
                                     {/* Button to open update modal */}
-                                    <Button variant="primary" onClick={() => setShowInfoModal(true)}  >
-                                        Edit Information
-                                    </Button>
-                                    {/* Change Password link */}
-                                    <Button variant="link" onClick={() => setShowPasswordModal(true) } >
-                                        Change Password
-                                    </Button>
+                                    
                                     </Col>
                                 </Row>
                                 </div>
@@ -141,6 +183,14 @@ const AdminPersonalInfo = () => {
                     handleClose={handleCloseModal} 
                     adminId={admin._id}
                 />
+
+{showTwoFactorAuthModal && (
+        <TwoFactorAuth 
+          show={showTwoFactorAuthModal} 
+          handleClose={() => setShowTwoFactorAuthModal(false)} 
+    
+        />
+      )}
             </div>
         </>
     )

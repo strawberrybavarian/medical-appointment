@@ -84,12 +84,7 @@ function DoctorInformation() {
                                     >
                                         Availability
                                     </a>
-                                    <a
-                                        onClick={() => setActiveTab("authentication")}
-                                        className={activeTab === "authentication" ? "active" : ""}
-                                    >
-                                        Authentication
-                                    </a>
+                         
                                     <a
                                         onClick={() => setActiveTab("hmo")}
                                         className={activeTab === "hmo" ? "active" : ""}
@@ -108,7 +103,6 @@ function DoctorInformation() {
                        
                             <Container className="border-top">
                                 {activeTab === 'info' && <AccountInfo did={did} />}
-                                {activeTab === 'authentication' && <TwoFactorAuth setId={did} />}
                                 {activeTab === 'availability' && <DoctorAvailability doctorId={did} />} 
                             
                                 {activeTab === 'hmo' && <DoctorHMO doctorId={did} />}

@@ -34,12 +34,7 @@ function AdminPersonalInfoMain() {
                                 >
                                     My details
                                 </a>
-                                <a
-                                    onClick={() => setActiveTab("authentication")}
-                                    className={activeTab === "authentication" ? "active" : ""}
-                                >
-                                    Authentication
-                                </a>
+                                
                             </div> 
                         </Container>
 
@@ -47,7 +42,6 @@ function AdminPersonalInfoMain() {
 
                         <Container className="border-top">
                             {activeTab === 'info' && < AdminPersonalInfo userId = {userId} userName={userName} role={role} />}
-                            {activeTab === 'authentication' && <TwoFactorAuth />} 
                         </Container>
 
                       
