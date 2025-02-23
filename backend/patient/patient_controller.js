@@ -13,10 +13,9 @@ const { staff_email } = require('../EmailExport');
 const crypto = require('crypto');
 const Audit = require('../audit/audit_model')
 
-//For Email
 
 
-// Generate and send OTP
+
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
@@ -24,7 +23,7 @@ const transporter = nodemailer.createTransport({
       pass: 'vqbi dqjv oupi qndp'
   }
 });
-// Generate and send OTP
+
 const sendOTP = async (req, res) => {
   try {
       const patient = await Patient.findOne({ patient_email: req.body.email });
@@ -176,59 +175,8 @@ const NewPatientSignUp = async (req, res) => {
     res.status(500).json({ message: 'Error registering patient', error });
   }
 };
-const loginPatient = async (req, res) => {
-  const { email, password } = req.body;
 
-  try {
-    const patient = await Patient.findOne({ patient_email: email });
 
-    if (!patient) {
-      return res.status(404).json({ message: 'No patient with that email found' });
-    }
-
-    const isMatch = await bcrypt.compare(password, patient.patient_password);
-
-    if (!isMatch) {
-      return res.status(401).json({ message: 'Invalid email or password' });
-    }
-
-    // Exclude sensitive information before sending
-    const patientData = {
-      _id: patient._id,
-      patient_email: patient.patient_email,
-      patient_firstName: patient.patient_firstName,
-      patient_lastName: patient.patient_lastName,
-      // Include other necessary fields
-    };
-
-    // Audit the successful login action
-    const auditData = {
-      user: patient._id,
-      userType: 'Patient', // Specify the user type
-      action: 'Login',  // The action performed
-      description: 'Patient logged in',  // Description of the action
-      ipAddress: req.ip,  // Get the IP address from the request
-      userAgent: req.get('User-Agent'),  // Get the User-Agent (browser/device info)
-    };
-
-    // Save the audit record to the database
-    const audit = await new Audit(auditData).save();
-
-    // Add the audit ID to the patient's `audits` array
-    patient.audits.push(audit._id);
-    await patient.save();
-
-    // Respond to the client
-    res.json({
-      message: 'Successfully logged in',
-      patientId: patient._id,
-      patientData: patientData,
-    });
-  } catch (error) {
-    // Handle error
-    res.status(500).json({ message: 'Error logging in', error });
-  }
-};
 const updatePatientStatus = async (req, res) => {
   try {
       const { pid } = req.params;
@@ -414,6 +362,10 @@ const findPatientById = (req, res) => {
         path: 'payment',
         model: 'Payment'
       },
+      {
+        path: 'findings',
+        model: 'Findings'
+      }
     ]
   })
   .populate({
@@ -814,6 +766,7 @@ module.exports = {
     createUnregisteredPatient,
     updatePatientImage,
     createPatientSession,
-    forgotPassword, resetPassword, loginPatient, getAllPatientEmails, getAllContactNumbers, getPatientWithAudits,
-    getPatientByPatientID
+    forgotPassword, resetPassword, getAllPatientEmails, getAllContactNumbers, getPatientWithAudits,
+    getPatientByPatientID,
+
 }

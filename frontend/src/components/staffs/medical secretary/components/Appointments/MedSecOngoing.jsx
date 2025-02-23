@@ -1,8 +1,11 @@
 import axios from 'axios';
 import React, { useState, useEffect } from 'react';
-import { Table, Container, Pagination, Form, Row, Col } from 'react-bootstrap';
+import { Table, Container, Pagination, Form, Row, Col, Dropdown, Button } from 'react-bootstrap';
 import './Styles.css';
 import { ip } from '../../../../../ContentExport';
+import { toast, ToastContainer } from 'react-toastify';
+import { ThreeDots } from 'react-bootstrap-icons';
+import io from "socket.io-client";
 function MedSecOngoing({ allAppointments, setAllAppointments }) {
   const [currentPage, setCurrentPage] = useState(1);
   const [entriesPerPage, setEntriesPerPage] = useState(5);
@@ -10,7 +13,8 @@ function MedSecOngoing({ allAppointments, setAllAppointments }) {
   const [alldoctors, setalldoctors] = useState([]);
   const [selectedDoctor, setSelectedDoctor] = useState("");
   const [selectedAccountStatus, setSelectedAccountStatus] = useState("");
-
+  const [error, setError] = useState("");
+  const [socket] = useState(io(ip.address));
   useEffect(() => {
     axios.get(`${ip.address}/api/doctor/api/alldoctor`)
       .then((result) => {
@@ -19,42 +23,47 @@ function MedSecOngoing({ allAppointments, setAllAppointments }) {
       .catch((error) => {
         console.log(error);
       });
-  }, []);
-
-  const ongoingAppointment = (appointmentID) => {
-    const newStatus = { status: 'Ongoing' };
-    axios.put(`${ip.address}/api/medicalsecretary/api/${appointmentID}/ongoing`, newStatus)
-      .then((response) => {
-        setAllAppointments(prevAppointments =>
+      socket.on('doctorStatusUpdate', (updatedDoctor) => {
+        setAllAppointments(prevAppointments => 
           prevAppointments.map(appointment =>
-            appointment._id === appointmentID ? { ...appointment, status: 'Ongoing' } : appointment
+            appointment.doctor._id === updatedDoctor.doctorId
+              ? { ...appointment, doctor: { ...appointment.doctor, activityStatus: updatedDoctor.activityStatus } }
+              : appointment
           )
         );
-      })
-      .catch((err) => {
-        console.log(err);
       });
-  };
+  
+      return () => {
+        socket.off('doctorStatusUpdate');
+      };
+
+
+  }, [socket]);
+
 
   // Function to convert 24-hour time to 12-hour format with AM/PM
-  const convertTo12HourFormat = (time) => {
-    if (!time) return 'Not Assigned'; // Handle null or undefined times
+  const convertTimeRangeTo12HourFormat = (timeRange) => {
+    // Check if the timeRange is missing or empty
+    if (!timeRange) return 'Not Assigned';
   
-    // Check if the time is already in "HH:MM AM/PM - HH:MM AM/PM" format
-    if (time.includes('AM') || time.includes('PM')) {
-      return time; // Return time as is if it's already in the correct format
+    const convertTo12Hour = (time) => {
+      // Handle single time values like "10:00"
+      if (!time) return '';
+  
+      let [hours, minutes] = time.split(':').map(Number);
+      const period = hours >= 12 ? 'PM' : 'AM';
+      hours = hours % 12 || 12; // Convert 0 or 12 to 12 in 12-hour format
+  
+      return `${hours}:${String(minutes).padStart(2, '0')} ${period}`;
+    };
+  
+    // Handle both single times and ranges
+    if (timeRange.includes(' - ')) {
+      const [startTime, endTime] = timeRange.split(' - ');
+      return `${convertTo12Hour(startTime)} - ${convertTo12Hour(endTime)}`;
+    } else {
+      return convertTo12Hour(timeRange); // Single time case
     }
-  
-    // Split the time into hours and minutes (HH:MM)
-    const [hours, minutes] = time.split(':');
-  
-    // Determine if it's AM or PM
-    const period = hours >= 12 ? 'PM' : 'AM';
-    
-    // Convert to 12-hour format
-    const hour12 = hours % 12 || 12; // Convert to 12-hour format
-  
-    return `${hour12}:${minutes} ${period}`;
   };
 
   // Filter appointments based on criteria
@@ -77,6 +86,72 @@ function MedSecOngoing({ allAppointments, setAllAppointments }) {
   for (let i = 1; i <= Math.ceil(filteredAppointments.length / entriesPerPage); i++) {
     pageNumbers.push(i);
   }
+
+  const handleUpdateStatus = async (appointmentId, newStatus) => {
+    const appointment = allAppointments.find(app => app._id === appointmentId);
+  
+    // Check if the appointment has time and services assigned
+    const isValidAppointment =
+      appointment.time &&
+      appointment.time !== "Not Assigned" &&
+      appointment.appointment_type &&
+      appointment.appointment_type.length > 0 &&
+      appointment.appointment_type.some(type => type.appointment_type);
+  
+    if (!isValidAppointment) {
+      // Show a toast if required details are missing
+      toast.warning('To schedule an appointment, please assign a time and select the services.', {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
+      return;
+    }
+  
+    try {
+      const response = await axios.put(
+        `${ip.address}/api/appointments/${appointmentId}/status`,
+        { status: newStatus }
+      );
+  
+      if (response.status === 200 && response.data) {
+        const updatedAppointment = response.data;
+  
+        // Update the state with the new status
+        setAllAppointments((prevAppointments) =>
+          prevAppointments.map((appointment) =>
+            appointment._id === appointmentId
+              ? { ...appointment, status: updatedAppointment.status }
+              : appointment
+          )
+        );
+
+
+
+        if (newStatus === 'Scheduled') 
+          // Emit real-time update to change doctor's status to "Online"
+          socket.emit('doctorStatusUpdate', {
+            doctorId: allAppointments.find(app => app._id === appointmentId)?.doctor?._id,
+            activityStatus: 'Online',
+          });
+  
+        console.log('Appointment status updated successfully:', updatedAppointment);
+      } else {
+        throw new Error('Unexpected server response');
+      }
+    } catch (err) {
+      console.error('Error updating status:', err);
+  
+      const errorMessage =
+        err.response?.data?.message || 'Failed to update the appointment status.';
+      setError(errorMessage);
+      alert(errorMessage);
+    }
+  };
 
   return (
     <>
@@ -175,7 +250,7 @@ function MedSecOngoing({ allAppointments, setAllAppointments }) {
                     <td style={{fontSize: '14px'}}>{doctorName}</td>
                     <td style={{fontSize: '14px'}}>{appointmentTypes}</td>
                     <td style={{fontSize: '14px'}}>{new Date(appointment.date).toLocaleDateString()}</td>
-                    <td style={{fontSize: '14px'}}>{convertTo12HourFormat(appointment.time)}</td> {/* Add time format conversion */}
+                    <td style={{fontSize: '14px'}}>{convertTimeRangeTo12HourFormat(appointment.time)}</td> {/* Add time format conversion */}
                     <td style={{fontSize: '14px'}}>{appointment.reason}</td>
                     <td>
 
@@ -186,7 +261,64 @@ function MedSecOngoing({ allAppointments, setAllAppointments }) {
                         </div>
                     </td>
                     <td>
-                      {/* Actions can be added here */}
+                    <div className="d-flex justify-content-around flex-wrap">
+                        <Dropdown >
+                          <Dropdown.Toggle s as={Button} variant="light" className="action-button">
+                            <ThreeDots size={20} />
+                          </Dropdown.Toggle>
+
+                          <Dropdown.Menu style={{zIndex:'99999'}}>
+                            {/* {(  !appointment.date || !appointment.time || !appointmentTypes || !categoryTypes) && ( */}
+
+                            {/* )} */}
+                            
+                            {appointment.patient.accountStatus === "Unregistered" && (
+                              <>
+                                <Dropdown.Item
+                                  onClick={() => handleUpdateStatus(appointment._id, "For Payment")}
+                                  className="action-item"
+                                >
+                                  For Payment
+                                </Dropdown.Item>
+                                <Dropdown.Item
+                                  onClick={() => handleUpdateStatus(appointment._id, "Scheduled")}
+                                  className="action-item"
+                                >
+                                  Scheduled
+                                </Dropdown.Item>
+
+
+                              </>
+                             
+                            )}
+                            {appointment.patient.accountStatus === "Registered" && (
+                              <>
+                                <Dropdown.Item
+                                  onClick={() => handleUpdateStatus(appointment._id, "For Payment")}
+                                  className="action-item"
+                                >
+                                  For Payment
+                                </Dropdown.Item>
+                                <Dropdown.Item
+                                  onClick={() => handleUpdateStatus(appointment._id, "Scheduled")}
+                                  className="action-item"
+                                >
+                                  Scheduled
+                                </Dropdown.Item>
+
+
+                              </>
+                             
+                            )}
+                            <Dropdown.Item
+                              onClick={() => handleUpdateStatus(appointment._id, "Cancelled")}
+                              className="action-item"
+                            >
+                              Cancel
+                            </Dropdown.Item>
+                          </Dropdown.Menu>
+                        </Dropdown>
+                      </div>
                     </td>
                   </tr>
                 );

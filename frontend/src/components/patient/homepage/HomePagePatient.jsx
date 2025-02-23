@@ -3,27 +3,31 @@ import PatientNavBar from "../PatientNavBar/PatientNavBar";
 import './HomePagePatient.css';
 import DoctorSpecialty from './DoctorSpecialty';
 import DoctorCarousel from './DoctorCarousel';
-import { usePatient } from '../PatientContext';
+
 import Footer from '../../Footer';
 import DoctorServices from './DoctorServices';
 import { useNavigate } from 'react-router-dom';
-import { ip } from '../../../ContentExport';
-import ChatComponent from '../../chat/ChatComponent';
 import { useState, useEffect } from 'react';
 import ReactTooltip from 'react-tooltip'; // Tooltip library
 import { ChatDotsFill } from 'react-bootstrap-icons';
+import ChatComponent from '../../chat/ChatComponent';
+import { useUser } from '../../UserContext';
 function HomePagePatient() {
   const navigate = useNavigate();
-  const { patient } = usePatient(); // Get patient data from context
+  const { user } = useUser();
 
-  if (!patient) {
-    navigate("/medapp/login"); // Redirect to login page if patient data is not found
-  }
 
-  const fullName = `${patient.patient_firstName} ${patient.patient_lastName}`;
   const [showChat, setShowChat] = useState(false);
+  const [tooltipMessage, setTooltipMessage] = useState('');
 
-  // Array of tooltip messages
+  useEffect(() => {
+    if(!user._id){
+      navigate('/medapp/login');
+    }
+  }, [user._id, navigate]);
+
+
+  // Tooltip messages array
   const tooltips = [
     "Chat with us!",
     "Need help? Click here to chat!",
@@ -37,60 +41,57 @@ function HomePagePatient() {
     "We’re available to assist you now!",
   ];
 
-  // State to hold the current tooltip message
-  const [tooltipMessage, setTooltipMessage] = useState('');
 
-  // Effect to randomize the tooltip message on component mount
   useEffect(() => {
     const randomMessage = tooltips[Math.floor(Math.random() * tooltips.length)];
     setTooltipMessage(randomMessage);
   }, []);
 
+
+
+
+  // Extract patient information
+  const fullName = `${user.firstName} ${user.lastName}`;
+
   return (
     <>
-      
       <Container
         className="cont-fluid-no-gutter"
         fluid
-        style={{ overflowY: 'scroll', height: '100vh'}}
+        style={{ overflowY: 'auto', height: '100vh' }}
       >
-        <PatientNavBar pid={patient._id} />
+        <PatientNavBar pid={user._id} />
         <div className="maincolor-container">
           {/* Main Content Area */}
           <div className="content-area p-0 m-0">
+            
             <div fluid className="background-hpp">
-
-              <DoctorCarousel fluid className="w-100" pid={patient._id} />
+              <DoctorCarousel fluid className="w-100" pid={user._id} />
             </div>
-
-            <DoctorSpecialty fluid className="w-100" pid={patient._id} />
-            <DoctorServices fluid className="w-100" pid={patient._id} />
-          
-          
-          {/* Chat Button */}
-          <div className="chat-btn-container">
-            <Button
-              className="chat-toggle-btn"
-              onClick={() => setShowChat(!showChat)}
-              data-tip={tooltipMessage} // Attach the tooltip message
-              data-for="chatTooltip"
-            >
-              <ChatDotsFill size={30}/>
-            </Button>
-          </div>
+            <DoctorSpecialty fluid className="w-100" pid={user._id} />
+            <DoctorServices fluid className="w-100" pid={user._id} />
+            {/* Chat Button */}
+            <div className="chat-btn-container">
+              <Button
+                className="chat-toggle-btn"
+                onClick={() => setShowChat(!showChat)}
+                data-tip={tooltipMessage} // Attach the tooltip message
+                data-for="chatTooltip"
+              >
+                <ChatDotsFill size={30} />
+              </Button>
+            </div>
             <ReactTooltip id="chatTooltip" place="top" effect="solid" />
-
             {showChat && (
               <div className="chat-overlay">
                 <ChatComponent
-                  userId={patient._id}
+                  userId={user._id}
                   userRole="Patient"
                   closeChat={() => setShowChat(false)}
                 />
               </div>
             )}
           </div>
-
           {/* Footer at the bottom */}
           <Container fluid className="footer-container cont-fluid-no-gutter">
             <Footer />

@@ -163,8 +163,8 @@ function AppointmentFullCalendar() {
   };
 
   return (
-    <div className="d-flex justify-content-between pt-3">
-      <Card className="shadow mb-4 w-100">
+
+      <Card className="shadow mb-4 ">
         <Card.Header className="py-3">
           <h6 className="m-0 font-weight-bold text-primary">Appointment Calendar</h6>
         </Card.Header>
@@ -184,7 +184,7 @@ function AppointmentFullCalendar() {
           />
         </Card.Body>
       </Card>
-    </div>
+
   );
 }
 

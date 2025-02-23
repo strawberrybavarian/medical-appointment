@@ -7,6 +7,8 @@ const Prescription = require('../prescription/prescription_model');
 const Notification = require('../notifications/notifications_model')
 const DoctorService = require('../doctor/doctor_service')
 const mongoose = require('mongoose');
+const Admin = require('../admin/admin_model');
+const socket = require('../socket');
 const Specialty = require('../specialty/specialty_model');
 const QRCode = require('qrcode');
 const speakeasy = require('speakeasy');
@@ -19,29 +21,41 @@ const { staff_email } = require('../EmailExport');
 
 
 // Define the route handler function
-const updateDoctorStatus = async (req, res) => {
-    const { id } = req.params;
-    const { status } = req.body;  // 'Online' or 'Offline'
 
-    try {
-        await DoctorService.updateActivityStatus(id, status);
-        res.status(200).json({ message: `Doctor ${id} status updated to ${status}.` });
-    } catch (err) {
-        res.status(500).json({ message: 'Failed to update status', error: err.message });
-    }
-};
 
 const offlineActivityStatus = async (req, res) => {
-    const doctorId = req.params.id;
-    try {
-        console.log(`Setting doctor ${doctorId} status to Offline`);
-        await DoctorService.updateActivityStatus(doctorId, 'Offline');
-        res.status(200).json({ message: 'Doctor logged out and status set to Offline.' });
-    } catch (err) {
-        console.error('Error logging out doctor:', err);
-        res.status(500).json({ message: 'Error logging out doctor.', error: err });
-    }
+  const doctorId = req.params.id;
+  try {
+      console.log(`Setting doctor ${doctorId} status to Offline`);
+      // Update the doctor's activityStatus to 'Offline' and lastActive to now
+      const updatedDoctor = await Doctors.findByIdAndUpdate(
+          doctorId,
+          { activityStatus: 'Offline', lastActive: Date.now() },
+          { new: true }
+      );
+
+      if (!updatedDoctor) {
+          return res.status(404).json({ message: 'Doctor not found.' });
+      }
+
+      // Broadcast the doctor's updated status in real-time
+      const io = socket.getIO();
+      const clients = socket.clients;
+      for (let userId in clients) {
+          const userSocket = clients[userId];
+          userSocket.emit('doctorStatusUpdate', {
+              doctorId: updatedDoctor._id.toString(),
+              activityStatus: updatedDoctor.activityStatus
+          });
+      }
+
+      res.status(200).json({ message: 'Doctor logged out and status set to Offline.' });
+  } catch (err) {
+      console.error('Error logging out doctor:', err);
+      res.status(500).json({ message: 'Error logging out doctor.', error: err });
+  }
 };
+
 
 
 //For Email
@@ -310,7 +324,7 @@ const NewDoctorSignUp = async (req, res) => {
 
 
 const loginDoctor = async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, rememberMe } = req.body;
 
   try {
     const doctor = await Doctors.findOne({ dr_email: email });
@@ -330,28 +344,134 @@ const loginDoctor = async (req, res) => {
       return res.status(401).json({ message: 'Invalid email or password' });
     }
 
-    // Exclude sensitive information before sending
     const doctorData = {
       _id: doctor._id,
       dr_email: doctor.dr_email,
       dr_firstName: doctor.dr_firstName,
       dr_lastName: doctor.dr_lastName,
-      // Include the passwordChanged field
-      passwordChanged: doctor.passwordChanged,
-      // Include other necessary fields
+      passwordChanged: doctor.passwordChanged,  
     };
+
+    delete req.session.doctorId;
+    delete req.session.doctor;
+    delete req.session.patient; 
+    req.session.userId = doctor._id;
+    req.session.role = 'Doctor';
+    req.session.doctorId = doctorData;
+
+    if (rememberMe) { // If rememberMe is checked, set the cookie to expire in 30 days
+      req.session.cookie.maxAge = 30 * 24 * 60 * 60 * 1000; // 30 days in milliseconds
+    } else {
+      req.session.cookie.maxAge = 30 * 24 * 60 * 60 * 1000; 
+    }
+
+    // At this point, the login is successful.
+    // Update the doctor's activity status to "Online"
+    const updatedDoctor = await Doctors.findByIdAndUpdate(
+      doctor._id,
+      { activityStatus: 'Online' },
+      { new: true }
+    );
+
+    // Broadcast the doctor's updated status in real-time
+    const io = socket.getIO();
+    const clients = socket.clients;
+    for (let userId in clients) {
+      const userSocket = clients[userId];
+      userSocket.emit('doctorStatusUpdate', {
+        doctorId: doctor._id.toString(),
+        activityStatus: updatedDoctor.activityStatus
+      });
+    }
+
+    // Exclude sensitive information before sending
+    doctorData.passwordChanged = updatedDoctor.passwordChanged;
 
     res.json({
       message: 'Successfully logged in',
-      doctorId: doctor._id,
+      doctorId: updatedDoctor._id,
       doctorData: doctorData,
     });
   } catch (error) {
+    console.error('Error logging in doctor:', error);
     res.status(500).json({ message: 'Error logging in', error });
   }
 };
-
   
+const getSessionData = (req, res) => {
+  try {
+    if (!req.session || !req.session.userId || req.session.role !== 'Doctor') {
+      return res.status(401).json({ message: 'No active session found.' });
+    }
+
+    const doctor = req.session.doctor;
+    if (!doctor) {
+      return res.status(404).json({ message: 'Session invalid or expired.' });
+    }
+
+    res.json({
+      message: 'Session data retrieved successfully',
+      doctor,
+    });
+  
+
+  } catch (error) {
+    console.error('Error fetching session data:', error);
+    res.status(500).json({ message: 'Error fetching session data', error });
+  }
+};
+
+
+const createDoctorSession = (req, res) => {
+  const { userId, role } = req.body;
+
+  if (role === "Doctor") {
+      req.session.userId = userId;  
+      req.session.role = role;      
+      
+      // Log the session data in the backend console
+      console.log('Session Data:', req.session);
+
+      res.json({ message: "Session created successfully" });
+  } else {
+      res.status(403).json({ message: "Unauthorized role" });
+  }
+};
+
+const logoutDoctor = async (req, res) => { 
+  const doctorId = req.params.id;
+
+  try {
+    // Update doctor status to 'Offline'
+    await DoctorService.updateActivityStatus(doctorId, 'Offline');
+
+    // Explicitly delete session from the database
+
+    req.session.destroy((err) => {
+      if (err) {
+        console.error('Error destroying session:', err);
+        return res.status(500).json({ message: 'Error destroying session' });
+      }
+      res.clearCookie('connect.sid');
+      
+
+      // Broadcast the doctor's updated status
+      const io = socket.getIO();
+      const clients = socket.clients;
+      for (let userId in clients) {
+        const userSocket = clients[userId];
+        userSocket.emit('doctorStatusUpdate', {
+          doctorId: doctorId,
+          activityStatus: 'Offline',
+        });
+      }
+      res.json({ message: 'Logged out successfully' });
+    });
+  } catch (error) {
+    console.error('Error logging out doctor:', error);
+    res.status(500).json({ message: 'Error logging out doctor', error });
+  }
+};
 
 
 const updateDoctorDetails = (req, res) => {
@@ -390,7 +510,8 @@ const findOneDoctor = (req, res) => {
 
     Doctors.findById(doctorId)
         .populate('dr_services')
-        .populate('dr_appointments') // Populate services offered by the doctor
+        .populate('dr_appointments')
+        .populate('notifications') // Populate services offered by the doctor
         .then(doctor => {
             if (!doctor) {
                 return res.status(404).json({ message: 'Doctor not found' });
@@ -435,6 +556,7 @@ const findDoctorById = (req, res) => {
     Doctors.findOne({ _id: req.params.id })
         .populate('dr_posts')
         .populate('dr_appointments')
+        .populate('notifications')
         .then((theDoctor) => {
             res.json({ theDoctor });
         })
@@ -706,30 +828,95 @@ const updateAvailability = async (req, res) => {
 };
 
 const requestDeactivation = async (req, res) => {
-    try {
-        const { reason } = req.body;
+  try {
+    const { reason } = req.body;
 
-        // Set the deactivation request status and reason
-        const doctor = await Doctors.findByIdAndUpdate(
-            req.params.doctorId,
-            { 
-                deactivationRequest: {
-                    requested: true,
-                    reason,
-                    confirmed: null
-                }
-            },
-            { new: true }
-        );
+    // Update the doctor's deactivation request status
+    const doctor = await Doctors.findByIdAndUpdate(
+      req.params.doctorId,
+      {
+        deactivationRequest: {
+          requested: true,
+          reason,
+          confirmed: null
+        }
+      },
+      { new: true }
+    );
 
-        // Notify the admin or medical secretary (e.g., send an email, or push notification)
-        // For now, we'll just log it
-        console.log(`Deactivation request for Doctor ${doctor.dr_firstName} ${doctor.dr_lastName} pending confirmation.`);
-
-        res.status(200).json({ message: 'Deactivation request sent successfully', doctor });
-    } catch (error) {
-        res.status(400).json({ message: error.message });
+    if (!doctor) {
+      return res.status(404).json({ message: 'Doctor not found.' });
     }
+
+    // Create a notification message
+    const message = `Deactivation request for Doctor ${doctor.dr_firstName} ${doctor.dr_lastName} is pending confirmation.`;
+   
+    const type = 'DeactivationRequest';
+
+    // Find all Admins and Medical Secretaries
+    const [medicalSecretaries, admins] = await Promise.all([
+      MedicalSecretary.find({}, '_id'),
+      Admin.find({}, '_id'),
+    ]);
+
+    const adminRecipients = admins.map(ad => ad._id);
+    const medSecRecipients = medicalSecretaries.map(ms => ms._id);
+
+    // Create Notification for Admins
+    const adminNotification = new Notification({
+      message: message,
+      receiver: adminRecipients,
+      receiverModel: 'Admin',
+      recipientType: 'Admin',
+      isRead: false,
+      link: '/',
+      type: type,
+    });
+    const savedAdminNotification = await adminNotification.save();
+
+    // Update each Admin with this notification
+    await Promise.all(
+      admins.map(ad => Admin.findByIdAndUpdate(ad._id, { $push: { notifications: savedAdminNotification._id } }))
+    );
+
+    // Create Notification for Medical Secretaries
+    const medSecNotification = new Notification({
+      message: message,
+      receiver: medSecRecipients,
+      receiverModel: 'MedicalSecretary',
+      recipientType: 'MedicalSecretary',
+      isRead: false,
+      link: '/medsec/doctors',
+      type: type,
+    });
+    const savedMedSecNotification = await medSecNotification.save();
+
+    // Update each Medical Secretary with this notification
+    await Promise.all(
+      medicalSecretaries.map(ms => MedicalSecretary.findByIdAndUpdate(ms._id, { $push: { notifications: savedMedSecNotification._id } }))
+    );
+
+    // Broadcast the notification in real-time to connected Admins
+    socket.broadcastNotificationToAdmins({
+      message: message,
+      notificationId: savedAdminNotification._id,
+      link: '/',
+    });
+
+    // Broadcast the notification in real-time to connected Medical Secretaries
+    socket.broadcastNotificationToMedSecs({
+      message: message,
+      notificationId: savedMedSecNotification._id,
+      link: '/medsec/doctors',
+    });
+
+    console.log(`Deactivation request for Doctor ${doctor.dr_firstName} ${doctor.dr_lastName} pending confirmation.`);
+
+    res.status(200).json({ message: 'Deactivation request sent successfully', doctor });
+  } catch (error) {
+    console.error('Error requesting deactivation:', error);
+    res.status(400).json({ message: error.message });
+  }
 };
 
 
@@ -990,21 +1177,7 @@ const deleteDoctorBiography = async (req, res) => {
   };
   
 
-  const createDoctorSession = (req, res) => {
-    const { userId, role } = req.body;
-  
-    if (role === "Physician") {
-        req.session.userId = userId;  
-        req.session.role = role;      
-        
-        // Log the session data in the backend console
-        console.log('Session Data:', req.session);
-  
-        res.json({ message: "Session created successfully" });
-    } else {
-        res.status(403).json({ message: "Unauthorized role" });
-    }
-  };
+
 
 
   const forgotPassword = async (req, res) => {
@@ -1260,7 +1433,7 @@ module.exports = {
     rescheduledStatus,
     findOneDoctor,
     offlineActivityStatus,
-    updateDoctorStatus,
+
     requestDeactivation,
     specificAppointmentsforDoctor,
     updateDoctorBiography,
@@ -1271,6 +1444,7 @@ module.exports = {
     resetPassword, forgotPassword, 
     getDoctorHmo,
     getAllDoctorEmails, getAllDoctorEmailse, getAllContactNumbers,
-    getDoctorSlots, updateDoctorSlots, changeDoctorPassword, updateDoctorPassword
+    getDoctorSlots, updateDoctorSlots, changeDoctorPassword, updateDoctorPassword,
+    getSessionData, logoutDoctor
 
 };

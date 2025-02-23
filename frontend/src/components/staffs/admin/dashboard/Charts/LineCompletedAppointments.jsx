@@ -123,7 +123,7 @@ function LineCompletedAppointments() {
   }, [chartData]);
 
   return (
-    <Card className="card-line-chart shadow mb-4">
+    <Card className="card-line-chart shadow">
       <Card.Header className="py-3">
         <h6 className="m-0 font-weight-bold text-primary">Completed Appointments by Month</h6>
       </Card.Header>

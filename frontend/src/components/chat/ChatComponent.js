@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import io from 'socket.io-client';
-import './ChatComponent.css';
+
 import { ip } from '../../ContentExport';
 import axios from 'axios';
 import { BsArrowRight } from 'react-icons/bs';

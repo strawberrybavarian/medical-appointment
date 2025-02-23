@@ -1,5 +1,3 @@
-// PatientFindings.jsx
-
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { Container, Row, Col, Button, Card, Form } from "react-bootstrap";
 import axios from "axios";
@@ -7,7 +5,6 @@ import { useEffect, useState } from "react";
 import "./PatientFindings.css";
 import PatientHistory from "./PatientHistory";
 import { ip } from "../../../../ContentExport";
-
 function PatientFindings({ patientId, appointmentId, doctorId }) {
   const [fname, setFname] = useState("");
   const [lname, setLname] = useState("");
@@ -32,7 +29,7 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
       smoking: false,
       alcoholConsumption: false,
       physicalActivity: "",
-      others: [], // Initialize others as an empty array
+      others: [],
     },
     familyHistory: [{ relation: "", condition: "" }],
     socialHistory: {
@@ -41,8 +38,8 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
       socialSupport: true,
     },
     mentalHealth: { mood: "", anxietyLevel: "", depressionLevel: "" },
-    skinCondition: [], // Ensure this is an array
-    allergy: [], // Ensure this is an array
+    skinCondition: [],
+    allergy: [],
     neurologicalFindings: "",
     gastrointestinalSymptoms: "",
     cardiovascularSymptoms: "",
@@ -52,19 +49,15 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
     recommendations: "",
     assessment: "",
   });
-
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [canEdit, setCanEdit] = useState(false);
-
   const navigate = useNavigate();
-
   useEffect(() => {
     if (!patientId || !appointmentId) {
       setError("Missing patient or appointment ID.");
       return;
     }
-
     const fetchData = async () => {
       setLoading(true);
       try {
@@ -74,27 +67,16 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
         ]);
         const patientData = patientRes.data.thePatient;
         const appointmentData = appointmentRes.data;
-
         setFname(patientData.patient_firstName);
         setLname(patientData.patient_lastName);
         setAge(patientData.patient_age);
         setEmail(patientData.patient_email);
-
         setReason(appointmentData.reason);
         setFollowup(appointmentData.followUp);
         setAppointmentDate(appointmentData.date);
-
-        // Check if the appointment date is today
-        // const appointmentDateOnly = new Date(appointmentData.date).toISOString().split('T')[0];
-        // const currentDateOnly = new Date().toISOString().split('T')[0];
-
-        // setCanEdit(appointmentDateOnly === currentDateOnly);
-
-        // Fetch findings for this appointment
         const findingsRes = await axios.get(
           `${ip.address}/api/getfindings/${appointmentId}`
         );
-
         if (findingsRes.data && findingsRes.data.findings) {
           setFindings((prevState) => ({
             ...prevState,
@@ -106,7 +88,6 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
             },
           }));
         } else {
-          // If no findings exist, reset findings to initial state
           setFindings({
             bloodPressure: { systole: "", diastole: "" },
             respiratoryRate: "",
@@ -126,7 +107,7 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
               smoking: false,
               alcoholConsumption: false,
               physicalActivity: "",
-              others: [], // Initialize others as an empty array
+              others: [],
             },
             familyHistory: [{ relation: "", condition: "" }],
             socialHistory: {
@@ -135,8 +116,8 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
               socialSupport: true,
             },
             mentalHealth: { mood: "", anxietyLevel: "", depressionLevel: "" },
-            skinCondition: [], // Ensure this is an array
-            allergy: [], // Ensure this is an array
+            skinCondition: [],
+            allergy: [],
             neurologicalFindings: "",
             gastrointestinalSymptoms: "",
             cardiovascularSymptoms: "",
@@ -147,7 +128,6 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
             assessment: "",
           });
         }
-
         setLoading(false);
       } catch (err) {
         console.error("Error fetching data:", err);
@@ -155,13 +135,10 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
         setLoading(false);
       }
     };
-
     fetchData();
   }, [patientId, appointmentId]);
-
   const handleChange = (e) => {
     const { name, value, type, checked, dataset } = e.target;
-
     if (name.includes("systole") || name.includes("diastole")) {
       setFindings((prevState) => ({
         ...prevState,
@@ -227,21 +204,12 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
       }));
     }
   };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // if (!canEdit) {
-    //   alert("You cannot edit findings for appointments on a different date.");
-    //   return;
-    // }
-
-    // Validation for Chief Complaint and Current Symptoms
     if (!findings.historyOfPresentIllness.chiefComplaint.trim()) {
       alert("Chief Complaint is required.");
       return;
     }
-
     const validSymptoms =
       findings.historyOfPresentIllness.currentSymptoms.filter(
         (symptom) => symptom.trim() !== ""
@@ -250,7 +218,6 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
       alert("At least one valid symptom is required.");
       return;
     }
-
     let updatedSkinConditions = findings.skinCondition || [];
     if (
       updatedSkinConditions.includes("Other") &&
@@ -260,14 +227,12 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
         condition === "Other" ? findings.otherSkinCondition : condition
       );
     }
-
     let updatedAllergies = findings.allergy || [];
     if (updatedAllergies.includes("Other") && findings.otherAllergy) {
       updatedAllergies = updatedAllergies.map((allergy) =>
         allergy === "Other" ? findings.otherAllergy : allergy
       );
     }
-
     try {
       await axios.post(`${ip.address}/api/createfindings`, {
         ...findings,
@@ -283,15 +248,12 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
       alert("Error saving findings");
     }
   };
-
   if (loading) {
     return <div>Loading...</div>;
   }
-
   if (error) {
     return <div>{error}</div>;
   }
-
   return (
     <Container fluid>
       <Row className="mt-4">
@@ -320,10 +282,8 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
               </Card.Text>
             </Card.Body>
           </Card>
-
           <PatientHistory pid={patientId} />
         </Col>
-
         <Col md={8}>
           <Card className="mb-4">
             <Card.Header className="d-flex align-items-center">
@@ -332,17 +292,15 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
               </h4>
             </Card.Header>
             <Card.Body>
-
               {/* {!canEdit && (
                 <div className="alert alert-warning">
                   You cannot edit findings for appointments on a different date.
                 </div>
               )} */}
-
               <Form onSubmit={handleSubmit}>
                 <h4>History of Present Illness</h4>
                 <hr />
-                {/* History of Present Illness */}
+                {}
                 <Form.Group className="mb-3">
                   <Form.Label>Chief Complaint:</Form.Label>
                   <Form.Control
@@ -362,7 +320,6 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
                     }}
                   />
                 </Form.Group>
-
                 <Form.Group className="mb-3">
                   <Form.Label>Current Symptoms: </Form.Label>
                   {findings.historyOfPresentIllness?.currentSymptoms?.map(
@@ -411,8 +368,7 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
                       </Row>
                     )
                   )}
-
-                  {/* Add Symptom Button */}
+                  {}
                   <Button
                     className="mt-2"
                     variant="secondary"
@@ -424,7 +380,7 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
                           currentSymptoms: [
                             ...prevState.historyOfPresentIllness
                               .currentSymptoms,
-                            "", // Add an empty string for a new symptom
+                            "",
                           ],
                         },
                       }));
@@ -433,13 +389,11 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
                     Add Symptom
                   </Button>
                 </Form.Group>
-
                 <hr />
-
                 <h4>Vitals</h4>
                 <hr />
                 <Form onSubmit={handleSubmit}>
-                  {/* Vitals */}
+                  {}
                   <Row className="mb-2">
                     <Form.Group as={Col} className="mb-3">
                       <Form.Label>Blood Pressure (Systole):</Form.Label>
@@ -461,8 +415,7 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
                     </Form.Group>
                   </Row>
                 </Form>
-
-                {/* Vitals */}
+                {}
                 <Row className="mb-2">
                   <Form.Group as={Col} className="mb-3">
                     <Form.Label>Respiratory Rate:</Form.Label>
@@ -492,7 +445,6 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
                     />
                   </Form.Group>
                 </Row>
-
                 <Row className="mb-2">
                   <Form.Group as={Col} className="mb-3">
                     <Form.Label>Weight (kg):</Form.Label>
@@ -513,11 +465,10 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
                     />
                   </Form.Group>
                 </Row>
-
                 <hr />
                 <h4>Lifestyle</h4>
                 <hr />
-                {/* Lifestyle */}
+                {}
                 <Row>
                   <Form.Group className="mb-3">
                     <Form.Check
@@ -535,8 +486,7 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
                       onChange={handleChange}
                     />
                   </Form.Group>
-
-                  {/* Dynamic "Others" Section */}
+                  {}
                   <Form.Group className="mb-3">
                     <Form.Label>Other Lifestyle Activities:</Form.Label>
                     {findings.lifestyle?.others?.map((activity, index) => (
@@ -588,8 +538,7 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
                     </Button>
                   </Form.Group>
                 </Row>
-
-                {/* Family History */}
+                {}
                 <hr />
                 <h4>Family History</h4>
                 <hr />
@@ -660,9 +609,7 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
                     Add Family History
                   </Button>
                 </Form.Group>
-
-                {/* Skin Condition */}
-
+                {}
                 <hr />
                 <h4>Skin Condition</h4>
                 <hr />
@@ -676,7 +623,6 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
                     onChange={(e) => {
                       const { value, checked } = e.target;
                       let updatedConditions = findings.skinCondition || [];
-
                       if (checked) {
                         updatedConditions.push(value);
                       } else {
@@ -684,14 +630,12 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
                           (condition) => condition !== value
                         );
                       }
-
                       setFindings({
                         ...findings,
                         skinCondition: updatedConditions,
                       });
                     }}
                   />
-
                   <Form.Check
                     type="checkbox"
                     label="Jaundice"
@@ -703,7 +647,6 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
                     onChange={(e) => {
                       const { value, checked } = e.target;
                       let updatedConditions = findings.skinCondition || [];
-
                       if (checked) {
                         updatedConditions.push(value);
                       } else {
@@ -711,7 +654,6 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
                           (condition) => condition !== value
                         );
                       }
-
                       setFindings({
                         ...findings,
                         skinCondition: updatedConditions,
@@ -729,7 +671,6 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
                     onChange={(e) => {
                       const { value, checked } = e.target;
                       let updatedConditions = findings.skinCondition || [];
-
                       if (checked) {
                         updatedConditions.push(value);
                       } else {
@@ -737,15 +678,13 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
                           (condition) => condition !== value
                         );
                       }
-
                       setFindings({
                         ...findings,
                         skinCondition: updatedConditions,
                       });
                     }}
                   />
-
-                  {/* Checkbox for Other Condition */}
+                  {}
                   <Form.Check
                     type="checkbox"
                     label="Other"
@@ -755,7 +694,6 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
                     onChange={(e) => {
                       const { value, checked } = e.target;
                       let updatedConditions = findings.skinCondition || [];
-
                       if (checked) {
                         updatedConditions.push(value);
                       } else {
@@ -763,15 +701,13 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
                           (condition) => condition !== value
                         );
                       }
-
                       setFindings({
                         ...findings,
                         skinCondition: updatedConditions,
                       });
                     }}
                   />
-
-                  {/* Text Input for Custom "Other" Skin Condition */}
+                  {}
                   {findings?.skinCondition?.includes("Other") && (
                     <Form.Group className="mt-2">
                       <Form.Label>Specify Other Skin Condition:</Form.Label>
@@ -789,12 +725,11 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
                     </Form.Group>
                   )}
                 </Form.Group>
-
                 <hr />
                 <h4>Allergies</h4>
                 <hr />
                 <Form.Group className="mb-3">
-                  {/* Predefined Allergies */}
+                  {}
                   <Form.Check
                     type="checkbox"
                     label="Peanuts"
@@ -804,7 +739,6 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
                     onChange={(e) => {
                       const { value, checked } = e.target;
                       let updatedAllergies = findings.allergy || [];
-
                       if (checked) {
                         updatedAllergies.push(value);
                       } else {
@@ -812,11 +746,9 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
                           (allergy) => allergy !== value
                         );
                       }
-
                       setFindings({ ...findings, allergy: updatedAllergies });
                     }}
                   />
-
                   <Form.Check
                     type="checkbox"
                     label="Shellfish"
@@ -826,7 +758,6 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
                     onChange={(e) => {
                       const { value, checked } = e.target;
                       let updatedAllergies = findings.allergy || [];
-
                       if (checked) {
                         updatedAllergies.push(value);
                       } else {
@@ -834,7 +765,6 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
                           (allergy) => allergy !== value
                         );
                       }
-
                       setFindings({ ...findings, allergy: updatedAllergies });
                     }}
                   />
@@ -847,7 +777,6 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
                     onChange={(e) => {
                       const { value, checked } = e.target;
                       let updatedAllergies = findings.allergy || [];
-
                       if (checked) {
                         updatedAllergies.push(value);
                       } else {
@@ -855,12 +784,10 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
                           (allergy) => allergy !== value
                         );
                       }
-
                       setFindings({ ...findings, allergy: updatedAllergies });
                     }}
                   />
-
-                  {/* Checkbox for Other Allergy */}
+                  {}
                   <Form.Check
                     type="checkbox"
                     label="Other"
@@ -870,7 +797,6 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
                     onChange={(e) => {
                       const { value, checked } = e.target;
                       let updatedAllergies = findings.allergy || [];
-
                       if (checked) {
                         updatedAllergies.push(value);
                       } else {
@@ -878,12 +804,10 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
                           (allergy) => allergy !== value
                         );
                       }
-
                       setFindings({ ...findings, allergy: updatedAllergies });
                     }}
                   />
-
-                  {/* Text Input for Custom "Other" Allergy */}
+                  {}
                   {findings?.allergy?.includes("Other") && (
                     <Form.Group className="mt-2">
                       <Form.Label>Specify Other Allergy:</Form.Label>
@@ -901,9 +825,7 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
                     </Form.Group>
                   )}
                 </Form.Group>
-
                 <hr />
-
                 <Form.Group className="mb-3">
                   <Form.Label>Assessment:</Form.Label>
                   <Form.Control
@@ -913,7 +835,6 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
                     onChange={handleChange}
                   />
                 </Form.Group>
-
                 <Form.Group className="mb-3">
                   <Form.Label>Interpretation:</Form.Label>
                   <Form.Control
@@ -923,7 +844,6 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
                     onChange={handleChange}
                   />
                 </Form.Group>
-
                 <Form.Group className="mb-3">
                   <Form.Label>Recommendations:</Form.Label>
                   <Form.Control
@@ -933,7 +853,6 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
                     onChange={handleChange}
                   />
                 </Form.Group>
-
                 <Form.Group className="mb-3">
                   <Form.Label>Remarks:</Form.Label>
                   <Form.Control
@@ -943,7 +862,6 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
                     onChange={handleChange}
                   />
                 </Form.Group>
-
                 <Button type="submit" variant="primary">
                   Save Findings
                 </Button>
@@ -955,5 +873,4 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
     </Container>
   );
 }
-
 export default PatientFindings;

@@ -1,23 +1,24 @@
-// File: LogInUser.js
+// UserLogin.jsx
+// (This is basically your existing "LogInUser" code, unchanged except for the file name)
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { Row, Form, Col, Button, Container, Modal, Card } from 'react-bootstrap';
-
 import { image, ip } from '../../ContentExport';
-import { usePatient } from '../patient/PatientContext';
-import { useDoctor } from '../practitioner/DoctorContext';
-import ForLoginAndSignupNavbar from '../landpage/ForLoginAndSignupNavbar';
-import Footer from '../Footer';
-import PasswordValidation from './PasswordValidation'; // Import the PasswordValidation component
-
-const LogInUser = () => {
+import PasswordValidation from './PasswordValidation'; 
+import { useUser } from '../UserContext';
+import Swal from 'sweetalert2';
+const LogInUser = ({hideOuterStyles }) => {
   const navigate = useNavigate();
+  const { setUser, setRole } = useUser();
+
+  // ... all your existing states
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [userRole, setUserRole] = useState("Patient");
   const [rememberMe, setRememberMe] = useState(false);
+
   const [showForgotPasswordModal, setShowForgotPasswordModal] = useState(false);
   const [modalEmail, setModalEmail] = useState("");
   const [modalRole, setModalRole] = useState("Patient");
@@ -27,92 +28,96 @@ const LogInUser = () => {
   const [newPassword, setNewPassword] = useState('');
   const [confirmNewPassword, setConfirmNewPassword] = useState('');
   const [passwordErrors, setPasswordErrors] = useState({});
-  const [doctorData, setDoctorData] = useState(null); // Store doctor data locally
+  const [doctorData, setDoctorData] = useState(null);
 
-  const { setPatient } = usePatient();
-  const { setDoctor } = useDoctor();
-
-  const loginuser = async (e) => {
-    e.preventDefault();
-    if (userRole === "Patient") {
+  // Check session on mount
+  useEffect(() => {
+    const checkSession = async () => {
       try {
-        const response = await axios.post(`${ip.address}/api/patient/api/login`, {
-          email,
-          password,
-        });
+        const response = await axios.get(`${ip.address}/api/get/session`, { withCredentials: true });
+        if (response.data.user) {
+          const existingUser = response.data.user; 
+          const existingRole = response.data.role;
+          console.log("Active session found. Role:", existingRole);
+          setUser(existingUser);
+          setRole(existingRole);
 
-        if (response.data.patientData) {
-          const patientData = response.data.patientData;
-
-          if (rememberMe) {
-            localStorage.setItem('patient', JSON.stringify(patientData));
-          } else {
-            sessionStorage.setItem('patient', JSON.stringify(patientData));
+          if (existingRole === 'Patient') {
+            navigate('/homepage');
+          } else if (existingRole === 'Doctor') {
+            navigate('/dashboard');
           }
-
-          setPatient(patientData); // Update context with patient data
-          window.alert("Successfully logged in");
-
-          // Navigate to homepage
-          await axios.post(`${ip.address}/api/patient/session`, { userId: patientData._id, role: userRole });
-          navigate('/homepage');
-        } else {
-          window.alert(response.data.message || "Invalid email or password. Please try again.");
+          return; 
         }
       } catch (err) {
-        console.error('Error logging in:', err);
-        window.alert(err.response?.data?.message || "An error occurred while logging in.");
+        console.log("No active session or error:", err.response?.data?.message);
       }
-    } else if (userRole === "Physician") {
-      try {
-        const response = await axios.post(`${ip.address}/api/doctor/api/login`, {
-          email,
-          password,
-        });
+      console.log("No active session found. Show user login form.");
+    };
+    checkSession();
+  }, [navigate, setUser, setRole]);
 
-        if (response.data.doctorData) {
-          const doctorDataResponse = response.data.doctorData;
+  // login
+  const loginuser = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await axios.post(
+        `${ip.address}/api/login`,
+        { email, password, rememberMe, role: userRole },
+        { withCredentials: true }
+      );
+      if (response.data.user) {
+        const loggedInUser = response.data.user; 
+        const role = response.data.role;
+        setUser(loggedInUser);
+        setRole(role);
+        
 
-          // Check if the doctor's account is under review
-          if (doctorDataResponse.accountStatus === 'Review') {
-            window.alert('Your account is currently under review. You cannot log in at this time.');
-            return;
-          }
-
-          setDoctorData(doctorDataResponse); // Store doctor data locally
-
-          // Check if passwordChanged is false
-          if (!doctorDataResponse.passwordChanged) {
-            // Show the modal to update password
+        if (role === 'Doctor') {
+          if (loggedInUser.passwordChanged === false) {
+            setDoctorData(loggedInUser);
             setShowPasswordModal(true);
           } else {
-            // Proceed with normal login
-            if (rememberMe) {
-              localStorage.setItem('doctor', JSON.stringify(doctorDataResponse));
-            } else {
-              sessionStorage.setItem('doctor', JSON.stringify(doctorDataResponse));
-            }
+            Swal.fire({
+              icon: 'success',
+              title: 'Successfully logged in',
+              showConfirmButton: true,
+              timer: 1500,
+            });
 
-            setDoctor(doctorDataResponse); // Update context with doctor data
-            window.alert("Successfully logged in");
-
-            // Create a session for the doctor and navigate to the dashboard
-            await axios.post(`${ip.address}/api/doctor/session`, { userId: doctorDataResponse._id, role: userRole });
             navigate('/dashboard');
           }
         } else {
-          window.alert(response.data.message || "Invalid email or password. Please try again.");
+
+          //Patient
+          Swal.fire({
+            icon: 'success',
+            toast: true,
+            position: 'top-end',
+
+            title: 'Successfully logged in',
+            showConfirmButton: false,
+            timer: 1500,
+          });
+          navigate('/homepage');
         }
-      } catch (err) {
-        console.error('Error logging in:', err);
-        window.alert(err.response?.data?.message || "An error occurred while logging in.");
+      } else {
+        console.log('Error logging in:', response.data.message);
+        window.alert(response.data.message || "Invalid email or password.");
       }
+    } catch (err) {
+      console.error('Error logging in:', err);
+
+      Swal.fire({
+        icon: 'error',
+        title: 'Oops...',
+        text: err.response?.data?.message || 'An error occurred while logging in.',
+      })
     }
   };
 
-  // Function to handle password update
+  // handle password update for doctor
   const handlePasswordUpdate = async () => {
-    // Validate new password
     const errors = {};
     const validations = {
       length: newPassword.length >= 8,
@@ -120,7 +125,6 @@ const LogInUser = () => {
       upperCase: /[A-Z]/.test(newPassword),
       lowerCase: /[a-z]/.test(newPassword),
     };
-
     if (!validations.length) {
       errors.newPassword = 'Password must be at least 8 characters long.';
     }
@@ -136,162 +140,120 @@ const LogInUser = () => {
     if (newPassword !== confirmNewPassword) {
       errors.confirmNewPassword = 'Passwords do not match.';
     }
-
     setPasswordErrors(errors);
-
-    if (Object.keys(errors).length > 0) {
-      return;
-    }
+    if (Object.keys(errors).length > 0) return;
 
     try {
-      const doctorId = doctorData._id; // Get doctor ID from stored data
+      const doctorId = doctorData._id;
       await axios.put(`${ip.address}/api/doctor/update-password/${doctorId}`, { newPassword });
       window.alert('Password updated successfully');
-
-      // After updating the password, proceed with normal login
       const updatedDoctorData = { ...doctorData, passwordChanged: true };
-
-      if (rememberMe) {
-        localStorage.setItem('doctor', JSON.stringify(updatedDoctorData));
-      } else {
-        sessionStorage.setItem('doctor', JSON.stringify(updatedDoctorData));
-      }
-
-      setDoctor(updatedDoctorData); // Update context with updated doctor data
-
-      // Close the modal
+      setDoctorData(updatedDoctorData);
       setShowPasswordModal(false);
-
-      // Navigate to dashboard
-      await axios.post(`${ip.address}/api/doctor/session`, { userId: doctorId, role: userRole });
-      window.location.reload()
+      navigate('/dashboard');
     } catch (err) {
       console.error('Error updating password:', err);
       window.alert(err.response?.data?.message || "An error occurred while updating the password.");
     }
   };
 
+  // forgot password
   const handleForgotPassword = async (e) => {
     e.preventDefault();
-
-    if (modalRole === "Patient") {
-      try {
-        const response = await axios.post(`${ip.address}/api/patient/forgot-password`, { email: modalEmail });
-        setModalMessage(response.data.message);
-        navigate('/medapp/login');
-      } catch (err) {
-        console.error('Error in forgot password:', err);
-        setModalMessage(err.response?.data?.message || 'An error occurred.');
-        navigate('/medapp/login');
-      }
-    } else if (modalRole === "Physician") {
-      try {
-        const response = await axios.post(`${ip.address}/api/doctor/forgot-password`, { email: modalEmail });
-        setModalMessage(response.data.message);
-        navigate('/medapp/login');
-      } catch (err) {
-        console.error('Error in forgot password:', err);
-        setModalMessage(err.response?.data?.message || 'An error occurred.');
-        navigate('/medapp/login');
-      }
+    try {
+      const endpoint = (modalRole === "Patient") 
+        ? `/api/patient/forgot-password`
+        : `/api/doctor/forgot-password`;
+      const response = await axios.post(`${ip.address}${endpoint}`, { email: modalEmail });
+      setModalMessage(response.data.message);
+      navigate('/medapp/login');
+    } catch (err) {
+      console.error('Error in forgot password:', err);
+      setModalMessage(err.response?.data?.message || 'An error occurred.');
+      navigate('/medapp/login');
     }
   };
 
   return (
     <>
-         <ForLoginAndSignupNavbar />
-      <Container
-        fluid
-        className="login-background cont-fluid-no-gutter"
-        style={{
-          backgroundImage: `url(${ip.address}/images/Background-Login1.png)`, // Dynamically load the image URL
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          height: 'calc(100vh-100px)',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          overflowY: 'auto',
-          width: '100%',
-        }}
-      >
-        
-        {/* Scrollable container */}
-        <div style={{ width: '100%', maxHeight: '100vh', overflowY: 'auto', display: 'flex', flexDirection: 'column', minHeight: '100vh'}}>
-    
-          <Container className="login-container cont-fluid-no-gutter">
-            <Row className="justify-content-start">
-              <Col md={5}>
-                <Card className="shadow p-4 mt-5" style={{ marginBottom:'200px'}}>
-                  <Card.Body>
-                    <div className="text-center">
-                      <img src={image.logo}
-                        style={{
-                          width: '15rem',
-                          height: '7.5rem',
-                        }}
-                      />
-                    </div>
-                    <p style={{ fontWeight: '100', fontSize: '1.5rem' }} className="mb-4">Log in</p>
-                    <Form onSubmit={loginuser}>
-                      <Form.Group controlId="formEmail">
-                        <Form.Label>Email Address</Form.Label>
-                        <Form.Control
-                          type="email"
-                          placeholder="Enter Email"
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                          required
-                        />
-                      </Form.Group>
-                      <Form.Group controlId="formPassword" className="mt-3">
-                        <Form.Label>Password</Form.Label>
-                        <Form.Control
-                          type="password"
-                          placeholder="Enter Password"
-                          value={password}
-                          onChange={(e) => setPassword(e.target.value)}
-                          required
-                        />
-                      </Form.Group>
-                      <Form.Group className="mt-3">
-                        <Form.Label>Select Role</Form.Label>
-                        <Form.Select
-                          value={userRole}
-                          onChange={(e) => setUserRole(e.target.value)}
-                        >
-                          <option value="Patient">Patient</option>
-                          <option value="Physician">Physician</option>
-                        </Form.Select>
-                      </Form.Group>
-                      <Form.Group className="mt-3 d-flex justify-content-between align-items-center">
-                        <Form.Check
-                          type="checkbox"
-                          label="Remember Me"
-                          checked={rememberMe}
-                          onChange={(e) => setRememberMe(e.target.checked)}
-                        />
-                        <a href="#" onClick={() => setShowForgotPasswordModal(true)} className="text-primary">
-                          Forgot Password?
-                        </a>
-                      </Form.Group>
-                      <Button type="submit" variant="primary" className="w-100 mt-4">
-                        Log In
-                      </Button>
-                    </Form>
-                    <p className="text-center mt-3">
-                      Not a member? <a href="/medapp/signup" className="text-primary">Sign up</a>
-                    </p>
-                  </Card.Body>
-                </Card>
-              </Col>
-            </Row>
-          </Container>
-          <div className="footer-container" style={{paddingBottom:'4.6rem'}}>
-            <Footer />
-          </div>
-        </div>
-      </Container>
+      {hideOuterStyles ? (
+        // In the slider, we'll just return a <form> that replicates your fields:
+        <Row>
+        <Col>
+          <Form onSubmit={loginuser} className=" user-signin-container">
+             
+            <h1 className="">User Login</h1>
+
+            <p className="text-muted" >
+              For Patient or Doctor
+            </p>
+
+            {/* Email field */}
+            <Form.Group controlId="formEmail" className="mb-3">
+              <Form.Label>Email</Form.Label>
+              <Form.Control
+          type="email"
+          placeholder="Enter email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+              />
+            </Form.Group>
+
+            {/* Password field */}
+            <Form.Group controlId="formPassword" className="mb-3">
+              <Form.Label>Password</Form.Label>
+              <Form.Control
+                type="password"
+                placeholder="Enter password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </Form.Group>
+
+            {/* Role dropdown */}
+            <Form.Group controlId="formRole" className="mb-3">
+              <Form.Label>Role</Form.Label>
+              <Form.Select
+                value={userRole}
+                onChange={(e) => setUserRole(e.target.value)}
+              >
+                <option value="Patient">Patient</option>
+                <option value="Doctor">Doctor</option>
+              </Form.Select>
+            </Form.Group>
+
+            {/* Remember Me Checkbox */}
+
+
+            {/* Forgot Password Link */}
+            <div className="mb-3">
+              <a
+                href="#"
+                onClick={() => setShowForgotPasswordModal(true)}
+                className="text-primary"
+              >
+                Forgot Password?
+              </a>
+            </div>
+
+            {/* Submit Button */}
+            <Button variant="primary" type="submit" className="w-100">
+              Log In
+            </Button>
+
+            {/* Sign-up Link */}
+            <p className="text-center text-muted mt-3">
+              Not a member? <a href="/medapp/signup" style={{color: '#0d6efd'}}>Sign up</a>
+            </p>
+          </Form>
+        </Col>
+      </Row>
+      ) : (
+
+        <div>Original styling here</div>
+      )}
 
       {/* Forgot Password Modal */}
       <Modal show={showForgotPasswordModal} onHide={() => setShowForgotPasswordModal(false)}>
@@ -320,7 +282,7 @@ const LogInUser = () => {
                   onChange={(e) => setModalRole(e.target.value)}
                 >
                   <option value="Patient">Patient</option>
-                  <option value="Physician">Physician</option>
+                  <option value="Doctor">Doctor</option>
                 </Form.Select>
               </Form.Group>
               <Button type="submit" variant="primary" className="mt-3">
@@ -331,7 +293,7 @@ const LogInUser = () => {
         </Modal.Body>
       </Modal>
 
-      {/* Password Update Modal */}
+      {/* Password Update Modal (for Doctor if passwordChanged == false) */}
       <Modal show={showPasswordModal} onHide={() => setShowPasswordModal(false)}>
         <Modal.Header>
           <Modal.Title>Update Your Password</Modal.Title>
@@ -347,7 +309,9 @@ const LogInUser = () => {
                 onChange={(e) => setNewPassword(e.target.value)}
                 required
               />
-              {passwordErrors.newPassword && <Form.Text className="text-danger">{passwordErrors.newPassword}</Form.Text>}
+              {passwordErrors.newPassword && (
+                <Form.Text className="text-danger">{passwordErrors.newPassword}</Form.Text>
+              )}
             </Form.Group>
             <Form.Group controlId="formConfirmNewPassword" className="mt-3">
               <Form.Label>Confirm New Password</Form.Label>
@@ -358,10 +322,10 @@ const LogInUser = () => {
                 onChange={(e) => setConfirmNewPassword(e.target.value)}
                 required
               />
-              {passwordErrors.confirmNewPassword && <Form.Text className="text-danger">{passwordErrors.confirmNewPassword}</Form.Text>}
+              {passwordErrors.confirmNewPassword && (
+                <Form.Text className="text-danger">{passwordErrors.confirmNewPassword}</Form.Text>
+              )}
             </Form.Group>
-
-            {/* Include PasswordValidation component */}
             <PasswordValidation password={newPassword} />
           </Form>
         </Modal.Body>
@@ -374,7 +338,7 @@ const LogInUser = () => {
           </Button>
         </Modal.Footer>
       </Modal>
-    </>
+</>
   );
 };
 

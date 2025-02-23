@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Table, Button, Container, Pagination, Form, Row, Col, Dropdown } from 'react-bootstrap';
 import axios from 'axios';
 import RescheduleModal from '../../../../practitioner/appointment/Reschedule Modal/RescheduleModal';
-
+import io from "socket.io-client";
 import { ThreeDots } from 'react-bootstrap-icons';
 import { ip } from '../../../../../ContentExport';
 import PatientFindingsModal from './modal/PatientFindingsModal';
@@ -18,7 +18,7 @@ function MedSecTodaysApp({ allAppointments, setAllAppointments }) {
   const [showRescheduleModal, setShowRescheduleModal] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [error, setError] = useState("");
-
+  const [socket] = useState(io(ip.address));
   // New state variables for findings modal
   const [showFindingsModal, setShowFindingsModal] = useState(false);
   const [selectedAppointmentForFindings, setSelectedAppointmentForFindings] = useState(null);
@@ -55,7 +55,24 @@ function MedSecTodaysApp({ allAppointments, setAllAppointments }) {
       .catch((error) => {
         console.log(error);
       });
-  }, []);
+    
+      socket.on('doctorStatusUpdate', (updatedDoctor) => {
+        setAllAppointments(prevAppointments => 
+          prevAppointments.map(appointment =>
+            appointment.doctor._id === updatedDoctor.doctorId
+              ? { ...appointment, doctor: { ...appointment.doctor, activityStatus: updatedDoctor.activityStatus } }
+              : appointment
+          )
+        );
+      });
+  
+      return () => {
+        socket.off('doctorStatusUpdate');
+      };
+
+  
+
+  }, [socket]);
 
   const handleConfirmReschedule = (rescheduledReason) => {
     const newStatus = {
@@ -86,20 +103,62 @@ function MedSecTodaysApp({ allAppointments, setAllAppointments }) {
 
   const todayDate = getTodayDate();
 
-  const handleUpdateStatus = (appointmentId, newStatus) => {
-    axios.put(`${ip.address}/api/appointments/${appointmentId}/status`, { status: newStatus })
-      .then((response) => {
-        setAllAppointments(prevAppointments =>
-          prevAppointments.map(appointment =>
-            appointment._id === appointmentId ? { ...appointment, status: newStatus } : appointment
+  const handleUpdateStatus = async (appointmentId, newStatus) => {
+    const appointment = allAppointments.find(app => app._id === appointmentId);
+  
+    if (!appointment) {
+      return console.log('Appointment not found');
+    }
+  
+    const doctorId = appointment.doctor?._id;
+    // If no doctorId is found, skip the socket emission part but still update the status
+    if (!doctorId) {
+      console.log('No doctor ID found, skipping status update for doctor.');
+    }
+  
+    try {
+      const response = await axios.put(
+        `${ip.address}/api/appointments/${appointmentId}/status`,
+        { status: newStatus }
+      );
+  
+      if (response.status === 200 && response.data) {
+        const updatedAppointment = response.data;
+  
+        // Update the state with the new status
+        setAllAppointments((prevAppointments) =>
+          prevAppointments.map((appointment) =>
+            appointment._id === appointmentId
+              ? { ...appointment, status: updatedAppointment.status }
+              : appointment
           )
         );
-      })
-      .catch((err) => {
-        console.error("Error updating status:", err);
-        setError("Failed to update the appointment status.");
-      });
+  
+        // Emit real-time update to change doctor's status only if doctorId exists
+        if (doctorId) {
+          if (newStatus === 'Ongoing') {
+            socket.emit('doctorStatusUpdate', {
+              doctorId,
+              activityStatus: 'In Session',
+            });
+          } else if (newStatus === 'Scheduled') {
+            socket.emit('doctorStatusUpdate', {
+              doctorId,
+              activityStatus: 'Online',
+            });
+          }
+        }
+  
+      } else {
+        throw new Error('Unexpected server response');
+      }
+    } catch (err) {
+      console.error("Error updating status:", err);
+      setError("Failed to update the appointment status.");
+    }
   };
+  
+  
 
   const getUniqueCategories = () => {
     const categories = allAppointments.flatMap(appointment => 

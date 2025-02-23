@@ -9,34 +9,34 @@ const PatientHistory = ({pid}) => {
     const [history, setHistory] = useState([]);
     const [error, setError] = useState(null);
     
-    const [openRecords, setOpenRecords] = useState({}); // Track which records are open
+    const [openRecords, setOpenRecords] = useState({}); 
     useEffect(() => {
         axios.get(`${ip.address}/api/patient/api/onepatient/${pid}`)
             .then((res) => {
-                console.log(res.data);  // Log the entire response to understand its structure
+                console.log(res.data);  
                 if (res.data && res.data.thePatient && Array.isArray(res.data.thePatient.patient_appointments)) {
                     // setPrescriptions(res.data.thePatient.patient_appointments);
                     setHistory(res.data.thePatient.patient_findings);
                     // setImmunization(res.data.thePatient.immunizations);
                 } else {
                     // setPrescriptions([]);
-                    setHistory([]);  // If data is not as expected, set to empty array
+                    setHistory([]); 
                 }
             })
             .catch((err) => {
                 console.log(err);
                 setError('Failed to fetch prescriptions');
-                // setPrescriptions([]);  // In case of error, set to empty array
+                // setPrescriptions([]);  
             });
     }, [pid]);
 
 
-    // Sort the history by date in descending order (recent first)
+    
     const sortedHistory = [...history].sort(
         (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
     );
 
-    // Toggle the collapse for each record
+
     const toggleCollapse = (id) => {
         setOpenRecords((prevState) => ({
             ...prevState,

@@ -28,7 +28,7 @@ function PatientEditModal({ patient, show, handleClose, handleUpdate }) {
       try {
         const [patientResponse, doctorResponse] = await Promise.all([
           axios.get(`${ip.address}/api/patient/getallemails`),
-          axios.get(`${ip.address}/api/doctors/getallemails`)
+          axios.get(`${ip.address}/api/doctor/getallemails`)
         ]);
 
         const validEmails = [

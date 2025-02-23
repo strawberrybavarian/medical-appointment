@@ -60,7 +60,8 @@ const NewSignUp = () => {
 
   const [regions, setRegions] = useState([]);
   const [provinces, setProvinces] = useState([]);
-  const [cities, setCities] = useState([]);
+  const [cities, setCities] = useState([]); // Ensure it's an empty array by default
+
   const [barangays, setBarangays] = useState([]);
 
   const [selectedRegionCode, setSelectedRegionCode] = useState(null);
@@ -113,7 +114,7 @@ const NewSignUp = () => {
     // Fetch Regions on component mount
     const fetchRegions = async () => {
       try {
-        const response = await axios.get("https://psgc.gitlab.io/api/regions/");
+        const response = await axios.get(`${ip.address}/api/regions` );
         setRegions(response.data);
       } catch (error) {
         console.error("Error fetching regions:", error);
@@ -127,16 +128,14 @@ const NewSignUp = () => {
     if (selectedRegionCode) {
       const fetchProvincesOrCities = async () => {
         try {
-          const response = await axios.get(
-            `https://psgc.gitlab.io/api/regions/${selectedRegionCode.value}/provinces/`
-          );
+          const response = await axios.get(`${ip.address}/api/regions/${selectedRegionCode.value}/provinces/`);
           const provincesData = response.data;
           setProvinces(provincesData);
           setCities([]); // Reset cities
           setBarangays([]); // Reset barangays
           setSelectedProvinceCode(null); // Reset selected province
           setSelectedCityMunCode(null); // Reset selected city
-
+  
           if (provincesData.length > 0) {
             // Region has provinces
             setPatientAddress((prevAddress) => ({
@@ -149,7 +148,7 @@ const NewSignUp = () => {
           } else {
             // Region has no provinces (e.g., NCR), fetch cities/municipalities directly
             const citiesResponse = await axios.get(
-              `https://psgc.gitlab.io/api/regions/${selectedRegionCode.value}/cities-municipalities/`
+              `${ip.address}/api/regions/${selectedRegionCode.value}/cities-municipalities/`
             );
             setCities(citiesResponse.data);
             setPatientAddress((prevAddress) => ({
@@ -164,7 +163,7 @@ const NewSignUp = () => {
           console.error("Error fetching provinces or cities:", error);
         }
       };
-
+  
       fetchProvincesOrCities();
     } else {
       setProvinces([]);
@@ -188,7 +187,7 @@ const NewSignUp = () => {
       const fetchCities = async () => {
         try {
           const response = await axios.get(
-            `https://psgc.gitlab.io/api/provinces/${selectedProvinceCode.value}/cities-municipalities/`
+            `${ip.address}/api/regions/${selectedRegionCode.value}/cities-municipalities/`
           );
           setCities(response.data);
           setBarangays([]); // Reset barangays
@@ -203,24 +202,8 @@ const NewSignUp = () => {
           console.error("Error fetching cities/municipalities:", error);
         }
       };
-
+  
       fetchCities();
-    } else if (provinces.length === 0 && selectedRegionCode) {
-      // If no provinces, we have already fetched cities in the previous effect
-      setPatientAddress((prevAddress) => ({
-        ...prevAddress,
-        province: "",
-      }));
-    } else {
-      setCities([]);
-      setBarangays([]);
-      setSelectedCityMunCode(null);
-      setPatientAddress((prevAddress) => ({
-        ...prevAddress,
-        province: "",
-        city: "",
-        barangay: "",
-      }));
     }
   }, [selectedProvinceCode]);
 
@@ -230,7 +213,7 @@ const NewSignUp = () => {
       const fetchBarangays = async () => {
         try {
           const response = await axios.get(
-            `https://psgc.gitlab.io/api/cities-municipalities/${selectedCityMunCode.value}/barangays/`
+            `${ip.address}/api/cities-municipalities/${selectedCityMunCode.value}/barangays/`
           );
           setBarangays(response.data);
           setPatientAddress((prevAddress) => ({
@@ -242,7 +225,7 @@ const NewSignUp = () => {
           console.error("Error fetching barangays:", error);
         }
       };
-
+  
       fetchBarangays();
     } else {
       setBarangays([]);
@@ -654,7 +637,7 @@ const NewSignUp = () => {
                           <Select
                             options={regions.map((region) => ({
                               value: region.code,
-                              label: `${region.code} - ${region.regionName}`,
+                              label: `${region.regionName}`,
                             }))}
                             onChange={(selectedOption) => {
                               setSelectedRegionCode(selectedOption);
@@ -681,7 +664,7 @@ const NewSignUp = () => {
                             <Select
                               options={provinces.map((province) => ({
                                 value: province.code,
-                                label: `${province.code} - ${province.name}`,
+                                label: ` ${province.name}`,
                               }))}
                               onChange={(selectedOption) => {
                                 setSelectedProvinceCode(selectedOption);
@@ -710,25 +693,24 @@ const NewSignUp = () => {
                         <Form.Group as={Col}>
                           <Form.Label>City/Municipality</Form.Label>
                           <Select
-                            options={cities.map((city) => ({
+                            options={Array.isArray(cities) ? cities.map((city) => ({
                               value: city.code,
-                              label: `${city.code} - ${city.name}`,
-                            }))}
+                              label: ` ${city.name}`,
+                            })) : []} // Only map if cities is an array
                             onChange={(selectedOption) => {
                               setSelectedCityMunCode(selectedOption);
                             }}
                             onBlur={() =>
                               handleBlur(
                                 "city",
-                                selectedCityMunCode
-                                  ? selectedCityMunCode.label
-                                  : ""
+                                selectedCityMunCode ? selectedCityMunCode.label : ""
                               )
                             }
                             value={selectedCityMunCode}
                             placeholder="Select City/Municipality"
                             isSearchable
                           />
+
                           {errors.city && (
                             <Form.Text className="text-danger">
                               {errors.city}
@@ -740,7 +722,7 @@ const NewSignUp = () => {
                           <Select
                             options={barangays.map((barangay) => ({
                               value: barangay.name,
-                              label: `${barangay.code} - ${barangay.name}`,
+                              label: ` ${barangay.name}`,
                             }))}
                             onChange={(selectedOption) => {
                               setPatientAddress((prevAddress) => ({

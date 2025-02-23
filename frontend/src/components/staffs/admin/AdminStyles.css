@@ -52,6 +52,11 @@
   }
   .ad-container{
     padding-top: 4.5rem;
+    overflow: visible !important;
+  }
+
+  .dropdown-menu {
+    z-index: 1050 !important; /* Bootstrap default is 1050 */
   }
 
   .card-bar-chart{
@@ -69,6 +74,11 @@
     height: 500px;
   }
 
+  .pagination-custom {
+    margin-top: 1000px; /* Adjust the value for the desired gap */
+    padding-top: 100px;
+  }
+
 
 
   .chart-bar {
@@ -84,6 +94,13 @@
     width: 100%;
 
   }
+
+  .dropdown-menu {
+    max-height: 300px; /* Adjust as needed */
+    overflow-y: auto;
+    z-index: 1050; /* Ensure it renders above other elements */
+  }
+
   @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
   .font-style-poppins {
     font-family: 'Poppins', sans-serif !important;
@@ -95,3 +112,8 @@
   }
   
 
+  .ad-container,
+  .DataTable {
+    overflow: visible !important;
+    position: relative;
+  }

@@ -7,6 +7,7 @@ import NewsAnnouncement from '../../news/NewsAnnouncement';
 import AdminNavbar from '../navbar/AdminNavbar';
 import SidebarAdmin from '../sidebar/SidebarAdmin';
 import { Row, Col, Container } from 'react-bootstrap';
+import NewsList from './NewsList';
 
 function AdminNewsManagement() {
   const location = useLocation();
@@ -47,8 +48,10 @@ function AdminNewsManagement() {
         <AdminNavbar userId={userId} userName={userName} role={role} />
         <div style={announcementWrapperStyle}>
           <Container
+            fluid
             className="d-flex justify-content-center"
-            style={{ padding: '0 200px' }}
+            style={{width:'100%'}}
+
           >
             <Row>
               <Col>
@@ -58,6 +61,9 @@ function AdminNewsManagement() {
                   user_id={userId}
                   role={role}
                 />
+              </Col>
+              <Col>
+                <NewsList user_id={userId} role={role} />
               </Col>
             </Row>
           </Container>

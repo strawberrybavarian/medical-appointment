@@ -1,24 +1,28 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { Button, Container, Modal, Form, Dropdown } from 'react-bootstrap';
-import { ThreeDots } from 'react-bootstrap-icons';
+import { Button, Container, Modal, Form, Table, Pagination } from 'react-bootstrap';
+import { useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { ip } from '../../../../../ContentExport';
 import AdminNavbar from '../../navbar/AdminNavbar';
 import SidebarAdmin from '../../sidebar/SidebarAdmin';
-import DataTable from 'react-data-table-component';
+import { ThreeDots } from 'react-bootstrap-icons';
 import AddDoctorModal from './patientmodal/AddDoctorModal';
+import Select from 'react-select'; // Import react-select
+import ManageDoctorMain from '../../../medical secretary/components/Manage Doctors/ManageDoctorMain';
+
 function DoctorManagement() {
   const [doctors, setDoctors] = useState([]);
   const [selectedDoctor, setSelectedDoctor] = useState(null);
-  const [showModal, setShowModal] = useState(false);
+  const [showActionModal, setShowActionModal] = useState(false); // Separate state for action confirmation modal
+  const [showManageDoctorModal, setShowManageDoctorModal] = useState(false); // Separate state for manage doctor modal
   const [modalAction, setModalAction] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
-  const [showAddDoctorModal, setShowAddDoctorModal] = useState(false); // State for Add Doctor Modal
+  const [showAddDoctorModal, setShowAddDoctorModal] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [entriesPerPage, setEntriesPerPage] = useState(10);
   const location = useLocation();
   const { userId, userName, role } = location.state || {};
-  const handleShowAddDoctorModal = () => setShowAddDoctorModal(true);
-  const handleCloseAddDoctorModal = () => setShowAddDoctorModal(false);
+
   useEffect(() => {
     axios.get(`${ip.address}/api/doctor/api/alldoctor`)
       .then((result) => {
@@ -29,16 +33,22 @@ function DoctorManagement() {
       });
   }, []);
 
+  const handleShowAddDoctorModal = () => setShowAddDoctorModal(true);
+  const handleCloseAddDoctorModal = () => setShowAddDoctorModal(false);
+
   const handleShowModal = (doctor, action) => {
     setSelectedDoctor(doctor);
     setModalAction(action);
-    setShowModal(true);
+    if (action === 'manage') {
+      // If "Manage Schedule" is selected, show the ManageDoctorMain modal directly without confirmation
+      setShowManageDoctorModal(true);
+    } else {
+      setShowActionModal(true); // Show the action confirmation modal for register/deactivate actions
+    }
   };
 
-  const handleCloseModal = () => {
-    setShowModal(false);
-    setSelectedDoctor(null);
-  };
+  const handleCloseActionModal = () => setShowActionModal(false); // Close the action confirmation modal
+  const handleCloseManageDoctorModal = () => setShowManageDoctorModal(false); // Close the manage doctor modal
 
   const handleAction = () => {
     const status = modalAction === 'register' ? 'Registered' : 'Deactivated';
@@ -47,7 +57,7 @@ function DoctorManagement() {
         setDoctors(doctors.map(doc => 
           doc._id === selectedDoctor._id ? { ...doc, accountStatus: status } : doc
         ));
-        handleCloseModal();
+        handleCloseActionModal();
       })
       .catch((error) => {
         console.log(error);
@@ -60,55 +70,27 @@ function DoctorManagement() {
       .includes(searchTerm.toLowerCase())
   );
 
-  const columns = [
-    { name: '#', selector: (row, index) => index + 1, width: '50px' },
-    { 
-      name: 'Doctor Name', 
-      selector: row => `${row.dr_firstName} ${row.dr_middleInitial}. ${row.dr_lastName}`, 
-      sortable: true 
-    },
-    { name: 'Email', selector: row => row.dr_email || 'No Email', sortable: true },
-    { name: 'Specialty', selector: row => row.dr_specialty, sortable: true },
-    { name: 'Account Status', selector: row => row.accountStatus, sortable: true },
-    {
-      name: 'Actions',
-      cell: (row) => (
-        <Dropdown>
-          <Dropdown.Toggle variant="link" className="p-0">
-            <ThreeDots size={24} />
-          </Dropdown.Toggle>
+  // Pagination calculations
+  const indexOfLastEntry = currentPage * entriesPerPage;
+  const indexOfFirstEntry = indexOfLastEntry - entriesPerPage;
+  const currentEntries = filteredDoctors.slice(indexOfFirstEntry, indexOfLastEntry);
 
-          <Dropdown.Menu>
-            <Dropdown.Item
-              onClick={() => handleShowModal(row, 'register')}
-              disabled={row.accountStatus === 'Registered'}
-            >
-              Register
-            </Dropdown.Item>
-            <Dropdown.Item
-              onClick={() => handleShowModal(row, 'deactivate')}
-              disabled={row.accountStatus === 'Deactivated'}
-            >
-              Deactivate
-            </Dropdown.Item>
-          </Dropdown.Menu>
-        </Dropdown>
-      ),
-    },
-  ];
+  const pageNumbers = Array.from({ length: Math.ceil(filteredDoctors.length / entriesPerPage) }, (_, i) => i + 1);
 
   return (
     <div className="d-flex">
       <SidebarAdmin userId={userId} userName={userName} role={role} />
-      <div style={{ width: '100%' }}>
+      <Container fluid className='cont-fluid-no-gutter' style={{ width: '100%', height: '100vh', overflowY: 'auto' }}>
         <AdminNavbar userId={userId} userName={userName} role={role} />
-        <Container className="ad-container" style={{ height: 'calc(100vh - 56px)', overflowY: 'auto', padding: '20px' }}>
+        <Container fluid className="ad-container p-5" style={{ overflowY: 'hidden' }}>
           <h1>Doctor Management</h1>
 
           <Button variant="primary" onClick={handleShowAddDoctorModal} className="mb-3">
             Add Doctor
           </Button>
-          <Form.Group controlId="formDoctorSearch">
+
+          <Form.Group controlId="formDoctorSearch" className="mb-3">
+            <Form.Label>Search Doctors:</Form.Label>
             <Form.Control
               type="text"
               placeholder="Search doctors..."
@@ -117,28 +99,82 @@ function DoctorManagement() {
             />
           </Form.Group>
 
-          <DataTable
-            columns={columns}
-            data={filteredDoctors}
-            pagination
-            highlightOnHover
-            striped
-            responsive
-          />
-            <AddDoctorModal
+          {/* Scrollable Table */}
+          <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
+            <Table responsive striped variant="light">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Doctor Name</th>
+                  <th>Email</th>
+                  <th>Specialty</th>
+                  <th>Account Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {currentEntries.map((row, index) => {
+                  return (
+                    <tr key={row._id}>
+                      <td>{index + 1}</td>
+                      <td>{`${row.dr_firstName} ${row.dr_middleInitial}. ${row.dr_lastName}`}</td>
+                      <td>{row.dr_email || 'No Email'}</td>
+                      <td>{row.dr_specialty}</td>
+                      <td>{row.accountStatus}</td>
+                      <td>
+                        <Select
+                          options={[
+                            { label: 'Manage Schedule', value: 'manage' },
+                            { label: 'Register', value: 'register', isDisabled: row.accountStatus === 'Registered' },
+                            { label: 'Deactivate', value: 'deactivate', isDisabled: row.accountStatus === 'Deactivated' },
+                          ]}
+                          onChange={(selectedOption) => handleShowModal(row, selectedOption.value)}
+                          getOptionLabel={(e) => e.label}
+                          getOptionValue={(e) => e.value}
+                          className="react-select"
+                          classNamePrefix="select"
+                          isSearchable={false}
+                        />
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </Table>
+          </div>
+
+          {/* Pagination */}
+          <Pagination className="mt-3">
+            <Pagination.First onClick={() => setCurrentPage(1)} disabled={currentPage === 1} />
+            <Pagination.Prev onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))} disabled={currentPage === 1} />
+            {pageNumbers.map((number) => (
+              <Pagination.Item key={number} active={number === currentPage} onClick={() => setCurrentPage(number)}>
+                {number}
+              </Pagination.Item>
+            ))}
+            <Pagination.Next
+              onClick={() => setCurrentPage((prev) => Math.min(prev + 1, pageNumbers.length))}
+              disabled={currentPage === pageNumbers.length}
+            />
+            <Pagination.Last onClick={() => setCurrentPage(pageNumbers.length)} disabled={currentPage === pageNumbers.length} />
+          </Pagination>
+
+          <AddDoctorModal
             show={showAddDoctorModal}
             handleClose={handleCloseAddDoctorModal}
-            setDoctors={setDoctors} // Pass setDoctors to update the list after adding a new doctor
+            setDoctors={setDoctors}
           />
-          <Modal show={showModal} onHide={handleCloseModal}>
-            <Modal.Header closeButton>
+
+          {/* Action Confirmation Modal */}
+          <Modal show={showActionModal} onHide={handleCloseActionModal}>
+            <Modal.Header className='am-header' closeButton>
               <Modal.Title>Confirm Action</Modal.Title>
             </Modal.Header>
-            <Modal.Body>
+            <Modal.Body style={{ width: '100%' }}>  
               Are you sure you want to {modalAction} the doctor "{selectedDoctor?.dr_firstName} {selectedDoctor?.dr_lastName}"?
             </Modal.Body>
-            <Modal.Footer>
-              <Button variant="secondary" onClick={handleCloseModal}>
+            <Modal.Footer style={{ width: '100%' }}>
+              <Button variant="secondary" onClick={handleCloseActionModal}>
                 Cancel
               </Button>
               <Button 
@@ -149,8 +185,29 @@ function DoctorManagement() {
               </Button>
             </Modal.Footer>
           </Modal>
+
+          {/* Manage Doctor Modal */}
+          <Modal show={showManageDoctorModal} onHide={handleCloseManageDoctorModal} size="xl" backdrop="static">
+            <Modal.Header style={{ width: '100%' }} closeButton>
+              <Modal.Title >Manage Doctor</Modal.Title>
+            </Modal.Header>
+            <Modal.Body className="p-0" style={{ width: '100%' }}>
+              {selectedDoctor && (
+                <ManageDoctorMain
+                  did={selectedDoctor._id}
+                  showModal={true}
+                />
+              )}
+            </Modal.Body>
+            <Modal.Footer style={{ width: '100%' }}>
+              <Button variant="secondary" onClick={handleCloseManageDoctorModal}>
+                Close
+              </Button>
+            </Modal.Footer>
+          </Modal>
+
         </Container>
-      </div>
+      </Container>
     </div>
   );
 }

@@ -5,7 +5,7 @@ import RescheduleModal from '../../../../practitioner/appointment/Reschedule Mod
 import { Link } from 'react-router-dom';
 import { ip } from '../../../../../ContentExport';
 
-function SpecificDoctorAppointments({ did }) {
+function SpecificDoctorAppointments({ did, msid }) {
   const [appointments, setAppointments] = useState([]);
   const [filteredAppointments, setFilteredAppointments] = useState([]);
   const [selectedStatus, setSelectedStatus] = useState('All');

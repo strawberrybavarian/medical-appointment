@@ -21,6 +21,9 @@ function AssignAppointmentModal({ show, handleClose, appointmentId }) {
 
   const todayDate = new Date().toISOString().split("T")[0];
 
+
+
+  console.log('availability', availability)
   useEffect(() => {
     axios.get(`${ip.address}/api/doctor/api/alldoctor`)
       .then((res) => {
@@ -73,6 +76,7 @@ function AssignAppointmentModal({ show, handleClose, appointmentId }) {
     }
   }, [show, appointmentId, servicesLoaded]);
 
+
   useEffect(() => {
     if (selectedDoctor) {
       axios.get(`${ip.address}/api/doctor/${selectedDoctor.value}`)
@@ -83,7 +87,6 @@ function AssignAppointmentModal({ show, handleClose, appointmentId }) {
             label: service.name,
             category: service.category, // Include category
           }));
-          // Ensure selectedService is included in the options
           const isSelectedServiceInDoctorServices = doctorServices.some(service => service.value === selectedService?.value);
           if (!isSelectedServiceInDoctorServices && selectedService) {
             doctorServices.push(selectedService);
@@ -176,10 +179,10 @@ function AssignAppointmentModal({ show, handleClose, appointmentId }) {
 
   return (
     <Modal show={show} onHide={handleClose}>
-      <Modal.Header closeButton>
+      <Modal.Header style={{ width: '100%' }} closeButton>
         <Modal.Title>Assign Appointment</Modal.Title>
       </Modal.Header>
-      <Modal.Body>
+      <Modal.Body style={{ width: '100%' }}>
         <Form.Group className="mb-3">
           <Form.Label>Select Doctor (Optional)</Form.Label>
           <Select
@@ -244,7 +247,7 @@ function AssignAppointmentModal({ show, handleClose, appointmentId }) {
           </Form.Group>
         )}
       </Modal.Body>
-      <Modal.Footer>
+      <Modal.Footer style={{ width: '100%' }}>
         <Button variant="secondary" onClick={handleClose}>
           Close
         </Button>

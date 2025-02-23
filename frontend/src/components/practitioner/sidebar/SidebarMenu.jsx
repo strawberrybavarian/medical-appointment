@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from "react-router-dom";
 import './SidebarMenu.css';
@@ -6,9 +6,11 @@ import { CDBSidebar, CDBSidebarContent, CDBSidebarHeader, CDBSidebarMenu, CDBSid
 import { ip } from '../../../ContentExport';
 import LogoutModal from './LogoutModal'; // Import the LogoutModal component
 
+import { useUser } from '../../UserContext';
 const SidebarMenu = (props) => {
-    const [isLeftIcon, setIsLeftIcon] = useState(true);
-    const [showLogoutModal, setShowLogoutModal] = useState(false);
+    const {user, setUser} = useUser();
+    const [isLeftIcon, setIsLeftIcon] = React.useState(true);
+    const [showLogoutModal, setShowLogoutModal] = React.useState(false);
     const navigate = useNavigate();
 
     const toggleIcon = () => {
@@ -19,24 +21,35 @@ const SidebarMenu = (props) => {
         setShowLogoutModal(true); // Show the logout confirmation modal
     };
 
-    const confirmLogout = () => {
-        // Call the backend to set the doctor to offline and then navigate
-        axios.put(`${ip.address}/api/doctor/api/${props.did}/logout`)
-            .then(res => {
-                console.log('Doctor status updated to Offline');
-                setShowLogoutModal(false);
-                navigate('/'); // Navigate to the home page after updating the status
-            })
-            .catch(err => {
-                console.error('Error updating doctor status', err);
-                setShowLogoutModal(false);
-                navigate('/'); // Navigate even if there was an error, but you might want to handle this differently
-            });
-    };
+    const confirmLogout = async () => {
+        try {
+          await axios.post(`${ip.address}/api/logout`, {}, { withCredentials: true });
+          setUser(null); // Clear patient context
+          navigate('/medapp/login'); // Redirect to login page
+        } catch (error) {
+          console.error('Error logging out:', error);
+          alert('Failed to log out. Please try again.');
+        }
+      };
+
+
 
     const cancelLogout = () => {
-        setShowLogoutModal(false); // Close the modal without logging out
+        setShowLogoutModal(false);
     };
+
+    useEffect(() => {
+        const handleBeforeUnload = () => {
+            // Attempt to set the doctor offline when the tab is closed or refreshed
+            navigator.sendBeacon(`${ip.address}/api/doctor/api/${props.did}/logout`);
+        };
+
+        window.addEventListener('beforeunload', handleBeforeUnload);
+
+        return () => {
+            window.removeEventListener('beforeunload', handleBeforeUnload);
+        };
+    }, [props.did]);
 
     return (
         <>
@@ -59,7 +72,6 @@ const SidebarMenu = (props) => {
                                 icon="calendar-alt"> 
                                 My Patient 
                             </CDBSidebarMenuItem>
-                            <CDBSidebarMenuItem className="font-style-poppins sbm-item" icon="bell"> Notification </CDBSidebarMenuItem>
                             <CDBSidebarMenuItem className="font-style-poppins sbm-item" icon="user" onClick={() => navigate(`/account`, { state: { did: props.did } })}> Account Information </CDBSidebarMenuItem>
                             <CDBSidebarMenuItem className="font-style-poppins sbm-item" icon="arrow-left" onClick={handleLogout}> Log Out </CDBSidebarMenuItem> 
                         </CDBSidebarMenu>
@@ -68,7 +80,6 @@ const SidebarMenu = (props) => {
                 </CDBSidebar>
             </div>
 
-            {/* Use the LogoutModal component */}
             <LogoutModal 
                 show={showLogoutModal} 
                 onCancel={cancelLogout} 

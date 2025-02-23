@@ -1,4 +1,6 @@
-const express = require("express");
+// server.js
+
+const express = require('express');
 const app = express();
 const port = 8000;
 const path = require('path');
@@ -7,41 +9,57 @@ const session = require('express-session');
 const http = require('http');
 const server = http.createServer(app); // Use this server for Socket.IO
 require('dotenv').config();
+const MongoStore = require('connect-mongo');
 
 
 
-const ChatMessage = require('./chat/chat_model');
-const Patient = require('./patient/patient_model');
-const MedicalSecretary = require('./medicalsecretary/medicalsecretary_model');
-const Admin = require('./admin/admin_model');
-const Notification = require('./notifications/notifications_model');
-const Appointment = require('./appointments/appointment_model');
-const News = require('./news/news_model');
 
+// Initialize Socket.IO
 const socket = require('./socket'); // Import the socket module
 socket.init(server); // Initialize Socket.IO with the server
 
+// Import the scheduler after initializing Socket.IO
+require('./appointments/scheduler');
 
+app.use(
+  session({
+    secret: 'session_secret_key', // Secure key
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+    },
+    store: MongoStore.create({
+      mongoUrl: 'mongodb://localhost:27017/PIMSdb', // MongoDB connection
+      ttl: 30 * 24 * 60 * 60, // Session expiry in seconds
+    }),
+  })
+);
 
-
-app.use(session({
-  secret: 'your_secret_key',
-  resave: false,
-  saveUninitialized: true,
-  cookie: {
-    maxAge: 24 * 60 * 60 * 1000
-  }
-}));
-
-require("./config/mongoose");
-
+// Connect to MongoDB
+require('./config/mongoose');
+//FrontendOrigins
+const allowedOrigins = ['http://localhost:3000','https://psgc.gitlab.io'];
 // CORS Configuration
 const cors = require('cors');
-app.use(cors({
-    origin: '*',
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Only allow specific origins, or allow when origin is null (e.g., server-to-server requests)
+      if (allowedOrigins.includes(origin) || !origin) {
+        callback(null, true); // Allow the request
+      } else {
+        callback(new Error('Not allowed by CORS'), false); // Block the request
+      }
+    },
+    credentials: true, // Allow credentials (cookies, authorization headers, etc.)
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization']
-}));
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  })
+);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -59,44 +77,41 @@ app.use('/images', express.static(path.join(__dirname, 'services', 'images')));
 
 app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 
-app.use('/uploads', cors({
-    origin: '*',
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true
-}), express.static(path.join(__dirname, 'public/uploads')));
+
 
 app.get('/uploads/:filename', (req, res) => {
-    const fileName = req.params.filename;
-    const filePath = path.join(__dirname, 'public/uploads', fileName);
+  const fileName = req.params.filename;
+  const filePath = path.join(__dirname, 'public/uploads', fileName);
 
-    if (fs.existsSync(filePath)) {
-        res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Disposition', `inline; filename="${fileName}"`);
-        const fileStream = fs.createReadStream(filePath);
-        fileStream.pipe(res);
-    } else {
-        res.status(404).send('File not found.');
-    }
+  if (fs.existsSync(filePath)) {
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `inline; filename="${fileName}"`);
+    const fileStream = fs.createReadStream(filePath);
+    fileStream.pipe(res);
+  } else {
+    res.status(404).send('File not found.');
+  }
 });
 
 app.use(express.static(path.join(__dirname, '../frontend/public')));
 
+const UserRoutes = require('./user/user_routes');
+UserRoutes(app);
 // Route Imports
-const DoctorRoutes = require("./doctor/doctor_routes");
+const DoctorRoutes = require('./doctor/doctor_routes');
 DoctorRoutes(app);
-const PatientRoutes = require("./patient/patient_routes");
+const PatientRoutes = require('./patient/patient_routes');
 PatientRoutes(app);
-const MedicalSecretaryRoutes = require("./medicalsecretary/medicalsecretary_routes");
+const MedicalSecretaryRoutes = require('./medicalsecretary/medicalsecretary_routes');
 MedicalSecretaryRoutes(app);
-const CashierRoutes = require("./cashier/cashier_routes");
+const CashierRoutes = require('./cashier/cashier_routes');
 CashierRoutes(app);
 const AdminRoutes = require('./admin/admin_routes');
 AdminRoutes(app);
 
-const FindingsRoutes = require("./findings/findings_routes");
+const FindingsRoutes = require('./findings/findings_routes');
 FindingsRoutes(app);
-const PrescriptionRoutes = require("./prescription/prescription_routes");
+const PrescriptionRoutes = require('./prescription/prescription_routes');
 PrescriptionRoutes(app);
 const AppointmentRoutes = require('./appointments/appointment_routes');
 AppointmentRoutes(app);
@@ -116,6 +131,9 @@ const HmoRoutes = require('./hmo/hmo_routes');
 HmoRoutes(app);
 const ChatRoutes = require('./chat/chat_routes');
 ChatRoutes(app);
+const ProxyRoutes = require('./proxy/proxyRoutes');
+ProxyRoutes(app);
+
 
 // Serve frontend
 app.get('*', (req, res) => {

@@ -7,17 +7,18 @@ import CreateServiceForm from '../Services/CreateServiceForm';
 import CreateAppointment from '../Add Patient/New Appointment/CreateAppointment';
 import { useLocation } from 'react-router-dom';
 import MedSecNavbar from '../../navbar/MedSecNavbar';
+import PastAppointmentsModal from './PastAppointmentsModal'; 
 
 function MedSecAllPatient() {
   const [patients, setPatients] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedPatient, setSelectedPatient] = useState(null);
+
   const [showAppointmentModal, setShowAppointmentModal] = useState(false);
   const [showServiceModal, setShowServiceModal] = useState(false);
-  const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const patientsPerPage = 10; // Adjust the number of patients displayed per page
-
+  const [selectedPatient, setSelectedPatient] = useState(null);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
   const location = useLocation();
   const { userId } = location.state || {};
 
@@ -51,15 +52,6 @@ function MedSecAllPatient() {
     setSelectedPatient(null);
   };
 
-  const handleViewDetails = (patient) => {
-    setSelectedPatient(patient);
-    setShowDetailsModal(true);
-  };
-
-  const handleCloseDetailsModal = () => {
-    setShowDetailsModal(false);
-    setSelectedPatient(null);
-  };
 
   // Filter patients based on search term
   const filteredPatients = patients.filter((patient) => {
@@ -77,6 +69,15 @@ function MedSecAllPatient() {
   // Pagination handler
   const handlePageChange = (pageNumber) => setCurrentPage(pageNumber);
 
+  const handleViewDetails = (patient) => {
+    setSelectedPatient(patient);
+    setShowDetailsModal(true);
+  };
+
+  const handleCloseDetailsModal = () => {
+    setShowDetailsModal(false);
+    setSelectedPatient(null);
+  };
   return (
     <Container className="cont-fluid-no-gutter" fluid style={{ overflowY: 'scroll', height: '100vh'}}>
       <MedSecNavbar msid={userId} />
@@ -192,6 +193,17 @@ function MedSecAllPatient() {
         show={showDetailsModal}
         handleClose={handleCloseDetailsModal}
       /> */}
+
+<Container>
+      {/* Other components and table */}
+      
+      {/* View Past Appointments Modal */}
+      <PastAppointmentsModal
+        patientId={selectedPatient?._id}
+        show={showDetailsModal}
+        onClose={handleCloseDetailsModal}
+      />
+    </Container>
     </Container>
   );
 }

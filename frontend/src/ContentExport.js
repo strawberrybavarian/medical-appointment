@@ -1,3 +1,5 @@
+import axios from "axios";
+
 const image = {
     // logo: "https://medical-appointment-qiih.onrender.com/images/Molino-Polyclinic-Logo.png",
     logo: "http://localhost:8000/images/Molino-Polyclinic-Logo.png",
@@ -10,6 +12,11 @@ const ip ={
     address: 'http://localhost:8000'
 
 };
+
+axios.defaults.baseURL = ip.address;
+axios.defaults.withCredentials = true;
+
+
 
 const specialties = [
     "Neurology",

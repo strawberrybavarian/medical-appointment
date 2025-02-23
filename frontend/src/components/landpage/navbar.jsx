@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Navbar, Nav, Container, Button, Dropdown } from "react-bootstrap";
 import "./Landing.css";
-import "./navbar.css";
+
 import { image } from "../../ContentExport";
 import LabResultModal from "./LabResultModal"; // Import the LabResultModal component
 
@@ -76,22 +76,13 @@ function NavigationalBar({ scrollToServices, scrollToAbout, scrollToNews }) {
               >
                 Lab Result
               </Button>
-
-              <Button className="button1 ms-3" onClick={onSignUpClick}>
-                Sign Up
+              <Button className="button1 ms-3" onClick={onMemberLoginClick}>
+                Log In
               </Button>
-              <Dropdown className="ms-3" autoClose="outside">
-                <Dropdown.Toggle as={Button} variant="primary" id="dropdown-basic">
-                  Login
-                </Dropdown.Toggle>
-
-                <Dropdown.Menu className="login-dropdown-menu">
-                  <Dropdown.Item onClick={onMemberLoginClick}>
-                    Doctor & Patient
-                  </Dropdown.Item>
-                  <Dropdown.Item onClick={onStaffLoginClick}>Staffs</Dropdown.Item>
-                </Dropdown.Menu>
-              </Dropdown>
+              <Nav.Link className="button1 ms-3" onClick={onSignUpClick}>
+                Sign Up
+              </Nav.Link>
+              
             </Nav>
           </Navbar.Collapse>
           </Container>
