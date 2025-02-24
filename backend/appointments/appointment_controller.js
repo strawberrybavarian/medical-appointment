@@ -183,7 +183,7 @@ const createAppointment = async (req, res) => {
       type: 'Appointment',
       recipientType: 'Admin',
     });
-
+ 
     const notificationMedsec = new Notification({
       message: notificationMessage,
       receiver: recipients,

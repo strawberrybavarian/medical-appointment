@@ -21,11 +21,11 @@ function PatientNavBar({ pid }) {
   const socketRef = useRef();
   const location = useLocation();
   useEffect(() => {
-    if(!pid){
+    if (!pid) {
       navigate('/medapp/login');
     }
   }, [pid, navigate]);
- 
+
   // Initialize socket.io client
   useEffect(() => {
     socketRef.current = io(ip.address);
@@ -126,18 +126,6 @@ function PatientNavBar({ pid }) {
     }
   };
 
-  // const onClickHomepage = () => {
-  //   navigate(`/homepage`, { state: { pid: patient._id } });
-  // };
-
-  // const onButtonContainerClick = () => {
-  //   navigate(`/choosedoctor`, { state: { pid: patient._id } });
-  // };
-
-  // const MyAppointment = () => {
-  //   navigate(`/myappointment`, { state: { pid: patient._id } });
-  // };
-
   const toggleNotifications = () => {
     setShowNotifications(!showNotifications);
   };
@@ -145,16 +133,16 @@ function PatientNavBar({ pid }) {
   const markAsRead = async (notification) => {
     try {
       if (notification.link) {
-        navigate(notification.link, { state: { pid } }); // Pass pid in state
+        navigate(notification.link, { state: { pid } });
       }
-  
+
       if (!notification._id) {
         console.error('Notification ID is undefined');
         return;
       }
-  
+
       await axios.put(`${ip.address}/api/notifications/${notification._id}/read`);
-  
+
       setNotifications((prevNotifications) =>
         prevNotifications.map((notif) =>
           notif._id === notification._id ? { ...notif, isRead: true } : notif
@@ -191,7 +179,7 @@ function PatientNavBar({ pid }) {
 
   return (
     <Navbar
-      
+
       expand="md"
       className="nav-bar-no-color navbar-fixed-top fixed-top px-5 py-0"
       style={{ zIndex: '2' }}
@@ -203,67 +191,66 @@ function PatientNavBar({ pid }) {
 
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar-nav" className="justify-content-end">
-        <Nav>
-          <Nav.Link
-            as={Link}
-            to={{ pathname: `/homepage`, state: { pid: user._id } }}
-            className={`pnb-nav-link ${location.pathname === '/homepage' ? 'active' : ''}`}
-          >
-            Home
-          </Nav.Link>
-          <Nav.Link
-            as={Link}
-            to={{ pathname: `/myappointment`, state: { pid: user._id } }}
-            className={`pnb-nav-link ${location.pathname === '/myappointment' ? 'active' : ''}`}
-          >
-            My Appointments
-          </Nav.Link>
-          <Nav.Link
-            as={Link}
-            to={{ pathname: `/choosedoctor`, state: { pid: user._id } }}
-            className={`pnb-nav-link ${location.pathname === '/choosedoctor' ? 'active' : ''}`}
-          >
-            Choose Doctor
-          </Nav.Link>
-        </Nav>
+          <Nav>
+            <Nav.Link
+              as={Link}
+              to={{ pathname: `/homepage`, state: { pid: user._id } }}
+              className={`pnb-nav-link ${location.pathname === '/homepage' ? 'active' : ''}`}
+            >
+              Home
+            </Nav.Link>
+            <Nav.Link
+              as={Link}
+              to={{ pathname: `/myappointment`, state: { pid: user._id } }}
+              className={`pnb-nav-link ${location.pathname === '/myappointment' ? 'active' : ''}`}
+            >
+              My Appointments
+            </Nav.Link>
+            <Nav.Link
+              as={Link}
+              to={{ pathname: `/choosedoctor`, state: { pid: user._id } }}
+              className={`pnb-nav-link ${location.pathname === '/choosedoctor' ? 'active' : ''}`}
+            >
+              Choose Doctor
+            </Nav.Link>
+          </Nav>
 
           <Nav>
-          <Nav.Link onClick={toggleNotifications} className="position-relative">
-  <Bell size={20} className={unreadCount > 0 ? 'sway' : ''} /> {/* Apply sway class when unread messages */}
-  {unreadCount > 0 && (
-    <span className="notification-dot"></span>
-  )}
-  {showNotifications && (
-    <div className="notification-overlay">
-      {notifications.length > 0 ? (
-        notifications.map((notification, index) => (
-          <div
-            key={notification._id}
-            className={`notification-item ${
-              !notification.isRead ? 'unread' : 'read'
-            }`}
-            onClick={(e) => {
-              e.preventDefault();
-              markAsRead(notification);
-            }}
-          >
-            <span className="notification-circle">
-              {notification.isRead ? (
-                <span className="circle read"></span>
-              ) : (
-                <span className="circle unread"></span>
+            <Nav.Link onClick={toggleNotifications} className="position-relative">
+              <Bell size={20} className={unreadCount > 0 ? 'sway' : ''} /> {/* Apply sway class when unread messages */}
+              {unreadCount > 0 && (
+                <span className="notification-dot"></span>
               )}
-            </span>
-            <span className="notification-message">{notification.message}</span>
-            {index < notifications.length - 1 && <hr />}
-          </div>
-        ))
-      ) : (
-        <div>No new notifications</div>
-      )}
-    </div>
-  )}
-</Nav.Link>
+              {showNotifications && (
+                <div className="notification-overlay">
+                  {notifications.length > 0 ? (
+                    notifications.map((notification, index) => (
+                      <div
+                        key={notification._id}
+                        className={`notification-item ${!notification.isRead ? 'unread' : 'read'
+                          }`}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          markAsRead(notification);
+                        }}
+                      >
+                        <span className="notification-circle">
+                          {notification.isRead ? (
+                            <span className="circle read"></span>
+                          ) : (
+                            <span className="circle unread"></span>
+                          )}
+                        </span>
+                        <span className="notification-message">{notification.message}</span>
+                        {index < notifications.length - 1 && <hr />}
+                      </div>
+                    ))
+                  ) : (
+                    <div>No new notifications</div>
+                  )}
+                </div>
+              )}
+            </Nav.Link>
 
 
 

@@ -446,7 +446,7 @@ const createGeneralNotification = async (req, res) => {
       }
 
       // Store the new password in plain text (not recommended for production)
-      medsec.password = newPassword;
+      medsec.ms_password = newPassword;
       medsec.status = 'registered';
       await medsec.save();
 

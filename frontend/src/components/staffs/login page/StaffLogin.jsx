@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { Row, Form, Col, Button, Container } from 'react-bootstrap';
@@ -6,7 +6,7 @@ import CreateStaffModal from './CreateStaffModal';
 import AdminPasswordModal from './AdminPasswordModal'; 
 import { ip } from '../../../ContentExport';
 import { useUser } from '../../UserContext';
-
+import Swal from 'sweetalert2';
 const StaffLogin = ({ hideOuterStyles }) => {
   const navigate = useNavigate();
   const { setUser, setRole } = useUser();
@@ -18,6 +18,35 @@ const StaffLogin = ({ hideOuterStyles }) => {
   const [errorMessage, setErrorMessage] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
+
+
+
+  useEffect(() => {
+    const checkSession = async () => {
+      try {
+        const response = await axios.get(`${ip.address}/api/get/session`, { withCredentials: true });
+        if (response.data.user) {
+          const existingUser = response.data.user; 
+          const existingRole = response.data.role;
+          console.log("Active session found. Role:", existingRole);
+          setUser(existingUser);
+          setRole(existingRole);
+
+          if (existingRole === 'Medical Secretary') {
+            navigate('/medsec/dashboard');
+          } else if (existingRole === 'Admin') {
+            navigate('/admin/dashboard/patient');
+          }
+          return; 
+        }
+      } catch (err) {
+        console.log("No active session or error:", err.response?.data?.message);
+      }
+      console.log("No active session found. Show user login form.");
+    };
+    checkSession();
+  }, [navigate, setUser, setRole]);
+
 
   const handleLogIn = async (e) => {
     e.preventDefault();
@@ -95,9 +124,11 @@ const StaffLogin = ({ hideOuterStyles }) => {
         setErrorMessage("Invalid response from the server.");
       }
     } catch (err) {
-      console.error('Error logging in:', err);
-      setErrorMessage(err.response?.data?.message || "An error occurred while logging in.");
-    }
+      Swal.fire({
+        icon: 'error',
+        title: 'Oops...',
+        text: err.response?.data?.message || 'An error occurred while logging in.',
+      });    }
   };
 
   const handleModalClose = () => {

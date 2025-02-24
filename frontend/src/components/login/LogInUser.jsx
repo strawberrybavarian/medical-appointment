@@ -99,7 +99,6 @@ const LogInUser = ({hideOuterStyles }) => {
         }
       }
     } catch (err) {
-      console.error('Error logging in:', err);
       Swal.fire({
         icon: 'error',
         title: 'Oops...',
