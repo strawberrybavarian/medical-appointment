@@ -2270,11 +2270,12 @@ transform: scale(1.1); /* Slightly larger on hover */
   background-color: #f0f0f0;
   overflow: hidden;
   flex-direction: row; /* Default for larger screens */
+  
 }
 
 /* Patient List Section */
 .patient-list {
-  width: 25%; /* Default width for patient list on larger screens */
+  width: 250px; /* Default width for patient list on larger screens */
   background-color: #fff;
   border-right: 1px solid #ddd;
   overflow-y: auto;
@@ -2283,6 +2284,7 @@ transform: scale(1.1); /* Slightly larger on hover */
 /* Chat Box */
 .chat-box {
   flex: 1;
+  width: 100vw;
   display: flex;
   flex-direction: column;
   background-color: #fff;
@@ -2361,7 +2363,7 @@ transform: scale(1.1); /* Slightly larger on hover */
   position: fixed;
   bottom: 150px;
   right: 60px;
-  width: 35%; /* Default for larger screens */
+  width: 50%; /* Default for larger screens */
   height: 650px;
   background-color: white;
   border-radius: 12px;
@@ -2371,7 +2373,74 @@ transform: scale(1.1); /* Slightly larger on hover */
   z-index: 1060;
   overflow: hidden;
 }
+@media (max-width: 1024px) {
+  .chat-container {
+    flex-direction: column; /* Stack vertically */
+    height: 100vh; /* Take full screen height */
+    overflow-y: scroll;
+  }
 
+  .patient-list {
+    width: 100%; /* Full width on mobile */
+    border-right: none; /* Remove right border */
+    border-bottom: 1px solid #ddd; /* Add bottom border instead */
+  }
+
+  .chat-overlay {
+    bottom: 100;
+    right: 10%;
+    width: 80%; /* Fu9\ll width on mobile */
+    /* Full height on mobile */
+    border-radius: 0; /* Remove border radius for fullscreen view */
+    padding: 10px; /* Add padding to allow for close button */
+  }
+
+  /* Add some padding/margin so the close button is visible */
+  .chat-overlay::before {
+    content: '';
+    display: block;
+    height: 50px; /* Space at the top to see close button */
+    width: 100%;
+  }
+
+  .message {
+    max-width: 100%; /* Increase message width for mobile */
+  }
+
+  .message-input {
+    display: flex;
+    border-top: 1px solid #ddd;
+    padding: 10px;
+    background-color: #f7f7f7;
+  }
+
+  .message-input input {
+    flex: 1;
+    border: none;
+    padding: 10px;
+    border-radius: 8px;
+    margin-right: 10px;
+    background-color: #fff;
+  }
+
+  .chat-btn-container {
+    bottom: 20px; /* Adjust position on mobile */
+    right: 20px;
+  }
+
+  .message-input button {
+    border: none;
+    background-color: #007bff;
+    color: white;
+    border-radius: 8px;
+    height: 85%;
+    padding: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+
+  }
+}
 /* Responsive Design for Smaller Screens */
 @media (max-width: 768px) {
   .chat-container {
@@ -5045,5 +5114,31 @@ button.ghost {
 
 .submit-button:hover:enabled {
   background-color: #0056b3;
+}
+
+.patient-list ul {
+  list-style: none;
+  padding: 0;
+}
+
+.patient-list li {
+  padding: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.patient-list li.active {
+  background-color: #f0f0f0; /* Light background when selected */
+}
+
+.patient-list li.unread {
+  background-color: #ffe6e6; /* Light red background for unread messages */
+}
+
+.patient-list li .new-message-indicator {
+  color: red;
+  font-size: 30px;
+  margin-left: 10px;
 }
 

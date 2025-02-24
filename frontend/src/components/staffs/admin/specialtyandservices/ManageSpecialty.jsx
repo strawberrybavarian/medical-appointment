@@ -3,7 +3,7 @@ import axios from 'axios';
 import { Table, Button, Form, Container, Row, Col } from 'react-bootstrap';
 import { ip } from '../../../../ContentExport';
 import { FaEdit, FaTrash } from 'react-icons/fa';
-
+import Swal from 'sweetalert2';
 function ManageSpecialty({ aid }) {
     const [specialties, setSpecialties] = useState([]);
     const [newSpecialty, setNewSpecialty] = useState({
@@ -75,10 +75,33 @@ function ManageSpecialty({ aid }) {
 
     const handleDeleteSpecialty = async (id) => {
         try {
-            await axios.delete(`${ip.address}/api/admin/specialty/delete/${id}`);
-            setSpecialties(specialties.filter(s => s._id !== id));
+            const result = await Swal.fire({
+                title: 'Are you sure?',
+                text: "You won't be able to revert this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, delete it!'
+            });
+    
+            if (result.isConfirmed) {
+                await axios.delete(`${ip.address}/api/admin/specialty/delete/${id}`);
+                setSpecialties(specialties.filter(s => s._id !== id));
+                
+                Swal.fire(
+                    'Deleted!',
+                    'Specialty has been deleted.',
+                    'success'
+                );
+            }
         } catch (err) {
             console.error('Error deleting specialty:', err);
+            Swal.fire(
+                'Error!',
+                'Failed to delete specialty.',
+                'error'
+            );
         }
     };
 

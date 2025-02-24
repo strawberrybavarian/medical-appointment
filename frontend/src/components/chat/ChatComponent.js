@@ -1,16 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
 import io from 'socket.io-client';
-
 import { ip } from '../../ContentExport';
 import axios from 'axios';
 import { BsArrowRight } from 'react-icons/bs';
-
+import { Container } from 'react-bootstrap';
 function ChatComponent({ userId, userRole, closeChat }) {
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState([]);
   const [patientList, setPatientList] = useState([]);
   const [selectedPatient, setSelectedPatient] = useState(null);
   const [socket, setSocket] = useState(null);
+  const [unreadMessages, setUnreadMessages] = useState({}); // This will track unread messages for each patient
 
   const messagesEndRef = useRef(null); // Reference to the end of the chat
   const isPatient = userRole === 'Patient';
@@ -61,33 +61,42 @@ function ChatComponent({ userId, userRole, closeChat }) {
     };
   }, [userId, userRole]);
 
-  const handleChatMessage = (data) => {
-    // console.log('Received chat message:', data);
+  const [lastMessageForPatient, setLastMessageForPatient] = useState({}); // Track the most recent message
 
+  const handleChatMessage = (data) => {
     if (isMedSecOrAdmin) {
       if (
         selectedPatientRef.current &&
         (data.sender === selectedPatientRef.current._id ||
           data.receiver.includes(selectedPatientRef.current._id))
       ) {
+        // Add the message to the chat
         setMessages((prevMessages) => {
           if (!prevMessages.find((msg) => msg._id === data._id)) {
             return [...prevMessages, data];
           }
           return prevMessages;
         });
+  
+        // Reset the unread flag for the selected patient
+        setUnreadMessages((prevUnreadMessages) => ({
+          ...prevUnreadMessages,
+          [data.sender]: false, // Mark as read
+        }));
+      } else if (data.senderModel === 'Patient') {
+        // Track the most recent message for a patient
+        setLastMessageForPatient((prevMessages) => ({
+          ...prevMessages,
+          [data.sender]: data,
+        }));
+  
+        // Set the unread flag only for the patient who has an unread message
+        setUnreadMessages((prevUnreadMessages) => ({
+          ...prevUnreadMessages,
+          [data.sender]: true, // Set as unread for the patient
+        }));
       }
-
-      // Do not add a new patient if already in the list
-      if (
-        data.senderModel === 'Patient' &&
-        !patientList.some((p) => p._id === data.sender)
-      ) {
-        setPatientList((prevList) => [
-          ...prevList,
-          { _id: data.sender, name: data.senderName || 'Unknown Patient' },
-        ]);
-      }
+      // Removed the code that was adding new patients to the list
     } else if (isPatient) {
       if (data.sender === userId || data.receiver.includes(userId)) {
         setMessages((prevMessages) => {
@@ -99,8 +108,7 @@ function ChatComponent({ userId, userRole, closeChat }) {
       }
     }
   };
-
-
+  
   useEffect(() => {
     if (isPatient) {
       fetchMessages();
@@ -114,7 +122,7 @@ function ChatComponent({ userId, userRole, closeChat }) {
   const fetchMessages = async (otherUserId) => {
     try {
       let response;
-
+  
       if (isPatient) {
         response = await axios.get(`${ip.address}/api/chat/messages`, {
           params: {
@@ -131,7 +139,7 @@ function ChatComponent({ userId, userRole, closeChat }) {
       } else {
         return;
       }
-
+  
       if (response.data.success) {
         const messagesData = response.data.data.map((msg) => ({
           ...msg,
@@ -139,6 +147,15 @@ function ChatComponent({ userId, userRole, closeChat }) {
           receiver: msg.receiver.map((id) => id.toString()),
         }));
         setMessages(messagesData);
+  
+        // If messages are successfully fetched, reset unread state for selected patient
+        if (isMedSecOrAdmin && selectedPatient) {
+          setUnreadMessages((prevUnreadMessages) => ({
+            ...prevUnreadMessages,
+            [selectedPatient._id]: false, // Reset unread flag after fetching messages
+          }));
+        }
+  
         console.log('Fetched messages:', messagesData);
       } else {
         console.error('Failed to fetch messages:', response.data.message);
@@ -147,7 +164,7 @@ function ChatComponent({ userId, userRole, closeChat }) {
       console.error('Error fetching messages:', error);
     }
   };
-
+  
   const sendMessage = () => {
     if (message.trim() !== '') {
       let messageData = {
@@ -173,7 +190,16 @@ function ChatComponent({ userId, userRole, closeChat }) {
 
   const handlePatientSelect = (patient) => {
     setSelectedPatient(patient);
+
+    // Reset unread message flag for the selected patient
+    setUnreadMessages((prevUnreadMessages) => ({
+      ...prevUnreadMessages,
+      [patient._id]: false, // Clear unread flag for the selected patient
+    }));
   };
+
+  
+  
 
   // Automatically scrolls to the bottom whenever the messages array changes
   useEffect(() => {
@@ -188,19 +214,39 @@ function ChatComponent({ userId, userRole, closeChat }) {
     <div className="chat-container">
       {isMedSecOrAdmin && (
         <div className="patient-list">
-          <h3>Patients</h3>
-          <ul>
-            {patientList.map((patient) => (
-              <li
-                key={patient._id}
-                onClick={() => handlePatientSelect(patient)}
-                className={selectedPatient?._id === patient._id ? 'active' : ''}
-              >
-                {patient.name}
-              </li>
-            ))}
-          </ul>
-        </div>
+          <div>
+            <Container className='ml-3 mt-3'>
+              <h3>Patients</h3>
+            </Container>
+          </div>
+
+
+  <ul>
+    {patientList.map((patient) => {
+      const lastMessage = lastMessageForPatient[patient._id];
+      const isUnread = unreadMessages[patient._id]; // Check if the patient has unread messages
+
+      // Only show unread for the most recent message
+      const isLatestUnread = lastMessage && isUnread;
+
+      return (
+        <li
+          key={patient._id}
+          onClick={() => handlePatientSelect(patient)}
+          className={`${selectedPatient?._id === patient._id ? 'active' : ''} ${isLatestUnread ? 'unread' : ''}`}
+        >
+          {patient.name}
+          {isLatestUnread && (
+            <span className="new-message-indicator">•</span> // Red dot indicator for unread
+          )}
+        </li>
+      );
+    })}
+  </ul>
+</div>
+
+
+    
       )}
 
       <div className="chat-box">

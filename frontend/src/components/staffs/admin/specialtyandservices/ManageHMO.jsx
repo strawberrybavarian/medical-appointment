@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Table, Button, Modal, Form } from 'react-bootstrap';
 import { ip } from '../../../../ContentExport';
-
+import Swal from 'sweetalert2';
 function ManageHMO({ aid }) {
   const [hmos, setHmos] = useState([]);
   const [newHmo, setNewHmo] = useState({ name: '' });
@@ -55,10 +55,33 @@ function ManageHMO({ aid }) {
   // Handle delete HMO
   const handleDeleteHmo = async (id) => {
     try {
-      await axios.delete(`${ip.address}/api/admin/delete/hmo/${id}`);
-      setHmos(hmos.filter(hmo => hmo._id !== id));
+      const result = await Swal.fire({
+        title: 'Are you sure?',
+        text: "You won't be able to revert this!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, delete it!'
+      });
+  
+      if (result.isConfirmed) {
+        await axios.delete(`${ip.address}/api/admin/delete/hmo/${id}`);
+        setHmos(hmos.filter(hmo => hmo._id !== id));
+        
+        Swal.fire(
+          'Deleted!',
+          'HMO has been deleted.',
+          'success'
+        );
+      }
     } catch (err) {
       console.error('Error deleting HMO:', err);
+      Swal.fire(
+        'Error!',
+        'Failed to delete HMO.',
+        'error'
+      );
     }
   };
 

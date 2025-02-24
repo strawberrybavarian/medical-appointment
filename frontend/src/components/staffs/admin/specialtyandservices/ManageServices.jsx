@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Table, Button, Modal, Form } from 'react-bootstrap';
 import { ip } from '../../../../ContentExport';
-
+import Swal from 'sweetalert2';
 function ManageServices() {
     const [services, setServices] = useState([]);
     const [newService, setNewService] = useState({
@@ -89,10 +89,33 @@ function ManageServices() {
     // Handle delete service
     const handleDeleteService = async (id) => {
         try {
-            await axios.delete(`${ip.address}/api/admin/delete/services/${id}`);
-            fetchServices(); // Refresh the list
+            const result = await Swal.fire({
+                title: 'Are you sure?',
+                text: "You won't be able to revert this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, delete it!'
+            });
+    
+            if (result.isConfirmed) {
+                await axios.delete(`${ip.address}/api/admin/delete/services/${id}`);
+                fetchServices(); // Refresh the list
+                
+                Swal.fire(
+                    'Deleted!',
+                    'Service has been deleted.',
+                    'success'
+                );
+            }
         } catch (error) {
             console.error('Error deleting service:', error);
+            Swal.fire(
+                'Error!',
+                'Failed to delete service.',
+                'error'
+            );
         }
     };
 

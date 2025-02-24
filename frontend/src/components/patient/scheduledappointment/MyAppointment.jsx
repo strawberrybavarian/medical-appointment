@@ -95,9 +95,12 @@ function MyAppointment() {
         <PatientNavBar pid={user._id} />
         <div className="maincolor-container">
           <div className="content-area">
-            <Container>
-              <h2>My Appointments</h2>
-              <p className="text-muted">See your appointment details.</p>
+            <Container className='px-4 mt-5'>
+              <div className='ml-3'>
+                <h2>My Appointments</h2>
+                <p className="text-muted">See your appointment details.</p>
+              </div>
+
             </Container>
 
             <Container>
