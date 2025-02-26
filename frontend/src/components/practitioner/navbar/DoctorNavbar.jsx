@@ -159,40 +159,42 @@ function DoctorNavbar({ doctor_image, did }) {
             <Navbar.Toggle aria-controls="basic-navbar-nav" />
             <Navbar.Collapse id="basic-navbar-nav" className="justify-content-end">
               <Nav>
-                <Nav.Link onClick={toggleNotifications} className="position-relative">
-                  <Bell size={20} />
-                  {unreadCount > 0 && <span className="notification-badge">{displayCount}</span>}
-                  {showNotifications && (
-                    <div className="notification-overlay">
-                      {notifications.length > 0 ? (
-                        notifications.map((notification, index) => (
-                          <div
-                            key={notification._id}
-                            className={`notification-item ${
-                              !notification.isRead ? 'unread' : 'read'
-                            }`}
-                            onClick={(e) => {
-                              e.preventDefault();
-                              markAsRead(notification);
-                            }}
-                          >
-                            <span className="notification-circle">
-                              {notification.isRead ? (
-                                <span className="circle read"></span>
-                              ) : (
-                                <span className="circle unread"></span>
-                              )}
-                            </span>
-                            <span className="notification-message">{notification.message}</span>
-                            {index < notifications.length - 1 && <hr />}
-                          </div>
-                        ))
-                      ) : (
-                        <div>No new notifications</div>
-                      )}
-                    </div>
-                  )}
-                </Nav.Link>
+              <Nav.Link onClick={toggleNotifications} className="position-relative">
+    <Bell size={20} className={unreadCount > 0 ? 'sway' : ''} /> {/* Add sway class */}
+    {unreadCount > 0 && (
+      <span className="notification-dot"></span> // Replace notification-badge with notification-dot
+    )}
+    {showNotifications && (
+      <div className="notification-overlay">
+        {notifications.length > 0 ? (
+          notifications.map((notification, index) => (
+            <div
+              key={notification._id}
+              className={`notification-item ${
+                !notification.isRead ? 'unread' : 'read'
+              }`}
+              onClick={(e) => {
+                e.preventDefault();
+                markAsRead(notification);
+              }}
+            >
+              <span className="notification-circle">
+                {notification.isRead ? (
+                  <span className="circle read"></span>
+                ) : (
+                  <span className="circle unread"></span>
+                )}
+              </span>
+              <span className="notification-message">{notification.message}</span>
+              {index < notifications.length - 1 && <hr />}
+            </div>
+          ))
+        ) : (
+          <div>No new notifications</div>
+        )}
+      </div>
+    )}
+  </Nav.Link>
               </Nav>
 
               <Nav className="d-flex align-items-center">

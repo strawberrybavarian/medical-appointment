@@ -11,9 +11,12 @@ import { PencilFill } from "react-bootstrap-icons";
 import DoctorBiography from "./DoctorBiography";
 import { ip } from "../../../ContentExport";
 import TwoFactorAuth from "../../patient/patientinformation/TwoFactorAuth/TwoFactorAuth";
+import DoctorManageHMO from "./DoctorManageHMO";
+import { useUser } from "../../UserContext";
 const AccountInfo = () => {
   const location = useLocation();
-  const { did } = location.state || {};
+  const { user } = useUser();
+  const did = user._id;
   const [doctorData, setDoctorData] = useState({
     theId: "",
     theName: "",
@@ -33,6 +36,7 @@ const AccountInfo = () => {
   const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] = useState(false); // State for Change Password modal
   const [showTwoFactorAuthModal, setShowTwoFactorAuthModal] = useState(false);  // New state for the 2FA modal
   const [twoFaEnabled, setTwoFaEnabled] = useState(false);  // State to manage 2FA enabled/disabled
+  const [hmoCollapseOpen, setHmoCollapseOpen] = useState(false);
   // State to manage biography collapse
   const [biographyCollapseOpen, setBiographyCollapseOpen] = useState(false);
 
@@ -188,6 +192,34 @@ const AccountInfo = () => {
                 <DoctorBiography
                   biography={doctorData.biography}
                   did={doctorData.theId}
+                />
+              </div>
+            </Collapse>
+            
+          </div>
+        </div>
+
+        <div className="d-flex justify-content-center">
+          <div className="ai-container2 shadow-sm">
+            <div className="m-0 p-0 d-flex justify-content-end align-items-center">
+              <div className="w-100 d-flex align-items-center">
+                <span className="m-0" style={{ fontWeight: 'bold' }}>HMO Accreditation</span>
+              </div>
+              <Link
+                onClick={() => setHmoCollapseOpen(!hmoCollapseOpen)}
+                aria-controls="hmo-collapse"
+                aria-expanded={hmoCollapseOpen}
+                className="link-collapse"
+              >
+                {hmoCollapseOpen ? <span>&#8722;</span> : <span>&#43;</span>}
+              </Link>
+            </div>
+
+            {/* Collapsible HMO Section */}
+            <Collapse in={hmoCollapseOpen}>
+              <div id="hmo-collapse">
+                <DoctorManageHMO
+                  doctorId={doctorData.theId}
                 />
               </div>
             </Collapse>

@@ -250,8 +250,20 @@ button {
 
 
 .button-delete-image{
-  background-color: #55555500;
+  background-color: #eb2f2f00;
   border-color: #55555500;
+  border-radius: 50%;
+  position: absolute;
+  /* right: -100px; */
+  top: -12px;
+  bottom: 100px;
+  left: 86px;
+  width: 10px !important;
+  height: 25px;
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .posted-images{

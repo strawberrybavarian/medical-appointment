@@ -3,7 +3,7 @@ import { Modal, Button } from 'react-bootstrap';
 
 const LogoutModal = ({ show, onCancel, onConfirm }) => {
     return (
-        <Modal show={show} onHide={onCancel} centered className="custom-logout-modal">
+        <Modal show={show} onHide={onCancel} centered className="custom-logout-modal" style={{borderRadius: '10px'}}>
             <Modal.Body className="new-modal-content text-center p-4">
                 <div className="mb-4 d-flex justify-content-center align-items-center w-100">
                     <div className='icon-background align-items-center'>

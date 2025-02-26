@@ -3,8 +3,7 @@ import {Container , Form} from 'react-bootstrap'
 import axios from 'axios'
 import DataTable from 'react-data-table-component'
 import { ip } from '../../../ContentExport'
-
-
+import { useUser } from '../../UserContext';
 
 const CustomStyles = {
     rows: {
@@ -26,8 +25,9 @@ const CustomStyles = {
   };
 
 
-const AuditDoctor = ({doctorId}) => { 
-    const did = doctorId;
+const AuditDoctor = () => { 
+    const {user} = useUser();
+    const did = user._id;
     const [doctorData, setDoctorData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);

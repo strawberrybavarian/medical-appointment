@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Form, Button, Row, Col } from 'react-bootstrap';
+import { Form, Button, Row, Col, Alert, Card, Container } from 'react-bootstrap';
 import DeactivationModal from './modal/DeactivationModal';
 import { ip } from '../../../ContentExport';
 import Swal from 'sweetalert2';
-
+import { useUser } from '../../UserContext';
 const initialTimeSlot = { startTime: '', endTime: '', available: false, maxPatients: 0 };
 
 const initialAvailability = {
@@ -17,7 +17,9 @@ const initialAvailability = {
     sunday: { morning: { ...initialTimeSlot }, afternoon: { ...initialTimeSlot } },
 };
 
-function DoctorAvailability({ doctorId }) {
+function DoctorAvailability() {
+    const { user } = useUser();
+    const doctorId = user._id;
     const [availability, setAvailability] = useState(initialAvailability);
     const [activeAppointmentStatus, setActiveAppointmentStatus] = useState(true);
     const [showModal, setShowModal] = useState(false);
@@ -161,132 +163,166 @@ function DoctorAvailability({ doctorId }) {
     };
 
     return (
-        <div style={{ display: "flex", flex: "1 0 auto", height: "100vh", overflowY: "hidden" }}>
-            <div style={{ padding: "20px", paddingBottom: "100px", overflowY: "auto", overflowX: "hidden" }} className="container1 container-fluid ">
-                <h3>Manage Availability</h3>
-                <Form>
-                    {Object.keys(availability).map(day => (
-                        <div key={day}>
-                            <h4>{day.charAt(0).toUpperCase() + day.slice(1)}</h4>
-                            <Row>
-                                <Col>
-                                    <Form.Group controlId={`${day}MorningAvailable`}>
-                                        <Form.Check
-                                            type="checkbox"
-                                            label="Available in the morning"
-                                            checked={availability[day]?.morning?.available || false}
-                                            onChange={(e) => handleAvailabilityChange(day, 'morning', e.target.checked)}
-                                        />
-                                    </Form.Group>
-                                </Col>
-                            </Row>
-
-                            {availability[day]?.morning?.available && (
-                                <Row>
-                                    <Col>
-                                        <Form.Group controlId={`${day}MorningStartTime`}>
-                                            <Form.Label>Morning Start Time</Form.Label>
-                                            <Form.Control
-                                                type="time"
-                                                value={availability[day]?.morning?.startTime || ''}
-                                                onChange={(e) => handleTimeChange(day, 'morning', 'startTime', e.target.value)}
-                                            />
-                                            {formErrors[`${day}-morning`] && (
-                                                <Form.Text className="text-danger">{formErrors[`${day}-morning`]}</Form.Text>
-                                            )}
-                                        </Form.Group>
-                                    </Col>
-                                    <Col>
-                                        <Form.Group controlId={`${day}MorningEndTime`}>
-                                            <Form.Label>Morning End Time</Form.Label>
-                                            <Form.Control
-                                                type="time"
-                                                value={availability[day]?.morning?.endTime || ''}
-                                                onChange={(e) => handleTimeChange(day, 'morning', 'endTime', e.target.value)}
-                                            />
-                                        </Form.Group>
-                                    </Col>
-                                    <Col>
-                                        <Form.Group controlId={`${day}MorningMaxPatients`}>
-                                            <Form.Label>Max Patients (Morning)</Form.Label>
-                                            <Form.Control
-                                                type="number"
-                                                value={availability[day]?.morning?.maxPatients}
-                                                onChange={(e) => handleMaxPatientsChange(day, 'morning', e.target.value)}
-                                            />
-                                        </Form.Group>
-                                    </Col>
-                                </Row>
-                            )}
-
-                            <Row>
-                                <Col>
-                                    <Form.Group controlId={`${day}AfternoonAvailable`}>
-                                        <Form.Check
-                                            type="checkbox"
-                                            label="Available in the afternoon"
-                                            checked={availability[day]?.afternoon?.available || false}
-                                            onChange={(e) => handleAvailabilityChange(day, 'afternoon', e.target.checked)}
-                                        />
-                                    </Form.Group>
-                                </Col>
-                            </Row>
-
-                            {availability[day]?.afternoon?.available && (
-                                <Row>
-                                    <Col>
-                                        <Form.Group controlId={`${day}AfternoonStartTime`}>
-                                            <Form.Label>Afternoon Start Time</Form.Label>
-                                            <Form.Control
-                                                type="time"
-                                                value={availability[day]?.afternoon?.startTime || ''}
-                                                onChange={(e) => handleTimeChange(day, 'afternoon', 'startTime', e.target.value)}
-                                            />
-                                            {formErrors[`${day}-afternoon`] && (
-                                                <Form.Text className="text-danger">{formErrors[`${day}-afternoon`]}</Form.Text>
-                                            )}
-                                        </Form.Group>
-                                    </Col>
-                                    <Col>
-                                        <Form.Group controlId={`${day}AfternoonEndTime`}>
-                                            <Form.Label>Afternoon End Time</Form.Label>
-                                            <Form.Control
-                                                type="time"
-                                                value={availability[day]?.afternoon?.endTime || ''}
-                                                onChange={(e) => handleTimeChange(day, 'afternoon', 'endTime', e.target.value)}
-                                            />
-                                        </Form.Group>
-                                    </Col>
-                                    <Col>
-                                        <Form.Group controlId={`${day}AfternoonMaxPatients`}>
-                                            <Form.Label>Max Patients (Afternoon)</Form.Label>
-                                            <Form.Control
-                                                type="number"
-                                                value={availability[day]?.afternoon?.maxPatients}
-                                                onChange={(e) => handleMaxPatientsChange(day, 'afternoon', e.target.value)}
-                                            />
-                                        </Form.Group>
-                                    </Col>
-                                </Row>
-                            )}
-                            <hr />
+        <Container className="py-4">
+        <Row className="mb-4">
+            <Col className="text-end">
+                <Card className="p-3 d-inline-block">
+                    <div className="d-flex align-items-center">
+                        <div className="me-3">
+                            <p className="mb-0 ml-2">
+                                <span style={{marginRight:'10px'}}>Appointment Status:</span>
+                                <span className={`badge ${activeAppointmentStatus ? 'bg-success' : 'bg-danger'}`}>
+                                    {activeAppointmentStatus ? 'Active' : 'Inactive'}
+                                </span>
+                            </p>
                         </div>
-                    ))}
-                    <Button onClick={handleSubmit}>Save Availability</Button>
-                </Form>
+                        <Button 
+                            variant={activeAppointmentStatus ? 'danger' : 'success'} 
+                            onClick={handleStatusChange}
+                        >
+                            {activeAppointmentStatus ? 'Deactivate Appointments' : 'Activate Appointments'}
+                        </Button>
+                    </div>
+                </Card>
+            </Col>
+        </Row>
 
-                <hr />
-                <Button onClick={handleStatusChange}>
-                    {activeAppointmentStatus ? 'Deactivate Appointments' : 'Activate Appointments'}
+        {!activeAppointmentStatus && (
+            <Alert variant="warning" className="mb-4">
+                <Alert.Heading>Appointments are currently disabled</Alert.Heading>
+                <p>Patients cannot book appointments with you while this setting is inactive.</p>
+            </Alert>
+        )}
+
+        <Form>
+            {Object.keys(availability).map(day => (
+                <Card key={day} className="mb-3">
+                    <Card.Header>
+                        <h4>{day.charAt(0).toUpperCase() + day.slice(1)}</h4>
+                    </Card.Header>
+                    <Card.Body>
+                        {/* Morning section */}
+                        <Row>
+                            <Col>
+                                <Form.Group controlId={`${day}MorningAvailable`}>
+                                    <Form.Check
+                                        type="checkbox"
+                                        label="Available in the morning"
+                                        checked={availability[day]?.morning?.available || false}
+                                        onChange={(e) => handleAvailabilityChange(day, 'morning', e.target.checked)}
+                                    />
+                                </Form.Group>
+                            </Col>
+                        </Row>
+
+                        {availability[day]?.morning?.available && (
+                            <Row className="mt-2">
+                                <Col md={4}>
+                                    <Form.Group controlId={`${day}MorningStartTime`}>
+                                        <Form.Label>Morning Start Time</Form.Label>
+                                        <Form.Control
+                                            type="time"
+                                            value={availability[day]?.morning?.startTime || ''}
+                                            onChange={(e) => handleTimeChange(day, 'morning', 'startTime', e.target.value)}
+                                        />
+                                        {formErrors[`${day}-morning`] && (
+                                            <Form.Text className="text-danger">{formErrors[`${day}-morning`]}</Form.Text>
+                                        )}
+                                    </Form.Group>
+                                </Col>
+                                <Col md={4}>
+                                    <Form.Group controlId={`${day}MorningEndTime`}>
+                                        <Form.Label>Morning End Time</Form.Label>
+                                        <Form.Control
+                                            type="time"
+                                            value={availability[day]?.morning?.endTime || ''}
+                                            onChange={(e) => handleTimeChange(day, 'morning', 'endTime', e.target.value)}
+                                        />
+                                    </Form.Group>
+                                </Col>
+                                <Col md={4}>
+                                    <Form.Group controlId={`${day}MorningMaxPatients`}>
+                                        <Form.Label>Max Patients</Form.Label>
+                                        <Form.Control
+                                            type="number"
+                                            value={availability[day]?.morning?.maxPatients}
+                                            onChange={(e) => handleMaxPatientsChange(day, 'morning', e.target.value)}
+                                        />
+                                    </Form.Group>
+                                </Col>
+                            </Row>
+                        )}
+
+                        <hr />
+
+                        {/* Afternoon section */}
+                        <Row className="mt-3">
+                            <Col>
+                                <Form.Group controlId={`${day}AfternoonAvailable`}>
+                                    <Form.Check
+                                        type="checkbox"
+                                        label="Available in the afternoon"
+                                        checked={availability[day]?.afternoon?.available || false}
+                                        onChange={(e) => handleAvailabilityChange(day, 'afternoon', e.target.checked)}
+                                    />
+                                </Form.Group>
+                            </Col>
+                        </Row>
+
+                        {availability[day]?.afternoon?.available && (
+                            <Row className="mt-2">
+                                <Col md={4}>
+                                    <Form.Group controlId={`${day}AfternoonStartTime`}>
+                                        <Form.Label>Afternoon Start Time</Form.Label>
+                                        <Form.Control
+                                            type="time"
+                                            value={availability[day]?.afternoon?.startTime || ''}
+                                            onChange={(e) => handleTimeChange(day, 'afternoon', 'startTime', e.target.value)}
+                                        />
+                                        {formErrors[`${day}-afternoon`] && (
+                                            <Form.Text className="text-danger">{formErrors[`${day}-afternoon`]}</Form.Text>
+                                        )}
+                                    </Form.Group>
+                                </Col>
+                                <Col md={4}>
+                                    <Form.Group controlId={`${day}AfternoonEndTime`}>
+                                        <Form.Label>Afternoon End Time</Form.Label>
+                                        <Form.Control
+                                            type="time"
+                                            value={availability[day]?.afternoon?.endTime || ''}
+                                            onChange={(e) => handleTimeChange(day, 'afternoon', 'endTime', e.target.value)}
+                                        />
+                                    </Form.Group>
+                                </Col>
+                                <Col md={4}>
+                                    <Form.Group controlId={`${day}AfternoonMaxPatients`}>
+                                        <Form.Label>Max Patients</Form.Label>
+                                        <Form.Control
+                                            type="number"
+                                            value={availability[day]?.afternoon?.maxPatients}
+                                            onChange={(e) => handleMaxPatientsChange(day, 'afternoon', e.target.value)}
+                                        />
+                                    </Form.Group>
+                                </Col>
+                            </Row>
+                        )}
+                    </Card.Body>
+                </Card>
+            ))}
+
+            <div className="text-center mt-4 mb-5">
+                <Button size="lg" onClick={handleSubmit} variant="primary">
+                    Save Availability
                 </Button>
-
-                <DeactivationModal
-                    show={showModal}
-                    handleClose={() => setShowModal(false)}
-                    handleConfirm={handleModalConfirm}
-                />
             </div>
-        </div>
+        </Form>
+
+        <DeactivationModal
+            show={showModal}
+            handleClose={() => setShowModal(false)}
+            handleConfirm={handleModalConfirm}
+        />
+    </Container>
     );
 }
 

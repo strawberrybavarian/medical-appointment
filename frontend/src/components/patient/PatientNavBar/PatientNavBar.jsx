@@ -7,6 +7,7 @@ import { image, ip } from '../../../ContentExport';
 import axios from 'axios';
 import io from 'socket.io-client';
 import { useUser } from '../../UserContext';
+import LogoutModal from '../../practitioner/sidebar/LogoutModal';
 
 function PatientNavBar({ pid }) {
   const navigate = useNavigate();
@@ -14,6 +15,8 @@ function PatientNavBar({ pid }) {
   const [showNotifications, setShowNotifications] = useState(false);
   const [theImage, setImage] = useState(null);
   const [notifications, setNotifications] = useState([]);
+  const [showLogoutModal, setShowLogoutModal] = React.useState(false);
+  
 
   const defaultImage = `${ip.address}/images/default-profile.jpg`;
 
@@ -25,6 +28,26 @@ function PatientNavBar({ pid }) {
       navigate('/medapp/login');
     }
   }, [pid, navigate]);
+
+  const handleLogout = () => {
+    setShowLogoutModal(true); // Show the logout confirmation modal
+};
+
+const cancelLogout = () => {
+  setShowLogoutModal(false);
+};
+
+  const confirmLogout = async () => {
+    try {
+      await axios.post(`${ip.address}/api/logout`, {}, { withCredentials: true });
+      setUser(null); // Clear patient context
+      navigate('/medapp/login'); // Redirect to login page
+    } catch (error) {
+      console.error('Error logging out:', error);
+      alert('Failed to log out. Please try again.');
+    }
+  };
+
 
   // Initialize socket.io client
   useEffect(() => {
@@ -95,36 +118,30 @@ function PatientNavBar({ pid }) {
   }, []);
 
   useEffect(() => {
-    if (!pid) {
-      console.warn('Patient ID is undefined');
+    // This will handle redirects if the user isn't logged in or is not a patient
+    if (!user || !user._id || user.role !== "Patient") {
+      navigate('/medapp/login');
       return;
     }
-
-    axios
-      .get(`${ip.address}/api/patient/api/onepatient/${pid}`)
-      .then((res) => {
-        const patientData = res.data.thePatient;
-        setImage(patientData.patient_image || defaultImage);
-        const sortedNotifications = (patientData.notifications || []).sort(
-          (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-        );
-        setNotifications(sortedNotifications);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-  }, [pid]);
-
-  const logoutUser = async () => {
-    try {
-      await axios.post(`${ip.address}/api/logout`, {}, { withCredentials: true });
-      setUser(null); // Clear patient context
-      navigate('/medapp/login'); // Redirect to login page
-    } catch (error) {
-      console.error('Error logging out:', error);
-      alert('Failed to log out. Please try again.');
+    
+    // If we have a valid user, get their notifications
+    if (user._id) {
+      axios
+        .get(`${ip.address}/api/patient/api/onepatient/${user._id}`)
+        .then((res) => {
+          const patientData = res.data.thePatient;
+          setImage(patientData.patient_image || defaultImage);
+          const sortedNotifications = (patientData.notifications || []).sort(
+            (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+          );
+          setNotifications(sortedNotifications);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
     }
-  };
+  }, [user, navigate]);
+
 
   const toggleNotifications = () => {
     setShowNotifications(!showNotifications);
@@ -162,16 +179,8 @@ function PatientNavBar({ pid }) {
     }
   };
 
-  // useEffect(() => {
-  //   if (!patient) {
-  //     navigate('/medapp/login');
-  //   }
-  // }, [patient, navigate]);
 
-  if (!user) {
-    // Render a placeholder or return null while redirecting
-    return null;
-  }
+  console.log('User', user)
 
   // Calculate unread notifications count and set max to 9+
   const unreadCount = notifications.filter((notif) => !notif.isRead).length;
@@ -299,14 +308,21 @@ function PatientNavBar({ pid }) {
                 Account Information
               </NavDropdown.Item>
               <NavDropdown.Divider />
-              <NavDropdown.Item className="pnb-nav-link" onClick={logoutUser}>
+              <NavDropdown.Item className="pnb-nav-link" onClick={handleLogout}>
                 Logout
               </NavDropdown.Item>
             </NavDropdown>
           </Nav>
         </Navbar.Collapse>
+
+        <LogoutModal 
+                show={showLogoutModal} 
+                onCancel={cancelLogout} 
+                onConfirm={confirmLogout} 
+            />
       </Container>
     </Navbar>
+
   );
 }
 

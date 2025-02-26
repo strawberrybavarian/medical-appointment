@@ -85,18 +85,13 @@ function DoctorInformation() {
                                         Availability
                                     </a>
                          
-                                    <a
-                                        onClick={() => setActiveTab("hmo")}
-                                        className={activeTab === "hmo" ? "active" : ""}
-                                    >
-                                        HMO
-                                    </a>
+                              
 
                                     <a
                                         onClick={() => setActiveTab("audit")}
                                         className={activeTab === "audit" ? "active" : ""}
                                     >
-                                        Audit
+                                        Activity Log
                                     </a>
                                 </div> 
                             </Container>

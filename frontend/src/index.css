@@ -2277,14 +2277,15 @@ transform: scale(1.1); /* Slightly larger on hover */
 .patient-list {
   width: 250px; /* Default width for patient list on larger screens */
   background-color: #fff;
-  border-right: 1px solid #ddd;
+  border-right: 1px rgb(223, 223, 223) solid !important;
   overflow-y: auto;
+  border-right: none;
 }
 
 /* Chat Box */
 .chat-box {
   flex: 1;
-  width: 100vw;
+
   display: flex;
   flex-direction: column;
   background-color: #fff;
@@ -2375,31 +2376,41 @@ transform: scale(1.1); /* Slightly larger on hover */
 }
 @media (max-width: 1024px) {
   .chat-container {
-    flex-direction: column; /* Stack vertically */
-    height: 100vh; /* Take full screen height */
-    overflow-y: scroll;
+    display: flex;
+    height: 100%;
+    width: 100%;
+    border-radius: 12px;
+    background-color: #f0f0f0;
+    overflow: hidden;
+    flex-direction: row; 
+    border-radius: 12px !important;
   }
 
   .patient-list {
-    width: 100%; /* Full width on mobile */
-    border-right: none; /* Remove right border */
+    width: 200px; /* Full width on mobile */
+    border-right: 1px gray; /* Remove right border */
     border-bottom: 1px solid #ddd; /* Add bottom border instead */
   }
 
   .chat-overlay {
-    bottom: 100;
-    right: 10%;
-    width: 80%; /* Fu9\ll width on mobile */
-    /* Full height on mobile */
-    border-radius: 0; /* Remove border radius for fullscreen view */
-    padding: 10px; /* Add padding to allow for close button */
+    position: fixed;
+    bottom: 150px;
+    right: 60px;
+    width: 90%; /* Default for larger screens */
+    height: 650px;
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    z-index: 1060;
+    overflow: hidden;
   }
 
   /* Add some padding/margin so the close button is visible */
   .chat-overlay::before {
     content: '';
     display: block;
-    height: 50px; /* Space at the top to see close button */
     width: 100%;
   }
 
@@ -2444,30 +2455,33 @@ transform: scale(1.1); /* Slightly larger on hover */
 /* Responsive Design for Smaller Screens */
 @media (max-width: 768px) {
   .chat-container {
-    flex-direction: column; /* Stack vertically */
-    height: 100vh; /* Take full screen height */
+    display: flex;
+    height: 100%;
+    width: 100%;
+    border-radius: 12px !important;
+    background-color: #f0f0f0;
+    overflow: hidden;
+    flex-direction: row; 
+    border-radius: 12px !important;
   }
 
   .patient-list {
-    width: 100%; /* Full width on mobile */
+     /* Full width on mobile */
     border-right: none; /* Remove right border */
-    border-bottom: 1px solid #ddd; /* Add bottom border instead */
+    border-bottom: 1px solid #ddd;
   }
 
   .chat-overlay {
-    bottom: 100;
-    right: 10%;
+    right: 11%;
     width: 80%; /* Fu9\ll width on mobile */
     /* Full height on mobile */
     border-radius: 0; /* Remove border radius for fullscreen view */
-    padding: 10px; /* Add padding to allow for close button */
   }
 
   /* Add some padding/margin so the close button is visible */
   .chat-overlay::before {
     content: '';
     display: block;
-    height: 50px; /* Space at the top to see close button */
     width: 100%;
   }
 
@@ -2503,12 +2517,36 @@ transform: scale(1.1); /* Slightly larger on hover */
     align-items: center;
 
   }
+
+  .chat-box {
+    flex: 1;
+
+    display: flex;
+    flex-direction: column;
+    background-color: #fff;
+  }
 }
 
 
 .btn {
    
   margin-right: 15px !important;
+}
+
+.patient-list li:hover .close-btn {
+  display: block;
+}
+
+.close-btn {
+  border-radius: 80% !important;
+  width: 1.5rem;
+  height: 1.5rem;
+  margin-bottom: 0.5rem;
+  display: flex;
+  padding: 0px !important;
+}
+.close-btn:hover {
+  background-color: rgba(0, 0, 0, 0.1);
 }
 
 .black-color{

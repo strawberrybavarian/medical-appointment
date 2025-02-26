@@ -1,111 +1,131 @@
 import React, { useState } from 'react';
-import Modal from 'react-modal';
+import { Modal, Button, Form } from 'react-bootstrap';
 import axios from 'axios';
-import { Button, Form, Col } from "react-bootstrap";
-import './UploadImageModal.css';
-import CropResizeTiltModal from './CropResizeTiltModal'; // Import the CropResizeTiltModal
-import { ip } from '../../../../ContentExport';
+import CropResizeTiltModal from './CropResizeTiltModal';
 import Swal from 'sweetalert2';
+import { ip } from '../../../../ContentExport';
+
 const ImageUploadModal = ({ isOpen, onRequestClose, did }) => {
   const [selectedFile, setSelectedFile] = useState(null);
-  const [imageSrc, setImageSrc] = useState(null); // For previewing the selected image
-  const [editedImage, setEditedImage] = useState(null); // Cropped image after editing
-  const [isCropModalOpen, setIsCropModalOpen] = useState(false); // Manage crop modal visibility
-
-  // Handle file selection and display a preview
-  const handleFileChange = (event) => {
-    const file = event.target.files[0];
-    setSelectedFile(file);
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      setImageSrc(reader.result); // Set the original image preview
-      setEditedImage(null); // Reset edited image when a new file is selected
-      setIsCropModalOpen(true); // Open the crop modal immediately after image is selected
-    };
-    reader.readAsDataURL(file);
-  };
-
-  // Update the edited image from the CropResizeTiltModal
-  const handleImageEdit = (croppedImageSrc) => {
-    setEditedImage(croppedImageSrc); // Set the cropped/edited image as base64
-    setIsCropModalOpen(false); // Close the crop modal after editing
-  };
-
-  // Handle form submission for image upload
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    const formData = new FormData();
-
-    // Upload the edited image if it exists, otherwise upload the selected file
-    if (editedImage) {
-      // Convert the base64 edited image to a Blob
-      const response = await fetch(editedImage);
-      const blob = await response.blob();
-      const file = new File([blob], 'edited-image.png', { type: 'image/png' });
-      formData.append('image', file); // Append the cropped image to formData
-                  Swal.fire({ 
-                      icon: 'success',
-                      position: 'top-end',
-                      toast: true,
-                      title: 'Image uploaded successfully',
-                      showConfirmButton: false,
-                      timer: 1500,
-                      timerProgressBar: true
-                  }); 
-    } else if (selectedFile) {
-      formData.append('image', selectedFile); // If no edited image, use the original selected file
+  const [previewImage, setPreviewImage] = useState(null);
+  const [showCropModal, setShowCropModal] = useState(false);
+  
+  const handleFileChange = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      
+      reader.onload = () => {
+        setPreviewImage(reader.result);
+        setShowCropModal(true);
+      };
+      
+      reader.readAsDataURL(file);
     }
-
-    try {
-      const response = await axios.post(`${ip.address}/api/doctor/api/${did}/updateimage`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
+  };
+  
+  const handleCroppedImage = (croppedImage) => {
+    setPreviewImage(croppedImage);
+    
+    // Convert base64 to blob for upload
+    fetch(croppedImage)
+      .then(res => res.blob())
+      .then(blob => {
+        const file = new File([blob], "profile-image.jpg", { type: "image/jpeg" });
+        setSelectedFile(file);
       });
-      console.log('Image uploaded successfully:', response.data);
-      onRequestClose(response.data.updatedDoctor.dr_image); // Pass the new image URL back to the parent component
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!selectedFile) {
+      Swal.fire({
+        title: 'Error!',
+        text: 'Please select an image to upload',
+        icon: 'error',
+        confirmButtonText: 'OK'
+      });
+      return;
+    }
+    
+    const formData = new FormData();
+    formData.append('image', selectedFile);
+    
+    try {
+      await axios.post(`${ip.address}/api/doctor/api/${did}/updateimage`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      
+      Swal.fire({
+        title: 'Success!',
+        text: 'Image uploaded successfully',
+        icon: 'success',
+        confirmButtonText: 'OK'
+      }).then(() => {
+        // Close modal and refresh page to show new image
+        onRequestClose();
+        window.location.reload();
+      });
     } catch (error) {
       console.error('Error uploading image:', error);
+      Swal.fire({
+        title: 'Error!',
+        text: 'Failed to upload image. Please try again.',
+        icon: 'error',
+        confirmButtonText: 'OK'
+      });
     }
   };
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onRequestClose={() => onRequestClose(null)}
-      contentLabel="Image Upload Modal"
-      className="image-upload-modal" 
-      overlayClassName="modal-overlay" 
-      ariaHideApp={false} 
-    >
-      <div className="modal-content">
-        <h2>Upload Image</h2>
-        <Form className='ium-form'>
-          <Form.Group as={Col} className="mb-3">
-            <Form.Control type="file" accept="image/*" onChange={handleFileChange} />
-          </Form.Group>
-        </Form>
-
-        {imageSrc && (
-          <>
-            <Button onClick={() => setIsCropModalOpen(true)}>Edit Image</Button> {/* Open crop modal */}
-            <img src={editedImage || imageSrc} alt="Preview" className="preview-image" /> 
-            {/* If there is an edited image, show that, otherwise show the original */}
-          </>
-        )}
-
-        <Button style={{ marginTop: "15px" }} type="submit" onClick={handleSubmit}>Upload</Button>
-
-        {/* Crop, Resize, and Tilt modal for image editing */}
-        <CropResizeTiltModal
-          isOpen={isCropModalOpen} // Open the crop modal based on state
-          onRequestClose={() => setIsCropModalOpen(false)} // Close the modal when cropping is done
-          imageSrc={imageSrc} // Pass the original image to be cropped
-          onSave={handleImageEdit} // When cropping is done, handle the cropped image
-        />
-      </div>
-    </Modal>
+    <>
+      <Modal show={isOpen} onHide={onRequestClose}>
+        <Modal.Header closeButton>
+          <Modal.Title>Upload Profile Image</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form onSubmit={handleSubmit}>
+            <Form.Group className="mb-3">
+              <Form.Label>Select Image</Form.Label>
+              <Form.Control 
+                type="file" 
+                accept="image/*" 
+                onChange={handleFileChange} 
+              />
+            </Form.Group>
+            
+            {previewImage && !showCropModal && (
+              <div className="text-center my-3">
+                <img 
+                  src={previewImage} 
+                  alt="Preview" 
+                  className="img-thumbnail" 
+                  style={{ maxHeight: '200px' }} 
+                />
+              </div>
+            )}
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={onRequestClose}>
+            Cancel
+          </Button>
+          <Button variant="primary" onClick={handleSubmit} disabled={!selectedFile}>
+            Upload
+          </Button>
+        </Modal.Footer>
+      </Modal>
+      
+      <CropResizeTiltModal 
+        show={showCropModal}
+        handleClose={() => setShowCropModal(false)}
+        imageSrc={previewImage}
+        onSave={handleCroppedImage}
+      />
+    </>
   );
 };
 

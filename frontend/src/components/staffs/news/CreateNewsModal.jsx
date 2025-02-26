@@ -12,8 +12,8 @@ function CreateNewsModal({ show, handleClose, handleSubmit, newsContent, setNews
     setNewsImages([]);
   };
   return (
-    <Modal show={show} className='am-overlay' onHide={() => { handleClose(); setHeadline(''); setNewsContent(''); setNewsImages([]); }}>
-      <div className="am-content">
+    <Modal size="lg" show={show} className='am-overlay' onHide={() => { handleClose(); setHeadline(''); setNewsContent(''); setNewsImages([]); }}>
+      <div className="">
       <Modal.Header closeButton className="am-header">
         <Modal.Title>Create News</Modal.Title>
       </Modal.Header>
@@ -64,7 +64,7 @@ CreateNewsModal.modules = {
     ['bold', 'italic', 'underline', 'strike', 'blockquote'],
     [{'list': 'ordered'}, {'list': 'bullet'}, 
      {'indent': '-1'}, {'indent': '+1'}],
-    ['link', 'image', 'video'],
+    ['link'],
     ['clean']
   ],
 };

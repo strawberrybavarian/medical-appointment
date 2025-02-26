@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Modal, Button, Form } from 'react-bootstrap';
+import { Modal, Button, Form, Container } from 'react-bootstrap';
 import axios from 'axios';
 import CropResizeTiltModal from './CropResizeTiltModal'; // Import the cropping modal
 import { ip } from '../../../../ContentExport';
@@ -69,16 +69,19 @@ const UpdatePatientImageModal = ({ show, handleClose, pid, onImageUpload }) => {
               <Form.Label>Select a new profile image</Form.Label>
               <Form.Control type="file" accept="image/*" onChange={handleFileChange} />
             </Form.Group>
-            {editedImage || imageSrc ? (
-              <div className="mt-3">
-                <h5>Image Preview</h5>
-                <img
-                  src={editedImage || imageSrc}
-                  alt="Preview"
-                  style={{ maxWidth: '100%', maxHeight: '300px' }}
-                />
-              </div>
-            ) : null}
+            <Container className="text-center">
+              {editedImage || imageSrc ? (
+                <div className="mt-3">
+                  <h5>Image Preview</h5>
+                  <img
+                    src={editedImage || imageSrc}
+                    alt="Preview"
+                    style={{ maxWidth: '100%', maxHeight: '300px' }}
+                  />
+                </div>
+              ) : null}
+            </Container>
+           
             <Button variant="primary" type="submit" className="mt-3">
               Upload
             </Button>

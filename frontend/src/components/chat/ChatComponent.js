@@ -2,17 +2,40 @@ import React, { useState, useEffect, useRef } from 'react';
 import io from 'socket.io-client';
 import { ip } from '../../ContentExport';
 import axios from 'axios';
-import { BsArrowRight } from 'react-icons/bs';
-import { Container } from 'react-bootstrap';
+import { BsArrowRight, BsX } from 'react-icons/bs';
+import { Container, Button } from 'react-bootstrap';
 function ChatComponent({ userId, userRole, closeChat }) {
+
+  const closeButtonStyle = {
+    marginLeft: '8px',
+    padding: '2px 6px',
+    backgroundColor: 'transparent',
+    border: 'none',
+    color: '#666',
+    cursor: 'pointer',
+    borderRadius: '50%',
+    display: 'none', 
+  };
+  
+  
+  const listItemStyle = {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: '8px 12px',
+    ':hover .close-btn': {
+      display: 'block',
+    },
+  };
+
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState([]);
   const [patientList, setPatientList] = useState([]);
   const [selectedPatient, setSelectedPatient] = useState(null);
   const [socket, setSocket] = useState(null);
-  const [unreadMessages, setUnreadMessages] = useState({}); // This will track unread messages for each patient
+  const [unreadMessages, setUnreadMessages] = useState({}); 
 
-  const messagesEndRef = useRef(null); // Reference to the end of the chat
+  const messagesEndRef = useRef(null); 
   const isPatient = userRole === 'Patient';
   const isMedSec = userRole === 'Medical Secretary';
   const isAdmin = userRole === 'Admin';
@@ -20,7 +43,7 @@ function ChatComponent({ userId, userRole, closeChat }) {
 
   const selectedPatientRef = useRef(selectedPatient);
   const formatTimestamp = (isoDate) => {
-    const date = new Date(isoDate); // Convert ISO string to Date object
+    const date = new Date(isoDate); 
     const options = {
       year: 'numeric',
       month: '2-digit',
@@ -28,7 +51,7 @@ function ChatComponent({ userId, userRole, closeChat }) {
       hour: '2-digit',
       minute: '2-digit',
       second: '2-digit',
-      hour12: false, // Optional: Use 24-hour format
+      hour12: false, 
     };
     return date.toLocaleString('en-GB', options).replace(',', '');
   };
@@ -49,7 +72,7 @@ function ChatComponent({ userId, userRole, closeChat }) {
 
     if (isMedSecOrAdmin) {
       newSocket.on('patient list', (patients) => {
-        // console.log('Received patient list:', patients);
+        
         setPatientList(patients);
       });
     }
@@ -61,7 +84,7 @@ function ChatComponent({ userId, userRole, closeChat }) {
     };
   }, [userId, userRole]);
 
-  const [lastMessageForPatient, setLastMessageForPatient] = useState({}); // Track the most recent message
+  const [lastMessageForPatient, setLastMessageForPatient] = useState({}); 
 
   const handleChatMessage = (data) => {
     if (isMedSecOrAdmin) {
@@ -70,7 +93,7 @@ function ChatComponent({ userId, userRole, closeChat }) {
         (data.sender === selectedPatientRef.current._id ||
           data.receiver.includes(selectedPatientRef.current._id))
       ) {
-        // Add the message to the chat
+        
         setMessages((prevMessages) => {
           if (!prevMessages.find((msg) => msg._id === data._id)) {
             return [...prevMessages, data];
@@ -78,25 +101,25 @@ function ChatComponent({ userId, userRole, closeChat }) {
           return prevMessages;
         });
   
-        // Reset the unread flag for the selected patient
+        
         setUnreadMessages((prevUnreadMessages) => ({
           ...prevUnreadMessages,
-          [data.sender]: false, // Mark as read
+          [data.sender]: false, 
         }));
       } else if (data.senderModel === 'Patient') {
-        // Track the most recent message for a patient
+        
         setLastMessageForPatient((prevMessages) => ({
           ...prevMessages,
           [data.sender]: data,
         }));
   
-        // Set the unread flag only for the patient who has an unread message
+        
         setUnreadMessages((prevUnreadMessages) => ({
           ...prevUnreadMessages,
-          [data.sender]: true, // Set as unread for the patient
+          [data.sender]: true, 
         }));
       }
-      // Removed the code that was adding new patients to the list
+      
     } else if (isPatient) {
       if (data.sender === userId || data.receiver.includes(userId)) {
         setMessages((prevMessages) => {
@@ -148,11 +171,11 @@ function ChatComponent({ userId, userRole, closeChat }) {
         }));
         setMessages(messagesData);
   
-        // If messages are successfully fetched, reset unread state for selected patient
+        
         if (isMedSecOrAdmin && selectedPatient) {
           setUnreadMessages((prevUnreadMessages) => ({
             ...prevUnreadMessages,
-            [selectedPatient._id]: false, // Reset unread flag after fetching messages
+            [selectedPatient._id]: false, 
           }));
         }
   
@@ -191,17 +214,17 @@ function ChatComponent({ userId, userRole, closeChat }) {
   const handlePatientSelect = (patient) => {
     setSelectedPatient(patient);
 
-    // Reset unread message flag for the selected patient
+    
     setUnreadMessages((prevUnreadMessages) => ({
       ...prevUnreadMessages,
-      [patient._id]: false, // Clear unread flag for the selected patient
+      [patient._id]: false, 
     }));
   };
 
   
   
 
-  // Automatically scrolls to the bottom whenever the messages array changes
+  
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
@@ -215,34 +238,52 @@ function ChatComponent({ userId, userRole, closeChat }) {
       {isMedSecOrAdmin && (
         <div className="patient-list">
           <div>
-            <Container className='ml-3 mt-3'>
+            <Container className='ml-3 mt-3 d-flex align-items-center'>
+                <Button
+                  className="close-btn"
+                  onClick={(e) => {
+                    e.stopPropagation(); 
+                    if (closeChat) {
+                      closeChat(true); 
+                    }
+                  }}
+                >
+                  <BsX size={20} />
+              </Button>
               <h3>Patients</h3>
             </Container>
           </div>
 
 
-  <ul>
-    {patientList.map((patient) => {
-      const lastMessage = lastMessageForPatient[patient._id];
-      const isUnread = unreadMessages[patient._id]; // Check if the patient has unread messages
+          <ul>
+  {patientList.map((patient) => {
+    const lastMessage = lastMessageForPatient[patient._id];
+    const isUnread = unreadMessages[patient._id];
+    const isLatestUnread = lastMessage && isUnread;
 
-      // Only show unread for the most recent message
-      const isLatestUnread = lastMessage && isUnread;
-
-      return (
-        <li
-          key={patient._id}
+    return (
+      <li
+        key={patient._id}
+        style={listItemStyle}
+        className={`${selectedPatient?._id === patient._id ? 'active' : ''} ${
+          isLatestUnread ? 'unread' : ''
+        }`}
+      >
+        <div 
+          style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}
           onClick={() => handlePatientSelect(patient)}
-          className={`${selectedPatient?._id === patient._id ? 'active' : ''} ${isLatestUnread ? 'unread' : ''}`}
         >
           {patient.name}
           {isLatestUnread && (
-            <span className="new-message-indicator">•</span> // Red dot indicator for unread
+            <span className="new-message-indicator">•</span>
           )}
-        </li>
-      );
-    })}
-  </ul>
+        </div>
+       
+
+      </li>
+    );
+  })}
+</ul>
 </div>
 
 

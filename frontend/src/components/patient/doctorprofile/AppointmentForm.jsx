@@ -28,6 +28,7 @@ function AppointmentForm({ pid, did }) {
     afternoon: 0,
   });
   const [loading, setLoading] = useState(true); 
+  const [activeAppointmentStatus, setActiveAppointmentStatus] = useState(true);
 
   const formatTicketDate = (dateString) => {
     const date = new Date(dateString);
@@ -50,8 +51,10 @@ function AppointmentForm({ pid, did }) {
         const doctor = response.data.doctor;
         console.log("Doctor API bookedslots:", doctor.bookedSlots);
         console.log("Doctor API availability:", doctor.availability);
+        console.log('active appointment', doctor.activeAppointmentStatus);
         setDoctorName(`${doctor.dr_firstName} ${doctor.dr_lastName}`);
         setAvailability(doctor.availability || {});
+        setActiveAppointmentStatus(doctor.activeAppointmentStatus); // Set the status
       })
       .catch((err) => {
         console.log(err);
@@ -254,7 +257,24 @@ function AppointmentForm({ pid, did }) {
       <Helmet>
         <title>Molino Care | Patient</title>
       </Helmet>
-      <Container className="appointment-form-container">
+      {!activeAppointmentStatus ? (
+
+        <Container className="appointment-form-container">
+                  <div className="d-flex">
+          <p className="m-0" style={{ fontWeight: "600", fontSize: "20px" }}>
+            Book an Appointment
+          </p>
+        </div>
+        <hr />
+          <Alert variant="danger">
+            <h6>
+              The doctor has disabled appointments. Please contact the clinic
+              for more information.
+            </h6>
+          </Alert>
+        </Container>
+      ) : (
+        <Container className="appointment-form-container">
         <div className="d-flex">
           <p className="m-0" style={{ fontWeight: "600", fontSize: "20px" }}>
             Book an Appointment
@@ -462,6 +482,8 @@ function AppointmentForm({ pid, did }) {
           )}
         </div>
       </Container>
+      )}
+
     </>
   );
 }
