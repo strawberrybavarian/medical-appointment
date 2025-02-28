@@ -311,16 +311,43 @@ const updatePatientInfo = async (req, res) => {
 
 
 const createUnregisteredPatient = async (req, res) => {
-  const { patient_email, ...rest } = req.body;
-
-  // Always include patient_email and set accountStatus to 'Unregistered'
-  const patientData = { ...rest, patient_email, accountStatus: 'Unregistered' };
-
   try {
-      const newPatient = await Patient.create(patientData);
-      res.json({ newPatient, status: "Successfully registered Patient." });
+    // Extract patient data from request body
+    const patientData = req.body;
+    
+    // Always ensure accountStatus is 'Unregistered'
+    patientData.accountStatus = 'Unregistered';
+    
+    // Handle image upload if present
+    if (req.file) {
+      // Store the path to the uploaded image
+      patientData.patient_image = `images/${req.file.filename}`;
+    }
+    
+    // Create the patient with the extracted data
+    const newPatient = await Patient.create(patientData);
+    
+    // Create an audit entry for the new patient creation
+    const auditData = {
+      user: newPatient._id,
+      userType: 'Patient',
+      action: 'Create Unregistered Patient',
+      description: `Unregistered patient account created for ${patientData.patient_firstName} ${patientData.patient_lastName}`,
+      ipAddress: req.ip,
+      userAgent: req.get('User-Agent'),
+    };
+
+    // Save the audit record
+    const audit = await new Audit(auditData).save();
+    
+    // Add the audit to the patient's audits array
+    newPatient.audits = [audit._id];
+    await newPatient.save();
+    
+    res.json({ newPatient, status: "Successfully registered Patient." });
   } catch (err) {
-      res.status(400).json({ message: 'Something went wrong. Please try again.', error: err });
+    console.error('Error creating unregistered patient:', err);
+    res.status(400).json({ message: 'Something went wrong. Please try again.', error: err.message });
   }
 };
 

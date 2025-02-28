@@ -48,7 +48,7 @@ module.exports = app => {
     app.post('/api/patient/session', PatientController.createPatientSession);
 
     //
-    app.post(`/api/patient/api/unregistered`, PatientController.createUnregisteredPatient);
+    app.post(`/api/patient/api/unregistered`, upload.single('image'),PatientController.createUnregisteredPatient);
     
     app.put('/api/patient/api/update/:pid', PatientController.updatePatientStatus);
     app.post('/api/patient/api/change-password/:pid', PatientController.changePatientPassword);

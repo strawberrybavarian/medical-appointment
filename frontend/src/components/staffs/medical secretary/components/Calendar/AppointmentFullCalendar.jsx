@@ -87,7 +87,7 @@ function AppointmentFullCalendar() {
 
     return {
       id: appointment._id,
-      title: `${appointment.patient.patient_firstName} ${appointment.patient.patient_lastName}`,
+      title: `${appointment.patient?.patient_firstName} ${appointment.patient?.patient_lastName}`,
       start: startTime,
       end: new Date(startTime.getTime() + 30 * 60000),
       description: appointment.reason,

@@ -335,11 +335,9 @@ const getUserById = async (id, role) => {
 };
 
 const setupTwoFactor = async (req, res) => {
+  const { id, role, regenerate } = req.body; // Extract id and role from request body
   try {
-    const { id, role, regenerate } = req.body; // Extract id and role from request body
     let user;
-
-    console.log(req.session)
 
     // Based on the role, fetch the correct user model
     if (role === 'Patient') {
@@ -352,7 +350,6 @@ const setupTwoFactor = async (req, res) => {
       user = await Admin.findById(id); // Get admin by ID
     }
 
-
     // If no user is found, return a 404 error
     if (!user) {
       return res.status(404).json({ message: `${role} not found` });
@@ -363,7 +360,11 @@ const setupTwoFactor = async (req, res) => {
       // Generate a new secret key if the user does not have one or if regenerate flag is true
       secret = speakeasy.generateSecret({ length: 30 });
       user.twoFactorSecret = secret.base32;
-      user.twoFactorEnabled = true; // Enable 2FA for this user
+      
+      // Don't enable 2FA yet - just store the secret
+      // twoFactorEnabled will be set to true only after verification
+      user.twoFactorEnabled = false;
+      
       await user.save(); // Save the changes
     } else {
       // Use the existing secret key
@@ -373,7 +374,7 @@ const setupTwoFactor = async (req, res) => {
     // Generate the OTP Auth URL with the saved secret key using speakeasy
     const otpAuthUrl = speakeasy.otpauthURL({
       secret: secret.base32,
-      label: `${user.firstName} ${user.lastName}:${user.email}`,
+      label: `Molino Polyclinic`,
       issuer: 'MyApp', // Adjust the issuer name accordingly
       encoding: 'base32'
     });
@@ -409,9 +410,9 @@ const verifyTwoFactor = async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    // Verify 2FA if enabled
-    if (!user.twoFactorEnabled) {
-      return res.status(400).json({ message: '2FA not enabled for this user' });
+    // Check if a secret exists
+    if (!user.twoFactorSecret) {
+      return res.status(400).json({ message: 'No 2FA secret found for this user' });
     }
 
     // If no code is provided, return an error
@@ -428,6 +429,10 @@ const verifyTwoFactor = async (req, res) => {
     });
 
     if (verified) {
+      // Now enable 2FA after successful verification
+      user.twoFactorEnabled = true;
+      await user.save();
+
       // Determine the field names dynamically based on the role
       let firstName = '';
       let lastName = '';
