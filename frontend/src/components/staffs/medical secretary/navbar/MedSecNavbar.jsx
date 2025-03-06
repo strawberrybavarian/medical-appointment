@@ -6,6 +6,7 @@ import { image, ip } from '../../../../ContentExport';
 import './Styles.css';
 import axios from 'axios';
 import io from 'socket.io-client';
+import LogoutModal from '../../../practitioner/sidebar/LogoutModal';
 
 function MedSecNavbar({ msid }) {
   const defaultImage = `${ip.address}/images/014ef2f860e8e56b27d4a3267e0a193a.jpg`;
@@ -19,6 +20,7 @@ function MedSecNavbar({ msid }) {
   // Notification states
   const [notifications, setNotifications] = useState([]);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   // Socket reference
   const socketRef = useRef();
@@ -157,8 +159,25 @@ function MedSecNavbar({ msid }) {
   const onNavigateAccountInfo = () => {
     navigate(`/medsec/account`, { state: { userId: msid, userName: name, role: roles } });
   };
-  const logOut = () => {
-    navigate("/");
+  
+  // New logout functions
+  const handleLogout = () => {
+    setShowLogoutModal(true);
+  };
+
+  const cancelLogout = () => {
+    setShowLogoutModal(false);
+  };
+
+  const confirmLogout = async () => {
+    try {
+      await axios.post(`${ip.address}/api/logout`, {}, { withCredentials: true });
+      navigate("/");
+    } catch (error) {
+      console.error('Error logging out:', error);
+      // Fallback if logout API fails
+      navigate("/");
+    }
   };
 
   return (
@@ -178,9 +197,9 @@ function MedSecNavbar({ msid }) {
                 </Nav>
                 <Nav>
                   <Nav.Link onClick={toggleNotifications} className="position-relative">
-                    <Bell size={20} />
+                    <Bell size={20} className={unreadCount > 0 ? 'sway' : ''} />
                     {unreadCount > 0 && (
-                      <span className="notification-badge">{displayCount}</span>
+                      <span className="notification-dot"></span>
                     )}
                     {showNotifications && (
                       <div className="notification-overlay">
@@ -232,17 +251,22 @@ function MedSecNavbar({ msid }) {
                     className="pnb-nav-link1"
                   >
                     <NavDropdown.Item className="pnb-nav-link" onClick={onNavigateAccountInfo}>Account</NavDropdown.Item>
-                    <NavDropdown.Item className="pnb-nav-link" onClick={logOut}>Logout</NavDropdown.Item>
+                    <NavDropdown.Divider />
+                    <NavDropdown.Item className="pnb-nav-link" onClick={handleLogout}>Logout</NavDropdown.Item>
                   </NavDropdown>
                 </Nav>
-
-              
-
               </Navbar.Collapse>
             </Container>
           </Navbar>
         </div>
       </div>
+
+      {/* Logout Confirmation Modal */}
+      <LogoutModal 
+        show={showLogoutModal} 
+        onCancel={cancelLogout} 
+        onConfirm={confirmLogout} 
+      />
     </>
   );
 }

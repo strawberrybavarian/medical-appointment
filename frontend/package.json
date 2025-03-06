@@ -49,6 +49,7 @@
     "react-data-table-component": "^7.6.2",
     "react-dom": "^18.2.0",
     "react-easy-crop": "^5.0.8",
+    "react-feather": "^2.0.10",
     "react-helmet": "^6.1.0",
     "react-icons": "^4.11.0",
     "react-icons-kit": "^2.0.0",

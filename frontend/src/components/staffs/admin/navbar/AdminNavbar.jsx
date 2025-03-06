@@ -6,13 +6,22 @@ import { image, ip } from '../../../../ContentExport';
 import './AdminNavbar.css';
 import axios from 'axios';
 import io from 'socket.io-client';
+import { useUser } from '../../../UserContext';
 
-function AdminNavbar({ userId, userName, role }) {
+function AdminNavbar() {
+
+  const {user,setUser} = useUser();
+  const userId = user._id;
+  const userName = user.firstName + " " + user.lastName;
+  const role = user.role;
+
+  // console.log(user)
   const defaultImage = "images/Admin-Icon.jpg";
   const navigate = useNavigate();
 
   const [notifications, setNotifications] = useState([]);
   const [showNotifications, setShowNotifications] = useState(false);
+  
   const socketRef = useRef();
 
   useEffect(() => {
@@ -73,7 +82,6 @@ function AdminNavbar({ userId, userName, role }) {
     }
 
     // Fetch existing notifications for Admin
-    // Adjust the endpoint as per your API definition
     axios
       .get(`${ip.address}/api/admin/${userId}`)
       .then((res) => {
@@ -143,18 +151,17 @@ function AdminNavbar({ userId, userName, role }) {
                 </Nav>
 
                 <Nav className="align-items-center">
-
                   <Nav.Link onClick={toggleNotifications} className="position-relative">
-                    <Bell size={20} />
+                    <Bell size={20} className={unreadCount > 0 ? 'sway' : ''} />
                     {unreadCount > 0 && (
-                      <span className="notification-badge">{displayCount}</span>
+                      <span className="notification-dot"></span>
                     )}
                     {showNotifications && (
                       <div className="notification-overlay">
                         {notifications.length > 0 ? (
                           notifications.map((notification, index) => (
                             <div
-                              key={notification._id}
+                              key={notification._id || index}
                               className={`notification-item ${!notification.isRead ? 'unread' : 'read'}`}
                               onClick={(e) => {
                                 e.preventDefault();
@@ -188,11 +195,15 @@ function AdminNavbar({ userId, userName, role }) {
                       src={`${ip.address}/${defaultImage}`}
                       alt="Profile"
                       className="profile-image ms-3"
-                      style={{ objectFit: 'cover' }}
+                      style={{ 
+                        objectFit: 'cover',
+                        height: '40px', 
+                        width: '40px',
+                        borderRadius: '50%'
+                      }}
                     />
                   </div>
                 </Nav>
-
               </Navbar.Collapse>
             </Container>
           </Navbar>

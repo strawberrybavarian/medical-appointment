@@ -10,6 +10,8 @@ function CreateNewsModal({ show, handleClose, handleSubmit, newsContent, setNews
     setHeadline("");
     setNewsContent("");
     setNewsImages([]);
+
+    window.location.reload();
   };
   return (
     <Modal size="lg" show={show} className='am-overlay' onHide={() => { handleClose(); setHeadline(''); setNewsContent(''); setNewsImages([]); }}>
