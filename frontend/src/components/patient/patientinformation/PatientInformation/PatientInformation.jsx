@@ -1,4 +1,4 @@
-import { Row, Col, Form, Container, Button, Image } from 'react-bootstrap';
+import { Row, Col, Form, Container, Button, Card } from 'react-bootstrap';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
 import ChangePasswordModal from './ChangePasswordModal';  
@@ -25,7 +25,7 @@ function PatientInformation({ pid }) {
   const [lastProfileUpdate, setLastProfileUpdate] = useState(null);
   const [image, setImage] = useState("images/014ef2f860e8e56b27d4a3267e0a193a.jpg");
   const [twoFaEnabled, setTwoFaEnabled] = useState(false);
-  const [showTwoFactorAuthModal, setShowTwoFactorAuthModal] = useState(false);  // New state for the 2FA modal
+  const [showTwoFactorAuthModal, setShowTwoFactorAuthModal] = useState(false);
 
   useEffect(() => {
     axios.get(`${ip.address}/api/patient/api/onepatient/${pid}`)
@@ -48,8 +48,6 @@ function PatientInformation({ pid }) {
       });
   }, [pid]);
 
-
-
   const maskEmail = (email) => {
     if (!email || !email.includes("@")) {
       return email;
@@ -66,7 +64,6 @@ function PatientInformation({ pid }) {
 
   const handleEnableDisableTwoFa = async () => {
     if (twoFaEnabled) {
-      // Disable 2FA if already enabled
       try {
         const response = await axios.post(`${ip.address}/api/disable-2fa`, { 
           userId: pid, 
@@ -81,8 +78,7 @@ function PatientInformation({ pid }) {
         alert('Error disabling 2FA');
       }
     } else {
-      // If 2FA is disabled, show the TwoFactorAuth modal to enable it
-      setShowTwoFactorAuthModal(true);  // Open the 2FA modal
+      setShowTwoFactorAuthModal(true);
     }
   };
 
@@ -92,7 +88,7 @@ function PatientInformation({ pid }) {
 
   const canUpdate = () => {
     if (!lastProfileUpdate) {
-      return true;  // Allow update if no lastProfileUpdate is available (first time update)
+      return true;
     }
 
     const currentDate = new Date();
@@ -116,95 +112,166 @@ function PatientInformation({ pid }) {
 
   return (
     <>
-      <Container fluid className="maincolor-container" style={{ height: '100vh' }}>
-        <div className="content-area p-0 m-0">
-          <div className="p-3">
-            <h3 className="m-0">Account Details</h3>
-            <p className="m-0">Manage your Profile</p>
-            <hr />
+      <div className="patInfoMain overflow-auto">
+        <Container className="patInfoContainer py-4">
+          <div className="patInfoHeader">
+            <div className="patInfoTitleWrapper">
+              <h3 className="patInfoTitle">Account Details</h3>
+              <p className="patInfoSubtitle">Manage your personal information</p>
+            </div>
           </div>
 
-          <Container>
-            <div className='pi-container2 d-flex align-items-center shadow-sm mb-4'> 
-              <img src={`${ip.address}/${image}`} alt="Doctor" className="ai-image" />
-              <div style={{marginLeft: '1rem'}} className="d-flex align-items-center justify-content-between w-100">
-                <div>
-                  <h4 className="m-0">{theName}</h4>
-                  <p style={{fontSize: '15px'}}>Patient</p>
-                </div>
+          <div className="patInfoContent">
+            {/* Profile Card */}
+            <Card className="patInfoProfileCard">
+              <Card.Body>
+                <div className="patInfoProfileWrapper">
+                  <div className="patInfoAvatarContainer">
+                    <div className="patInfoAvatarWrapper">
+                      <img 
+                        src={`${ip.address}/${image}`} 
+                        alt={`${theName}'s profile`}
+                        className="patInfoAvatar"
+                      />
+                      {/* <button 
+                        className="patInfoAvatarEditBtn"
+                        onClick={() => setShowImageModal(true)}
+                      >
+                        <Icon.PencilSquare />
+                      </button> */}
+                    </div>
+                  </div>
+                  
+                  <div className="patInfoProfileDetails">
+                    <h4 className="patInfoName">{theName} {theMI && `${theMI}. `}{theLastName}</h4>
+                    <div className="patInfoBadge">Patient</div>
 
-                <div>
-                  {/* Ternary operator to toggle 2FA */}
-                  {twoFaEnabled ? (
-                    <Button variant="danger" className="mr-2" onClick={handleEnableDisableTwoFa}>
-                      Disable 2FA
+                    <div className="patInfoActionButtons">
+
+
+                    <Button 
+                        
+                        onClick={() => setShowImageModal(true)}
+                      >
+                        Update Profile Picture
+                      </Button>
+                      <Button 
+                        variant={twoFaEnabled ? "outline-danger" : "outline-success"}
+                        className="patInfoSecurityBtn"
+                        onClick={handleEnableDisableTwoFa}
+                      >
+                        {twoFaEnabled ? 
+                          <><Icon.ShieldLock /> Disable 2FA</> : 
+                          <><Icon.ShieldPlus /> Enable 2FA</>
+                        }
+                      </Button>
+
+
+                    </div>
+                  </div>
+                </div>
+              </Card.Body>
+            </Card>
+
+            {/* Information Card */}
+            <Card className="patInfoDetailsCard">
+              <Card.Body>
+                <h5 className="patInfoSectionTitle">
+                  <Icon.Person className="patInfoSectionIcon" />
+                  Personal Information
+                </h5>
+                
+                <div className="patInfoFormContainer">
+                  <div className="patInfoRow">
+                    <div className="patInfoField">
+                      <label className="patInfoLabel">First Name</label>
+                      <div className="patInfoValue">{theName}</div>
+                    </div>
+                    
+                    <div className="patInfoField">
+                      <label className="patInfoLabel">Last Name</label>
+                      <div className="patInfoValue">{theLastName}</div>
+                    </div>
+                    
+                    <div className="patInfoField">
+                      <label className="patInfoLabel">Middle Initial</label>
+                      <div className="patInfoValue">{theMI || 'N/A'}</div>
+                    </div>
+                  </div>
+                  
+                  <div className="patInfoDivider"></div>
+                  
+                  <h5 className="patInfoSectionTitle">
+                    <Icon.Envelope className="patInfoSectionIcon" />
+                    Contact Information
+                  </h5>
+                  
+                  <div className="patInfoRow">
+                    <div className="patInfoField patInfoFieldWide">
+                      <label className="patInfoLabel">Email Address</label>
+                      <div className="patInfoValue">{maskEmail(email)}</div>
+                    </div>
+                  </div>
+                  
+                  <div className="patInfoRow">
+                    <div className="patInfoField">
+                      <label className="patInfoLabel">Date of Birth</label>
+                      <div className="patInfoValue">
+                        {dob ? new Date(dob).toLocaleDateString('en-US', {
+                          month: 'long',
+                          day: 'numeric', 
+                          year: 'numeric'
+                        }) : 'Not provided'}
+                      </div>
+                    </div>
+                    
+                    <div className="patInfoField">
+                      <label className="patInfoLabel">Contact Number</label>
+                      <div className="patInfoValue">{cnumber || 'Not provided'}</div>
+                    </div>
+                  </div>
+                  
+                  <div className="patInfoDivider"></div>
+                  
+                  <div className="patInfoActions">
+                    <Button 
+                      variant="primary" 
+                      className="patInfoEditBtn"
+                      onClick={handleShowInfoModal}
+                    >
+                      <Icon.PencilFill /> Edit Information
                     </Button>
-                  ) : (
-                    <Button variant="success" className="mr-2" onClick={handleEnableDisableTwoFa}>
-                      Enable 2FA
+                    <Button 
+                      variant="light" 
+                      className="patInfoPasswordBtn"
+                      onClick={() => setShowPasswordModal(true)}
+                    >
+                      <Icon.LockFill /> Change Password
                     </Button>
+                  </div>
+                  
+                  {!canUpdate() && lastProfileUpdate && (
+                    <div className="patInfoUpdateNote">
+                      <Icon.InfoCircle /> You can update your information again in {
+                        30 - Math.floor((new Date() - new Date(lastProfileUpdate)) / (1000 * 60 * 60 * 24))
+                      } days.
+                    </div>
                   )}
-                  <Button onClick={() => setShowImageModal(true)}>Upload Image<Icon.Upload style={{marginLeft:'0.4rem'}} /></Button>
                 </div>
-              </div>
-            </div>
+              </Card.Body>
+            </Card>
+          </div>
+        </Container>
+      </div>
 
-            <Form className='pi-container2 shadow-sm mb-5'>
-              <Row>
-                <Form.Group as={Col} controlId="firstName">
-                  <Form.Label>First Name:</Form.Label>
-                  <Form.Control value={theName} disabled className="form-picontrol" />
-                </Form.Group>
-                <Form.Group as={Col} controlId="lastName">
-                  <Form.Label>Last Name:</Form.Label>
-                  <Form.Control value={theLastName} disabled className="form-picontrol" />
-                </Form.Group>
-                <Form.Group as={Col} controlId="middleInitial">
-                  <Form.Label>Middle Initial:</Form.Label>
-                  <Form.Control value={theMI} disabled className="form-picontrol" />
-                </Form.Group>
-              </Row>
-              <Row>
-                <Form.Group as={Col} controlId="email">
-                  <Form.Label>Email:</Form.Label>
-                  <Form.Control value={maskEmail(email)} disabled className="form-picontrol" />
-                </Form.Group>
-              </Row>
-              <Row>
-                <Form.Group as={Col} controlId="dob">
-                  <Form.Label>Birthdate:</Form.Label>
-                  <Form.Control className="form-picontrol" value={new Date(dob).toLocaleDateString()} disabled />
-                </Form.Group>
-                <Form.Group as={Col} controlId="contactNumber">
-                  <Form.Label>Contact Number:</Form.Label>
-                  <Form.Control className="form-picontrol" value={cnumber} disabled />
-                </Form.Group>
-              </Row>
-              <Row>
-                <Col className="text-center mt-3">
-                  <Button variant="primary" onClick={handleShowInfoModal}>
-                    Edit Information
-                  </Button>
-                  <Button variant="link" onClick={() => setShowPasswordModal(true)}>
-                    Change Password
-                  </Button>
-                </Col>
-              </Row>
-            </Form>
-          </Container>
-        </div>
-      </Container>
-
-      {/* Render the TwoFactorAuth modal when 2FA is not enabled */}
+      {/* Modals */}
       {showTwoFactorAuthModal && (
         <TwoFactorAuth 
           show={showTwoFactorAuthModal} 
           handleClose={() => setShowTwoFactorAuthModal(false)} 
-    
         />
       )}
 
-      {/* Modal handling */}
       <ChangePasswordModal
         show={showPasswordModal}
         handleClose={handleCloseModal}
@@ -212,18 +279,22 @@ function PatientInformation({ pid }) {
         email={email}
         password={password}
       />
+      
       <UpdatePatientInfoModal
         show={showInfoModal}
         handleClose={handleCloseModal}
         thePatient={thePatient}
         pid={pid}
       />
+      
       <UpdatePatientImageModal
         show={showImageModal}
         handleClose={handleCloseModal}
         pid={pid}
         onImageUpload={handleImageUpload}
       />
+      
+
     </>
   );
 }

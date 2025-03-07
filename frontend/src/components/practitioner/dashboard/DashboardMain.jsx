@@ -69,7 +69,7 @@ function DashboardMain() {
         >
                   <DoctorNavbar doctor_image={doctorData.image} did={did} />
 
-          <div className="w-100 d-flex justify-content-center mt-5 position-relative">
+          <div className="w-100 d-flex justify-content-center position-relative">
             <div className="position-relative">
               <img
                 className="img-fluid dm-photo shadow-lg"

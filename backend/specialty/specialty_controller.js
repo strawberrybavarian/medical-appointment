@@ -81,9 +81,20 @@ const deleteSpecialty = async (req, res) => {
     }
 };
 
+const getOneSpecialtyById = async (req, res) => {
+    try {
+        const { specialtyId } = req.params;
+        const specialty = await Specialty.findById(specialtyId);
+        return res.status(200).json(specialty);
+    } catch (error) {
+        return res.status(500).json({ message: 'Server error', error: error.message });
+    }
+};
+
 module.exports = {
     addSpecialty,
     getSpecialties,
     updateSpecialty,
     deleteSpecialty,
+    getOneSpecialtyById,
 };

@@ -33,13 +33,6 @@ const MedSecAccInfo = () => {
                     My details
                   </a>
 
-                  <a
-                    onClick={() => setActiveTab("authentication")}
-                    className={activeTab === "authentication" ? "active" : ""}
-                  >
-                    Authentication
-                  </a>
-
 
                   <a
                     onClick={() => setActiveTab("audit")}

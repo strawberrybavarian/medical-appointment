@@ -16,6 +16,9 @@ import { ip } from '../../../ContentExport';
 import AppointmentStepper from './AppointmentStepper';
 import socket from '../../../socket'; // Import the socket connection
 import { useNavigate } from 'react-router-dom';
+import { 
+  CalendarCheck,
+} from 'react-bootstrap-icons';
 import { useUser } from '../../UserContext';
 function MyAppointment() {
   const [activeTab, setActiveTab] = useState('pending');
@@ -96,16 +99,30 @@ function MyAppointment() {
         <div className="maincolor-container">
           <div className="content-area">
             <Container className='px-4 mt-5'>
-              <div className='ml-3'>
-                <h2>My Appointments</h2>
-                <p className="text-muted">See your appointment details.</p>
+            <div className="mb-4">
+              <div className="d-flex align-items-center mb-2">
+                <CalendarCheck size={24} className="text-primary me-2" />
+                <h2 className="mb-0">My Appointments</h2>
               </div>
+              <p className="text-muted ms-4">Track and manage your appointment details</p>
+            </div>
 
             </Container>
 
             <Container>
               <Row>
-                <Col md={8}>
+                <Col md={12}>
+
+                <Container>
+                    {latestAppointment ? (
+                      <AppointmentStepper
+                        currentStatus={latestAppointment.status}
+                        latestAppointment={latestAppointment} // Pass the latest appointment
+                      />
+                    ) : (
+                      <p>No active appointments.</p>
+                    )}
+                  </Container>
                   <Container className="d-flex content-area">
                     <Nav fill variant="tabs" className="app-navtabs" activeKey={activeTab}>
                       <Nav.Item>
@@ -156,16 +173,7 @@ function MyAppointment() {
                 </Col>
 
                 <Col>
-                  <Container>
-                    {latestAppointment ? (
-                      <AppointmentStepper
-                        currentStatus={latestAppointment.status}
-                        latestAppointment={latestAppointment} // Pass the latest appointment
-                      />
-                    ) : (
-                      <p>No active appointments.</p>
-                    )}
-                  </Container>
+                
                 </Col>
               </Row>
             </Container>

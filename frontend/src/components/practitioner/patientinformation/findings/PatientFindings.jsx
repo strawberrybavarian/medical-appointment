@@ -386,7 +386,7 @@ function PatientFindings({ patientId, appointmentId, doctorId }) {
 
   return (
     <Container fluid className="findings-container">
-      <Row className="mt-4">
+      <Row className="mt-4 d-flex">
         <Col md={4}>
           <Card className="mb-4 shadow-sm border-0">
             <Card.Header className="bg-white py-3 d-flex align-items-center">

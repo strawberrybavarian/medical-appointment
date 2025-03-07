@@ -13,7 +13,7 @@ import axios from "axios";
 import { PassFill, CheckAll } from "react-bootstrap-icons";
 import { Helmet } from "react-helmet";
 import { ip } from "../../../ContentExport";
-
+import Swal from "sweetalert2";
 function AppointmentForm({ pid, did }) {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
@@ -154,7 +154,11 @@ function AppointmentForm({ pid, did }) {
 
   const createAppointment = () => {
     if (!date || !time) {
-      window.alert("Please select a valid date and time for the appointment.");
+      Swal.fire({
+        title: "Validation Error",
+        text: "Please fill out all fields.",
+        icon: "error",
+      });
       return;
     }
   
@@ -172,8 +176,11 @@ function AppointmentForm({ pid, did }) {
     axios
       .post(`${ip.address}/api/patient/api/${pid}/createappointment`, formData)
       .then(() => {
-        window.alert("Created an appointment!");
-  
+        Swal.fire({
+          title: "Success",
+          text: "Appointment created successfully.",
+          icon: "success",
+        });
         
         const updatedAvailableTimes = availableTimes.map((slot) => {
           if (slot.timeRange === time) {
@@ -198,10 +205,19 @@ function AppointmentForm({ pid, did }) {
       .catch((err) => {
         if (err.response) {
           console.log(err.response.data);
-          window.alert(`Error: ${err.response.data.message}`);
+          Swal.fire({
+            title: "Error",
+            text: "An error occurred while creating the appointment.",
+            icon: "error",
+          });
+
         } else {
           console.log(err);
-          window.alert("An error occurred while creating the appointment.");
+          Swal.fire({
+            title: "Error",
+            text: "An error occurred while creating the appointment.",
+            icon: "error",
+          });
         }
       });
   };
@@ -214,7 +230,12 @@ function AppointmentForm({ pid, did }) {
   const handleNextStep = () => {
     if (step === 1) {
       if (!date || !time || !reason) {
-        window.alert("Please fill out all fields.");
+        Swal.fire({
+          title: "Validation Error",
+          text: "Please fill out all fields.",
+          icon: "error",
+        });
+
         return;
       }
 
@@ -223,11 +244,15 @@ function AppointmentForm({ pid, did }) {
       );
 
       if (!selectedPeriod || selectedPeriod.availableSlots <= 0) {
-        window.alert(
-          `No available slots for the ${
+
+        Swal.fire({
+          title: "Validation Error",
+          text: `No available slots for the ${
             selectedPeriod?.label || "selected"
-          } period. Please choose another date or time.`
-        );
+          } period. Please choose another date or time.`,
+          icon: "error",
+        });
+
         return;
       }
     }

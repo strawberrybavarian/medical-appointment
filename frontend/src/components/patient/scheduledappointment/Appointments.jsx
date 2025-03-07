@@ -30,11 +30,11 @@ function Appointments({ appointments, setAppointments }) {
         axios.put(`${ip.address}/api/patient/${selectedAppointment._id}/updateappointment`, { cancelReason })
             .then((response) => {
                 console.log(response.data);
-                setAppointments(prevAppointments => 
-                    prevAppointments.map(appointment => 
-                        appointment._id === selectedAppointment._id 
-                        ? { ...appointment, status: 'Cancelled', cancelReason } 
-                        : appointment
+                setAppointments(prevAppointments =>
+                    prevAppointments.map(appointment =>
+                        appointment._id === selectedAppointment._id
+                            ? { ...appointment, status: 'Cancelled', cancelReason }
+                            : appointment
                     )
                 );
                 handleCloseModal();
@@ -96,18 +96,18 @@ function Appointments({ appointments, setAppointments }) {
     const convertTimeRangeTo12HourFormat = (timeRange) => {
         // Check if the timeRange is missing or empty
         if (!timeRange) return 'Not Assigned';
-        
+
         const convertTo12Hour = (time) => {
             // Handle single time values like "10:00"
             if (!time) return '';
-            
+
             let [hours, minutes] = time.split(':').map(Number);
             const period = hours >= 12 ? 'PM' : 'AM';
             hours = hours % 12 || 12; // Convert 0 or 12 to 12 in 12-hour format
-            
+
             return `${hours}:${String(minutes).padStart(2, '0')} ${period}`;
         };
-        
+
         // Handle both single times and ranges
         if (timeRange.includes(' - ')) {
             const [startTime, endTime] = timeRange.split(' - ');
@@ -126,7 +126,7 @@ function Appointments({ appointments, setAppointments }) {
                             <h5 className="month-heading mb-3">
                                 {groupedAppointments[groupKey].month} {groupedAppointments[groupKey].year}
                             </h5>
-                            
+
                             {groupedAppointments[groupKey].appointments.map((appointment, i) => {
                                 const { day, month, dayOfWeek, fullDate } = formatDate(appointment.date);
                                 const isAppointmentToday = isToday(fullDate);
@@ -143,14 +143,14 @@ function Appointments({ appointments, setAppointments }) {
                                                         <span className="day-number">{day}</span>
                                                     </div>
                                                 </Col>
-                                                
+
                                                 <Col xs={9} md={10}>
                                                     <Row className="g-0 h-100 appointment-details">
                                                         <Col xs={12} md={5} className="p-3">
                                                             <div className="appointment-id mb-2">
                                                                 <Badge bg="light" text="dark">ID: {appointment.appointment_ID}</Badge>
                                                             </div>
-                                                            
+
                                                             {appointment.doctor ? (
                                                                 <>
                                                                     <div className="mb-2 d-flex align-items-center">
@@ -172,7 +172,7 @@ function Appointments({ appointments, setAppointments }) {
                                                                 </div>
                                                             )}
                                                         </Col>
-                                                        
+
                                                         <Col xs={12} md={3} className="p-3 border-start-md">
                                                             <div className="mb-2 d-flex align-items-center">
                                                                 <PencilFill className="icon-primary me-2" />
@@ -181,27 +181,27 @@ function Appointments({ appointments, setAppointments }) {
 
                                                             <div className="d-flex align-items-center">
                                                                 <CalendarEvent className="icon-primary me-2" />
-                                                                <span>Follow-up: {appointment.followUp ? 
-                                                                    <Badge bg="success" className="ms-1">Yes</Badge> : 
+                                                                <span>Follow-up: {appointment.followUp ?
+                                                                    <Badge bg="success" className="ms-1">Yes</Badge> :
                                                                     <Badge bg="secondary" className="ms-1">No</Badge>}
                                                                 </span>
                                                             </div>
                                                         </Col>
-                                                        
-                                                                                                                <Col xs={12} md={4} className="actions-column text-center d-flex justify-content-center align-items-center p-3">
-                                                                                                                <div className="mb-2 d-flex justify-content-end align-items-center">
-                                                        
-                                                                                                                 <Button 
-                                                                                                                        variant="outline-danger" 
-                                                                                                                        onClick={() => handleCancelClick(appointment)}
-                                                                                                                        className="cancel-btn d-flex align-items-center justify-content-center mx-auto"
-                                                                                                                    >
-                                                                                                                        <XCircle className="me-2" />
-                                                                                                                        Cancel
-                                                                                                                    </Button>
-                                                                                                                </div>
-                                                                                                              
-                                                                                                                </Col>
+
+                                                        <Col xs={12} md={4} className="actions-column text-center d-flex justify-content-center align-items-center p-3">
+                                                            <div className="mb-2 d-flex justify-content-end align-items-center">
+
+                                                                <Button
+                                                                    variant="outline-danger"
+                                                                    onClick={() => handleCancelClick(appointment)}
+                                                                    className="cancel-btn d-flex align-items-center justify-content-center mx-auto"
+                                                                >
+                                                                    <XCircle className="me-2" />
+                                                                    Cancel
+                                                                </Button>
+                                                            </div>
+
+                                                        </Col>
                                                     </Row>
                                                 </Col>
                                             </Row>
@@ -221,14 +221,14 @@ function Appointments({ appointments, setAppointments }) {
                     </div>
                 )}
             </Container>
-            
+
             <CancelModal
                 show={showModal}
                 handleClose={handleCloseModal}
                 handleConfirm={handleConfirmCancellation}
             />
-            
-    
+
+
         </>
     );
 }

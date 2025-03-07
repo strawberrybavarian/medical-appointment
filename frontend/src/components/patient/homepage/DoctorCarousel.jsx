@@ -1,15 +1,16 @@
 import { useNavigate } from "react-router-dom";
-import { Card, Button, Container } from "react-bootstrap";
+import { Button, Container } from "react-bootstrap";
 import { useEffect, useState, useRef } from "react";
 import { ChevronLeft, ChevronRight } from "react-bootstrap-icons";
 import axios from "axios";
 import { ip } from "../../../ContentExport";
-import { io } from "socket.io-client"; // Ensure proper import of Socket.IO client
+import { io } from "socket.io-client";
+import "./DoctorCarousel.css";
 
 const defaultImage = "images/014ef2f860e8e56b27d4a3267e0a193a.jpg";
 
 function DoctorCarousel({ pid }) {
-  const [doctors, setDoctors] = useState([]); // Doctors state
+  const [doctors, setDoctors] = useState([]);
   const navigate = useNavigate();
   const scrollRef = useRef(null);
   const socketRef = useRef(null);
@@ -20,20 +21,18 @@ function DoctorCarousel({ pid }) {
       try {
         const response = await axios.get(`${ip.address}/api/doctor/api/alldoctor`);
         setDoctors(response.data.theDoctor);
-        // console.log("Fetched doctors:", response.data.theDoctor); // Debug log
       } catch (error) {
         console.error("Error fetching doctors:", error);
       }
     };
 
-    fetchDoctors(); // Initial fetch
+    fetchDoctors();
 
     // Initialize Socket.IO connection
     socketRef.current = io(ip.address);
 
-    // Log socket connection
     socketRef.current.on("connect", () => {
-      // console.log("Socket connected:", socketRef.current.id);
+      // Connection established
     });
 
     // Listen for doctor activity status updates
@@ -47,7 +46,6 @@ function DoctorCarousel({ pid }) {
       );
     });
     
-
     // Cleanup on component unmount
     return () => {
       if (socketRef.current) {
@@ -55,7 +53,7 @@ function DoctorCarousel({ pid }) {
         socketRef.current.disconnect();
       }
     };
-  }, []); // Empty dependency array
+  }, []);
 
   // Handle doctor card click
   const handleDoctorClick = (did) => {
@@ -78,6 +76,17 @@ function DoctorCarousel({ pid }) {
     return `Inactive for a while`;
   };
 
+  // Get status text for visualization
+  const getStatusDetails = (doctor) => {
+    if (doctor.activityStatus === "Online") {
+      return { text: "Online", className: "doctor-status-online" };
+    } else if (doctor.activityStatus === "In Session") {
+      return { text: "In Session", className: "doctor-status-session" };
+    } else {
+      return { text: timeSinceLastActive(doctor.lastActive), className: "doctor-status-offline" };
+    }
+  };
+
   // Scroll the carousel
   const scroll = (offset) => {
     if (scrollRef.current) {
@@ -86,78 +95,62 @@ function DoctorCarousel({ pid }) {
   };
 
   return (
-    <Container>
-      <Container className="ml-5 d-flex w-100">
-        <div className="w-100">
-          <h4>List of Doctors</h4>
+    <Container className="doc-carousel-section">
+      <div className="doc-carousel-header">
+        <h4 className="doc-carousel-title">Our Medical Professionals</h4>
+        <div className="doc-carousel-nav">
+          <Button
+            variant="light"
+            onClick={() => scroll(-300)}
+            className="doc-nav-button doc-nav-prev"
+            aria-label="Previous"
+          >
+            <ChevronLeft />
+          </Button>
+          <Button
+            variant="light"
+            onClick={() => scroll(300)}
+            className="doc-nav-button doc-nav-next"
+            aria-label="Next"
+          >
+            <ChevronRight />
+          </Button>
         </div>
-      </Container>
+      </div>
 
-      <div className="doctor-carousel-container">
-        <Button
-          variant="secondary"
-          onClick={() => scroll(-980)}
-          className="scroll-button circle-button"
-        >
-          <ChevronLeft />
-        </Button>
-
-        <div className="doctor-carousel" ref={scrollRef}>
+      <div className="doc-carousel-wrapper">
+        <div className="doc-carousel" ref={scrollRef}>
           {doctors.map((doctor) => {
             const doctorImage = doctor.dr_image || defaultImage;
-            const statusColor =
-              doctor.activityStatus === "Online"
-                ? "green"
-                : doctor.activityStatus === "In Session"
-                ? "orange"
-                : "gray";
-
+            const status = getStatusDetails(doctor);
+            
             return (
-              <Card
+              <div 
                 key={doctor._id}
-                className="cd-card"
+                className="doc-card"
                 onClick={() => handleDoctorClick(doctor._id)}
-                style={{ width: "180px", margin: "0 10px" }}
               >
-                <Card.Img variant="top" src={`${ip.address}/${doctorImage}`} />
-                <Card.Body>
-                  <Card.Title style={{ textAlign: "center", fontSize: "14px" }}>
-                    {doctor.dr_firstName} {doctor.dr_middleInitial}. {doctor.dr_lastName}
-                  </Card.Title>
-                  <p style={{ textAlign: "center", fontSize: "12px", fontStyle: "italic" }}>
-                    {doctor.dr_specialty}
-                  </p>
-                  <p style={{ textAlign: "center", fontSize: "10px" }}>
-                    <span
-                      className="status-indicator"
-                      style={{
-                        backgroundColor: statusColor,
-                        borderRadius: "50%",
-                        display: "inline-block",
-                        width: "8px",
-                        height: "8px",
-                        marginRight: "8px",
-                      }}
-                    ></span>
-                    {doctor.activityStatus === "Online"
-                      ? "Online"
-                      : doctor.activityStatus === "In Session"
-                      ? "In Session"
-                      : `Last Active: ${timeSinceLastActive(doctor.lastActive)}`}
-                  </p>
-                </Card.Body>
-              </Card>
+                <div className="doc-card-image-wrapper">
+                  <div className="doc-card-image">
+                    <img src={`${ip.address}/${doctorImage}`} alt={`Dr. ${doctor.dr_lastName}`} />
+                    <div className={`doc-status-indicator ${status.className}`}></div>
+                  </div>
+                </div>
+                <div className="doc-card-content">
+                  <h5 className="doc-card-name">
+                    Dr. {doctor.dr_firstName} {doctor.dr_middleInitial && `${doctor.dr_middleInitial}.`} {doctor.dr_lastName}
+                  </h5>
+                  <p className="doc-card-specialty">{doctor.dr_specialty}</p>
+                  <div className="doc-card-status">
+                    <span className={`doc-status-text ${status.className}`}>
+                      {status.text}
+                    </span>
+                  </div>
+                </div>
+              </div>
             );
           })}
         </div>
-
-        <Button
-          variant="secondary"
-          onClick={() => scroll(980)}
-          className="scroll-button circle-button"
-        >
-          <ChevronRight />
-        </Button>
       </div>
     </Container>
   );

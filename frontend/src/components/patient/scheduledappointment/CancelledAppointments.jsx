@@ -113,7 +113,7 @@ function CancelledAppointments({ appointments, setAppointments }) {
                                 const category = appointment.appointment_type[0]?.category || "N/A";
 
                                 return (
-                                    <Card key={i} className="appointment-card mb-3 border-0 shadow-sm">
+                                    <Card key={i} className="appointment-card mb-3 border-0 shadow-sm ">
                                         <Card.Body className="p-0">
                                             <Row className="g-0 align-items-center">
                                                 <Col xs={3} md={2} className="date-column text-center py-3">

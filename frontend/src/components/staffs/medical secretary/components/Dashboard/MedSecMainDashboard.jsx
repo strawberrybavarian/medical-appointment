@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Container, Row, Col, Button, Collapse } from 'react-bootstrap';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import MedSecDashboard from './MedSecDashboard';
 import MedSecNavbar from '../../navbar/MedSecNavbar';
 import NewsAnnouncement from '../../../news/NewsAnnouncement';
@@ -14,7 +14,6 @@ import { ChatDotsFill } from 'react-bootstrap-icons';
 import { useUser } from '../../../../UserContext';
 import DeactivationRequestMedSec from './DeactivationRequestMedSec';
 
-
 function MedSecMainDashboard() {
     const location = useLocation();  // Retrieve state from location
     const { userId, userName, role } = location.state || {};  // Destructure the passed data
@@ -23,6 +22,11 @@ function MedSecMainDashboard() {
     const [error, setError] = useState(null);  // Handle error state
     const [openProfile, setOpenProfile] = useState(false);
 
+    const navigate = useNavigate();
+
+    const navigateToAppointment = () => {
+        navigate('/medsec/appointments');
+    };
 
     const { user } = useUser();
     console.log(user._id)
@@ -60,7 +64,7 @@ function MedSecMainDashboard() {
                                                     <p className="fs-3 fs-md-4 fs-sm-5 text-white">Welcome!</p>
                                                     <p className="fs-2 fs-md-3 fs-sm-4 text-white">{userName}</p>
                                                     <p className="fs-6 fs-md-6 fs-sm-7 text-white mb-4">Here you can manage your appointments, view your patients, and post announcements.</p>
-                                                    <button className="btn btn-primary" >View your Appointments</button>
+                                                    <button className="btn btn-primary" onClick={navigateToAppointment} >View your Appointments</button>
                                                 </div>
                                             </div>
                                         </div>

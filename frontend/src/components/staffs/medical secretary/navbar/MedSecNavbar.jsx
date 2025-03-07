@@ -7,11 +7,12 @@ import './Styles.css';
 import axios from 'axios';
 import io from 'socket.io-client';
 import LogoutModal from '../../../practitioner/sidebar/LogoutModal';
-
-function MedSecNavbar({ msid }) {
+import { useUser } from '../../../UserContext';
+function MedSecNavbar()  {
   const defaultImage = `${ip.address}/images/014ef2f860e8e56b27d4a3267e0a193a.jpg`;
   const navigate = useNavigate();
-
+  const { user } = useUser();
+  const msid = user._id;
   const [medSecData, setMedSecData] = useState(null);
   const [roles, setRoles] = useState([]);
   const [name, setName] = useState('');
