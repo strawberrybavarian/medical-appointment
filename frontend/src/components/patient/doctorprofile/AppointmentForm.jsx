@@ -13,11 +13,11 @@ import axios from "axios";
 import { PassFill, CheckAll } from "react-bootstrap-icons";
 import { Helmet } from "react-helmet";
 import { ip } from "../../../ContentExport";
-
+import Swal from "sweetalert2";
 function AppointmentForm({ pid, did }) {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
-  const [date, setDate] = useState(""); // Automatically set today's date in useEffect
+  const [date, setDate] = useState(""); 
   const [time, setTime] = useState("");
   const [reason, setReason] = useState("");
   const [availableTimes, setAvailableTimes] = useState([]);
@@ -27,7 +27,8 @@ function AppointmentForm({ pid, did }) {
     morning: 0,
     afternoon: 0,
   });
-  const [loading, setLoading] = useState(true); // Loading state
+  const [loading, setLoading] = useState(true); 
+  const [activeAppointmentStatus, setActiveAppointmentStatus] = useState(true);
 
   const formatTicketDate = (dateString) => {
     const date = new Date(dateString);
@@ -43,15 +44,17 @@ function AppointmentForm({ pid, did }) {
     const today = getTodayDate();
     setDate(today);
 
-    // Fetch doctor's availability and name
+    
     axios
       .get(`${ip.address}/api/doctor/${did}`)
       .then((response) => {
         const doctor = response.data.doctor;
         console.log("Doctor API bookedslots:", doctor.bookedSlots);
         console.log("Doctor API availability:", doctor.availability);
+        console.log('active appointment', doctor.activeAppointmentStatus);
         setDoctorName(`${doctor.dr_firstName} ${doctor.dr_lastName}`);
         setAvailability(doctor.availability || {});
+        setActiveAppointmentStatus(doctor.activeAppointmentStatus); // Set the status
       })
       .catch((err) => {
         console.log(err);
@@ -62,7 +65,7 @@ function AppointmentForm({ pid, did }) {
     if (date) {
       const fetchAppointments = async () => {
         try {
-          setLoading(true); // Set loading before fetching data
+          setLoading(true); 
   
           const selectedDate = new Date(date);
           const daysOfWeek = [
@@ -76,7 +79,7 @@ function AppointmentForm({ pid, did }) {
           ];
           const day = daysOfWeek[selectedDate.getDay()];
   
-          // Fetch booked patients for the selected date
+          
           const response = await axios.get(
             `${ip.address}/api/appointments/doctor/${did}/count?date=${date}`
           );
@@ -86,21 +89,21 @@ function AppointmentForm({ pid, did }) {
   
           setBookedPatients({ morning, afternoon });
   
-          // Once booked patients are set, update the available times
+          
           const updatedTimes = getAvailableTimes(day, morning, afternoon);
           setAvailableTimes(updatedTimes);
   
         } catch (err) {
           console.log("Error fetching appointments:", err);
         } finally {
-          setLoading(false); // Always set loading to false after fetching
+          setLoading(false); 
         }
       };
   
-      fetchAppointments(); // Invoke the async function
+      fetchAppointments(); 
     } else {
-      setAvailableTimes([]); // Reset if no date selected
-      setLoading(false); // Ensure loading state is set to false
+      setAvailableTimes([]); 
+      setLoading(false); 
     }
   }, [date, availability, did]);
 
@@ -149,60 +152,96 @@ function AppointmentForm({ pid, did }) {
     return times;
   };
 
-  const createAppointment = () => {
-    if (!date || !time) {
-      window.alert("Please select a valid date and time for the appointment.");
-      return;
-    }
-  
-    const formData = {
-      doctor: did || null,
-      date,
-      time: time || null,
-      reason,
-      appointment_type: {
-        appointment_type: "Consultation", // Default to Consultation
-        category: "General", // Optional category if required
-      },
-    };
-  
-    axios
-      .post(`${ip.address}/api/patient/api/${pid}/createappointment`, formData)
-      .then(() => {
-        window.alert("Created an appointment!");
-  
-        // After successful booking, update available slots based on selected time
-        const updatedAvailableTimes = availableTimes.map((slot) => {
-          if (slot.timeRange === time) {
-            return { ...slot, availableSlots: slot.availableSlots - 1 };
-          }
-          return slot;
-        });
-  
-        setAvailableTimes(updatedAvailableTimes); // Update state with decreased slot
-  
-        // Update morning or afternoon bookedPatients count
-        const period = updatedAvailableTimes.find(
-          (slot) => slot.timeRange === time
-        )?.period;
-        setBookedPatients((prev) => ({
-          ...prev,
-          [period]: prev[period] + 1, // Increment the specific period's count
-        }));
-  
-        navigate("/myappointment", { state: { pid } });
-      })
-      .catch((err) => {
-        if (err.response) {
-          console.log(err.response.data);
-          window.alert(`Error: ${err.response.data.message}`);
-        } else {
-          console.log(err);
-          window.alert("An error occurred while creating the appointment.");
-        }
-      });
-  };
+const createAppointment = () => {
+  if (!date || !time) {
+    Swal.fire({
+      title: "Validation Error",
+      text: "Please fill out all fields.",
+      icon: "error",
+    });
+    return;
+  }
 
+  // First show a confirmation dialog
+  Swal.fire({
+    title: "Confirm Appointment",
+    html: `
+      <div class="text-left">
+        <p><strong>Doctor:</strong> ${doctorName}</p>
+        <p><strong>Date:</strong> ${new Date(date).toLocaleDateString()}</p>
+        <p><strong>Time:</strong> ${time}</p>
+        <p><strong>Reason:</strong> ${reason}</p>
+      </div>
+      <p>Are you sure you want to create this appointment?</p>
+    `,
+    icon: "question",
+    showCancelButton: true,
+    confirmButtonText: "Yes, create appointment",
+    cancelButtonText: "Cancel",
+    reverseButtons: true,
+    confirmButtonColor: "#198754", // Bootstrap success green
+  }).then((result) => {
+    // Only create the appointment if the user confirmed
+    if (result.isConfirmed) {
+      const formData = {
+        doctor: did || null,
+        date,
+        time: time || null,
+        reason,
+        appointment_type: {
+          appointment_type: "Consultation", 
+          category: "General", 
+        },
+      };
+      
+      axios
+        .post(`${ip.address}/api/patient/api/${pid}/createappointment`, formData)
+        .then(() => {
+          Swal.fire({
+            title: "Success",
+            text: "Appointment created successfully.",
+            icon: "success",
+          });
+          
+          const updatedAvailableTimes = availableTimes.map((slot) => {
+            if (slot.timeRange === time) {
+              return { ...slot, availableSlots: slot.availableSlots - 1 };
+            }
+            return slot;
+          });
+    
+          setAvailableTimes(updatedAvailableTimes); 
+    
+          const period = updatedAvailableTimes.find(
+            (slot) => slot.timeRange === time
+          )?.period;
+          setBookedPatients((prev) => ({
+            ...prev,
+            [period]: prev[period] + 1, 
+          }));
+    
+          navigate("/myappointment", { state: { pid } });
+        })
+        .catch((err) => {
+          if (err.response) {
+            console.log(err.response.data);
+            Swal.fire({
+              title: "Error",
+              text: err.response.data.message || "An error occurred while creating the appointment.",
+              icon: "error",
+            });
+          } else {
+            console.log(err);
+            Swal.fire({
+              title: "Error",
+              text: "An error occurred while creating the appointment.",
+              icon: "error",
+            });
+          }
+        });
+    }
+  });
+};
   const getTodayDate = () => {
     const today = new Date();
     return today.toISOString().split("T")[0];
@@ -211,7 +250,12 @@ function AppointmentForm({ pid, did }) {
   const handleNextStep = () => {
     if (step === 1) {
       if (!date || !time || !reason) {
-        window.alert("Please fill out all fields.");
+        Swal.fire({
+          title: "Validation Error",
+          text: "Please fill out all fields.",
+          icon: "error",
+        });
+
         return;
       }
 
@@ -220,11 +264,15 @@ function AppointmentForm({ pid, did }) {
       );
 
       if (!selectedPeriod || selectedPeriod.availableSlots <= 0) {
-        window.alert(
-          `No available slots for the ${
+
+        Swal.fire({
+          title: "Validation Error",
+          text: `No available slots for the ${
             selectedPeriod?.label || "selected"
-          } period. Please choose another date or time.`
-        );
+          } period. Please choose another date or time.`,
+          icon: "error",
+        });
+
         return;
       }
     }
@@ -254,7 +302,24 @@ function AppointmentForm({ pid, did }) {
       <Helmet>
         <title>Molino Care | Patient</title>
       </Helmet>
-      <Container className="appointment-form-container">
+      {!activeAppointmentStatus ? (
+
+        <Container className="appointment-form-container">
+                  <div className="d-flex">
+          <p className="m-0" style={{ fontWeight: "600", fontSize: "20px" }}>
+            Book an Appointment
+          </p>
+        </div>
+        <hr />
+          <Alert variant="danger">
+            <h6>
+              The doctor has disabled appointments. Please contact the clinic
+              for more information.
+            </h6>
+          </Alert>
+        </Container>
+      ) : (
+        <Container className="appointment-form-container">
         <div className="d-flex">
           <p className="m-0" style={{ fontWeight: "600", fontSize: "20px" }}>
             Book an Appointment
@@ -462,6 +527,8 @@ function AppointmentForm({ pid, did }) {
           )}
         </div>
       </Container>
+      )}
+
     </>
   );
 }

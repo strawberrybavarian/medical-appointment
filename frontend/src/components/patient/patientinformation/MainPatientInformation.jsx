@@ -1,19 +1,21 @@
-import {  useLocation, useParams  } from "react-router-dom";
-
-
-
+import { useLocation, useParams } from "react-router-dom";
 import PatientNavBar from "../PatientNavBar/PatientNavBar";
 import PatientInformationSidebar from "./Sidebar/PatientInformationSidebar";
-import { usePatient } from "../PatientContext";
-function MainPatientInformation() {
-    const { patient } = usePatient();
+import { Container, Row, Col } from "react-bootstrap";
+import './MainPatientInformation.css';
+import { useUser } from "../../UserContext";
 
- 
+function MainPatientInformation() {
+    const { user } = useUser();
+
     return (
         <>
+            <div >
+                    <PatientNavBar pid={user._id} />
+                    <PatientInformationSidebar pid={user._id}/>
+                 
       
-                <PatientNavBar pid={patient._id}/>
-                <PatientInformationSidebar pid={patient._id}/>    
+            </div>
         </>
     );
 }

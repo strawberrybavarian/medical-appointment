@@ -1,15 +1,13 @@
 import logo from './logo.svg';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './index.css'
-import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
-
-
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import React from 'react';
 //Component
 import LandingPage from './components/landpage/LandingPage';
 import LogInUser from './components/login/LogInUser';
 import NewSignUp from './components/login/NewSignUp';
 import VerifyOTP from './components/login/VerifyOTP';
-
 //Practitioner
 import DashboardMain from './components/practitioner/dashboard/DashboardMain';
 
@@ -42,8 +40,7 @@ import DoctorScheduleManagement from './components/staffs/medical secretary/comp
 import MedSecMainDashboard from './components/staffs/medical secretary/components/Dashboard/MedSecMainDashboard';
 import ManageDoctorMain from './components/staffs/medical secretary/components/Manage Doctors/ManageDoctorMain';
 import AllDoctors from './components/staffs/medical secretary/components/Manage Doctors/AllDoctors';
-
-
+import MedSecAllPatient from './components/staffs/medical secretary/components/All Patient/MedSecAllPatient';
 
 
 //Admin
@@ -56,7 +53,7 @@ import NewsDetailPage from './components/staffs/news/NewsDetailPage';
 import AdminAppointmentMain from './components/staffs/admin/appointment/AdminAppointmentMain';
 import SasMain from './components/staffs/admin/specialtyandservices/SasMain';
 import StaffsManagement from './components/staffs/admin/management/account/StaffsManagement';
-
+import AdminPersonalInfo from './components/staffs/admin/personalinfo/AdminPersonalInfo';
 import ChooseDoctorServices from './components/patient/homepage/ChooseDoctorServices';
 import MedSecAccInfo from './components/staffs/medical secretary/components/Account/MedSecAccInfo';
 import ResetPassword from './components/login/ResetPassword';
@@ -64,73 +61,78 @@ import ResetPassword from './components/login/ResetPassword';
 import { PatientProvider } from './components/patient/PatientContext';
 import { DoctorProvider } from './components/practitioner/DoctorContext';
 import AdminNewsManagement from './components/staffs/admin/news/AdminNewsManagement';
+import { UserProvider } from './components/UserContext';
+import DoubleSliderLogin from './components/login/DoubleSliderLogin';
+import PatientDetailsInformation from './components/staffs/admin/management/account/patientmodal/PatientDetailsInformation';
+import DoctorDetailsInformation from './components/staffs/admin/management/account/patientmodal/DoctorDetailsInformation';
+import TwoFactorVerificationPage from './components/login/TwoFactorVerificationPage';
+import EmailVerificationPage from './components/login/EmailVerificationPage';
+import AdminPersonalInfoMain from './components/staffs/admin/personalinfo/AdminPersonalInfoMain';
 function App() {
 
   return (
     <>
-     <PatientProvider>
-      <DoctorProvider>
-        
-           <BrowserRouter>
-      <Routes>
 
-          <Route path={'/'} element={<LandingPage/>}></Route>
-          <Route path={'/medapp/signup'} element={<NewSignUp/>}> </Route>
-          <Route path={'/medapp/login'} element={<LogInUser/>}> </Route>
-          <Route path={'/verify-otp'} element={<VerifyOTP/>}> </Route>
-          <Route path="/reset-password/:role/:token" element={<ResetPassword />} />
-          <Route path={'/news/:id'} element={<NewsDetailPage/>}/>
-        {/* Practitioner Routes */}
-          <Route path="/dashboard" element={<DashboardMain />} />
-          <Route path={'/mainappointment'} element={<TheAppointments/>}></Route>
-          <Route path={'/medicalrecord'} element={<MainMedicalRecord/>}/>
-          <Route path={"/information"} element={<MainInformation />}/>
-          <Route path={"/account"} element={<DoctorInformation />}/>
-        
-        {/* Patient Routes */}
-       
-          <Route path={"/homepage"} element={<HomePagePatient />}/>
-               
-          <Route path={"/choosedoctor"} element={<ChooseDoctor />}/>
-          <Route path={"/choosedoctor/:specialty"} element={<ChooseDoctorSpecialization />} />
-          <Route path={"/choosedoctor/service/:services"} element={<ChooseDoctorServices />} />
-          <Route path={"/doctorprofile"} element={<DoctorProfile />}/>
-          <Route path={"/myappointment"} element={<MyAppointment />}/>
-          <Route path={"/accinfo"} element={<MainPatientInformation />}/>
-          {/* <Route path={"/appointment/:pid/:did"} element={<AppointmentForm />} /> */}
-        {/* Staff Login */}
-          <Route path={"/staffs"} element={<StaffLogIn />}/>
+    <Router>
+      <UserProvider>
+          <Routes>
 
-        {/* Medical Secretary Routes */}
-          <Route path={"/medsec/appointments"} element={<MedSecMain />}/>
-          <Route path={"/medsec/dashboard"} element={<MedSecMainDashboard />}/>
-          <Route path={"/medsec/createpatient/:msid"} element={<CreatePatient />}/>
-          <Route path={"/medsec/doctors"} element={<AllDoctors />}/>
-          <Route path={"/medsec/doctors/schedule"} element={<ManageDoctorMain />} />
-          <Route path={"/medsec/account"} element={<MedSecAccInfo />} />
-        
+            <Route path={'/'} element={<LandingPage/>}></Route>
+            <Route path={'/medapp/signup'} element={<NewSignUp/>}> </Route>
+            <Route path={'/medapp/login'} element={<DoubleSliderLogin
+              />}> </Route>
+            <Route path='/medapp/login/2fa' element={<TwoFactorVerificationPage />} />
+            <Route path="/medapp/login/email-otp" element={<EmailVerificationPage />} />
 
+            <Route path={'/verify-otp'} element={<VerifyOTP/>}> </Route>
+            <Route path="/reset-password/:role/:token" element={<ResetPassword />} />
+            <Route path={'/news/:id'} element={<NewsDetailPage/>}/>
 
-        {/* Admin Routes */}
-          <Route path={"/admin/dashboard/patient"} element={<PatientMain />}/>
-          <Route path={"/admin/dashboard/doctor/"} element={<DoctorMain />}/>
-          <Route path={"/admin/account/doctor/"} element={<DoctorManagement />}/>
-          <Route path={"/admin/account/staffs/"} element={<StaffsManagement />}/>
-          <Route path={"/admin/account/patient/"} element={<PatientManagement />}/>
-          <Route path={"/admin/appointments/"} element={<AdminAppointmentMain />}/>
-          <Route path={"/admin/sas/"} element={<SasMain />}/>
-          <Route path={"/admin/news-management"} element={<AdminNewsManagement />}/>
-      </Routes>
-    </BrowserRouter>
+            {/* Practitioner Routes */}
+            <Route path="/dashboard" element={<DashboardMain />} />
+            <Route path={'/mainappointment'} element={<TheAppointments/>}></Route>
+            <Route path={'/medicalrecord'} element={<MainMedicalRecord/>}/>
+            <Route path={"/information"} element={<MainInformation />}/>
+            <Route path={"/account"} element={<DoctorInformation />}/>
+          
+            {/* Patient Routes */}
+            <Route path={"/homepage"} element={<HomePagePatient />}/>   
+            <Route path={"/choosedoctor"} element={<ChooseDoctor />}/>
+            <Route path={"/choosedoctor/:specialty"} element={<ChooseDoctorSpecialization />} />
+            <Route path={"/choosedoctor/service/:services"} element={<ChooseDoctorServices />} />
+            <Route path={"/doctorprofile"} element={<DoctorProfile />}/>
+            <Route path={"/myappointment"} element={<MyAppointment />}/>
+            <Route path={"/accinfo"} element={<MainPatientInformation />}/>
+            {/* Staff Login */}
+            <Route path={"/staffs"} element={<StaffLogIn />}/>
 
+            {/* Medical Secretary Routes */}
+            <Route path={"/medsec/appointments"} element={<MedSecMain />}/>
+            <Route path={"/medsec/dashboard"} element={<MedSecMainDashboard />}/>
+            <Route path={"/medsec/createpatient/:msid"} element={<CreatePatient />}/>
+            <Route path={"/medsec/doctors"} element={<AllDoctors />}/>
+            <Route path={"/medsec/doctors/schedule"} element={<ManageDoctorMain />} />
+            <Route path={"/medsec/account"} element={<MedSecAccInfo />} />
+            <Route path={"/medsec/patient"} element={<MedSecAllPatient />} />
+          
+            {/* Admin Routes */}
+            <Route path={"/admin/dashboard/patient"} element={<PatientMain />}/>
+            <Route path={"/admin/dashboard/doctor/"} element={<DoctorMain />}/>
+            <Route path={"/admin/account/doctor/"} element={<DoctorManagement />}/>
+            <Route path={"/admin/account/staffs/"} element={<StaffsManagement />}/>
+            <Route path={"/admin/account/patient/"} element={<PatientManagement />}/>
+            <Route path={"/admin/appointments/"} element={<AdminAppointmentMain />}/>
+            <Route path={"/admin/sas/"} element={<SasMain />}/>
+            <Route path={"/admin/news-management"} element={<AdminNewsManagement />}/>
+            <Route path={"/admin/account"} element={<AdminPersonalInfoMain
+              />}/>
+            <Route path={"/admin/account/patient/personal-details"} element={<PatientDetailsInformation />}/>
+            <Route path={"/admin/account/doctor/personal-details"} element={<DoctorDetailsInformation />}/>
+          </Routes>
 
-    
+          </UserProvider>
+    </Router>
 
-  
-
-    </DoctorProvider> 
-    </PatientProvider> 
-    
     </>
   );
 }

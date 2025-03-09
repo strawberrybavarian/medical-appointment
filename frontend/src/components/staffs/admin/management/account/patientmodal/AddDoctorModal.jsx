@@ -23,7 +23,7 @@ const AddDoctorModal = ({ show, handleClose, setDoctors }) => {
         // Fetch specialties from services
         const fetchSpecialties = async () => {
             try {
-                const response = await axios.get(`${ip.address}/api/admin/specialties`);
+                const response = await axios.get(`${ip.address}/api/find/admin/specialties`);
                 const services = response.data;
                 // Extract unique categories
                 const categories = [...new Set(services.map(service => service.name))];
@@ -99,11 +99,11 @@ const AddDoctorModal = ({ show, handleClose, setDoctors }) => {
     };
 
     return (
-        <Modal show={show} onHide={handleClose} size="lg">
-            <Modal.Header closeButton>
+        <Modal centered show={show} onHide={handleClose} size="lg">
+            <Modal.Header style={{width:'100%'}} closeButton>
                 <Modal.Title>Add Doctor</Modal.Title>
             </Modal.Header>
-            <Modal.Body>
+            <Modal.Body style={{width:'100%'}}>
                 <Form onSubmit={handleSubmit}>
                     {/* First and Last Name */}
                     <Row className="mb-3">

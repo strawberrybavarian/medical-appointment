@@ -1,0 +1,357 @@
+/* Original vertical stepper styles remain */
+.stepper-container {
+  display: flex;
+  flex-direction: column;
+  padding: 20px 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.stepper-timeline {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 30px;
+}
+
+.step-item {
+  display: flex;
+  align-items: flex-start;
+  position: relative;
+  min-height: 70px;
+}
+
+.step-marker {
+  position: relative;
+  margin-right: 15px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.step-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #e9ecef;
+  color: #6c757d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 2;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.step-icon {
+  font-size: 18px;
+}
+
+/* Line connecting steps */
+.step-line {
+  position: absolute;
+  top: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 3px;
+  height: calc(100% - 10px);
+  background-color: #e9ecef;
+  z-index: 1;
+}
+
+/* Last item doesn't need a line */
+.step-item:last-child .step-line {
+  display: none;
+}
+
+.step-content {
+  flex: 1;
+  padding-top: 8px;
+  padding-bottom: 20px;
+}
+
+.step-label {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #6c757d;
+  transition: all 0.3s ease;
+}
+
+/* HORIZONTAL STEPPER STYLES */
+.stepper-container.horizontal {
+  width: 100%;
+}
+
+.stepper-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.stepper-timeline-horizontal {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  margin-bottom: 30px;
+  position: relative;
+  width: 100%;
+  overflow-x: auto;
+  padding: 20px 0;
+}
+
+.step-item-horizontal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  flex: 1;
+  min-width: 80px; /* Ensure minimum width for mobile */
+}
+
+.step-marker-horizontal {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  position: relative;
+}
+
+.step-line-horizontal {
+  position: absolute;
+  height: 3px;
+  background-color: #e9ecef;
+  top: 50%;
+  transform: translateY(-50%);
+  left: calc(50% + 20px);
+  right: calc(-50% + 20px);
+  z-index: 1;
+}
+
+.step-content-horizontal {
+  text-align: center;
+  margin-top: 10px;
+  width: 100%;
+}
+
+/* Status styles - shared between vertical and horizontal */
+.step-item.completed .step-circle,
+.step-item-horizontal.completed .step-circle {
+  background-color: #28a745;
+  color: white;
+}
+
+.step-item.completed .step-line,
+.step-item-horizontal.completed .step-line-horizontal {
+  background-color: #28a745;
+}
+
+.step-item.completed .step-label,
+.step-item-horizontal.completed .step-label {
+  color: #28a745;
+}
+
+.step-item.active .step-circle,
+.step-item-horizontal.active .step-circle {
+  background-color: #007bff;
+  color: white;
+  transform: scale(1.1);
+  box-shadow: 0 0 0 5px rgba(0, 123, 255, 0.2);
+  animation: pulse 2s infinite;
+}
+
+.step-item.active .step-line,
+.step-item-horizontal.active .step-line-horizontal {
+  background: linear-gradient(to right, #007bff 0%, #e9ecef 100%);
+}
+
+.step-item.active .step-label,
+.step-item-horizontal.active .step-label {
+  color: #007bff;
+  font-weight: 700;
+}
+
+.step-item.cancelled .step-circle,
+.step-item-horizontal.cancelled .step-circle {
+  background-color: #dc3545;
+  color: white;
+}
+
+.step-item.cancelled .step-label,
+.step-item-horizontal.cancelled .step-label {
+  color: #dc3545;
+}
+
+.step-item.rescheduled .step-circle,
+.step-item-horizontal.rescheduled .step-circle {
+  background-color: #ffc107;
+  color: black;
+}
+
+.step-item.rescheduled .step-label,
+.step-item-horizontal.rescheduled .step-label {
+  color: #ffc107;
+}
+
+/* Pulse animation */
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(0, 123, 255, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(0, 123, 255, 0);
+  }
+}
+
+/* Appointment details styling */
+.appointment-details-container {
+  margin: 0;
+  width: 100%;
+}
+
+/* .appointment-details {
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  transition: transform 0.3s ease;
+} */
+
+.appointment-details:hover {
+  transform: translateY(-5px);
+}
+
+.appointment-details .card-header {
+  padding: 1rem;
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  border-bottom: none;
+}
+
+.appointment-details h4 {
+  font-weight: 600;
+  margin-bottom: 0;
+}
+
+.status-badge {
+  font-size: 0.9rem;
+  padding: 0.5rem 1rem;
+}
+
+.appointment-id {
+  margin-bottom: 1rem;
+}
+
+.appointment-id-badge {
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  border: 1px solid #e9ecef;
+}
+
+.appointment-info {
+  margin-top: 1rem;
+}
+
+.info-item {
+  display: flex;
+  align-items: flex-start;
+}
+
+.info-icon {
+  width: 40px;
+  height: 40px;
+  background-color: #f8f9fa;
+  color: #007bff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 15px;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.info-content {
+  flex: 1;
+}
+
+.info-label {
+  font-size: 0.8rem;
+  color: #6c757d;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+
+.info-value {
+  font-weight: 600;
+  font-size: 1rem;
+  color: #212529;
+}
+
+.follow-up {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.follow-up .badge {
+  font-size: 0.9rem;
+  padding: 0.5rem 1rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 991px) {
+  .stepper-timeline-horizontal {
+    padding-bottom: 10px;
+  }
+  
+  .step-item-horizontal {
+    min-width: 100px;
+  }
+  
+  .step-label {
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .stepper-timeline-horizontal {
+    overflow-x: auto;
+    justify-content: flex-start;
+    padding: 20px 10px;
+  }
+  
+  .step-item-horizontal {
+    min-width: 120px;
+  }
+  
+  .appointment-details-container {
+    margin-left: 0;
+  }
+  
+  .info-item {
+    margin-bottom: 15px;
+  }
+}
+
+@media (max-width: 576px) {
+  .step-circle {
+    width: 35px;
+    height: 35px;
+  }
+  
+  .step-icon {
+    font-size: 16px;
+  }
+  
+  .step-label {
+    font-size: 0.9rem;
+  }
+  
+  .info-icon {
+    width: 35px;
+    height: 35px;
+    font-size: 1rem;
+  }
+}

@@ -3,12 +3,14 @@ import { Button, ListGroup, Form } from "react-bootstrap";
 import { ToastContainer, toast } from "react-toastify";
 import axios from "axios";
 import { ip } from "../../../ContentExport";
+import { useUser } from "../../UserContext";
 
-function DoctorManageHMO({ doctorId }) {
+function DoctorManageHMO() {
   const [availableHmos, setAvailableHmos] = useState([]);
   const [selectedHmos, setSelectedHmos] = useState([]);
   const [initialDoctorHmos, setInitialDoctorHmos] = useState([]);
-
+  const {user} = useUser();
+  const doctorId = user._id;
   // Fetch all HMOs and the doctor's current HMOs
   useEffect(() => {
     // Fetch all HMOs
@@ -74,9 +76,9 @@ function DoctorManageHMO({ doctorId }) {
 
   return (
     <div>
-      <h3>Manage Your HMOs</h3>
 
-      <Form>
+
+      <Form className="mt-3">
         <ListGroup>
           {availableHmos.map((hmo) => (
             <ListGroup.Item key={hmo._id}>

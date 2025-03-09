@@ -1,29 +1,15 @@
+// notifications_model.js
 const mongoose = require('mongoose');
 const { Schema, model } = mongoose;
 
 const NotificationSchema = new Schema({
-    message: {
-        type: String,
-        required: true
-    },
-    recipient: {
-        type: Schema.Types.ObjectId,
-        required: true,
-        refPath: 'recipientType'
-    },
-    recipientType: {
-        type: String,
-        required: true,
-        enum: ['Patient', 'Doctor', 'Cashier', 'Medical Secretary', 'Admin', 'Super Admin']
-    },
-    date: {
-        type: Date,
-        default: Date.now
-    },
-    read: {
-        type: Boolean,
-        default: false
-    }
+    message: { type: String, required: true },
+    receiver: [{ type: Schema.Types.ObjectId, required: true, refPath: 'receiverModel' }],
+    receiverModel: { type: String, required: true, },
+    isRead: { type: Boolean, default: false },
+    link: { type: String },
+    type: { type: String, required: true,},
+    recipientType: { type: String, required: true,},
 }, { timestamps: true });
 
 const Notification = model('Notification', NotificationSchema);

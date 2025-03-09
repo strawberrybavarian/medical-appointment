@@ -7,7 +7,9 @@ import './Styles.css';
 import { ThreeDots } from 'react-bootstrap-icons';
 import RescheduleModal from "../../../../practitioner/appointment/Reschedule Modal/RescheduleModal";
 import { ip } from "../../../../../ContentExport";
+import Swal from 'sweetalert2';
 
+import { toast, ToastContainer } from 'react-toastify';
 const MedSecForPayment = ({ allAppointments, setAllAppointments }) => {
   const { did } = useParams();
   const [error, setError] = useState("");
@@ -58,16 +60,29 @@ const MedSecForPayment = ({ allAppointments, setAllAppointments }) => {
       setShowRescheduleModal(false);
       setSelectedAppointment(null);
     };
-const convertTo12HourFormat = (time) => {
-  if (!time) return 'Not Assigned'; 
-  if (time.includes('AM') || time.includes('PM')) {
-    return time; 
-  }
-  const [hours, minutes] = time.split(':');
-  const period = hours >= 12 ? 'PM' : 'AM';
-  const hour12 = hours % 12 || 12; 
-  return `${hour12}:${minutes} ${period}`;
-};
+    const convertTimeRangeTo12HourFormat = (timeRange) => {
+      // Check if the timeRange is missing or empty
+      if (!timeRange) return 'Not Assigned';
+    
+      const convertTo12Hour = (time) => {
+        // Handle single time values like "10:00"
+        if (!time) return '';
+    
+        let [hours, minutes] = time.split(':').map(Number);
+        const period = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12 || 12; // Convert 0 or 12 to 12 in 12-hour format
+    
+        return `${hours}:${String(minutes).padStart(2, '0')} ${period}`;
+      };
+    
+      // Handle both single times and ranges
+      if (timeRange.includes(' - ')) {
+        const [startTime, endTime] = timeRange.split(' - ');
+        return `${convertTo12Hour(startTime)} - ${convertTo12Hour(endTime)}`;
+      } else {
+        return convertTo12Hour(timeRange); // Single time case
+      }
+    };
 
 
   useEffect(() => {
@@ -164,19 +179,91 @@ const convertTo12HourFormat = (time) => {
       });
   };
 
-  const handleUpdateStatus = (appointmentId, newStatus) => {
-    axios.put(`${ip.address}/api/appointments/${appointmentId}/status`, { status: newStatus })
-      .then((response) => {
-        setAllAppointments(prevAppointments =>
-          prevAppointments.map(appointment =>
-            appointment._id === appointmentId ? { ...appointment, status: newStatus } : appointment
-          )
-        );
-      })
-      .catch((err) => {
-        console.error("Error updating status:", err);
-        setError("Failed to update the appointment status.");
+  const handleUpdateStatus = async (appointmentId, newStatus) => {
+    const appointment = allAppointments.find(app => app._id === appointmentId);
+  
+    // Check if the appointment has time and services assigned
+    const isValidAppointment =
+      appointment.time &&
+      appointment.time !== "Not Assigned" &&
+      appointment.appointment_type &&
+      appointment.appointment_type.length > 0 &&
+      appointment.appointment_type.some(type => type.appointment_type);
+  
+    if (!isValidAppointment) {
+      // Show a toast if required details are missing
+      toast.warning('To schedule an appointment, please assign a time and select the services.', {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
       });
+      return;
+    }
+  
+    // First show a confirmation dialog using SweetAlert
+    const result = await Swal.fire({
+      title: "Update Appointment Status",
+      text: `Are you sure you want to change this appointment status to ${newStatus}?`,
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonText: "Yes, update status",
+      cancelButtonText: "Cancel",
+      reverseButtons: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+    });
+  
+    // Only proceed if the user confirmed
+    if (result.isConfirmed) {
+      try {
+        const response = await axios.put(
+          `${ip.address}/api/appointments/${appointmentId}/status`,
+          { status: newStatus }
+        );
+  
+        if (response.status === 200 && response.data) {
+          const updatedAppointment = response.data;
+  
+          // Update the state with the new status
+          setAllAppointments((prevAppointments) =>
+            prevAppointments.map((appointment) =>
+              appointment._id === appointmentId
+                ? { ...appointment, status: updatedAppointment.status }
+                : appointment
+            )
+          );
+  
+          // Show success message with SweetAlert
+          Swal.fire({
+            title: "Success!",
+            text: `Appointment status updated to ${newStatus}`,
+            icon: "success",
+            timer: 2000,
+            showConfirmButton: false
+          });
+        } else {
+          throw new Error('Unexpected server response');
+        }
+      } catch (err) {
+        console.error('Error updating status:', err);
+  
+        const errorMessage =
+          err.response?.data?.message || 'Failed to update the appointment status.';
+        setError(errorMessage);
+        
+        // Replace alert with SweetAlert for error message
+        Swal.fire({
+          title: "Error",
+          text: errorMessage,
+          icon: "error",
+          confirmButtonColor: "#3085d6"
+        });
+      }
+    }
   };
 
   return (
@@ -297,11 +384,11 @@ const convertTo12HourFormat = (time) => {
                     <td style={{fontSize: '14px'}}>{categoryTypes}</td>
                     <td style={{fontSize: '14px'}}>{appointmentTypes}</td>
                     <td style={{fontSize: '14px'}}>{appointment.date ? new Date(appointment.date).toLocaleDateString() : "Not Assigned"}</td>
-                    <td style={{fontSize: '14px'}}>{convertTo12HourFormat(appointment.time) || "Not Assigned"}</td>
+                    <td style={{fontSize: '14px'}}>{convertTimeRangeTo12HourFormat(appointment.time) || "Not Assigned"}</td>
 
                     <td style={{fontSize: '14px'}}>{appointment.patient.accountStatus}</td>
                     <td>
-                      <div className="d-flex justify-content-center">
+                      <div className="">
                       <div className="pending-appointment" style={{fontSize: '12px'}}>
                             {appointment.status}
                       </div>

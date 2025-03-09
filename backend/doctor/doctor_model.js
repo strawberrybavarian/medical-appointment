@@ -169,8 +169,12 @@ const DoctorSchema = new Schema({
   }],
   role: {
     type: String,
-    default: 'Patient'
+    default: 'Doctor'
   },
+  audits: [{
+    type: Schema.Types.ObjectId,
+    ref: 'Audit'
+}],
 }, { timestamps: true });
 
 DoctorSchema.pre('save', async function (next) {

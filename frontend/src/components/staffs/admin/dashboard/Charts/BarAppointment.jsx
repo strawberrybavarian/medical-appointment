@@ -127,7 +127,7 @@ function BarAppointment() {
 
   return (
     
-        <Card className="card-bar-chart shadow mb-4">
+        <Card className="card-bar-chart shadow">
             <Card.Header className="py-3">
             <h6 className="m-0 font-weight-bold text-primary">Appointment Statuses</h6>
             </Card.Header>

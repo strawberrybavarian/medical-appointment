@@ -4,10 +4,10 @@ import MedSecTodaysApp from '../Appointments/MedSecTodaysApp';
 import MedSecPending from '../Appointments/MedSecPending';
 import MedSecOngoing from '../Appointments/MedSecOngoing';
 import MedSecForPayment from '../Appointments/MedSecForPayment';
-import MedSecLaboratoryApp from '../Appointments/MedSecLaboratoryApp';
 import MedSecToSend from '../Appointments/MedSecToSend';
 import CreatePatientForms from '../Add Patient/Forms/CreatePatientForms';
 import CreateAppointment from '../Add Patient/New Appointment/CreateAppointment';
+import MedSecCancelled from '../Appointments/MedSecCancelled';
 import { Container, Nav, Row, Button, Modal } from 'react-bootstrap';
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
@@ -15,11 +15,13 @@ import { ip } from '../../../../../ContentExport';
 
 import './MedSecMain.css';
 import CreateServiceForm from '../Services/CreateServiceForm';
-
+import MedSecCompleted from '../Appointments/MedSecCompleted';
+import { ChatDotsFill } from 'react-bootstrap-icons';
+import ChatComponent from '../../../../chat/ChatComponent';
 function MedSecMain() {
   const location = useLocation();
   const { userId, userName, role } = location.state || {};
-
+  console.log(userId, userName, role);
   const [allAppointments, setAllAppointments] = useState([]);
   const [selectedDoctor, setSelectedDoctor] = useState("");
   const [activeTab, setActiveTab] = useState("pending");
@@ -28,6 +30,7 @@ function MedSecMain() {
   const [showAppointmentModal, setShowAppointmentModal] = useState(false);
   const [showServiceModal, setShowServiceModal] = useState(false); // Service Modal State
 
+  const [showChat, setShowChat] = useState(false);
   // Fetch all appointments
   useEffect(() => {
     axios
@@ -53,10 +56,16 @@ function MedSecMain() {
   }, [location.search]);
   return (
     <>
-      <MedSecNavbar msid={userId} /> 
-      <Container fluid style={{ overflowY: 'auto', height: 'calc(100vh - 100px)', width: '100%', paddingBottom: '1.5rem' }}>
-        
-        <div className='maincolor-container'>
+
+      <Container
+        className="cont-fluid-no-gutter"
+        fluid
+        style={{ overflowY: 'scroll', height: '100vh' }}
+      >
+
+        <MedSecNavbar msid={userId} />
+
+        <div className='maincolor-container pt-5'>
           <div className='content-area'>
             <Container className="d-flex justify-content-center ">
               <Row>
@@ -64,7 +73,7 @@ function MedSecMain() {
                   {/* <Nav.Item>
                     <Nav.Link eventKey="laboratory">Laboratory</Nav.Link>
                   </Nav.Item> */}
-                  
+
                   <Nav.Item>
                     <Nav.Link eventKey="pending">Pending</Nav.Link>
                   </Nav.Item>
@@ -80,50 +89,31 @@ function MedSecMain() {
                   <Nav.Item>
                     <Nav.Link eventKey="tosend">To-send Lab Results</Nav.Link>
                   </Nav.Item>
-             
-               
-                 
+                  <Nav.Item>
+                    <Nav.Link eventKey="cancelled">Cancelled</Nav.Link>
+                  </Nav.Item>
+                  <Nav.Item>
+                    <Nav.Link eventKey="completed">Completed</Nav.Link>
+                  </Nav.Item>
+
+
+
                 </Nav>
-           
-                
-                 
+
+
+
               </Row>
             </Container>
 
-            <Container  fluid className="d-flex justify-content-center w-100" style={{ marginTop: '2rem' }}>
+            <Container fluid className="d-flex justify-content-center w-100" style={{ marginTop: '2rem' }}>
 
-                  {/* Button to open Create Appointment modal */}
-                 
-                  <Container className="ai-container2 shadow-sm">
-                   
-                  
-                    
-                    {activeTab === "todays" && (
-                      <>
-                     <Container fluid className='w-100 d-flex justify-content-end'>
-                      <Button variant="primary" onClick={handleShowAppointmentModal} className="mb-3">
-                        Create Doctor Appointment
-                      </Button>
-                      <Button variant="success" onClick={handleShowServiceModal} className="mb-3 ml-3">
-                        Create Service Appointment
-                      </Button>
-                      <Button variant="secondary" onClick={handleShowPatientModal} className="mb-3 ml-3">
-                        Add Patient
-                      </Button>
-                      
-                    </Container>
+              {/* Button to open Create Appointment modal */}
+
+              <Container className="ai-container2 shadow-sm">
 
 
 
-                    <MedSecTodaysApp
-                        allAppointments={allAppointments}
-                        setAllAppointments={setAllAppointments}
-                        selectedDoctor={selectedDoctor}
-                      />
-                      </>
-                    
-                    )}
-                  {activeTab === "pending" && (
+                {activeTab === "todays" && (
                   <>
                     <Container fluid className='w-100 d-flex justify-content-end'>
                       <Button variant="primary" onClick={handleShowAppointmentModal} className="mb-3">
@@ -135,14 +125,39 @@ function MedSecMain() {
                       <Button variant="secondary" onClick={handleShowPatientModal} className="mb-3 ml-3">
                         Add Patient
                       </Button>
-                      
+
                     </Container>
-                    <MedSecPending allAppointments={allAppointments}  setAllAppointments={setAllAppointments} selectedDoctor={selectedDoctor} />
+
+
+
+                    <MedSecTodaysApp
+                      allAppointments={allAppointments}
+                      setAllAppointments={setAllAppointments}
+                      selectedDoctor={selectedDoctor}
+                    />
+                  </>
+
+                )}
+                {activeTab === "pending" && (
+                  <>
+                    <Container fluid className='w-100 d-flex justify-content-end'>
+                      <Button variant="primary" onClick={handleShowAppointmentModal} className="mb-3">
+                        Create Doctor Appointment
+                      </Button>
+                      <Button variant="success" onClick={handleShowServiceModal} className="mb-3 ml-3">
+                        Create Service Appointment
+                      </Button>
+                      <Button variant="secondary" onClick={handleShowPatientModal} className="mb-3 ml-3">
+                        Add Patient
+                      </Button>
+
+                    </Container>
+                    <MedSecPending allAppointments={allAppointments} setAllAppointments={setAllAppointments} selectedDoctor={selectedDoctor} />
                   </>
                 )}
-                    {activeTab === "ongoing" && (
-                      <>
-                        <Container fluid className='w-100 d-flex justify-content-end'>
+                {activeTab === "ongoing" && (
+                  <>
+                    <Container fluid className='w-100 d-flex justify-content-end'>
                       <Button variant="primary" onClick={handleShowAppointmentModal} className="mb-3">
                         Create Doctor Appointment
                       </Button>
@@ -152,76 +167,144 @@ function MedSecMain() {
                       <Button variant="secondary" onClick={handleShowPatientModal} className="mb-3 ml-3">
                         Add Patient
                       </Button>
-                      
-                    </Container>
-                      <MedSecOngoing
-                        allAppointments={allAppointments}
-                        setAllAppointments={setAllAppointments}
-                        selectedDoctor={selectedDoctor}
-                      />
-                      </>
-                    )}
-                    {activeTab === "forpayment" && (
-                      <>
-                        <Container fluid className='w-100 d-flex justify-content-end'>
-                      <Button variant="primary" onClick={handleShowAppointmentModal} className="mb-3">
-                        Create Doctor Appointment
-                      </Button>
-                      <Button variant="success" onClick={handleShowServiceModal} className="mb-3 ml-3">
-                        Create Service Appointment
-                      </Button>
-                      <Button variant="secondary" onClick={handleShowPatientModal} className="mb-3 ml-3">
-                        Add Patient
-                      </Button>
-                      
-                    </Container>
-                      <MedSecForPayment
-                        allAppointments={allAppointments}
-                        setAllAppointments={setAllAppointments}
-                        selectedDoctor={selectedDoctor}
-                      />
-                      </>
-                    )}
-                    {activeTab === "tosend" && (
-                      <>
-                       <Container fluid className='w-100 d-flex justify-content-end'>
-                      <Button variant="primary" onClick={handleShowAppointmentModal} className="mb-3">
-                        Create Doctor Appointment
-                      </Button>
-                      <Button variant="success" onClick={handleShowServiceModal} className="mb-3 ml-3">
-                        Create Service Appointment
-                      </Button>
-                      <Button variant="secondary" onClick={handleShowPatientModal} className="mb-3 ml-3">
-                        Add Patient
-                      </Button>
-                      
-                    </Container>
-                      <MedSecToSend
-                        msid={userId}
-                        allAppointments={allAppointments}
-                        setAllAppointments={setAllAppointments}
-                        selectedDoctor={selectedDoctor}
-                      />
-                      </>
-                    )}
 
-                      {activeTab === "laboratory" && (
-                      <>
-                        <MedSecLaboratoryApp
-                          allAppointments={allAppointments}
-                          setAllAppointments={setAllAppointments}
-                          selectedDoctor={selectedDoctor}
+                    </Container>
+                    <MedSecOngoing
+                      allAppointments={allAppointments}
+                      setAllAppointments={setAllAppointments}
+                      selectedDoctor={selectedDoctor}
+                    />
+                  </>
+                )}
+                {activeTab === "forpayment" && (
+                  <>
+                    <Container fluid className='w-100 d-flex justify-content-end'>
+                      <Button variant="primary" onClick={handleShowAppointmentModal} className="mb-3">
+                        Create Doctor Appointment
+                      </Button>
+                      <Button variant="success" onClick={handleShowServiceModal} className="mb-3 ml-3">
+                        Create Service Appointment
+                      </Button>
+                      <Button variant="secondary" onClick={handleShowPatientModal} className="mb-3 ml-3">
+                        Add Patient
+                      </Button>
+
+                    </Container>
+                    <MedSecForPayment
+                      allAppointments={allAppointments}
+                      setAllAppointments={setAllAppointments}
+                      selectedDoctor={selectedDoctor}
+                    />
+                  </>
+                )}
+                {activeTab === "tosend" && (
+                  <>
+                    <Container fluid className='w-100 d-flex justify-content-end'>
+                      <Button variant="primary" onClick={handleShowAppointmentModal} className="mb-3">
+                        Create Doctor Appointment
+                      </Button>
+                      <Button variant="success" onClick={handleShowServiceModal} className="mb-3 ml-3">
+                        Create Service Appointment
+                      </Button>
+                      <Button variant="secondary" onClick={handleShowPatientModal} className="mb-3 ml-3">
+                        Add Patient
+                      </Button>
+
+                    </Container>
+
+                    <MedSecToSend
+                      msid={userId}
+                      allAppointments={allAppointments}
+                      setAllAppointments={setAllAppointments}
+                      selectedDoctor={selectedDoctor}
+                    />
+                  </>
+                )}
+
+
+                {activeTab === "completed" && (
+                  <>
+                    <Container fluid className='w-100 d-flex justify-content-end'>
+                      <Button variant="primary" onClick={handleShowAppointmentModal} className="mb-3">
+                        Create Doctor Appointment
+                      </Button>
+                      <Button variant="success" onClick={handleShowServiceModal} className="mb-3 ml-3">
+                        Create Service Appointment
+                      </Button>
+                      <Button variant="secondary" onClick={handleShowPatientModal} className="mb-3 ml-3">
+                        Add Patient
+                      </Button>
+                    </Container>
+
+                    <MedSecCompleted
+                      msid={userId}
+                      allAppointments={allAppointments}
+                      setAllAppointments={setAllAppointments}
+                      selectedDoctor={selectedDoctor}
+                    />
+
+
+
+                  </>
+                )}
+
+                {activeTab === "cancelled" && (
+                  <>
+                    <Container fluid className='w-100 d-flex justify-content-end'>
+                      <Button variant="primary" onClick={handleShowAppointmentModal} className="mb-3">
+                        Create Doctor Appointment
+                      </Button>
+                      <Button variant="success" onClick={handleShowServiceModal} className="mb-3 ml-3">
+                        Create Service Appointment
+                      </Button>
+                      <Button variant="secondary" onClick={handleShowPatientModal} className="mb-3 ml-3">
+                        Add Patient
+                      </Button>
+                    </Container>
+
+                    <MedSecCancelled
+                      msid={userId}
+                      allAppointments={allAppointments}
+                      setAllAppointments={setAllAppointments}
+                      selectedDoctor={selectedDoctor}
+                    />
+
+
+
+                  </>
+                )}
+
+                <div className="chat-btn-container">
+                  <Button
+                    className="chat-toggle-btn"
+                    onClick={() => setShowChat(!showChat)}
+                  >
+                    <ChatDotsFill size={30} />
+                  </Button>
+                </div>
+
+                {showChat && (
+                  <div className="chat-overlay">
+                    {showChat && (
+                      <div className="chat-overlay">
+                        <ChatComponent
+                          userId={userId}
+                          userRole={role}
+                          closeChat={() => setShowChat(false)}
                         />
-                      </>
-                    )}  
-                    
-                  </Container>
-           
+                      </div>
+                    )}
+                  </div>
+                )}
+
+
+              </Container>
+
             </Container>
 
           </div>
         </div>
-        
+
         {/* Modal for creating a patient */}
         <Modal show={showPatientModal} onHide={handleClosePatientModal} size="lg" centered>
           <Modal.Header className='w-100' closeButton>
@@ -242,16 +325,16 @@ function MedSecMain() {
           </Modal.Body>
         </Modal>
 
-        
-         
-         
-          <CreateServiceForm 
-              show={showServiceModal} // Pass show state correctly
-              onClose={handleCloseServiceModal} // Pass close function
-            />
 
-            
-         
+
+
+        <CreateServiceForm
+          show={showServiceModal} // Pass show state correctly
+          onClose={handleCloseServiceModal} // Pass close function
+        />
+
+
+
 
 
       </Container>

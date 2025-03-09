@@ -37,4 +37,7 @@ module.exports = app => {
     app.post('/api/patient/api/:uid/createserviceappointment', AppointmentController.createServiceAppointment);
     app.put('/api/appointments/:id/followup', AppointmentController.updateFollowUpStatus);
     app.post('/api/appointments/:appointmentId/schedulefollowup', AppointmentController.updatePatientAppointmentDetails);
+
+
+    app.get('/api/appointments/past-appointments', AppointmentController.getPastAppointments);
 };

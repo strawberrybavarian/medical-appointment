@@ -173,8 +173,8 @@ PatientSchema.pre('save', async function (next) {
 PatientSchema.methods.generateQRCode = async function () {
     const otpAuthUrl = speakeasy.otpauthURL({
         secret: this.twoFactorSecret,
-        label: `Landagan Kids Clinic:${this.patient_email}`,
-        issuer: 'Landagan Kids Clinic',
+        label: `Molino Polyclinic:${this.patient_email}`,
+        issuer: 'Molino Polyclinic',
         encoding: 'base32'
     });
     return await QRCode.toDataURL(otpAuthUrl);

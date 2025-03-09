@@ -10,7 +10,7 @@ const AuditSchema = new mongoose.Schema({
     userType: {
         type: String,
         required: true,
-        enum: ['Patient', 'Admin', 'Medical Secretary'],
+        enum: ['Patient', 'Doctor', 'Admin', 'Medical Secretary'],
     },
     action: {
         type: String,

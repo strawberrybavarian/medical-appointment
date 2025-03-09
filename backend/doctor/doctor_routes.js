@@ -39,6 +39,8 @@ const upload = multer({
 
 
 module.exports = app => {
+
+ 
   //Biography
   app.get('/api/doctor/:id/gethmo', DoctorController.getDoctorHmo);
   app.put('/api/doctor/api/:id/updatebiography', DoctorController.updateDoctorBiography);  // Update Biography
@@ -49,8 +51,9 @@ module.exports = app => {
   app.get('/api/doctor/:id', DoctorController.findOneDoctor);
   //Activity Status
   app.put('/api/doctor/api/:id/logout', DoctorController.offlineActivityStatus);
-  app.put('/api/doctor/:id/status', DoctorController.updateDoctorStatus);
 
+  // app.get('/api/doctor/api/:id/getactivitystatus', DoctorController.getActivityStatus);
+app.get('/api/doctor/api/getaudit/:doctorId', DoctorController.getDoctorWithAudits);
   
   // For Registration
   app.post('/api/doctor/api/signup', DoctorController.NewDoctorSignUp);
@@ -61,7 +64,8 @@ module.exports = app => {
   app.post('/api/doctor/reset-password/:token', DoctorController.resetPassword);
 
   app.post('/api/doctor/session', DoctorController.createDoctorSession);
-  app.post('/api/doctor/api/login', DoctorController.loginDoctor);
+
+
   app.get('/api/doctor/api/alldoctor', DoctorController.findAllDoctors);
   app.post('/api/doctor/api/setup-2fa/:id', DoctorController.setupTwoFactorForDoctor);
   app.post('/api/doctor/api/verify-2fa', DoctorController.verifyTwoFactor);
@@ -96,9 +100,9 @@ module.exports = app => {
 
   //Getting All Patients
   app.get('/api/doctor/api/getallpatients/:doctorId', DoctorController.getPatientsByDoctor);
-  app.get('/api/doctor/getallemails', DoctorController.getAllDoctorEmails); 
-  app.get('/api/doctors/getallemails', DoctorController.getAllDoctorEmailse); 
-  app.get('/api/doctors/getcontactnumbers', DoctorController.getAllContactNumbers);
+  app.get('/api/doctor/getallemailss', DoctorController.getAllDoctorEmails); 
+  app.get('/api/doctor/getallemails', DoctorController.getAllDoctorEmailse); 
+  app.get('/api/doctor/getcontactnumbers', DoctorController.getAllContactNumbers);
   app.get('/api/doctor/:doctorId/slots', DoctorController.getDoctorSlots);
   app.put('/api/doctor/:doctorId/uslots', DoctorController.updateDoctorSlots);
   app.put('/api/doctor/api/:id/changePassword', DoctorController.changeDoctorPassword);

@@ -7,7 +7,7 @@ import { Button, Pagination, Form, Row, Col, Collapse } from 'react-bootstrap';
 import './Appointment.css';
 import RescheduleModal from "./Reschedule Modal/RescheduleModal";
 import { ip } from "../../../ContentExport";
-
+import Swal from 'sweetalert2'; 
 const OngoingAppointment = ({ allAppointments, setAllAppointments }) => {
   const location = useLocation();
   const { did } = location.state || {}; 
@@ -70,18 +70,51 @@ const OngoingAppointment = ({ allAppointments, setAllAppointments }) => {
   }, [allAppointments]);
 
   const handleUpdateStatus = (appointmentId, newStatus) => {
-    axios.put(`${ip.address}/api/appointments/${appointmentId}/status`, { status: newStatus })
-      .then((response) => {
-        setAllAppointments(prevAppointments =>
-          prevAppointments.map(appointment =>
-            appointment._id === appointmentId ? { ...appointment, status: newStatus } : appointment
-          )
-        );
-      })
-      .catch((err) => {
-        console.error("Error updating status:", err);
-        setError("Failed to update the appointment status.");
-      });
+    // Show confirmation dialog and wait for user response
+    Swal.fire({
+      title: "Confirmation",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonText: "Yes",
+      cancelButtonText: "No",
+      text: `Are you sure you want to update this appointment status to ${newStatus}?`,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+    }).then((result) => {
+      // Only proceed if the user confirmed
+      if (result.isConfirmed) {
+        axios.put(`${ip.address}/api/appointments/${appointmentId}/status`, { status: newStatus })
+          .then((response) => {
+            // Update the appointment status locally in the state
+            setAllAppointments(prevAppointments =>
+              prevAppointments.map(appointment =>
+                appointment._id === appointmentId ? { ...appointment, status: newStatus } : appointment
+              )
+            );
+            setError(""); // Clear error if successful
+            
+            // Show success message
+            Swal.fire({
+              title: "Success!",
+              text: `Appointment status updated to ${newStatus}`,
+              icon: "success",
+              timer: 2000,
+              showConfirmButton: false
+            });
+          })
+          .catch((err) => {
+            console.error("Error updating status:", err);
+            setError("Failed to update the appointment status.");
+            
+            // Show error message
+            Swal.fire({
+              title: "Error",
+              text: "Failed to update the appointment status.",
+              icon: "error"
+            });
+          });
+      }
+    });
   };
 
   const getTodayDate = () => {
@@ -121,6 +154,31 @@ const OngoingAppointment = ({ allAppointments, setAllAppointments }) => {
   const toggleRow = (appointmentId) => {
     setExpandedRow(expandedRow === appointmentId ? null : appointmentId); // Toggle the expanded row
   };
+
+  const convertTimeRangeTo12HourFormat = (timeRange) => {
+    // Check if the timeRange is missing or empty
+    if (!timeRange) return 'Not Assigned';
+  
+    const convertTo12Hour = (time) => {
+      // Handle single time values like "10:00"
+      if (!time) return '';
+  
+      let [hours, minutes] = time.split(':').map(Number);
+      const period = hours >= 12 ? 'PM' : 'AM';
+      hours = hours % 12 || 12; // Convert 0 or 12 to 12 in 12-hour format
+  
+      return `${hours}:${String(minutes).padStart(2, '0')} ${period}`;
+    };
+  
+    // Handle both single times and ranges
+    if (timeRange.includes(' - ')) {
+      const [startTime, endTime] = timeRange.split(' - ');
+      return `${convertTo12Hour(startTime)} - ${convertTo12Hour(endTime)}`;
+    } else {
+      return convertTo12Hour(timeRange); // Single time case
+    }
+  };
+
 
   return (
     <>
@@ -196,7 +254,8 @@ const OngoingAppointment = ({ allAppointments, setAllAppointments }) => {
                     <td><img alt='Patient' src={patientImage} style={{ marginRight:'10px', width: '30px', height:'30px', borderRadius:'100px' }}/>{patientName}</td>
                     <td>{appointmentTypes}</td>
                     <td>{new Date(appointment.date).toLocaleDateString()}</td>
-                    <td>{appointment.time}</td>
+                    <td style={{fontSize: '14px'}}>{appointment.time ? convertTimeRangeTo12HourFormat(appointment.time) : 'Not Assigned' }</td>                    
+
                     <td>
                       <div className="d-flex justify-content-center">
                         <div className="ongoing-appointment">

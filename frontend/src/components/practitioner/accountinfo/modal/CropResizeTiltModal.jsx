@@ -1,104 +1,74 @@
 import React, { useState, useCallback } from 'react';
-import Modal from 'react-modal';
+import Modal from 'react-bootstrap/Modal';
+import { Button, Form } from 'react-bootstrap';
 import Cropper from 'react-easy-crop';
-import { Button, Form } from "react-bootstrap";
-import './UploadImageModal.css';
 
-const CropResizeTiltModal = ({ isOpen, onRequestClose, imageSrc, onSave }) => {
+const CropResizeTiltModal = ({ show, handleClose, imageSrc, onSave }) => {
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [rotation, setRotation] = useState(0);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
-  const [loading, setLoading] = useState(false); // Track if save operation is in progress
 
   const onCropComplete = useCallback((croppedArea, croppedAreaPixels) => {
     setCroppedAreaPixels(croppedAreaPixels);
-    console.log('Cropped Area Pixels:', croppedAreaPixels);  // Debugging to check if crop area is calculated
   }, []);
 
   const createImage = (url) =>
     new Promise((resolve, reject) => {
       const image = new Image();
-      image.addEventListener('load', () => resolve(image));
-      image.addEventListener('error', (error) => reject(error));
-      image.setAttribute('crossOrigin', 'anonymous');
+      image.onload = () => resolve(image);
+      image.onerror = reject;
       image.src = url;
     });
 
   const getCroppedImg = async (imageSrc, croppedAreaPixels, rotation = 0) => {
-    try {
-      const image = await createImage(imageSrc);
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
+    const image = await createImage(imageSrc);
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
 
-      canvas.width = croppedAreaPixels.width;
-      canvas.height = croppedAreaPixels.height;
+    canvas.width = croppedAreaPixels.width;
+    canvas.height = croppedAreaPixels.height;
 
-      ctx.translate(canvas.width / 2, canvas.height / 2);
-      ctx.rotate((rotation * Math.PI) / 180);
-      ctx.translate(-canvas.width / 2, -canvas.height / 2);
-      ctx.drawImage(
-        image,
-        croppedAreaPixels.x,
-        croppedAreaPixels.y,
-        croppedAreaPixels.width,
-        croppedAreaPixels.height,
-        0,
-        0,
-        canvas.width,
-        canvas.height
-      );
+    ctx.translate(canvas.width / 2, canvas.height / 2);
+    ctx.rotate((rotation * Math.PI) / 180);
+    ctx.translate(-canvas.width / 2, -canvas.height / 2);
 
-      return new Promise((resolve) => {
-        canvas.toBlob((blob) => {
-          const fileReader = new FileReader();
-          fileReader.readAsDataURL(blob);
-          fileReader.onloadend = () => {
-            console.log('Cropped Image Base64:', fileReader.result);  // Debugging: Ensure the image is created
-            resolve(fileReader.result);  // Pass base64 image string
-          };
-        });
+    ctx.drawImage(
+      image,
+      croppedAreaPixels.x,
+      croppedAreaPixels.y,
+      croppedAreaPixels.width,
+      croppedAreaPixels.height,
+      0,
+      0,
+      canvas.width,
+      canvas.height
+    );
+
+    return new Promise((resolve) => {
+      canvas.toBlob((blob) => {
+        const fileReader = new FileReader();
+        fileReader.readAsDataURL(blob);
+        fileReader.onloadend = () => {
+          resolve(fileReader.result); // Return base64 cropped image
+        };
       });
-    } catch (error) {
-      console.error('Error cropping image:', error);
-      throw new Error('Failed to crop image');
-    }
+    });
   };
 
   const handleSave = async () => {
-    if (!croppedAreaPixels) {
-      console.error('No cropped area detected!');  // Debugging: Ensure cropping area is defined
-      return;
-    }
-
-    setLoading(true); // Indicate saving is in progress
-    try {
-      console.log('Starting image crop...');  // Debugging: Ensure we are in the save flow
-      const croppedImageSrc = await getCroppedImg(imageSrc, croppedAreaPixels, rotation);
-      console.log('Image cropped successfully, now saving...');  // Debugging: Ensure cropping is successful
-
-      onSave(croppedImageSrc);  // Pass the cropped image back to parent
-      onRequestClose();  // Close the modal
-      console.log('Modal closed');  // Debugging: Check if modal closing is triggered
-    } catch (error) {
-      console.error('Failed to save cropped image:', error);  // Handle error in cropping or saving
-    } finally {
-      setLoading(false);  // Stop loading state
-    }
+    const croppedImage = await getCroppedImg(imageSrc, croppedAreaPixels, rotation);
+    onSave(croppedImage); // Pass the cropped image to the parent component
+    handleClose(); // Close the modal after cropping
   };
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onRequestClose={onRequestClose}
-      contentLabel="Edit Image"
-      className="image-edit-modal"
-      overlayClassName="modal-overlay"
-      ariaHideApp={false}
-    >
-      <div className="modal-content">
-        <h2>Edit Image</h2>
-        <div className="crop-container">
+    <Modal size="lg" show={show} onHide={handleClose}>
+      <Modal.Header closeButton>
+        <Modal.Title>Edit Profile Image</Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        <div className="crop-container" style={{ position: 'relative', height: '400px' }}>
           <Cropper
             image={imageSrc}
             crop={crop}
@@ -106,15 +76,13 @@ const CropResizeTiltModal = ({ isOpen, onRequestClose, imageSrc, onSave }) => {
             rotation={rotation}
             aspect={1}
             cropShape="round"
-            showGrid={false}
             onCropChange={setCrop}
             onZoomChange={setZoom}
             onRotationChange={setRotation}
-            onCropComplete={onCropComplete}  // Make sure cropping is completed
+            onCropComplete={onCropComplete}
           />
         </div>
-
-        <div className="controls">
+        <div className="controls mt-3">
           <Form.Label>Zoom</Form.Label>
           <Form.Control
             type="range"
@@ -122,29 +90,27 @@ const CropResizeTiltModal = ({ isOpen, onRequestClose, imageSrc, onSave }) => {
             min="1"
             max="3"
             step="0.1"
-            aria-labelledby="Zoom"
-            onChange={(e) => setZoom(e.target.value)}
+            onChange={(e) => setZoom(parseFloat(e.target.value))}
           />
-          <Form.Label>Rotation</Form.Label>
+          <Form.Label className="mt-2">Rotation</Form.Label>
           <Form.Control
             type="range"
             value={rotation}
             min="0"
             max="360"
             step="1"
-            aria-labelledby="Rotation"
-            onChange={(e) => setRotation(e.target.value)}
+            onChange={(e) => setRotation(parseInt(e.target.value))}
           />
         </div>
-
-        <Button
-          style={{ marginTop: "15px" }}
-          onClick={handleSave}
-          disabled={loading}  // Disable the button while saving
-        >
-          {loading ? 'Saving...' : 'Save'}
+      </Modal.Body>
+      <Modal.Footer>
+        <Button variant="secondary" onClick={handleClose}>
+          Cancel
         </Button>
-      </div>
+        <Button variant="primary" onClick={handleSave}>
+          Save
+        </Button>
+      </Modal.Footer>
     </Modal>
   );
 };

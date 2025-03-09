@@ -42,6 +42,7 @@ const getSpecialties = async (req, res) => {
         const specialties = await Specialty.find();
         return res.status(200).json(specialties);
     } catch (error) {
+        console.error('Error finding specialties:', error);
         return res.status(500).json({ message: 'Server error', error: error.message });
     }
 };
@@ -49,6 +50,11 @@ const getSpecialties = async (req, res) => {
 const updateSpecialty = async (req, res) => {
     try {
         const { specialtyId, name, description } = req.body;
+
+        if (!mongoose.Types.ObjectId.isValid(specialtyId)) {
+            return res.status(400).json({ message: 'Invalid specialty ID' });
+        }
+
         let updatedData = { name, description };
 
         // Handle image upload
@@ -58,8 +64,9 @@ const updateSpecialty = async (req, res) => {
         }
 
         const updatedSpecialty = await Specialty.findByIdAndUpdate(specialtyId, updatedData, { new: true });
-        return res.status(200).json({ message: 'Specialty updated successfully', specialty: updatedSpecialty });
+        return res.status(200).json(updatedSpecialty);
     } catch (error) {
+        console.error('Error updating specialty:', error);
         return res.status(500).json({ message: 'Server error', error: error.message });
     }
 };
@@ -74,9 +81,20 @@ const deleteSpecialty = async (req, res) => {
     }
 };
 
+const getOneSpecialtyById = async (req, res) => {
+    try {
+        const { specialtyId } = req.params;
+        const specialty = await Specialty.findById(specialtyId);
+        return res.status(200).json(specialty);
+    } catch (error) {
+        return res.status(500).json({ message: 'Server error', error: error.message });
+    }
+};
+
 module.exports = {
     addSpecialty,
     getSpecialties,
     updateSpecialty,
     deleteSpecialty,
+    getOneSpecialtyById,
 };

@@ -1,7 +1,7 @@
-import { useParams, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import MedSecTodaysApp from '../../medical secretary/components/Appointments/MedSecTodaysApp';
 import MedSecOngoing from '../../medical secretary/components/Appointments/MedSecOngoing';
-import { Container, Nav, Row, Col, Button, Modal } from 'react-bootstrap';
+import { Container, Nav, Row, Button, Modal } from 'react-bootstrap';
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 // import './AdminAppointmentMain.css';
@@ -11,10 +11,13 @@ import MedSecLaboratoryApp from '../../medical secretary/components/Appointments
 import CreateAppointment from '../../medical secretary/components/Add Patient/New Appointment/CreateAppointment';
 import CreatePatientForms from '../../medical secretary/components/Add Patient/Forms/CreatePatientForms';
 import MedSecForPayment from '../../medical secretary/components/Appointments/MedSecForPayment';
+import MedSecCancelled from '../../medical secretary/components/Appointments/MedSecCancelled';
 import SidebarAdmin from '../sidebar/SidebarAdmin';
 import AdminNavbar from '../navbar/AdminNavbar';
-import AdminPending from './AdminPending';
-
+import MedSecPending from '../../medical secretary/components/Appointments/MedSecPending';
+import MedSecCompleted from '../../medical secretary/components/Appointments/MedSecCompleted';
+import { ChatDotsFill } from 'react-bootstrap-icons';
+import ChatComponent from '../../../chat/ChatComponent';
 function AdminAppointmentMain() {
   const containerStyle = {
     display: 'flex',
@@ -22,11 +25,7 @@ function AdminAppointmentMain() {
     overflow: 'hidden', // Prevents scrolling issues for the main layout
   };
 
-  const sidebarWrapperStyle = {
-    flex: '0 0 250px', // Sidebar fixed width
-    height: '100vh',
-    overflowY: 'auto', // Make sidebar scrollable if necessary
-  };
+
 
   const contentWrapperStyle = {
     width: '100%',
@@ -36,20 +35,15 @@ function AdminAppointmentMain() {
     flexDirection: 'column', // Navbar on top, content below
   };
 
-  const announcementWrapperStyle = {
-    flex: '1', // Take available space for announcements
-    overflowY: 'auto', // Ensure the announcements scroll properly
-    padding: '3rem', // Add padding for better layout
-  };
   const location = useLocation(); 
   const { userId, userName, role } = location.state || {};
 
   const [allappointments, setallappointments] = useState([]);
-  const [selectedDoctor, setSelectedDoctor] = useState("");
+  const [selectedDoctor] = useState("");
   const [activeTab, setActiveTab] = useState("pending");
   const [showPatientModal, setShowPatientModal] = useState(false); // Modal for Add Patient
   const [showAppointmentModal, setShowAppointmentModal] = useState(false); // Modal for Create Appointment
-
+  const [showChat, setShowChat] = useState(false);
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const tab = params.get("tab");
@@ -85,7 +79,7 @@ function AdminAppointmentMain() {
           <AdminNavbar userId={userId} userName={userName} role={role} />
           <div className='maincolor-container'>
           <div className='content-area'>
-            <Container className="d-flex justify-content-center ">
+            <Container className="d-flex justify-content-center pt-5 ">
               <Row>
                 <Nav fill variant="tabs" className="app-navtabs" activeKey={activeTab} onSelect={setActiveTab}>
                   {/* <Nav.Item>
@@ -106,6 +100,12 @@ function AdminAppointmentMain() {
                   </Nav.Item>
                   <Nav.Item>
                     <Nav.Link eventKey="tosend">To-send Lab Results</Nav.Link>
+                  </Nav.Item>
+                  <Nav.Item>
+                    <Nav.Link eventKey="completed">Completed</Nav.Link>
+                  </Nav.Item>
+                  <Nav.Item>
+                    <Nav.Link eventKey="cancelled">Cancelled</Nav.Link>
                   </Nav.Item>
              
                
@@ -158,7 +158,7 @@ function AdminAppointmentMain() {
                             Add Patient
                           </Button>
                         </Container>
-                        <AdminPending
+                        <MedSecPending
                         allAppointments={allappointments}
                         setAllAppointments={setallappointments}
                         selectedDoctor={selectedDoctor}
@@ -233,6 +233,29 @@ function AdminAppointmentMain() {
                         />
                       </>
                     )}  
+
+
+                    {activeTab === "completed" && (
+                      <>
+                        <MedSecCompleted
+                          allAppointments={allappointments}
+                          setAllAppointments={setallappointments}
+                          selectedDoctor={selectedDoctor}
+                        />
+                      </>
+                    )}  
+
+
+                    
+                  {activeTab === "cancelled" && (
+                      <>
+                        <MedSecCancelled
+                          allAppointments={allappointments}
+                          setAllAppointments={setallappointments}
+                          selectedDoctor={selectedDoctor}
+                        />
+                      </>
+                    )}  
                     
                   </Container>
            
@@ -245,7 +268,28 @@ function AdminAppointmentMain() {
     </div>
      
      
-        
+    <div className="chat-btn-container">
+                  <Button
+                    className="chat-toggle-btn"
+                    onClick={() => setShowChat(!showChat)}
+                  >
+                    <ChatDotsFill size={30} />
+                  </Button>
+                </div>
+
+                {showChat && (
+                  <div className="chat-overlay">
+                    {showChat && (
+                      <div className="chat-overlay">
+                        <ChatComponent
+                          userId={userId}
+                          userRole={role}
+                          closeChat={() => setShowChat(false)}
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
         
         
         {/* Modal for creating a patient */}

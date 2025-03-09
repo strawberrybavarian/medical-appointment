@@ -1,0 +1,131 @@
+.news-modal .modal-content {
+    border-radius: 12px;
+    border: none;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  }
+  
+  .news-modal-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #eaeaea;
+    padding: 1.25rem 1.5rem;
+  }
+  
+  .news-modal-header .modal-title {
+    font-weight: 600;
+    color: #2c3e50;
+    font-size: 1.35rem;
+  }
+  
+  .news-modal-body {
+    padding: 1.5rem;
+  }
+  
+  .news-form-label {
+    font-weight: 500;
+    color: #495057;
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+  }
+  
+  .news-form-icon {
+    margin-right: 0.5rem;
+    color: #4a6cf7;
+  }
+  
+  .news-form-input {
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    border: 1px solid #ced4da;
+    box-shadow: none;
+    font-size: 1rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  
+  .news-form-input:focus {
+    border-color: #4a6cf7;
+    box-shadow: 0 0 0 0.2rem rgba(74, 108, 247, 0.25);
+  }
+  
+  /* ReactQuill styling */
+  .quill-wrapper {
+    margin-bottom: 60px;
+  }
+  
+  .news-quill-editor {
+    height: 300px;
+    border-radius: 8px;
+    font-size: 1rem;
+  }
+  
+  .news-quill-editor .ql-toolbar {
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    background-color: #f8f9fa;
+    border-color: #ced4da;
+  }
+  
+  .news-quill-editor .ql-container {
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+    border-color: #ced4da;
+    font-family: inherit;
+  }
+  
+  .news-quill-editor .ql-editor {
+    min-height: 250px;
+    max-height: 400px;
+    overflow-y: auto;
+  }
+  
+  .news-quill-editor .ql-editor:focus {
+    border-color: #4a6cf7;
+  }
+  
+  /* Modal footer styling */
+  .news-modal-footer {
+    border-top: 1px solid #eaeaea;
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    justify-content: flex-end;
+  }
+  
+  .news-btn-cancel,
+  .news-btn-submit {
+    padding: 0.6rem 1.5rem;
+    font-weight: 500;
+    border-radius: 8px;
+  }
+  
+  .news-btn-submit {
+    background-color: #4a6cf7;
+    border-color: #4a6cf7;
+    margin-left: 1rem;
+  }
+  
+  .news-btn-submit:hover,
+  .news-btn-submit:focus {
+    background-color: #3a5bd9;
+    border-color: #3a5bd9;
+  }
+  
+  .news-btn-cancel {
+    color: #495057;
+    border: 1px solid #ced4da;
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 576px) {
+    .news-modal-body {
+      padding: 1.25rem 1rem;
+    }
+    
+    .news-modal-footer {
+      padding: 1rem;
+    }
+    
+    .news-btn-cancel,
+    .news-btn-submit {
+      padding: 0.5rem 1.25rem;
+    }
+  }

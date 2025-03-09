@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const {Schema, model} = mongoose;
+const bcrypt = require('bcryptjs');
 
 const AdminSchema = new mongoose.Schema({
     firstName: {
@@ -23,6 +24,12 @@ const AdminSchema = new mongoose.Schema({
     isActive: {
         type: Boolean,
         default: true,
+    },
+    contactNumber: {
+        type: String,
+    },
+    birthdate: {
+        type: Date,
     },
     role: {
         type: String,
@@ -52,10 +59,32 @@ const AdminSchema = new mongoose.Schema({
         type: Schema.Types.ObjectId,
         ref: 'Audit'
     }],
+    twoFactorSecret: { type: String },
+    twoFactorEnabled: { type: Boolean, default: false },
+    otp: {
+        type: String
+    },
+    otpExpires: {
+        type: Date
+    },
+    
 }, { timestamps: true });
 
 AdminSchema.virtual('name').get(function () {
     return `${this.firstName} ${this.lastName}`;
   });
+
+AdminSchema.pre('save', async function (next){
+    if(!this.isModified('password')){
+        return next();
+    }
+    try{
+        const salt = await bcrypt.genSalt(10);
+        this.password = await bcrypt.hash(this.password, salt);
+        next();
+    } catch (err){
+        next(err);
+    }
+})
 const Admin = mongoose.model('Admin', AdminSchema);
 module.exports = Admin;

@@ -1,13 +1,22 @@
+import axios from "axios";
+
 const image = {
-    // logo: "http://13.214.60.24/images/Molino-Polyclinic-Logo.png",
+    // logo: "https://medical-appointment-qiih.onrender.com/images/Molino-Polyclinic-Logo.png",
     logo: "http://localhost:8000/images/Molino-Polyclinic-Logo.png",
 };
 
 const ip ={
-    // address: 'http://13.214.60.24',
+    // address: 'https://medical-appointment-qiih.onrender.com'
+
+
     address: 'http://localhost:8000'
 
 };
+
+axios.defaults.baseURL = ip.address;
+axios.defaults.withCredentials = true;
+
+
 
 const specialties = [
     "Neurology",

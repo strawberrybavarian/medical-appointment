@@ -29,7 +29,7 @@ const NewsSchema = new Schema({
 }, { timestamps: true });
 
 // Pre-save hook to auto-increment news_ID
-NewsSchema.pre('save', async function (next) {
+NewsSchema.pre('validate', async function (next) {
   const doc = this;
 
   // Only increment if the document is new

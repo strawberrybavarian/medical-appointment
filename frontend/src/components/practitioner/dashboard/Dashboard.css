@@ -1,13 +1,24 @@
 
 .dm-photo{
-  width: 80vw;
+  width: 100vw;
   height: 50vh;
   object-fit: cover;
-  border-radius: 10px;
+  
 
 }
 /* Ensure the image is responsive */
 
+.image-container {
+
+  height: 100%;
+
+  border-radius: 10px;
+
+} 
+
+.image-overlay-padding{
+  padding: 78px !important;
+}
 
 /* Position the overlay content */
 .overlay-content {
@@ -26,8 +37,8 @@
 
 /* Ensure button is styled correctly */
 button {
-  font-size: 1.25rem;
-  padding: 0.75rem 2rem;
+
+ 
 }
 
 
@@ -238,8 +249,20 @@ button {
 
 
 .button-delete-image{
-  background-color: #55555500;
+  background-color: #eb2f2f00;
   border-color: #55555500;
+  border-radius: 50%;
+  position: absolute;
+  /* right: -100px; */
+  top: -12px;
+  bottom: 100px;
+  left: 86px;
+  width: 10px !important;
+  height: 25px;
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .posted-images{

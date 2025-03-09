@@ -49,4 +49,8 @@ module.exports = app => {
     app.get('/api/news/api/getallnews/:id/:role', NewsController.getAllNewsByUserId);
     app.delete('/api/news/api/deletenews/:id/:newsId', NewsController.deleteNewsById);
     app.put('/api/news/api/updatenews/:userId/:newsId', upload.array('images'), NewsController.updateNewsAtIndex);
+    // In news_routes.js
+app.put('/api/news/api/updatenewsbyadmin/:newsId', upload.array('images'), NewsController.updateNewsByAdmin);
+
+    app.put('/api/notifications/:id/read', NewsController.markAsRead);
 }

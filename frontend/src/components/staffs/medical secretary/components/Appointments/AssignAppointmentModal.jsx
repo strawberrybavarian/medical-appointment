@@ -17,9 +17,13 @@ function AssignAppointmentModal({ show, handleClose, appointmentId }) {
   const [afternoonTimeRange, setAfternoonTimeRange] = useState("");
   const [bookedSlots, setBookedSlots] = useState({ morning: 0, afternoon: 0 });
   const [availableSlots, setAvailableSlots] = useState({ morning: 0, afternoon: 0 });
+  const [servicesLoaded, setServicesLoaded] = useState(false);
 
   const todayDate = new Date().toISOString().split("T")[0];
 
+
+
+  console.log('availability', availability)
   useEffect(() => {
     axios.get(`${ip.address}/api/doctor/api/alldoctor`)
       .then((res) => {
@@ -37,22 +41,57 @@ function AssignAppointmentModal({ show, handleClose, appointmentId }) {
         const serviceOptions = res.data.map((service) => ({
           value: service._id,
           label: service.name,
+          category: service.category, // Include category
         }));
         setAllServices(serviceOptions);
         setServices(serviceOptions);
+        setServicesLoaded(true);
       })
       .catch((err) => console.error(err));
   }, []);
+
+  useEffect(() => {
+    if (show && appointmentId && servicesLoaded) {
+      axios.get(`${ip.address}/api/appointments/${appointmentId}`)
+        .then((res) => {
+          const appointment = res.data;
+          if (appointment.doctor) {
+            setSelectedDoctor({
+              value: appointment.doctor._id,
+              label: `${appointment.doctor.dr_firstName} ${appointment.doctor.dr_middleInitial}. ${appointment.doctor.dr_lastName}`,
+            });
+          }
+          if (appointment.appointment_type && appointment.appointment_type.length > 0) {
+            const firstType = appointment.appointment_type[0];
+            setSelectedService({
+              value: firstType._id,
+              label: firstType.appointment_type,
+              category: firstType.category,
+            });
+          }
+          setDate(appointment.date ? appointment.date.split('T')[0] : '');
+          setTime(appointment.time);
+        })
+        .catch((err) => console.error(err));
+    }
+  }, [show, appointmentId, servicesLoaded]);
+
 
   useEffect(() => {
     if (selectedDoctor) {
       axios.get(`${ip.address}/api/doctor/${selectedDoctor.value}`)
         .then((res) => {
           setAvailability(res.data.doctor.availability);
-          setServices(res.data.doctor.dr_services.map((service) => ({
+          const doctorServices = res.data.doctor.dr_services.map((service) => ({
             value: service._id,
             label: service.name,
-          })));
+            category: service.category, // Include category
+          }));
+          const isSelectedServiceInDoctorServices = doctorServices.some(service => service.value === selectedService?.value);
+          if (!isSelectedServiceInDoctorServices && selectedService) {
+            doctorServices.push(selectedService);
+          }
+          setServices(doctorServices);
         });
     } else {
       setServices(allServices);
@@ -60,28 +99,7 @@ function AssignAppointmentModal({ show, handleClose, appointmentId }) {
       setMorningTimeRange("");
       setAfternoonTimeRange("");
     }
-  }, [selectedDoctor, allServices]);
-
-  useEffect(() => {
-    if (show && appointmentId) {
-      axios.get(`${ip.address}/api/appointments/${appointmentId}`)
-        .then((res) => {
-          const appointment = res.data;
-          if (appointment.doctor) {
-            setSelectedDoctor({
-              value: appointment.doctor._id,
-              label: `${appointment.doctor.dr_firstName} ${appointment.doctor.dr_lastName}`,
-            });
-          }
-          setSelectedService({
-            value: appointment.appointment_type._id,
-            label: appointment.appointment_type.appointment_type,
-          });
-          setDate(appointment.date);
-          setTime(appointment.time);
-        });
-    }
-  }, [show, appointmentId]);
+  }, [selectedDoctor, selectedService, allServices]);
 
   useEffect(() => {
     if (date && selectedDoctor) {
@@ -137,17 +155,19 @@ function AssignAppointmentModal({ show, handleClose, appointmentId }) {
       window.alert("Please fill all required fields.");
       return;
     }
-  
+
     const data = {
-      doctor: selectedDoctor?.value || null, // Send null if no doctor selected
-      appointment_type: {
-        appointment_type: selectedService.label,
-        category: selectedService.category,
-      },
+      doctor: selectedDoctor?.value || null,
+      appointment_type: [
+        {
+          appointment_type: selectedService.label,
+          category: selectedService.category,
+        }
+      ],
       date,
       time,
     };
-  
+
     axios.put(`${ip.address}/api/appointments/${appointmentId}/assign`, data)
       .then(() => {
         window.alert("Appointment updated successfully.");
@@ -156,14 +176,13 @@ function AssignAppointmentModal({ show, handleClose, appointmentId }) {
       })
       .catch((err) => console.error(err));
   };
-  
 
   return (
     <Modal show={show} onHide={handleClose}>
-      <Modal.Header closeButton>
+      <Modal.Header style={{ width: '100%' }} closeButton>
         <Modal.Title>Assign Appointment</Modal.Title>
       </Modal.Header>
-      <Modal.Body>
+      <Modal.Body style={{ width: '100%' }}>
         <Form.Group className="mb-3">
           <Form.Label>Select Doctor (Optional)</Form.Label>
           <Select
@@ -228,7 +247,7 @@ function AssignAppointmentModal({ show, handleClose, appointmentId }) {
           </Form.Group>
         )}
       </Modal.Body>
-      <Modal.Footer>
+      <Modal.Footer style={{ width: '100%' }}>
         <Button variant="secondary" onClick={handleClose}>
           Close
         </Button>

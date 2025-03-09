@@ -4,6 +4,7 @@ import Table from 'react-bootstrap/Table';
 import { Row, Col, Pagination, Form, Collapse } from 'react-bootstrap';
 import './Appointment.css';
 import { ip } from "../../../ContentExport";
+import Swal from 'sweetalert2';
 
 const TodaysAppointment = ({ allAppointments, setAllAppointments }) => {
   const [error, setError] = useState("");
@@ -40,20 +41,51 @@ const TodaysAppointment = ({ allAppointments, setAllAppointments }) => {
 
   // Function to update the appointment status
   const updateAppointmentStatus = (appointmentID, newStatus) => {
-    axios.put(`${ip.address}/api/appointments/${appointmentID}/status`, { status: newStatus })
-      .then(() => {
-        // Update the appointment status locally in the state
-        setAllAppointments(prevAppointments =>
-          prevAppointments.map(appointment =>
-            appointment._id === appointmentID ? { ...appointment, status: newStatus } : appointment
-          )
-        );
-        setError(""); // Clear error if successful
-      })
-      .catch(err => {
-        console.error(err); // Log detailed error
-        setError('Failed to update the appointment status.');
-      });
+    // Show confirmation dialog and wait for user response
+    Swal.fire({
+      title: "Confirmation",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonText: "Yes",
+      cancelButtonText: "No",
+      text: `Are you sure you want to mark this appointment as ${newStatus}?`,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+    }).then((result) => {
+      // Only proceed if the user confirmed
+      if (result.isConfirmed) {
+        axios.put(`${ip.address}/api/appointments/${appointmentID}/status`, { status: newStatus })
+          .then((response) => {
+            // Update the appointment status locally in the state
+            setAllAppointments(prevAppointments =>
+              prevAppointments.map(appointment =>
+                appointment._id === appointmentID ? { ...appointment, status: newStatus } : appointment
+              )
+            );
+            setError(""); // Clear error if successful
+            
+            // Show success message
+            Swal.fire({
+              title: "Success!",
+              text: `Appointment status updated to ${newStatus}`,
+              icon: "success",
+              timer: 2000,
+              showConfirmButton: false
+            });
+          })
+          .catch(err => {
+            console.error(err); // Log detailed error
+            setError('Failed to update the appointment status.');
+            
+            // Show error message
+            Swal.fire({
+              title: "Error",
+              text: "Failed to update the appointment status.",
+              icon: "error"
+            });
+          });
+      }
+    });
   };
 
   // Filter today's appointments based on today's date
@@ -82,6 +114,30 @@ const TodaysAppointment = ({ allAppointments, setAllAppointments }) => {
   // Function to toggle expanded row
   const toggleRow = (appointmentId) => {
     setExpandedRow(expandedRow === appointmentId ? null : appointmentId); // Toggle the expanded row
+  };
+
+  const convertTimeRangeTo12HourFormat = (timeRange) => {
+    // Check if the timeRange is missing or empty
+    if (!timeRange) return 'Not Assigned';
+  
+    const convertTo12Hour = (time) => {
+      // Handle single time values like "10:00"
+      if (!time) return '';
+  
+      let [hours, minutes] = time.split(':').map(Number);
+      const period = hours >= 12 ? 'PM' : 'AM';
+      hours = hours % 12 || 12; // Convert 0 or 12 to 12 in 12-hour format
+  
+      return `${hours}:${String(minutes).padStart(2, '0')} ${period}`;
+    };
+  
+    // Handle both single times and ranges
+    if (timeRange.includes(' - ')) {
+      const [startTime, endTime] = timeRange.split(' - ');
+      return `${convertTo12Hour(startTime)} - ${convertTo12Hour(endTime)}`;
+    } else {
+      return convertTo12Hour(timeRange); // Single time case
+    }
   };
 
   return (
@@ -162,7 +218,7 @@ const TodaysAppointment = ({ allAppointments, setAllAppointments }) => {
                     <td><img alt='Patient Image' src={patientImage} style={{marginRight:'10px', width: '30px', height:'30px', borderRadius:'100px'}}/> <span style={{fontSize: '14px', fontWeight: '600'}}>{patientName}</span> </td>
                     <td style={{fontSize: '14px'}}>{appointmentTypes}</td>
                     <td style={{fontSize: '14px'}}>{new Date(appointment.date).toLocaleDateString()}</td>
-                    <td style={{fontSize: '14px'}}>{appointment.time}</td>
+                    <td style={{fontSize: '14px'}}>{appointment.time ? convertTimeRangeTo12HourFormat(appointment.time) : 'Not Assigned' }</td>                    
                     <td style={{ textAlign: "center" }}>
                       <div className="d-flex justify-content-center">
                         <div className="scheduled-appointment" style={{fontSize: '12px'}}>

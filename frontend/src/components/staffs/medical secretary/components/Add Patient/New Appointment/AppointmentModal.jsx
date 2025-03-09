@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { Row, Col, Button, Form, Modal, Alert, Spinner, Container } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { ip } from "../../../../../../ContentExport";
+import DoctorWeeklySchedule from "../../../../../patient/doctorprofile/DoctorWeeklySchedule";
 
 function AppointmentModal({ show, handleClose, pid, did, doctorName }) {
   const navigate = useNavigate();
@@ -17,7 +18,7 @@ function AppointmentModal({ show, handleClose, pid, did, doctorName }) {
 
   const todayDate = new Date().toISOString().split("T")[0];
 
-  // Fetch doctor data and availability on load
+
   useEffect(() => {
     if (did) {
       fetchDoctorData();
@@ -84,7 +85,9 @@ function AppointmentModal({ show, handleClose, pid, did, doctorName }) {
     }
 
     if (dayAvailability.afternoon?.available) {
+
       const availableSlots = Math.max(dayAvailability.afternoon.maxPatients - afternoonCount, 0);
+
       if (availableSlots > 0) {
         times.push({
           label: "Afternoon",
@@ -93,6 +96,8 @@ function AppointmentModal({ show, handleClose, pid, did, doctorName }) {
           period: "afternoon",
         });
       }
+
+
     }
 
     return times;
@@ -143,12 +148,15 @@ function AppointmentModal({ show, handleClose, pid, did, doctorName }) {
   };
 
   return (
-    <Modal show={show} onHide={handleClose} className="am-overlay">
-      <div className="am-content">
+    <Modal size="lg" show={show} onHide={handleClose} className="">
+      <div className="">
         <Modal.Header closeButton>
           <Modal.Title>Book Appointment</Modal.Title>
         </Modal.Header>
         <Modal.Body>
+          {/* Render Doctor's Weekly Schedule */}
+          <DoctorWeeklySchedule did={did} />
+
           {step === 1 && (
             <>
               <h6>Step 1: Fill Out the Form</h6>
@@ -163,26 +171,38 @@ function AppointmentModal({ show, handleClose, pid, did, doctorName }) {
                     required
                   />
                 </Form.Group>
+                <div>
 
-                {loading ? (
-                  <Spinner animation="border" />
-                ) : availableTimes.length > 0 ? (
-                  <Form.Group className="mb-3">
-                    <Form.Label>Time</Form.Label>
-                    {availableTimes.map((slot, index) => (
-                      <Button
-                        key={index}
-                        variant={time === slot.timeRange ? "secondary" : "outline-primary"}
-                        onClick={() => setTime(slot.timeRange)}
-                        className="m-1"
-                      >
-                        {slot.label}: {slot.timeRange} <br /> Slots left: {slot.availableSlots}
-                      </Button>
-                    ))}
-                  </Form.Group>
-                ) : (
-                  <Alert variant="warning">No available slots for this day.</Alert>
-                )}
+                  <Form.Label>Time</Form.Label>
+                  {loading ? (
+                    <Container className="d-flex justify-content-center">
+                      <p>No Available Times</p>
+
+                    </Container>
+                  ) : availableTimes.length > 0 ? (
+
+                    <Container fluid className="d-flex justify-content-center w-100">
+                      <Form.Group className="mb-3">
+
+                        {availableTimes.map((slot, index) => (
+                          <Button
+                            key={index}
+                            variant={time === slot.timeRange ? "secondary" : "outline-primary"}
+                            onClick={() => setTime(slot.timeRange)}
+                            className="m-1"
+                          >
+                            {slot.label}: {slot.timeRange} <br /> Slots left: {slot.availableSlots}
+                          </Button>
+                        ))}
+                      </Form.Group>
+
+                    </Container>
+
+                  ) : (
+                    <Alert variant="warning">No available slots for this day.</Alert>
+                  )}
+
+                </div>
 
                 <Form.Group className="mb-3">
                   <Form.Label>Primary Concern</Form.Label>
@@ -201,7 +221,7 @@ function AppointmentModal({ show, handleClose, pid, did, doctorName }) {
               <h6>Step 2: Review Appointment Details</h6>
               <p><strong>Date:</strong> {date}</p>
               <p><strong>Time:</strong> {time}</p>
-              <p><strong>Reason:</strong> {reason}</p>
+              <p><strong>Primary Concern:</strong> {reason}</p>
             </>
           )}
         </Modal.Body>

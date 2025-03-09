@@ -8,14 +8,18 @@ import {
   CDBSidebarMenuItem, 
   CDBSidebarFooter 
 } from 'cdbreact';
-import { Modal, Button } from 'react-bootstrap';
+import axios from 'axios';
+import { ip } from '../../../../ContentExport';
+import LogoutModal from '../../../practitioner/sidebar/LogoutModal';
 import './SidebarAdmin.css';
+import { useUser } from '../../../UserContext';
 
 const SidebarAdmin = ({ userId, userName, role }) => {
   const [isLeftIcon, setIsLeftIcon] = useState(true);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [isSubMenuOpen, setIsSubMenuOpen] = useState(false);
   const [isDashboardSubMenuOpen, setIsDashboardSubMenuOpen] = useState(false);
+  const { setUser } = useUser();
 
   const navigate = useNavigate();
 
@@ -23,12 +27,21 @@ const SidebarAdmin = ({ userId, userName, role }) => {
 
   const handleLogout = () => setShowLogoutModal(true);
 
-  const confirmLogout = () => {
-    setShowLogoutModal(false);
-    navigate('/', { state: { message: 'Logged out successfully' } });
-  };
-
   const cancelLogout = () => setShowLogoutModal(false);
+
+  const confirmLogout = async () => {
+    try {
+      // Make proper API call to logout
+      await axios.post(`${ip.address}/api/logout`, {}, { withCredentials: true });
+      // Clear user context/state
+      setUser(null);
+      // Navigate to login page
+      navigate('/medapp/login');
+    } catch (error) {
+      console.error('Error logging out:', error);
+      alert('Failed to log out. Please try again.');
+    }
+  };
 
   const toggleSubMenu = () => setIsSubMenuOpen(!isSubMenuOpen);
 
@@ -70,8 +83,6 @@ const SidebarAdmin = ({ userId, userName, role }) => {
                   </CDBSidebarMenuItem>
                 </div>
 
-                
-
                 <div
                   onClick={() => navigateWithState('/admin/dashboard/doctor')}
                   style={{ cursor: 'pointer' }}
@@ -99,8 +110,6 @@ const SidebarAdmin = ({ userId, userName, role }) => {
                   Appointments
                 </CDBSidebarMenuItem>
               </div>
-
-              
 
               <CDBSidebarMenuItem 
                 icon="th" 
@@ -150,14 +159,14 @@ const SidebarAdmin = ({ userId, userName, role }) => {
                 </CDBSidebarMenuItem>
               </div>
 
-              {/* <CDBSidebarMenu>
-  {/* Existing menu items */}
-  
-  {/* Add News Management Menu Item */}
-               
-                
-                {/* Existing menu items */}
-              {/* </CDBSidebarMenu> */} 
+              <div
+                onClick={() => navigateWithState('/admin/account')}
+                style={{ cursor: 'pointer' }}
+              >
+                <CDBSidebarMenuItem icon="user" className="font-style-poppins">
+                  Account
+                </CDBSidebarMenuItem>
+              </div>
 
               <CDBSidebarMenuItem 
                 icon="arrow-left" 
@@ -175,22 +184,12 @@ const SidebarAdmin = ({ userId, userName, role }) => {
         </CDBSidebar>
       </div>
 
-      <Modal show={showLogoutModal} onHide={cancelLogout}>
-        <Modal.Header closeButton>
-          <Modal.Title className="font-style-poppins">Confirm Logout</Modal.Title>
-        </Modal.Header>
-        <Modal.Body className="font-style-poppins">
-          Are you sure you want to log out?
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={cancelLogout} className="font-style-poppins">
-            No
-          </Button>
-          <Button variant="primary" onClick={confirmLogout} className="font-style-poppins">
-            Yes
-          </Button>
-        </Modal.Footer>
-      </Modal>
+      {/* Replace the existing Modal with the LogoutModal component */}
+      <LogoutModal 
+        show={showLogoutModal} 
+        onCancel={cancelLogout} 
+        onConfirm={confirmLogout} 
+      />
     </>
   );
 };

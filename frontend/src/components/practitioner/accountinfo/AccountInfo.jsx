@@ -1,19 +1,22 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Button, Form, Row, Col, Collapse } from "react-bootstrap";
+import { Button, Form, Row, Col, Collapse, Card, Container } from "react-bootstrap";
 import * as Icon from "react-bootstrap-icons";
 import ImageUploadModal from "./modal/ImageUploadModal";
 import UpdateInfoModal from "./modal/UpdateInfoModal";
-import ChangePasswordModal from "./modal/ChangePasswordModal"; // Import the ChangePasswordModal component
+import ChangePasswordModal from "./modal/ChangePasswordModal";
 import './AccountInfo.css';
-import { PencilFill } from "react-bootstrap-icons";
 import DoctorBiography from "./DoctorBiography";
 import { ip } from "../../../ContentExport";
+import TwoFactorAuth from "../../patient/patientinformation/TwoFactorAuth/TwoFactorAuth";
+import DoctorManageHMO from "./DoctorManageHMO";
+import { useUser } from "../../UserContext";
 
 const AccountInfo = () => {
   const location = useLocation();
-  const { did } = location.state || {};
+  const { user } = useUser();
+  const did = user._id;
   const [doctorData, setDoctorData] = useState({
     theId: "",
     theName: "",
@@ -24,14 +27,16 @@ const AccountInfo = () => {
     cnumber: "",
     password: "",
     dob: "",
-    specialty: ""
+    specialty: "",
+    role:'',
   });
   const [fullname, setFullname] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
-  const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] = useState(false); // State for Change Password modal
-
-  // State to manage biography collapse
+  const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] = useState(false);
+  const [showTwoFactorAuthModal, setShowTwoFactorAuthModal] = useState(false);
+  const [twoFaEnabled, setTwoFaEnabled] = useState(false);
+  const [hmoCollapseOpen, setHmoCollapseOpen] = useState(false);
   const [biographyCollapseOpen, setBiographyCollapseOpen] = useState(false);
 
   useEffect(() => {
@@ -48,15 +53,37 @@ const AccountInfo = () => {
           cnumber: data.dr_contactNumber,
           dob: data.dr_dob,
           password: data.dr_password,
-          specialty: data.dr_specialty
+          specialty: data.dr_specialty,
+          role: data.role
         });
 
+        setTwoFaEnabled(data.twoFactorEnabled);
         setFullname(`${data.dr_firstName} ${data.dr_middleInitial}. ${data.dr_lastName}`);
       })
       .catch((err) => {
         console.log(err);
       });
   }, [did]);
+
+  const handleEnableDisableTwoFa = async () => {
+    if (twoFaEnabled) {
+      try {
+        const response = await axios.post(`${ip.address}/api/disable-2fa`, { 
+          userId: did, 
+          role: doctorData.role 
+        });
+        if (response.data.message === '2FA disabled successfully') {
+          setTwoFaEnabled(false);
+          alert('2FA Disabled Successfully');
+        }
+      } catch (error) {
+        console.error('Error disabling 2FA:', error);
+        alert('Error disabling 2FA');
+      }
+    } else {
+      setShowTwoFactorAuthModal(true);
+    }
+  };
 
   const openImageModal = () => {
     setIsModalOpen(true);
@@ -94,7 +121,7 @@ const AccountInfo = () => {
         console.error('Error updating information:', error);
       });
   };
-
+  
   // Function to mask email
   const maskEmail = (email) => {
     if (!email) return '';
@@ -102,128 +129,243 @@ const AccountInfo = () => {
     const maskedUser = user[0] + "*****" + user.slice(-1);
     const [domainName, domainExtension] = domain.split(".");
     const maskedDomainName = domainName[0] + "***";
-    const maskedDomainExtension = domainExtension[0] + "***";
-    return `${maskedUser}@${maskedDomainName}.${maskedDomainExtension}`;
+    return `${maskedUser}@${maskedDomainName}.${domainExtension}`;
   };
 
   return (
     <>
-      <div className="w-100">
-        <div className="d-flex justify-content-center ">
-          <div className="ai-container d-flex align-items-center shadow-sm">
-            <img src={`${ip.address}/${doctorData.theImage}`} alt="Doctor" className="ai-image" />
-            <div style={{ marginLeft: '1rem' }} className="d-flex align-items-center justify-content-between w-100">
-              <div>
-                <h4 className="m-0">{fullname}</h4>
-                <p style={{ fontSize: '15px' }}>{doctorData.specialty}</p>
-              </div>
-
-              <div>
-                <Button onClick={openImageModal}>Upload Image<Icon.Upload style={{ marginLeft: '0.4rem' }} /></Button>
-              </div>
+      <div className="docInfoMain w-100">
+        <Container fluid className="docInfoContainer w-100 py-4">
+          <div className="docInfoHeader w-100">
+            <div className="docInfoTitleWrapper">
+              <h3 className="docInfoTitle">Doctor Account</h3>
+              <p className="docInfoSubtitle">Manage your professional profile and settings</p>
             </div>
           </div>
-        </div>
 
-        {/* Biography Section */}
-        <div className="d-flex justify-content-center">
-          <div className="ai-container2 shadow-sm">
-            <div className="m-0 p-0 d-flex justify-content-end align-items-center">
-              <div className="w-100 d-flex align-items-center">
-                <span className="m-0" style={{ fontWeight: 'bold' }}>Doctor Profile</span>
-              </div>
-              <Link
-                onClick={() => setBiographyCollapseOpen(!biographyCollapseOpen)}
-                aria-controls="biography-collapse"
-                aria-expanded={biographyCollapseOpen}
-                className="link-collapse"
-              >
-                {biographyCollapseOpen ? <span>&#8722;</span> : <span>&#43;</span>}
-              </Link>
-            </div>
+          <div className="docInfoContent w-100">
+            {/* Profile Card */}
+            <Card className="docInfoProfileCard w-100">
+              <Card.Body>
+                <div className="docInfoProfileWrapper">
+                  <div className="docInfoAvatarContainer">
+                    <div className="docInfoAvatarWrapper">
+                      <img 
+                        src={`${ip.address}/${doctorData.theImage}`} 
+                        alt="Doctor profile"
+                        className="docInfoAvatar"
+                      />
+  
+                    </div>
+                  </div>
+                  
+                  <div className="docInfoProfileDetails">
+                    <h4 className="docInfoName">{fullname}</h4>
+                    <div className="docInfoSpecialty">{doctorData.specialty || 'No specialty listed'}</div>
+                    <div className="docInfoBadge">Doctor</div>
 
-            {/* Collapsible Biography Section */}
-            <Collapse in={biographyCollapseOpen}>
-              <div id="biography-collapse">
-                <DoctorBiography
-                  biography={doctorData.biography}
-                  did={doctorData.theId}
-                />
-              </div>
-            </Collapse>
+                    <div className="docInfoActionButtons">
+
+                    <Button 
+               
+                        onClick={openImageModal}
+                      >
+                        <Icon.PencilSquare /> Update Profile Picture
+                      </Button>
+                      <Button 
+                        variant={twoFaEnabled ? "outline-danger" : "outline-success"}
+                        className="docInfoSecurityBtn"
+                        onClick={handleEnableDisableTwoFa}
+                      >
+                        {twoFaEnabled ? 
+                          <><Icon.ShieldLock /> Disable 2FA</> : 
+                          <><Icon.ShieldPlus /> Enable 2FA</>
+                        }
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </Card.Body>
+            </Card>
+
+            {/* Doctor Biography Card */}
+            <Card className="docInfoDetailsCard w-100">
+              <Card.Header className="docInfoSectionHeader">
+                <div className="docInfoSectionHeaderTitle">
+                  <Icon.FileEarmarkPerson className="docInfoSectionIcon" />
+                  <h5 className="mb-0">Doctor Profile</h5>
+                </div>
+                <Button 
+                  variant="link" 
+                  onClick={() => setBiographyCollapseOpen(!biographyCollapseOpen)}
+                  aria-controls="biography-collapse"
+                  aria-expanded={biographyCollapseOpen}
+                  className="docInfoCollapseBtn"
+                >
+                  {biographyCollapseOpen ? <Icon.DashLg /> : <Icon.PlusLg />}
+                </Button>
+              </Card.Header>
+              <Collapse in={biographyCollapseOpen}>
+                <div className="w-100">
+                  <Card.Body>
+                    <DoctorBiography biography={doctorData.biography} did={doctorData.theId} />
+                  </Card.Body>
+                </div>
+              </Collapse>
+            </Card>
+
+            {/* HMO Card */}
+            <Card className="docInfoDetailsCard w-100">
+              <Card.Header className="docInfoSectionHeader">
+                <div className="docInfoSectionHeaderTitle">
+                  <Icon.Building className="docInfoSectionIcon" />
+                  <h5 className="mb-0">HMO Accreditation</h5>
+                </div>
+                <Button 
+                  variant="link" 
+                  onClick={() => setHmoCollapseOpen(!hmoCollapseOpen)}
+                  aria-controls="hmo-collapse"
+                  aria-expanded={hmoCollapseOpen}
+                  className="docInfoCollapseBtn"
+                >
+                  {hmoCollapseOpen ? <Icon.DashLg /> : <Icon.PlusLg />}
+                </Button>
+              </Card.Header>
+              <Collapse in={hmoCollapseOpen}>
+                <div className="w-100">
+                  <Card.Body>
+                    <DoctorManageHMO doctorId={doctorData.theId} />
+                  </Card.Body>
+                </div>
+              </Collapse>
+            </Card>
+
+            {/* Personal Information Card */}
+            <Card className="docInfoDetailsCard w-100">
+              <Card.Body>
+                <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap">
+                  <h5 className="docInfoSectionTitle">
+                    <Icon.Person className="docInfoSectionIcon" />
+                    Personal Information
+                  </h5>
+                  <div className="docInfoPersonalActions">
+                    <Button 
+                      variant="primary" 
+                      className="docInfoEditBtn me-2"
+                      onClick={() => setIsUpdateModalOpen(true)}
+                    >
+                      <Icon.PencilFill /> Update Information
+                    </Button>
+                    <Button 
+                      variant="light" 
+                      className="docInfoPasswordBtn"
+                      onClick={() => setIsChangePasswordModalOpen(true)}
+                    >
+                      <Icon.LockFill /> Change Password
+                    </Button>
+                  </div>
+                </div>
+                
+                <div className="docInfoFormContainer w-100">
+                  <div className="docInfoRow">
+                    <div className="docInfoField">
+                      <label className="docInfoLabel">First Name</label>
+                      <div className="docInfoValue">{doctorData.theName}</div>
+                    </div>
+                    
+                    <div className="docInfoField">
+                      <label className="docInfoLabel">Last Name</label>
+                      <div className="docInfoValue">{doctorData.theLastName}</div>
+                    </div>
+                    
+                    <div className="docInfoField">
+                      <label className="docInfoLabel">Middle Initial</label>
+                      <div className="docInfoValue">{doctorData.theMI || 'N/A'}</div>
+                    </div>
+                  </div>
+                  
+                  <div className="docInfoDivider"></div>
+                  
+                  <h5 className="docInfoSectionTitle">
+                    <Icon.Envelope className="docInfoSectionIcon" />
+                    Contact Information
+                  </h5>
+                  
+                  <div className="docInfoRow">
+                    <div className="docInfoField docInfoFieldWide">
+                      <label className="docInfoLabel">Email Address</label>
+                      <div className="docInfoValue">{maskEmail(doctorData.email)}</div>
+                    </div>
+                  </div>
+                  
+                  <div className="docInfoRow">
+                    <div className="docInfoField">
+                      <label className="docInfoLabel">Date of Birth</label>
+                      <div className="docInfoValue">
+                        {doctorData.dob ? new Date(doctorData.dob).toLocaleDateString('en-US', {
+                          month: 'long',
+                          day: 'numeric', 
+                          year: 'numeric'
+                        }) : 'Not provided'}
+                      </div>
+                    </div>
+                    
+                    <div className="docInfoField">
+                      <label className="docInfoLabel">Contact Number</label>
+                      <div className="docInfoValue">{doctorData.cnumber || 'Not provided'}</div>
+                    </div>
+                  </div>
+                  
+                  <div className="docInfoDivider"></div>
+                  
+                  <h5 className="docInfoSectionTitle">
+                    <Icon.Award className="docInfoSectionIcon" />
+                    Professional Information
+                  </h5>
+                  
+                  <div className="docInfoRow">
+                    <div className="docInfoField docInfoFieldWide">
+                      <label className="docInfoLabel">Medical Specialty</label>
+                      <div className="docInfoValue">{doctorData.specialty || 'Not specified'}</div>
+                    </div>
+                  </div>
+                </div>
+              </Card.Body>
+            </Card>
           </div>
-        </div>
-
-        <div className="d-flex justify-content-center">
-          <div className="ai-container2 shadow-sm">
-            <div style={{ textAlign: "end", marginTop: '20px' }}>
-              <Button variant="primary" onClick={() => setIsUpdateModalOpen(true)} style={{ marginRight: '10px' }}>
-                <PencilFill size={14} style={{ marginRight: '0.5rem' }} /> Update your Information
-              </Button>
-              <Button variant="secondary" onClick={() => setIsChangePasswordModalOpen(true)}>
-                Change Password
-              </Button>
-            </div>
-            <Form>
-              <Form.Group controlId="exampleForm.ControlInput1">
-                <Form.Label>First Name:</Form.Label>
-                <Form.Control value={doctorData.theName} disabled />
-              </Form.Group>
-
-              <Row>
-                <Form.Group as={Col} controlId="exampleForm.ControlInput1">
-                  <Form.Label>Last Name:</Form.Label>
-                  <Form.Control value={doctorData.theLastName} disabled />
-                </Form.Group>
-                <Form.Group as={Col} controlId="exampleForm.ControlInput1">
-                  <Form.Label>Middle Initial:</Form.Label>
-                  <Form.Control value={doctorData.theMI} disabled />
-                </Form.Group>
-              </Row>
-              <Row>
-                <Form.Group as={Col} controlId="exampleForm.ControlInput1">
-                  <Form.Label>Email:</Form.Label>
-                  <Form.Control value={maskEmail(doctorData.email)} disabled />
-                </Form.Group>
-              </Row>
-              <Row>
-                <Form.Group as={Col} controlId="exampleForm.ControlInput1">
-                  <Form.Label>Birthdate:</Form.Label>
-                  <Form.Control value={new Date(doctorData.dob).toLocaleDateString()} disabled />
-                </Form.Group>
-                <Form.Group as={Col} controlId="exampleForm.ControlInput1">
-                  <Form.Label>Contact Number:</Form.Label>
-                  <Form.Control value={doctorData.cnumber} disabled />
-                </Form.Group>
-              </Row>
-
-              <Row>
-                <Form.Group as={Col} controlId="exampleForm.ControlInput1">
-                  <Form.Label>Specialty:</Form.Label>
-                  <Form.Control value={doctorData.specialty} disabled />
-                </Form.Group>
-              </Row>
-            </Form>
-          </div>
-        </div>
+        </Container>
       </div>
+
+      {/* Modals */}
+      {showTwoFactorAuthModal && (
+        <TwoFactorAuth 
+          show={showTwoFactorAuthModal} 
+          handleClose={() => setShowTwoFactorAuthModal(false)} 
+        />
+      )}
 
       <ImageUploadModal
         isOpen={isModalOpen}
         onRequestClose={closeImageModal}
         did={did}
       />
+      
       <UpdateInfoModal
         show={isUpdateModalOpen}
         handleClose={() => setIsUpdateModalOpen(false)}
         doctorData={doctorData}
         handleUpdate={handleUpdate}
       />
+      
       <ChangePasswordModal
         show={isChangePasswordModalOpen}
         handleClose={() => setIsChangePasswordModalOpen(false)}
         doctorData={doctorData}
       />
+      
+      <style jsx>{`
+       
+      `}</style>
     </>
   );
 };

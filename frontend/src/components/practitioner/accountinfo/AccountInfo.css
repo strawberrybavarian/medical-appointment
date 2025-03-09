@@ -164,3 +164,296 @@
 	margin-left: auto;
 	margin-right: auto;
 }
+
+.docInfoMain {
+  background-color: #f8f9fa;
+  min-height: 100vh;
+  padding: 2rem 0;
+  width: 100%;
+}
+
+.docInfoContainer {
+  width: 100%;
+  padding-left: 2rem;
+  padding-right: 2rem;
+}
+
+.docInfoHeader {
+  margin-bottom: 1.5rem;
+  width: 100%;
+}
+
+.docInfoTitleWrapper {
+  position: relative;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #e9ecef;
+  width: 100%;
+}
+
+.docInfoTitle {
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+  color: #2c3e50;
+}
+
+.docInfoSubtitle {
+  color: #6c757d;
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
+}
+
+.docInfoContent {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+}
+
+.docInfoProfileCard {
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+  overflow: hidden;
+  width: 100%;
+}
+
+.docInfoProfileWrapper {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  width: 100%;
+}
+
+.docInfoAvatarContainer {
+  position: relative;
+}
+
+.docInfoAvatarWrapper {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  overflow: hidden;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  border: 3px solid white;
+}
+
+.docInfoAvatar {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.docInfoAvatarEditBtn {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  background-color: #4a90e2;
+  color: white;
+  border: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.docInfoAvatarEditBtn:hover {
+  background-color: #3a7bc8;
+  transform: scale(1.1);
+}
+
+.docInfoProfileDetails {
+  flex: 1;
+}
+
+.docInfoName {
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+  color: #2c3e50;
+}
+
+.docInfoSpecialty {
+  color: #6c757d;
+  font-size: 0.95rem;
+  margin-bottom: 0.5rem;
+}
+
+.docInfoBadge {
+  display: inline-block;
+  background-color: #e3f2fd;
+  color: #1976d2;
+  font-size: 0.8rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  margin-bottom: 1rem;
+  font-weight: 500;
+}
+
+.docInfoActionButtons {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.docInfoSecurityBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+}
+
+.docInfoDetailsCard {
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+  overflow: hidden;
+  width: 100%;
+}
+
+.docInfoSectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.25rem;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+  width: 100%;
+}
+
+.docInfoSectionHeaderTitle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.docInfoCollapseBtn {
+  padding: 0;
+  color: #6c757d;
+  font-size: 1.25rem;
+}
+
+.docInfoSectionTitle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #2c3e50;
+  font-weight: 600;
+  font-size: 1.1rem;
+  margin-bottom: 1.25rem;
+}
+
+.docInfoSectionIcon {
+  color: #4a90e2;
+}
+
+.docInfoFormContainer {
+  padding: 0.5rem;
+}
+
+.docInfoRow {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0 -0.75rem;
+  margin-bottom: 1.5rem;
+  width: 100%;
+}
+
+.docInfoField {
+  flex: 1;
+  min-width: 200px;
+  padding: 0 0.75rem;
+}
+
+.docInfoFieldWide {
+  flex: 100%;
+}
+
+.docInfoLabel {
+  display: block;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #6c757d;
+  margin-bottom: 0.35rem;
+  font-weight: 600;
+}
+
+.docInfoValue {
+  font-size: 1rem;
+  color: #212529;
+  background-color: #f8f9fa;
+  padding: 0.75rem;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+  width: 100%;
+}
+
+.docInfoDivider {
+  width: 100%;
+  height: 1px;
+  background-color: #f0f0f0;
+  margin: 1.5rem 0;
+}
+
+.docInfoPersonalActions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.docInfoEditBtn, .docInfoPasswordBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+@media (max-width: 768px) {
+  .docInfoContainer {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  
+  .docInfoProfileWrapper {
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+  }
+  
+  .docInfoProfileDetails {
+    width: 100%;
+  }
+  
+  .docInfoActionButtons {
+    justify-content: center;
+    margin-top: 1rem;
+    width: 100%;
+  }
+  
+  .docInfoField {
+    flex: 100%;
+    margin-bottom: 1rem;
+  }
+  
+  .docInfoPersonalActions {
+    flex-direction: column;
+    width: 100%;
+    gap: 0.5rem;
+    margin-top: 1rem;
+  }
+  
+  .docInfoEditBtn, .docInfoPasswordBtn {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .docInfoSectionTitle {
+    margin-bottom: 0.5rem;
+  }
+}

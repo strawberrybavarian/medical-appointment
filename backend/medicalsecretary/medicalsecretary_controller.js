@@ -4,8 +4,10 @@ const Appointment = require('../appointments/appointment_model');
 const Doctors = require('../doctor/doctor_model');
 const Patient = require('../patient/patient_model');
 const Notification = require('../notifications/notifications_model')
+const Admin = require('../admin/admin_model');
 const nodemailer = require('nodemailer');
 const { staff_email } = require('../EmailExport');
+const socket = require('../socket');
 
 const generateRandomPassword = () => {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -28,9 +30,7 @@ const generateRandomPassword = () => {
       }
   
       // Check if the old password matches
-      if (secretary.ms_password !== oldPassword) {
-        return res.status(400).json({ message: 'Old password is incorrect' });
-      }
+
   
       // Validate new password and confirm password
       if (newPassword !== confirmNewPassword) {
@@ -280,17 +280,18 @@ const getPatientStats = async (req, res) => {
 
 
 const findMedSecById = (req, res) => {
-    MedicalSecretary.findOne({ _id: req.params.msid })
-      .then((theMedSec) => {
-        if (!theMedSec) {
-          return res.status(404).json({ message: 'Medical Secretary not found' });
-        }
-        res.json({ theMedSec });
-      })
-      .catch((err) => {
-        console.error('Error finding Medical Secretary:', err);
-        res.status(500).json({ message: 'Something went wrong', error: err });
-      });
+  MedicalSecretary.findOne({ _id: req.params.msid })
+    .populate('notifications') // Populate notifications
+    .then((theMedSec) => {
+    if (!theMedSec) {
+      return res.status(404).json({ message: 'Medical Secretary not found' });
+    }
+    res.json({ theMedSec });
+    })
+    .catch((err) => {
+    console.error('Error finding Medical Secretary:', err);
+    res.status(500).json({ message: 'Something went wrong', error: err });
+    });
   };
 
   const updateMedicalSecretaryImage = async (req, res) => {
@@ -347,8 +348,114 @@ const updateMedicalSecretary = async (req, res) => {
 };
 
 
+const createGeneralNotification = async (req, res) => {
+  try {
+    const { message, link = '/general/info' } = req.body;
+    if (!message) {
+      return res.status(400).json({ message: 'Message is required.' });
+    }
+
+    // Find all Medical Secretaries and Admins
+    const [medicalSecretaries, admins] = await Promise.all([
+      MedicalSecretary.find({}, '_id'),
+      Admin.find({}, '_id'),
+    ]);
+
+    const recipients = [
+      ...medicalSecretaries.map(ms => ms._id),
+      ...admins.map(ad => ad._id)
+    ];
+
+    const notification = new Notification({
+      message,
+      receiver: recipients,
+      receiverModel: 'Admin', // or use something like 'User' if you unify their roles
+      isRead: false,
+      type: 'General',
+      link
+    });
+
+    const savedNotification = await notification.save();
+
+    // Update each Medical Secretary's notifications array
+    await Promise.all(
+      medicalSecretaries.map(ms => {
+        return MedicalSecretary.findByIdAndUpdate(ms._id, { $push: { notifications: savedNotification._id } });
+      })
+    );
+
+    // Update each Admin's notifications array
+    await Promise.all(
+      admins.map(ad => {
+        return Admin.findByIdAndUpdate(ad._id, { $push: { notifications: savedNotification._id } });
+      })
+    );
+
+    // Broadcast via socket to all connected Admins and MedSecs
+    socket.broadcastGeneralNotification({
+      message: message,
+      notificationId: savedNotification._id,
+      link: link
+    });
+
+    res.status(201).json({ message: 'Notification created successfully', notification: savedNotification });
+  } catch (error) {
+    console.error('Error creating notification:', error);
+    res.status(500).json({ message: `Failed to create notification: ${error.message}` });
+  }
+};
 
 
+ const getMedSecWithAudits = async (req, res) => {
+    try {
+      const {medsecId} = req.params;
+
+      const medsec = await MedicalSecretary.findById(medsecId)
+        .populate({
+          path: 'audits',
+          options: {sort: {createdAt: -1}},
+        })
+      
+        if(!medsec){
+          return res.status(404).json({message: 'Medical Secretary not found'});
+        }
+
+        res.status(200).json({medsec});
+    } catch (error) {
+        res.status(500).json({message: 'Server error', error: error.message});
+    }
+ };
+
+
+ const changePendingMedSecPassword = async (req, res) => {
+  const { medsecId } = req.params;
+  const { newPassword, confirmNewPassword } = req.body;
+
+  try {
+      if (!newPassword || !confirmNewPassword) {
+          return res.status(400).json({ message: "Both password fields are required." });
+      }
+
+      if (newPassword !== confirmNewPassword) {
+          return res.status(400).json({ message: "Passwords do not match." });
+      }
+
+      const medsec = await MedicalSecretary.findById(medsecId);
+      if (!medsec) {
+          return res.status(404).json({ message: "Admin not found." });
+      }
+
+      // Store the new password in plain text (not recommended for production)
+      medsec.ms_password = newPassword;
+      medsec.status = 'registered';
+      await medsec.save();
+
+      return res.status(200).json({ message: "Password updated and account activated successfully." });
+  } catch (error) {
+      console.error("Error updating password:", error);
+      return res.status(500).json({ message: "Server error, please try again." });
+  }
+};
 module.exports = {
     // NewMedicalSecretaryignUp,
     findAllMedicalSecretary,
@@ -362,6 +469,9 @@ module.exports = {
     changePassword,
     NewMedicalSecretarySignUp,
     changePassword, 
+    createGeneralNotification,
+    getMedSecWithAudits,
+    changePendingMedSecPassword
 
 
 };

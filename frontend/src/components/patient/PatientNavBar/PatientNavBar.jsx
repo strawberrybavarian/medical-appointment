@@ -1,158 +1,329 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { Container, Navbar, Nav, NavDropdown } from 'react-bootstrap';
 import { Bell } from 'react-bootstrap-icons';
 import './PatientNavBar.css';
-import { usePatient } from '../PatientContext';
 import { image, ip } from '../../../ContentExport';
 import axios from 'axios';
-function PatientNavBar({pid}) {
-    const navigate = useNavigate();
-    const { patient, setPatient } = usePatient(); // Get patient data from the context
-    const [showNotifications, setShowNotifications] = useState(false);
-    const [itemsToShow, setItemsToShow] = useState(3);
-    const [theImage, setImage] = useState(null);
-    const inactivityLimit = 1000000; // 10 seconds
-    let timeoutId = null; // To store the timeout ID
+import io from 'socket.io-client';
+import { useUser } from '../../UserContext';
+import LogoutModal from '../../practitioner/sidebar/LogoutModal';
 
-    const defaultImage = `${ip.address}/images/014ef2f860e8e56b27d4a3267e0a193a.jpg`;
-    useEffect(() => {
-        axios.get(`${ip.address}/api/patient/api/onepatient/${pid}`)
-          .then((res) => {
-            const patientData = res.data.thePatient;
+function PatientNavBar({ pid }) {
+  const navigate = useNavigate();
+  const { user, setUser } = useUser();
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [theImage, setImage] = useState(null);
+  const [notifications, setNotifications] = useState([]);
+  const [showLogoutModal, setShowLogoutModal] = React.useState(false);
+  
 
-            setImage(patientData.patient_image || defaultImage);  // Set patient image
-          })
-          .catch((err) => {
-            console.log(err);
-          });
-      }, [pid]);
+  const defaultImage = `${ip.address}/images/default-profile.jpg`;
+
+  // Use useRef to maintain the socket instance
+  const socketRef = useRef();
+  const location = useLocation();
+  useEffect(() => {
+    if (!pid) {
+      navigate('/medapp/login');
+    }
+  }, [pid, navigate]);
+
+  const handleLogout = () => {
+    setShowLogoutModal(true); // Show the logout confirmation modal
+};
+
+const cancelLogout = () => {
+  setShowLogoutModal(false);
+};
+
+  const confirmLogout = async () => {
+    try {
+      await axios.post(`${ip.address}/api/logout`, {}, { withCredentials: true });
+      setUser(null); // Clear patient context
+      navigate('/medapp/login'); // Redirect to login page
+    } catch (error) {
+      console.error('Error logging out:', error);
+      alert('Failed to log out. Please try again.');
+    }
+  };
+
+
+  // Initialize socket.io client
+  useEffect(() => {
+    socketRef.current = io(ip.address);
+
+    socketRef.current.on('connect', () => {
+      // console.log('Socket connected:', socketRef.current.id);
+    });
+
+    socketRef.current.on('connect_error', (error) => {
+      console.error('Socket connection error:', error);
+    });
+
+    if (pid) {
+      socketRef.current.emit('identify', { userId: pid, userRole: 'Patient' });
+    } else {
+      console.warn('Patient ID is undefined');
+    }
+
+    socketRef.current.on('newNews', (data) => {
+      const notification = {
+        _id: data.notificationId, // Use the notification ID from the server
+        message: data.message,
+        isRead: false,
+        link: data.link,
+        type: 'News',
+        createdAt: new Date().toISOString(),
+      };
+      setNotifications((prevNotifications) => [notification, ...prevNotifications]);
+      showBrowserNotification(data.message);
+    });
+
+    socketRef.current.on('appointmentStatusUpdate', (data) => {
+      if (data.patientId === pid) {
+        const notification = {
+          _id: data.notificationId, // Use the notification ID from the server
+          message: data.message,
+          isRead: false,
+          link: data.link,
+          type: 'StatusUpdate',
+          createdAt: new Date().toISOString(),
+        };
+        setNotifications((prevNotifications) => [notification, ...prevNotifications]);
+        showBrowserNotification(data.message);
+      }
+    });
+
+    socketRef.current.on('disconnect', () => {
+      // console.log('Socket disconnected');
+    });
+
+    socketRef.current.io.on('reconnect', () => {
+      // console.log('Socket reconnected');
+      if (pid) {
+        socketRef.current.emit('identify', { userId: pid, userRole: 'Patient' });
+      }
+    });
+
+    return () => {
+      socketRef.current.disconnect();
+    };
+  }, [pid]);
+
+  useEffect(() => {
+    if ('Notification' in window && Notification.permission !== 'granted') {
+      Notification.requestPermission();
+    }
+  }, []);
+
+  useEffect(() => {
+    // This will handle redirects if the user isn't logged in or is not a patient
+    if (!user || !user._id || user.role !== "Patient") {
+      navigate('/medapp/login');
+      return;
+    }
     
-    const logoutUser = () => {
-        setPatient(null);  // Clear the patient context (session)
-        localStorage.removeItem('patient');  // Clear the localStorage to remove persistent session data
-        navigate("/medapp/login");  // Redirect the user to the login page
-    };
-    
+    // If we have a valid user, get their notifications
+    if (user._id) {
+      axios
+        .get(`${ip.address}/api/patient/api/onepatient/${user._id}`)
+        .then((res) => {
+          const patientData = res.data.thePatient;
+          setImage(patientData.patient_image || defaultImage);
+          const sortedNotifications = (patientData.notifications || []).sort(
+            (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+          );
+          setNotifications(sortedNotifications);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    }
+  }, [user, navigate]);
 
-    // // Start inactivity timer
-    // const startInactivityTimer = () => {
-    //     if (timeoutId) clearTimeout(timeoutId);
-    //     timeoutId = setTimeout(() => {
-    //         logoutUser(); // Log the user out after inactivity
-    //     }, inactivityLimit);
-    // };
 
-    // // Reset inactivity timer on user activity
-    // const resetInactivityTimer = () => {
-    //     startInactivityTimer();
-    // };
+  const toggleNotifications = () => {
+    setShowNotifications(!showNotifications);
+  };
 
-    // useEffect(() => {
-    //     // Set up event listeners for activity detection
-    //     window.addEventListener("mousemove", resetInactivityTimer);
-    //     window.addEventListener("keypress", resetInactivityTimer);
+  const markAsRead = async (notification) => {
+    try {
+      if (notification.link) {
+        navigate(notification.link, { state: { pid } });
+      }
 
-    //     // Start the initial inactivity timer
-    //     startInactivityTimer();
+      if (!notification._id) {
+        console.error('Notification ID is undefined');
+        return;
+      }
 
-    //     // Cleanup event listeners on component unmount
-    //     return () => {
-    //         clearTimeout(timeoutId);
-    //         window.removeEventListener("mousemove", resetInactivityTimer);
-    //         window.removeEventListener("keypress", resetInactivityTimer);
-    //     };
-    // }, []);
+      await axios.put(`${ip.address}/api/notifications/${notification._id}/read`);
 
-    const onClickHomepage = () => {
-        navigate(`/homepage`, { state: { pid: patient._id } });
-    };
+      setNotifications((prevNotifications) =>
+        prevNotifications.map((notif) =>
+          notif._id === notification._id ? { ...notif, isRead: true } : notif
+        )
+      );
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
+    }
+  };
 
-    const onButtonContainerClick = () => {
-        navigate(`/choosedoctor`, { state: { pid: patient._id } });
-    };
+  const showBrowserNotification = (message) => {
+    if ('Notification' in window && Notification.permission === 'granted') {
+      new Notification('New Notification', {
+        body: message,
+        icon: image.logo || defaultImage,
+      });
+    }
+  };
 
-    const MyAppointment = () => {
-        navigate(`/myappointment`, { state: { pid: patient._id } });
-    };
 
-    const toggleNotifications = () => {
-        setShowNotifications(!showNotifications);
-    };
+  // console.log('User', user)
 
-    const showMore = () => {
-        setItemsToShow(patient.notifications.length);
-    };
+  // Calculate unread notifications count and set max to 9+
+  const unreadCount = notifications.filter((notif) => !notif.isRead).length;
+  const displayCount = unreadCount > 9 ? '9+' : unreadCount;
 
-    const showLess = () => {
-        setItemsToShow(3);
-    };
+  return (
+    <Navbar
 
-    return (
-        <Navbar fluid expand="md" className="pnb-navbar">
-            <Container fluid>
-                <Link to={{ pathname: `/homepage`, state: { pid: patient._id } }}>
-                    <img className="molino-logo" src={image.logo || defaultImage} alt="Logo" />
-                </Link>
-             
+      expand="md"
+      className="nav-bar-no-color navbar-fixed-top fixed-top px-5 py-0"
+      style={{ zIndex: '2' }}
+    >
+      <Container fluid>
+        <Link to={{ pathname: `/homepage`, state: { pid: user._id } }}>
+          <img className="molino-logo" src={image.logo || defaultImage} alt="Logo" />
+        </Link>
 
-                <Navbar.Toggle aria-controls="basic-navbar-nav" />
-                <Navbar.Collapse id="basic-navbar-nav" className="justify-content-end">
-                    <Nav>
-                        <Nav.Link className="pnb-nav-link" onClick={onClickHomepage}>Home</Nav.Link>
-                        <Nav.Link className="pnb-nav-link" onClick={MyAppointment}>My Appointments</Nav.Link>
-                        <Nav.Link className="pnb-nav-link" onClick={onButtonContainerClick}>Choose Doctor</Nav.Link>
-                    </Nav>
+        <Navbar.Toggle aria-controls="basic-navbar-nav" />
+        <Navbar.Collapse id="basic-navbar-nav" className="justify-content-end">
+          <Nav>
+            <Nav.Link
+              as={Link}
+              to={{ pathname: `/homepage`, state: { pid: user._id } }}
+              className={`pnb-nav-link ${location.pathname === '/homepage' ? 'active' : ''}`}
+            >
+              Home
+            </Nav.Link>
+            <Nav.Link
+              as={Link}
+              to={{ pathname: `/myappointment`, state: { pid: user._id } }}
+              className={`pnb-nav-link ${location.pathname === '/myappointment' ? 'active' : ''}`}
+            >
+              My Appointments
+            </Nav.Link>
+            <Nav.Link
+              as={Link}
+              to={{ pathname: `/choosedoctor`, state: { pid: user._id } }}
+              className={`pnb-nav-link ${location.pathname === '/choosedoctor' ? 'active' : ''}`}
+            >
+              Choose Doctor
+            </Nav.Link>
+          </Nav>
 
-                    <Nav>
-                        <Nav.Link onClick={toggleNotifications} className="position-relative">
-                            <Bell size={20} />
-                            {showNotifications && (
-                                <div className="notification-overlay">
-                                    {patient.notifications.length > 0 ? (
-                                        [...patient.notifications].reverse().slice(0, itemsToShow).map((notification, index) => (
-                                            <div key={index} className="notification-item">
-                                                {notification.message}
-                                                {index < itemsToShow - 1 && index < patient.notifications.length - 1 && <hr />}
-                                            </div>
-                                        ))
-                                    ) : (
-                                        <div>No new notifications</div>
-                                    )}
-                                </div>
-                            )}
-                        </Nav.Link>
-                    </Nav>
+          <Nav>
+            <Nav.Link onClick={toggleNotifications} className="position-relative">
+              <Bell size={20} className={unreadCount > 0 ? 'sway' : ''} /> {/* Apply sway class when unread messages */}
+              {unreadCount > 0 && (
+                <span className="notification-dot"></span>
+              )}
+              {showNotifications && (
+                <div className="notification-overlay">
+                  {notifications.length > 0 ? (
+                    notifications.map((notification, index) => (
+                      <div
+                        key={notification._id}
+                        className={`notification-item ${!notification.isRead ? 'unread' : 'read'
+                          }`}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          markAsRead(notification);
+                        }}
+                      >
+                        <span className="notification-circle">
+                          {notification.isRead ? (
+                            <span className="circle read"></span>
+                          ) : (
+                            <span className="circle unread"></span>
+                          )}
+                        </span>
+                        <span className="notification-message">{notification.message}</span>
+                        {index < notifications.length - 1 && <hr />}
+                      </div>
+                    ))
+                  ) : (
+                    <div>No new notifications</div>
+                  )}
+                </div>
+              )}
+            </Nav.Link>
 
-                    <Nav className="align-items-center">
-                        {/* Profile section with image and two-paragraph text */}
-                        <NavDropdown
-                            title={
-                                <div className="d-flex align-items-center justify-content-end ">
-                                    <div className="ms-2 ">
-                                        <p className="m-0" style={{ fontSize: '14px', fontWeight: 'bold' }}>{patient.patient_firstName} {patient.patient_lastName}</p>
-                                        <p className="m-0" style={{ fontSize: '12px', color: 'gray', textAlign: 'end' }}>Patient</p>
-                                    </div>
-                                    <img
-                                        src={theImage ? `${ip.address}/${theImage}` : defaultImage}
-                                        alt="Profile"
-                                        style={{ objectFit: 'cover', height: '40px', width: '40px', borderRadius: '50%' }}
-                                        className="profile-image ms-3"
-                                    />
-                                </div>
-                            }
-                            id="basic-nav-dropdown"
-                            className="pnb-nav-link1"
-                        >
-                            <NavDropdown.Item as={Link} to="/accinfo" state={{ pid: patient._id }}>Account Information</NavDropdown.Item>
-                            <NavDropdown.Divider />
-                            <NavDropdown.Item className="pnb-nav-link" onClick={logoutUser}>Logout</NavDropdown.Item>
-                        </NavDropdown>
-                    </Nav>
-                </Navbar.Collapse>
-            </Container>
-        </Navbar>
-    );
+
+
+          </Nav>
+
+          <Nav className="align-items-center">
+            <NavDropdown
+              title={
+                <div className="d-flex align-items-center justify-content-end ">
+                  <div className="ms-2 ">
+                    <p className="m-0" style={{ fontSize: '14px', fontWeight: 'bold' }}>
+                      {user.firstName} {user.lastName}
+                    </p>
+                    <p
+                      className="m-0"
+                      style={{
+                        fontSize: '12px',
+                        color: 'gray',
+                        textAlign: 'end',
+                      }}
+                    >
+                      Patient
+                    </p>
+                  </div>
+                  <img
+                    src={theImage ? `${ip.address}/${theImage}` : defaultImage}
+                    alt="Profile"
+                    style={{
+                      objectFit: 'cover',
+                      height: '40px',
+                      width: '40px',
+                      borderRadius: '50%',
+                    }}
+                    className="profile-image ms-3"
+                  />
+                </div>
+              }
+              id="basic-nav-dropdown"
+              className="pnb-nav-link1"
+            >
+              <NavDropdown.Item
+                as={Link}
+                to="/accinfo"
+                state={{ pid: user._id }}
+              >
+                Account Information
+              </NavDropdown.Item>
+              <NavDropdown.Divider />
+              <NavDropdown.Item className="pnb-nav-link" onClick={handleLogout}>
+                Logout
+              </NavDropdown.Item>
+            </NavDropdown>
+          </Nav>
+        </Navbar.Collapse>
+
+        <LogoutModal 
+                show={showLogoutModal} 
+                onCancel={cancelLogout} 
+                onConfirm={confirmLogout} 
+            />
+      </Container>
+    </Navbar>
+
+  );
 }
 
 export default PatientNavBar;

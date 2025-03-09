@@ -1,6 +1,6 @@
 import React from 'react';
 import { FaCheck } from 'react-icons/fa';
-import './PasswordValidation.css';
+
 
 const PasswordValidation = ({ password }) => {
     const validations = {

@@ -1,17 +1,19 @@
-const UserController = require ('../controllers/user_controller');
+const UserController = require ('../user/user_controller');
 // const { validationResult } = require('express-validator');
 
 module.exports = app => { 
+    app.post('/api/set-up-2fa', UserController.setupTwoFactor);
+    app.post('/api/verify-2fa', UserController.verifyTwoFactor);  
     app.get('/api/test',(req,res)=>{res.json({message:"the api is working"})});
-    app.post('/api/medapp/signup', UserController.NewUserSignUp);
-    app.get('/api/medapp/allusers', UserController.findAllUsers);
-    app.get('/api/medapp/user/:email', UserController.findUserByEmail);
+    app.post('/api/login', UserController.unifiedLogin);
 
-
+    // GET /api/get/session => returns user + role
+    app.get('/api/get/session', UserController.getSession);
+  
+    // POST /api/logout => clears the session
+    app.post('/api/logout', UserController.unifiedLogout);
+    app.post('/api/verify-email-otp', UserController.verifyEmailOTP);
+    app.post('/api/disable-2fa', UserController.unableTwoFactorEnabled);
     //For Post
-    app.post('/api/medapp/addpost/:id', UserController.addNewPostById);
-    app.get('/api/medapp/finduser/:id', UserController.findUserById);
-    app.get('/api/medapp/post/getallpost/:id', UserController.getAllPostbyId);
-    app.delete('/api/medapp/post/deletepost/:uid/:index', UserController.findPostByIdDelete);
-    app.put('/api/medapp/post/updatepost/:id/:index', UserController.updatePostAtIndex);
+   
 }

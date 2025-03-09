@@ -1,39 +1,63 @@
-const express = require("express");
+// server.js
+
+const express = require('express');
 const app = express();
-const port = process.env.PORT || 8000;
+const port = 8000;
 const path = require('path');
 const fs = require('fs');
 const session = require('express-session');
-const { ensurePatientSession, ensureDoctorSession } = require('./SessionMiddleware');
-
+const http = require('http');
+const server = http.createServer(app); // Use this server for Socket.IO
 require('dotenv').config();
+const MongoStore = require('connect-mongo');
 
-app.use(session({
-    secret: 'your_secret_key', 
-    resave: false,
-    saveUninitialized: true,
-    cookie: {
-        maxAge: 24 * 60 * 60 * 1000 
-    }
-}));
-
-require("./config/mongoose");
-require('dotenv').config();
-
-// CORS Configuration
 const cors = require('cors');
-app.use(cors({
-    origin: '*',
+app.use(
+  cors({
+    origin: 'http://localhost:3000',
+    credentials: true, // Allow credentials (cookies, authorization headers, etc.)
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization']
-    // Remove credentials: true
-}));
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+  })
+);
+
+app.use(
+  session({
+    secret: 'session_secret_key', // Secure key
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      secure: false,
+      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+    },
+    store: MongoStore.create({
+      mongoUrl: 'mongodb://localhost:27017/PIMSdb', // MongoDB connection
+      ttl: 30 * 24 * 60 * 60, // Session expiry in seconds
+    }),
+  })
+);
+
+
+// Initialize Socket.IO
+const socket = require('./socket'); // Import the socket module
+socket.init(server); // Initialize Socket.IO with the server
+
+// Import the scheduler after initializing Socket.IO
+require('./appointments/scheduler');
+
+
+// Connect to MongoDB
+require('./config/mongoose');
+//FrontendOrigins
+const allowedOrigins = ['http://localhost:3000','http://localhost:3001'];
+// CORS Configuration
+
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-
-
 
 // Static file serving for images
 app.use('/images', express.static(path.join(__dirname, 'doctor', 'images')));
@@ -45,53 +69,45 @@ app.use('/images', express.static(path.join(__dirname, 'announcement', 'images')
 app.use('/images', express.static(path.join(__dirname, 'news', 'images')));
 app.use('/images', express.static(path.join(__dirname, 'specialty', 'images')));
 app.use('/images', express.static(path.join(__dirname, 'services', 'images')));
+app.use('images', express.static(path.join(__dirname, 'about-company', 'images')));
 
 app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
-// Static file serving for uploaded PDFs
 
-
-// Static file serving for uploaded PDFs
-app.use('/uploads', cors({
-    origin: '*',
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true
-}), express.static(path.join(__dirname, 'public/uploads')));
 
 
 app.get('/uploads/:filename', (req, res) => {
-    const fileName = req.params.filename;
-    const filePath = path.join(__dirname, 'public/uploads', fileName);
+  const fileName = req.params.filename;
+  const filePath = path.join(__dirname, 'public/uploads', fileName);
 
-    if (fs.existsSync(filePath)) {
-
-        res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Disposition', `inline; filename="${fileName}"`);
-
-        // Stream the file to the response
-        const fileStream = fs.createReadStream(filePath);
-        fileStream.pipe(res);
-    } else {
-        res.status(404).send('File not found.');
-    }
+  if (fs.existsSync(filePath)) {
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `inline; filename="${fileName}"`);
+    const fileStream = fs.createReadStream(filePath);
+    fileStream.pipe(res);
+  } else {
+    res.status(404).send('File not found.');
+  }
 });
 
 app.use(express.static(path.join(__dirname, '../frontend/public')));
 
-const DoctorRoutes = require("./doctor/doctor_routes");
+const UserRoutes = require('./user/user_routes');
+UserRoutes(app);
+// Route Imports
+const DoctorRoutes = require('./doctor/doctor_routes');
 DoctorRoutes(app);
-const PatientRoutes = require("./patient/patient_routes");
+const PatientRoutes = require('./patient/patient_routes');
 PatientRoutes(app);
-const MedicalSecretaryRoutes = require("./medicalsecretary/medicalsecretary_routes");
+const MedicalSecretaryRoutes = require('./medicalsecretary/medicalsecretary_routes');
 MedicalSecretaryRoutes(app);
-const CashierRoutes = require("./cashier/cashier_routes");
+const CashierRoutes = require('./cashier/cashier_routes');
 CashierRoutes(app);
 const AdminRoutes = require('./admin/admin_routes');
 AdminRoutes(app);
 
-const FindingsRoutes = require("./findings/findings_routes");
+const FindingsRoutes = require('./findings/findings_routes');
 FindingsRoutes(app);
-const PrescriptionRoutes = require("./prescription/prescription_routes");
+const PrescriptionRoutes = require('./prescription/prescription_routes');
 PrescriptionRoutes(app);
 const AppointmentRoutes = require('./appointments/appointment_routes');
 AppointmentRoutes(app);
@@ -109,11 +125,20 @@ const ServiceRoutes = require('./services/service_routes');
 ServiceRoutes(app);
 const HmoRoutes = require('./hmo/hmo_routes');
 HmoRoutes(app);
+const ChatRoutes = require('./chat/chat_routes');
+ChatRoutes(app);
+const ProxyRoutes = require('./proxy/proxyRoutes');
+ProxyRoutes(app);
+const AboutCompanyRoutes = require('./about-company/aboutcompany_routes');
+AboutCompanyRoutes(app);
+
+
+// Serve frontend
 app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../frontend/public', 'index.html'));
+  res.sendFile(path.join(__dirname, '../frontend/public', 'index.html'));
 });
 
 // Start the server
-app.listen(port, '0.0.0.0', () => {
-    console.log(`Server running on port ${port}`);
-  });
+server.listen(port, '0.0.0.0', () => {
+  console.log(`Server running on port ${port}`);
+});

@@ -69,6 +69,138 @@ const countRegisteredDoctors = (req, res) => {
         });
 };
 
+const countTodaysPatient = (req, res) => {
+    const today = new Date();
+    const start = new Date(today.getFullYear(), today.getMonth(), today.getDate());  // Start of today
+    const end = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);  // Start of tomorrow
+
+    // Filter appointments where the 'date' matches today's date
+    Appointment.countDocuments({
+        date: { $gte: start, $lt: end },  // Check if the appointment date is today
+    })
+        .then((todaysAppointments) => {
+            res.json({ todaysAppointments });
+        })
+        .catch((err) => {
+            res.status(500).json({ message: 'Something went wrong', error: err });
+        });
+};
+
+const countOngoingPatient = (req, res) => {
+    const today = new Date();
+    const start = new Date(today.getFullYear(), today.getMonth(), today.getDate());  // Start of today
+    const end = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);  // Start of tomorrow
+
+    // Filter appointments where the 'date' matches today's date
+    Appointment.countDocuments({
+        date: { $gte: start, $lt: end },  // Check if the appointment date is today
+        status: 'Ongoing'
+    })
+        .then((ongoingAppointments) => {
+            res.json({ ongoingAppointments });
+        })
+        .catch((err) => {
+            res.status(500).json({ message: 'Something went wrong', error: err });
+        });
+}
+
+
+const countOnlineDoctors = (req, res) => {
+    Doctors.countDocuments({ activityStatus: 'Online' })
+        .then((onlineDoctors) => {
+            res.json({ onlineDoctors });
+        })
+        .catch((err) => {
+            res.status(500).json({ message: 'Something went wrong', error: err });
+        });
+}
+
+const countInSessionDoctors = (req, res) => {
+    Doctors.countDocuments({ activityStatus: 'In Session' })
+        .then((insessionDoctors) => {
+            res.json({ insessionDoctors });
+        })
+        .catch((err) => {
+            res.status(500).json({ message: 'Something went wrong', error: err });
+        });
+}
+
+const countPatientAgeGroup = async (req, res) => {
+    try {
+        const today = new Date();
+
+        // Define age groups
+        const ageGroups = [
+            { label: 'Under 18', min: 0, max: 17 },
+            { label: '18-24', min: 18, max: 24 },
+            { label: '25-34', min: 25, max: 34 },
+            { label: '35-44', min: 35, max: 44 },
+            { label: '45-54', min: 45, max: 54 },
+            { label: '55-64', min: 55, max: 64 },
+            { label: 'Above 64', min: 65, max: 200 }
+        ];
+
+        // Query patients and group by age
+        const patientCounts = await Promise.all(
+            ageGroups.map(async (group) => {
+                const count = await Patient.countDocuments({
+                    patient_dob: { 
+                        $gte: new Date(today.getFullYear() - group.max, today.getMonth(), today.getDate()),
+                        $lt: new Date(today.getFullYear() - group.min, today.getMonth(), today.getDate())
+                    }
+                });
+                return {
+                    label: group.label,
+                    count: count
+                };
+            })
+        );
+
+        res.json({ data: patientCounts });
+    } catch (error) {
+        console.error('Error counting patients by age group:', error);
+        res.status(500).json({ message: 'Error counting patients by age group', error });
+    }
+};
+
+
+const countDoctorAgeGroup = async (req, res) => {
+    try {
+        const today = new Date();
+
+        // Define age groups
+        const ageGroups = [
+            { label: 'Under 30', min: 0, max: 29 },
+            { label: '30-39', min: 30, max: 39 },
+            { label: '40-49', min: 40, max: 49 },
+            { label: '50-59', min: 50, max: 59 },
+            { label: 'Above 60', min: 60, max: 200 }
+        ];
+
+        // Query doctors and group by age
+        const doctorCounts = await Promise.all(
+            ageGroups.map(async (group) => {
+                const count = await Doctors.countDocuments({
+                    dr_dob: { 
+                        $gte: new Date(today.getFullYear() - group.max, today.getMonth(), today.getDate()),
+                        $lt: new Date(today.getFullYear() - group.min, today.getMonth(), today.getDate())
+                    }
+                });
+                return {
+                    label: group.label,
+                    count: count
+                };
+            })
+        );
+
+        res.json({ data: doctorCounts });
+    } catch (error) {
+        console.error('Error counting doctors by age group:', error);
+        res.status(500).json({ message: 'Error counting doctors by age group', error });
+    }
+}
+    
+
 
 
 module.exports = {
@@ -78,5 +210,11 @@ module.exports = {
     countTotalDoctors,
     countRegisteredDoctors,
     countReviewedDoctors,
+    countTodaysPatient,
+    countOngoingPatient,
+    countOnlineDoctors,
+    countInSessionDoctors,
+    countPatientAgeGroup,
+    countDoctorAgeGroup
 
 };

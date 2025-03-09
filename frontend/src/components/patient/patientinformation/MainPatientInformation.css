@@ -1,0 +1,16 @@
+/* Make sidebar sticky */
+.sidebar-container {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto; /* Add this if sidebar has a lot of items */
+    padding: 0;
+    background-color: #f8f9fa; /* Sidebar background color */
+    z-index: 1;
+}
+
+/* Main content area to make it scrollable */
+.content-container {
+    overflow-y: auto;
+    height: 100vh;
+}

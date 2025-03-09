@@ -45,6 +45,30 @@ const MedSecToSend = ({ allAppointments, setAllAppointments, msid }) => {
     return 0;
   });
 
+    // Function to convert 24-hour time to 12-hour format with AM/PM
+    const convertTimeRangeTo12HourFormat = (timeRange) => {
+      // Check if the timeRange is missing or empty
+      if (!timeRange) return 'Not Assigned';
+    
+      const convertTo12Hour = (time) => {
+        // Handle single time values like "10:00"
+        if (!time) return '';
+    
+        let [hours, minutes] = time.split(':').map(Number);
+        const period = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12 || 12; // Convert 0 or 12 to 12 in 12-hour format
+    
+        return `${hours}:${String(minutes).padStart(2, '0')} ${period}`;
+      };
+    
+      // Handle both single times and ranges
+      if (timeRange.includes(' - ')) {
+        const [startTime, endTime] = timeRange.split(' - ');
+        return `${convertTo12Hour(startTime)} - ${convertTo12Hour(endTime)}`;
+      } else {
+        return convertTo12Hour(timeRange); // Single time case
+      }
+    };
   // Filter appointments by patient name based on the search term
   const filteredAppointments = sortedAppointments
     .filter(appointment => appointment.status === 'To-send')
@@ -85,7 +109,7 @@ const MedSecToSend = ({ allAppointments, setAllAppointments, msid }) => {
 
     try {
         const response = await axios.post(
-            `${ip.address}/api/medsec/${msid}/api/createLaboratoryResult/${selectedAppointment.patient._id}/${selectedAppointment._id}`,
+            `${ip.address}/api/medsec/api/createLaboratoryResult/${selectedAppointment.patient._id}/${selectedAppointment._id}`,
             labData,
             {
                 headers: { 'Content-Type': 'multipart/form-data' }
@@ -162,7 +186,7 @@ const MedSecToSend = ({ allAppointments, setAllAppointments, msid }) => {
                 <td>{patientName}</td>
                 <td>{appointment.appointment_type.map(typeObj => typeObj.appointment_type).join(', ')}</td>
                 <td>{appointment.date ? new Date(appointment.date).toLocaleDateString() : "Not Assigned"}</td>
-                <td>{appointment.time || "Not Assigned"}</td>
+                <td>{appointment.time ? convertTimeRangeTo12HourFormat(appointment.time) : 'Not Assigned'}</td>
                 <td>{appointment.status}</td>
                 <td>{appointment.patient.accountStatus}</td>
                 <td>

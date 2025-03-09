@@ -1,56 +1,71 @@
-// src/components/LandingPage.jsx
-import React, { useRef } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import NavigationalBar from "./navbar";
-import './Landing.css';
+
 import Footer from "../Footer";
 import NewsSection from "../staffs/news/NewsSection";
 import { ip } from "../../ContentExport";
+import { Button } from "react-bootstrap";
 
 function LandingPage() {
-  // Create references to sections
-  const servicesRef = useRef(null);
-  const aboutRef = useRef(null);
-  const newsRef = useRef(null);
+  const topRef = useRef(null);   
+  const servicesRef = useRef(null); 
+  const aboutRef = useRef(null);    
+  const newsRef = useRef(null);     
+
+  const [showButton, setShowButton] = useState(false); 
+  const scrollToTop = () => {
+    topRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
   const scrollToServices = () => {
-    if (servicesRef.current) {
-      servicesRef.current.scrollIntoView({ behavior: "smooth" });
-    }
+    servicesRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   const scrollToAbout = () => {
-    if (aboutRef.current) {
-      aboutRef.current.scrollIntoView({ behavior: "smooth" });
-    }
+    aboutRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   const scrollToNews = () => {
-    if (newsRef.current) {
-      newsRef.current.scrollIntoView({ behavior: "smooth" });
+    newsRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+
+  const handleScroll = () => {
+    if (window.scrollY > 100) {
+      setShowButton(true);
+    } else {
+      setShowButton(false);
     }
   };
 
+
+  useEffect(() => {
+    window.addEventListener("scroll", handleScroll, { passive: true });
+
+
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   return (
     <>
-      {/* Navbar */}
-      <div>
-        <NavigationalBar 
-        scrollToServices={scrollToServices} 
-        scrollToAbout={scrollToAbout} 
-        scrollToNews={scrollToNews} />
-        
-      </div>
+      <div style={{ overflowY: "auto", overflowX: "hidden", height: "calc(100vh)" }}>
 
-      {/* Content Section */}
-      <div style={{ overflowY: "auto", overflowX: "hidden", height: "calc(100vh)", paddingBottom: "1.5rem" }}>
-        <div className="maincolor-container p-0">
-          <div className="content-area" style={{ marginTop: "5.4rem" }}>
-            {/* Hero Carousel */}
+        <div ref={topRef} />
+
+        <NavigationalBar
+          scrollToServices={scrollToServices}
+          scrollToAbout={scrollToAbout}
+          scrollToNews={scrollToNews}
+        />
+
+        <div className="maincolor-container p-0 m-0">
+          <div className="content-area m-0 p-0">
             <div
               id="hero-carousel"
               className="carousel slide carousel-fade"
               data-bs-ride="carousel"
               data-bs-interval="5000"
-              style={{ width: "100%" }}
+              style={{ width: "100%", position: "relative" }}
             >
               <div className="carousel-item active">
                 <img
@@ -71,27 +86,22 @@ function LandingPage() {
                     Medical Functional is most focused in helping you <br />
                     discover your most beautiful smile.
                   </p>
-                  <a href="#about" className="btn btn-primary btn-lg">
-                    Read More
-                  </a>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* About Us Section */}
           <section
             id="about"
             ref={aboutRef}
             style={{ padding: "50px", backgroundColor: "#f7f7f7" }}
           >
-            <div className="container section-title" data-aos="fade-up">
-              <h2>About Us<br/></h2>
+            <div className="section-title" data-aos="fade-up">
+              <h2>About Us<br /></h2>
               <p>Necessitatibus eius consequatur ex aliquid fuga eum quidem sint consectetur velit</p>
             </div>
           </section>
 
-          {/* Services Section */}
           <section
             id="services"
             ref={servicesRef}
@@ -106,9 +116,20 @@ function LandingPage() {
             ref={newsRef}
             style={{ padding: "50px", backgroundColor: "#f7f7f7" }}
           >
-          <NewsSection />
+            <NewsSection />
           </section>
-          {/* Footer */}
+
+          {/* Back to Top Button */}
+ 
+            <Button
+              className="back-to-top-button"
+              onClick={scrollToTop}
+              aria-label="Back to Top"
+            >
+              ⬆
+            </Button>
+   
+
           <Footer />
         </div>
       </div>
