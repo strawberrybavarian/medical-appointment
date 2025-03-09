@@ -109,7 +109,7 @@ const MedSecToSend = ({ allAppointments, setAllAppointments, msid }) => {
 
     try {
         const response = await axios.post(
-            `${ip.address}/api/medsec/${msid}/api/createLaboratoryResult/${selectedAppointment.patient._id}/${selectedAppointment._id}`,
+            `${ip.address}/api/medsec/api/createLaboratoryResult/${selectedAppointment.patient._id}/${selectedAppointment._id}`,
             labData,
             {
                 headers: { 'Content-Type': 'multipart/form-data' }

@@ -1,0 +1,219 @@
+/* AdminPersonalInfo.css */
+.adminInfoMain {
+    width: 100%;
+    max-width: 100%;
+    height: 100%;
+    background-color: #f8f9fa;
+  }
+  
+  .adminInfoContainer {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  .adminInfoHeader {
+    margin-bottom: 1.5rem;
+  }
+  
+  .adminInfoTitle {
+    font-size: 1.75rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    color: #2c3e50;
+  }
+  
+  .adminInfoSubtitle {
+    color: #6c757d;
+    font-size: 1rem;
+  }
+  
+  .adminInfoContent {
+    display: grid;
+    grid-gap: 1.5rem;
+  }
+  
+  /* Profile Card */
+  .adminInfoProfileCard {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+  }
+  
+  .adminInfoProfileWrapper {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+  }
+  
+  .adminInfoAvatarContainer {
+    flex-shrink: 0;
+  }
+  
+  .adminInfoAvatarWrapper {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    overflow: hidden;
+    background-color: #e9ecef;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
+  }
+  
+  .adminInfoAvatar {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  .adminInfoProfileDetails {
+    flex-grow: 1;
+  }
+  
+  .adminInfoName {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: #2c3e50;
+  }
+  
+  .adminInfoBadge {
+    display: inline-block;
+    background-color: #4a6cf7;
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.35rem 0.75rem;
+    border-radius: 20px;
+    margin-bottom: 1rem;
+  }
+  
+  .adminInfoActionButtons {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  
+  .adminInfoSecurityBtn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 500;
+    border-radius: 8px;
+  }
+  
+  /* Info Card */
+  .adminInfoDetailsCard, 
+  .adminInfoActivityCard {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+  }
+  
+  .adminInfoSectionTitle {
+    display: flex;
+    align-items: center;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 1.25rem;
+  }
+  
+  .adminInfoSectionIcon {
+    margin-right: 0.5rem;
+    color: #4a6cf7;
+  }
+  
+  .adminInfoDivider {
+    height: 1px;
+    background-color: #e9ecef;
+    margin: 1.5rem 0;
+  }
+  
+  .adminInfoFormContainer {
+    padding: 0.5rem;
+  }
+  
+  .adminInfoRow {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 1rem;
+  }
+  
+  .adminInfoField {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .adminInfoFieldWide {
+    grid-column: 1 / -1;
+  }
+  
+  .adminInfoLabel {
+    font-size: 0.85rem;
+    color: #6c757d;
+    margin-bottom: 0.35rem;
+  }
+  
+  .adminInfoValue {
+    font-size: 1rem;
+    font-weight: 500;
+    color: #2c3e50;
+  }
+  
+  .adminInfoActions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+  
+  .adminInfoEditBtn, 
+  .adminInfoPasswordBtn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+  }
+  
+  .adminInfoEditBtn {
+    background-color: #4a6cf7;
+    border-color: #4a6cf7;
+  }
+  
+  .adminInfoPasswordBtn {
+    color: #2c3e50;
+    background-color: #f8f9fa;
+    border-color: #e9ecef;
+  }
+  
+  /* Activity Log styles */
+  .adminInfoActivityCard {
+    margin-bottom: 2rem;
+  }
+  
+  /* Responsive Styles */
+  @media (max-width: 767px) {
+    .adminInfoProfileWrapper {
+      flex-direction: column;
+      text-align: center;
+    }
+  
+    .adminInfoAvatarContainer {
+      margin-bottom: 1rem;
+    }
+    
+    .adminInfoActionButtons {
+      justify-content: center;
+    }
+    
+    .adminInfoActions {
+      flex-direction: column;
+    }
+    
+    .adminInfoRow {
+      grid-template-columns: 1fr;
+    }
+  }

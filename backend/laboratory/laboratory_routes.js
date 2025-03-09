@@ -35,5 +35,5 @@ module.exports = app => {
   app.get("/api/laboratory/getbyappointment/:appointmentID", LaboratoryController.getLaboratoryByAppointmentID);
 
   //For Medsec
-  app.post('/api/medsec/:medsecId/api/createLaboratoryResult/:patientId/:appointmentId', upload.single('file'), LaboratoryController.createMedSecLaboratoryResult);
+  app.post('/api/medsec/api/createLaboratoryResult/:patientId/:appointmentId', upload.single('file'), LaboratoryController.createMedSecLaboratoryResult);
 };

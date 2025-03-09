@@ -65,12 +65,12 @@ const getAllPostbyId = (req, res) => {
         .populate('dr_posts')
         .then((Doctor) => {
             if (!Doctor) {
-                res.json({ message: 'Doctor not found' });
+                return res.json({ message: 'Doctor not found' });
             }
-            res.json({ posts: Doctor.dr_posts });
+            return res.json({ posts: Doctor.dr_posts });
         })
         .catch((err) => {
-            res.json({ message: 'Error retrieving posts', error: err });
+            return res.json({ message: 'Error retrieving posts', error: err });
         });
 };
 

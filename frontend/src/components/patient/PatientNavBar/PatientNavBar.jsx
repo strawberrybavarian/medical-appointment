@@ -7,6 +7,7 @@ import { image, ip } from '../../../ContentExport';
 import axios from 'axios';
 import io from 'socket.io-client';
 import { useUser } from '../../UserContext';
+import LogoutModal from '../../practitioner/sidebar/LogoutModal';
 
 function PatientNavBar({ pid }) {
   const navigate = useNavigate();
@@ -14,6 +15,8 @@ function PatientNavBar({ pid }) {
   const [showNotifications, setShowNotifications] = useState(false);
   const [theImage, setImage] = useState(null);
   const [notifications, setNotifications] = useState([]);
+  const [showLogoutModal, setShowLogoutModal] = React.useState(false);
+  
 
   const defaultImage = `${ip.address}/images/default-profile.jpg`;
 
@@ -21,17 +24,37 @@ function PatientNavBar({ pid }) {
   const socketRef = useRef();
   const location = useLocation();
   useEffect(() => {
-    if(!pid){
+    if (!pid) {
       navigate('/medapp/login');
     }
   }, [pid, navigate]);
- 
+
+  const handleLogout = () => {
+    setShowLogoutModal(true); // Show the logout confirmation modal
+};
+
+const cancelLogout = () => {
+  setShowLogoutModal(false);
+};
+
+  const confirmLogout = async () => {
+    try {
+      await axios.post(`${ip.address}/api/logout`, {}, { withCredentials: true });
+      setUser(null); // Clear patient context
+      navigate('/medapp/login'); // Redirect to login page
+    } catch (error) {
+      console.error('Error logging out:', error);
+      alert('Failed to log out. Please try again.');
+    }
+  };
+
+
   // Initialize socket.io client
   useEffect(() => {
     socketRef.current = io(ip.address);
 
     socketRef.current.on('connect', () => {
-      console.log('Socket connected:', socketRef.current.id);
+      // console.log('Socket connected:', socketRef.current.id);
     });
 
     socketRef.current.on('connect_error', (error) => {
@@ -73,11 +96,11 @@ function PatientNavBar({ pid }) {
     });
 
     socketRef.current.on('disconnect', () => {
-      console.log('Socket disconnected');
+      // console.log('Socket disconnected');
     });
 
     socketRef.current.io.on('reconnect', () => {
-      console.log('Socket reconnected');
+      // console.log('Socket reconnected');
       if (pid) {
         socketRef.current.emit('identify', { userId: pid, userRole: 'Patient' });
       }
@@ -95,48 +118,30 @@ function PatientNavBar({ pid }) {
   }, []);
 
   useEffect(() => {
-    if (!pid) {
-      console.warn('Patient ID is undefined');
+    // This will handle redirects if the user isn't logged in or is not a patient
+    if (!user || !user._id || user.role !== "Patient") {
+      navigate('/medapp/login');
       return;
     }
-
-    axios
-      .get(`${ip.address}/api/patient/api/onepatient/${pid}`)
-      .then((res) => {
-        const patientData = res.data.thePatient;
-        setImage(patientData.patient_image || defaultImage);
-        const sortedNotifications = (patientData.notifications || []).sort(
-          (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-        );
-        setNotifications(sortedNotifications);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-  }, [pid]);
-
-  const logoutUser = async () => {
-    try {
-      await axios.post(`${ip.address}/api/logout`, {}, { withCredentials: true });
-      setUser(null); // Clear patient context
-      navigate('/medapp/login'); // Redirect to login page
-    } catch (error) {
-      console.error('Error logging out:', error);
-      alert('Failed to log out. Please try again.');
+    
+    // If we have a valid user, get their notifications
+    if (user._id) {
+      axios
+        .get(`${ip.address}/api/patient/api/onepatient/${user._id}`)
+        .then((res) => {
+          const patientData = res.data.thePatient;
+          setImage(patientData.patient_image || defaultImage);
+          const sortedNotifications = (patientData.notifications || []).sort(
+            (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+          );
+          setNotifications(sortedNotifications);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
     }
-  };
+  }, [user, navigate]);
 
-  // const onClickHomepage = () => {
-  //   navigate(`/homepage`, { state: { pid: patient._id } });
-  // };
-
-  // const onButtonContainerClick = () => {
-  //   navigate(`/choosedoctor`, { state: { pid: patient._id } });
-  // };
-
-  // const MyAppointment = () => {
-  //   navigate(`/myappointment`, { state: { pid: patient._id } });
-  // };
 
   const toggleNotifications = () => {
     setShowNotifications(!showNotifications);
@@ -145,16 +150,16 @@ function PatientNavBar({ pid }) {
   const markAsRead = async (notification) => {
     try {
       if (notification.link) {
-        navigate(notification.link, { state: { pid } }); // Pass pid in state
+        navigate(notification.link, { state: { pid } });
       }
-  
+
       if (!notification._id) {
         console.error('Notification ID is undefined');
         return;
       }
-  
+
       await axios.put(`${ip.address}/api/notifications/${notification._id}/read`);
-  
+
       setNotifications((prevNotifications) =>
         prevNotifications.map((notif) =>
           notif._id === notification._id ? { ...notif, isRead: true } : notif
@@ -174,16 +179,8 @@ function PatientNavBar({ pid }) {
     }
   };
 
-  // useEffect(() => {
-  //   if (!patient) {
-  //     navigate('/medapp/login');
-  //   }
-  // }, [patient, navigate]);
 
-  if (!user) {
-    // Render a placeholder or return null while redirecting
-    return null;
-  }
+  // console.log('User', user)
 
   // Calculate unread notifications count and set max to 9+
   const unreadCount = notifications.filter((notif) => !notif.isRead).length;
@@ -191,7 +188,7 @@ function PatientNavBar({ pid }) {
 
   return (
     <Navbar
-      fluid
+
       expand="md"
       className="nav-bar-no-color navbar-fixed-top fixed-top px-5 py-0"
       style={{ zIndex: '2' }}
@@ -203,35 +200,35 @@ function PatientNavBar({ pid }) {
 
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar-nav" className="justify-content-end">
-        <Nav>
-          <Nav.Link
-            as={Link}
-            to={{ pathname: `/homepage`, state: { pid: user._id } }}
-            className={`pnb-nav-link ${location.pathname === '/homepage' ? 'active' : ''}`}
-          >
-            Home
-          </Nav.Link>
-          <Nav.Link
-            as={Link}
-            to={{ pathname: `/myappointment`, state: { pid: user._id } }}
-            className={`pnb-nav-link ${location.pathname === '/myappointment' ? 'active' : ''}`}
-          >
-            My Appointments
-          </Nav.Link>
-          <Nav.Link
-            as={Link}
-            to={{ pathname: `/choosedoctor`, state: { pid: user._id } }}
-            className={`pnb-nav-link ${location.pathname === '/choosedoctor' ? 'active' : ''}`}
-          >
-            Choose Doctor
-          </Nav.Link>
-        </Nav>
+          <Nav>
+            <Nav.Link
+              as={Link}
+              to={{ pathname: `/homepage`, state: { pid: user._id } }}
+              className={`pnb-nav-link ${location.pathname === '/homepage' ? 'active' : ''}`}
+            >
+              Home
+            </Nav.Link>
+            <Nav.Link
+              as={Link}
+              to={{ pathname: `/myappointment`, state: { pid: user._id } }}
+              className={`pnb-nav-link ${location.pathname === '/myappointment' ? 'active' : ''}`}
+            >
+              My Appointments
+            </Nav.Link>
+            <Nav.Link
+              as={Link}
+              to={{ pathname: `/choosedoctor`, state: { pid: user._id } }}
+              className={`pnb-nav-link ${location.pathname === '/choosedoctor' ? 'active' : ''}`}
+            >
+              Choose Doctor
+            </Nav.Link>
+          </Nav>
 
           <Nav>
             <Nav.Link onClick={toggleNotifications} className="position-relative">
-              <Bell size={20} />
+              <Bell size={20} className={unreadCount > 0 ? 'sway' : ''} /> {/* Apply sway class when unread messages */}
               {unreadCount > 0 && (
-                <span className="notification-badge">{displayCount}</span>
+                <span className="notification-dot"></span>
               )}
               {showNotifications && (
                 <div className="notification-overlay">
@@ -239,9 +236,8 @@ function PatientNavBar({ pid }) {
                     notifications.map((notification, index) => (
                       <div
                         key={notification._id}
-                        className={`notification-item ${
-                          !notification.isRead ? 'unread' : 'read'
-                        }`}
+                        className={`notification-item ${!notification.isRead ? 'unread' : 'read'
+                          }`}
                         onClick={(e) => {
                           e.preventDefault();
                           markAsRead(notification);
@@ -264,6 +260,9 @@ function PatientNavBar({ pid }) {
                 </div>
               )}
             </Nav.Link>
+
+
+
           </Nav>
 
           <Nav className="align-items-center">
@@ -309,14 +308,21 @@ function PatientNavBar({ pid }) {
                 Account Information
               </NavDropdown.Item>
               <NavDropdown.Divider />
-              <NavDropdown.Item className="pnb-nav-link" onClick={logoutUser}>
+              <NavDropdown.Item className="pnb-nav-link" onClick={handleLogout}>
                 Logout
               </NavDropdown.Item>
             </NavDropdown>
           </Nav>
         </Navbar.Collapse>
+
+        <LogoutModal 
+                show={showLogoutModal} 
+                onCancel={cancelLogout} 
+                onConfirm={confirmLogout} 
+            />
       </Container>
     </Navbar>
+
   );
 }
 

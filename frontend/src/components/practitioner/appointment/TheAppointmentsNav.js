@@ -1,13 +1,11 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Nav, Container } from 'react-bootstrap';
+import { Container } from 'react-bootstrap';
 import SidebarMenu from "../sidebar/SidebarMenu";
 import MainAppointment from "./MainAppointment";
-import MyPendingAppointment from "./MyPendingAppointment";
 import './Appointment.css';
 import DoctorNavbar from '../navbar/DoctorNavbar';
-import Footer from "../../Footer";
 import { ip } from "../../../ContentExport";
 const TheAppointmentsNav = () => {
   const location = useLocation();
@@ -21,14 +19,14 @@ const TheAppointmentsNav = () => {
   const [theImage, setTheImage] = useState("");
   const defaultImage = "images/014ef2f860e8e56b27d4a3267e0a193a.jpg";
 
-  
+
 
   // Extract the outerTab from the URL query params
   const outerTabFromUrl = new URLSearchParams(location.search).get("outerTab") || "mypatients";
 
   // Always call useEffect
   useEffect(() => {
-  
+
 
     axios
       .get(`${ip.address}/api/doctor/api/finduser/${did}`)
@@ -65,6 +63,11 @@ const TheAppointmentsNav = () => {
     return null;
   }
 
+  const placeholder = [allAppointments, theId];
+  if (!placeholder) {
+    return 'Hello';
+  }
+
   return (
     <div className="d-flex justify-content-center">
       <SidebarMenu doctor_image={theImage} doctor_name={theName} did={did} outerTab={outerTabFromUrl} />
@@ -96,9 +99,7 @@ const TheAppointmentsNav = () => {
                 </div>
 
                 
-              <Container fluid className="footer-container cont-fluid-no-gutter w-100">
-                <Footer />
-              </Container>
+          
             </div>
        
         

@@ -171,6 +171,10 @@ const DoctorSchema = new Schema({
     type: String,
     default: 'Doctor'
   },
+  audits: [{
+    type: Schema.Types.ObjectId,
+    ref: 'Audit'
+}],
 }, { timestamps: true });
 
 DoctorSchema.pre('save', async function (next) {

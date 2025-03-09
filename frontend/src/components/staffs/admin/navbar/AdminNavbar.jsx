@@ -6,16 +6,28 @@ import { image, ip } from '../../../../ContentExport';
 import './AdminNavbar.css';
 import axios from 'axios';
 import io from 'socket.io-client';
+import { useUser } from '../../../UserContext';
 
-function AdminNavbar({ userId, userName, role }) {
+function AdminNavbar() {
+  const {user, setUser} = useUser();
   const defaultImage = "images/Admin-Icon.jpg";
   const navigate = useNavigate();
-
   const [notifications, setNotifications] = useState([]);
   const [showNotifications, setShowNotifications] = useState(false);
   const socketRef = useRef();
 
+  // All useEffect hooks need to be at the top level, before any conditional returns
   useEffect(() => {
+    // Check if user exists and is admin
+    if (!user) {
+      return;
+    }
+    
+    if (user.role !== 'Admin' || !user._id || !user) {
+      navigate('/medapp/login');
+      return;
+    }
+    
     // Request browser notification permission if needed
     if ('Notification' in window && Notification.permission !== 'granted') {
       Notification.requestPermission();
@@ -24,15 +36,15 @@ function AdminNavbar({ userId, userName, role }) {
     // Initialize socket
     socketRef.current = io(ip.address);
     socketRef.current.on('connect', () => {
-      console.log('Socket connected:', socketRef.current.id);
+      // console.log('Socket connected:', socketRef.current.id);
     });
 
     socketRef.current.on('connect_error', (error) => {
       console.error('Socket connection error:', error);
     });
 
-    if (userId) {
-      socketRef.current.emit('identify', { userId, userRole: 'Admin' });
+    if (user._id) {
+      socketRef.current.emit('identify', { userId: user._id, userRole: 'Admin' });
     } else {
       console.warn('Admin ID is undefined');
     }
@@ -51,31 +63,29 @@ function AdminNavbar({ userId, userName, role }) {
     });
 
     socketRef.current.on('disconnect', () => {
-      console.log('Socket disconnected');
+      // console.log('Socket disconnected');
     });
 
     socketRef.current.io.on('reconnect', () => {
-      console.log('Socket reconnected');
-      if (userId) {
-        socketRef.current.emit('identify', { userId, userRole: 'Admin' });
+      // console.log('Socket reconnected');
+      if (user._id) {
+        socketRef.current.emit('identify', { userId: user._id, userRole: 'Admin' });
       }
     });
 
     return () => {
       socketRef.current.disconnect();
     };
-  }, [userId]);
+  }, [user, navigate]);
 
   useEffect(() => {
-    if (!userId) {
-      console.warn('Admin ID is undefined');
+    if (!user || !user._id) {
       return;
     }
 
     // Fetch existing notifications for Admin
-    // Adjust the endpoint as per your API definition
     axios
-      .get(`${ip.address}/api/admin/${userId}`)
+      .get(`${ip.address}/api/admin/${user._id}`)
       .then((res) => {
         const adminData = res.data.theAdmin;
         if (adminData.notifications && Array.isArray(adminData.notifications)) {
@@ -88,7 +98,7 @@ function AdminNavbar({ userId, userName, role }) {
       .catch((err) => {
         console.log('Error fetching Admin data:', err);
       });
-  }, [userId]);
+  }, [user]);
 
   const showBrowserNotification = (message) => {
     if ('Notification' in window && Notification.permission === 'granted') {
@@ -110,8 +120,14 @@ function AdminNavbar({ userId, userName, role }) {
         return;
       }
 
-      if (notification.link) {
-        navigate(notification.link, { state: { userId, userName, role } });
+      if (notification.link && user) {
+        navigate(notification.link, { 
+          state: { 
+            userId: user._id, 
+            userName: user.firstName + " " + user.lastName, 
+            role: user.role 
+          } 
+        });
       }
 
       await axios.put(`${ip.address}/api/notifications/${notification._id}/read`);
@@ -125,6 +141,20 @@ function AdminNavbar({ userId, userName, role }) {
       console.error('Error marking notification as read:', error);
     }
   };
+
+  // If user doesn't exist, render nothing
+  if (!user) {
+    return navigate('/medapp/login');
+  }
+
+  const userId = user._id;
+  const userName = user.firstName + " " + user.lastName;
+  const role = user.role;
+
+  // If not admin, don't render
+  if(role !== 'Admin' || !userId) {
+    return null;
+  }
 
   const unreadCount = notifications.filter((notif) => !notif.isRead).length;
   const displayCount = unreadCount > 9 ? '9+' : unreadCount;
@@ -143,18 +173,17 @@ function AdminNavbar({ userId, userName, role }) {
                 </Nav>
 
                 <Nav className="align-items-center">
-
                   <Nav.Link onClick={toggleNotifications} className="position-relative">
-                    <Bell size={20} />
+                    <Bell size={20} className={unreadCount > 0 ? 'sway' : ''} />
                     {unreadCount > 0 && (
-                      <span className="notification-badge">{displayCount}</span>
+                      <span className="notification-dot"></span>
                     )}
                     {showNotifications && (
                       <div className="notification-overlay">
                         {notifications.length > 0 ? (
                           notifications.map((notification, index) => (
                             <div
-                              key={notification._id}
+                              key={notification._id || index}
                               className={`notification-item ${!notification.isRead ? 'unread' : 'read'}`}
                               onClick={(e) => {
                                 e.preventDefault();
@@ -188,11 +217,15 @@ function AdminNavbar({ userId, userName, role }) {
                       src={`${ip.address}/${defaultImage}`}
                       alt="Profile"
                       className="profile-image ms-3"
-                      style={{ objectFit: 'cover' }}
+                      style={{ 
+                        objectFit: 'cover',
+                        height: '40px', 
+                        width: '40px',
+                        borderRadius: '50%'
+                      }}
                     />
                   </div>
                 </Nav>
-
               </Navbar.Collapse>
             </Container>
           </Navbar>

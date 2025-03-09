@@ -1,13 +1,17 @@
 import React, { useState } from 'react';
 import MedSecNavbar from '../../navbar/MedSecNavbar';
-import { Container, Row } from 'react-bootstrap';
+import { Container, Row, Button } from 'react-bootstrap';
 import DoctorCards from './DoctorCards';
 import DeactivationRequests from '../../../admin/appointment/doctors/DeactivationRequests';
-import Nav from 'react-bootstrap/Nav';
 import { useLocation } from 'react-router-dom';
+import ChatComponent from '../../../../chat/ChatComponent';
+import { ChatDotsFill } from 'react-bootstrap-icons';
+
 function AllDoctors() {
   const location = useLocation();  // Retrieve state from location
   const { userId, userName, role } = location.state || {};
+    const [showChat, setShowChat] = useState(false);
+  
   const [activeTab, setActiveTab] = useState('doctorCards'); // Default to 'doctorCards'
   console.log('this is the AllDoctors', userId);
   
@@ -32,6 +36,29 @@ function AllDoctors() {
                 )}
               </Row>
             </Container>
+
+            <div className="chat-btn-container">
+                  <Button
+                    className="chat-toggle-btn"
+                    onClick={() => setShowChat(!showChat)}
+                  >
+                    <ChatDotsFill size={30} />
+                  </Button>
+                </div>
+
+                {showChat && (
+                  <div className="chat-overlay">
+                    {showChat && (
+                      <div className="chat-overlay">
+                        <ChatComponent
+                          userId={userId}
+                          userRole={role}
+                          closeChat={() => setShowChat(false)}
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
        
         </Container>
 

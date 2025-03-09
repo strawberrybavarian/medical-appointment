@@ -16,7 +16,7 @@ const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
 const { staff_email } = require('../EmailExport');
-
+const Audit = require('../audit/audit_model');
 
 
 
@@ -323,103 +323,7 @@ const NewDoctorSignUp = async (req, res) => {
 };
 
 
-const loginDoctor = async (req, res) => {
-  const { email, password, rememberMe } = req.body;
 
-  try {
-    const doctor = await Doctors.findOne({ dr_email: email });
-
-    if (!doctor) {
-      return res.status(404).json({ message: 'No doctor with that email found' });
-    }
-
-    // Check if the doctor's account status is "Review"
-    if (doctor.accountStatus === 'Review') {
-      return res.status(403).json({ message: 'Your account is currently under review. Please wait for approval.' });
-    }
-
-    const isMatch = await bcrypt.compare(password, doctor.dr_password);
-
-    if (!isMatch) {
-      return res.status(401).json({ message: 'Invalid email or password' });
-    }
-
-    const doctorData = {
-      _id: doctor._id,
-      dr_email: doctor.dr_email,
-      dr_firstName: doctor.dr_firstName,
-      dr_lastName: doctor.dr_lastName,
-      passwordChanged: doctor.passwordChanged,  
-    };
-
-    delete req.session.doctorId;
-    delete req.session.doctor;
-    delete req.session.patient; 
-    req.session.userId = doctor._id;
-    req.session.role = 'Doctor';
-    req.session.doctorId = doctorData;
-
-    if (rememberMe) { // If rememberMe is checked, set the cookie to expire in 30 days
-      req.session.cookie.maxAge = 30 * 24 * 60 * 60 * 1000; // 30 days in milliseconds
-    } else {
-      req.session.cookie.maxAge = 30 * 24 * 60 * 60 * 1000; 
-    }
-
-    // At this point, the login is successful.
-    // Update the doctor's activity status to "Online"
-    const updatedDoctor = await Doctors.findByIdAndUpdate(
-      doctor._id,
-      { activityStatus: 'Online' },
-      { new: true }
-    );
-
-    // Broadcast the doctor's updated status in real-time
-    const io = socket.getIO();
-    const clients = socket.clients;
-    for (let userId in clients) {
-      const userSocket = clients[userId];
-      userSocket.emit('doctorStatusUpdate', {
-        doctorId: doctor._id.toString(),
-        activityStatus: updatedDoctor.activityStatus
-      });
-    }
-
-    // Exclude sensitive information before sending
-    doctorData.passwordChanged = updatedDoctor.passwordChanged;
-
-    res.json({
-      message: 'Successfully logged in',
-      doctorId: updatedDoctor._id,
-      doctorData: doctorData,
-    });
-  } catch (error) {
-    console.error('Error logging in doctor:', error);
-    res.status(500).json({ message: 'Error logging in', error });
-  }
-};
-  
-const getSessionData = (req, res) => {
-  try {
-    if (!req.session || !req.session.userId || req.session.role !== 'Doctor') {
-      return res.status(401).json({ message: 'No active session found.' });
-    }
-
-    const doctor = req.session.doctor;
-    if (!doctor) {
-      return res.status(404).json({ message: 'Session invalid or expired.' });
-    }
-
-    res.json({
-      message: 'Session data retrieved successfully',
-      doctor,
-    });
-  
-
-  } catch (error) {
-    console.error('Error fetching session data:', error);
-    res.status(500).json({ message: 'Error fetching session data', error });
-  }
-};
 
 
 const createDoctorSession = (req, res) => {
@@ -438,40 +342,7 @@ const createDoctorSession = (req, res) => {
   }
 };
 
-const logoutDoctor = async (req, res) => { 
-  const doctorId = req.params.id;
 
-  try {
-    // Update doctor status to 'Offline'
-    await DoctorService.updateActivityStatus(doctorId, 'Offline');
-
-    // Explicitly delete session from the database
-
-    req.session.destroy((err) => {
-      if (err) {
-        console.error('Error destroying session:', err);
-        return res.status(500).json({ message: 'Error destroying session' });
-      }
-      res.clearCookie('connect.sid');
-      
-
-      // Broadcast the doctor's updated status
-      const io = socket.getIO();
-      const clients = socket.clients;
-      for (let userId in clients) {
-        const userSocket = clients[userId];
-        userSocket.emit('doctorStatusUpdate', {
-          doctorId: doctorId,
-          activityStatus: 'Offline',
-        });
-      }
-      res.json({ message: 'Logged out successfully' });
-    });
-  } catch (error) {
-    console.error('Error logging out doctor:', error);
-    res.status(500).json({ message: 'Error logging out doctor', error });
-  }
-};
 
 
 const updateDoctorDetails = (req, res) => {
@@ -688,7 +559,6 @@ const updatePostAtIndex = async (req, res) => {
     }
 };
 //For Appointments
-
 const specificAppointmentsforDoctor = (req,res) => {
     const {doctorId} = req.params;
     Appointment.find({ doctor: doctorId })
@@ -1403,6 +1273,28 @@ const changeDoctorPassword = async (req, res) => {
 };
 
 
+const getDoctorWithAudits = async (req, res) => {
+  try {
+
+    const { doctorId } = req.params;
+
+    const doctor = await Doctors.findById(doctorId)
+      .populate({
+        path: 'audits',
+        options: { sort: { createdAt: -1 } },
+      });
+
+    if (!doctor) {
+      return res.status(404).json({ message: 'Doctor not found' });
+    }
+
+    res.status(200).json(doctor);
+  } catch (error) {
+    res.status(500).json({ message: 'Internal server error', error });
+  }
+}
+
+
 module.exports = {
     NewDoctorSignUp,
     findAllDoctors,
@@ -1433,18 +1325,17 @@ module.exports = {
     rescheduledStatus,
     findOneDoctor,
     offlineActivityStatus,
-
     requestDeactivation,
     specificAppointmentsforDoctor,
     updateDoctorBiography,
     getDoctorBiography,
     deleteDoctorBiography,
-    loginDoctor,
+
     createDoctorSession,
     resetPassword, forgotPassword, 
     getDoctorHmo,
     getAllDoctorEmails, getAllDoctorEmailse, getAllContactNumbers,
     getDoctorSlots, updateDoctorSlots, changeDoctorPassword, updateDoctorPassword,
-    getSessionData, logoutDoctor
+   getDoctorWithAudits
 
 };

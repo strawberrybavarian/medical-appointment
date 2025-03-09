@@ -160,24 +160,53 @@
 }
 
 .ongoing-appointment{
+  display: flex;
+  justify-content: center;
   background-color: #2acac2;
   color: white;
   border-radius: 12px;
-  width: 85px;
+  padding: 2px;
+  width: 100px;
 
 }
 
 .pending-appointment{
+  display: flex;
+  justify-content: center;
   background-color: #ffc107;
-  color: white;
+  color: rgb(255, 255, 255);
   width: 100px;
+  padding: 2px;
+  border-radius: 12px;
+}
+
+.cancelled-appointment{
+  display: flex;
+  justify-content: center;
+  background-color: #ff0707;
+  color: rgb(255, 255, 255);
+  width: 100px;
+  padding: 2px;
+  border-radius: 12px;
+}
+
+.completed-appointment{
+  display: flex;
+  justify-content: center;
+  background-color: #198d28;
+  color: rgb(255, 255, 255);
+  width: 100px;
+  padding: 2px;
   border-radius: 12px;
 }
 
 
 .scheduled-appointment{
+  display: flex;
+  justify-content: center;
   background-color: #007bff;
   color: white;
+  padding: 2px;
   border-radius: 12px;
   width: 100px;
 

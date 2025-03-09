@@ -7,7 +7,7 @@ module.exports = app => {
     
     app.get('/api/admin/api/staff/all', AdminController.getAllStaff);
     app.put('/api/admin/api/staff/account-status/:id', AdminController.updateStaffAccountStatus);
-    
+    app.get('/api/admin/api/getaudit/:adminId', AdminController.getAdminWithAudits);
     app.post('/api/admin/api/signup', AdminController.adminSignUp);
     //Admin
     app.get('/api/admin/:adminId', AdminController.findAdminById);
@@ -37,7 +37,7 @@ module.exports = app => {
     app.get('/api/admin/api/doctors/online-status/count', AdminCountControllerDoctor.countOnlineDoctors)
     app.get('/api/admin/api/doctors/online-status/count', AdminCountControllerDoctor.countOnlineDoctors)
     app.get('/api/admin/api/doctors/insession-status/count', AdminCountControllerDoctor.countInSessionDoctors)
-
+    app.get('/api/admin/api/doctors/age-group/count', AdminCountControllerDoctor.countDoctorAgeGroup)
     //Appointment Stats
     app.get('/api/api/doctor-specialty-stats', AdminController.getDoctorSpecialtyStats)
     app.get('/api/admin/api/appointments/completed-by-month', AdminController.getCompletedAppointmentsByMonth)
@@ -46,7 +46,7 @@ module.exports = app => {
    
     app.post('/api/admin/confirm-deactivation/:doctorId', AdminController.confirmDeactivation);
     
-
+    app.post('/api/admin/change-password/pending/:adminId', AdminController.changePendingAdminPassword); 
 
 
 }

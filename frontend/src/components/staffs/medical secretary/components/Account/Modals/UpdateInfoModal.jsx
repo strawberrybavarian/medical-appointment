@@ -5,6 +5,7 @@ import { Modal, Button, Form } from 'react-bootstrap';
 import axios from 'axios';
 import { ip } from '../../../../../../ContentExport';
 import ChangePasswordModal from './ChangePasswordModal';
+import Swal from 'sweetalert2';
 
 const UpdateInfoModal = ({ show, handleClose, currentData = {} }) => {
   const [updatedData, setUpdatedData] = useState({
@@ -14,19 +15,36 @@ const UpdateInfoModal = ({ show, handleClose, currentData = {} }) => {
     ms_email: '',
     ms_contactNumber: ''
   });
+  
+  const [initialData, setInitialData] = useState({});
+  const [isDirty, setIsDirty] = useState(false);
 
   // UseEffect to populate the modal with the current data when it's opened
   useEffect(() => {
     if (currentData) {
-      setUpdatedData({
+      const formattedData = {
         ms_firstName: currentData.ms_firstName || '',
         ms_lastName: currentData.ms_lastName || '',
         ms_username: currentData.ms_username || '',
         ms_email: currentData.ms_email || '',
         ms_contactNumber: currentData.ms_contactNumber || ''
-      });
+      };
+      
+      setUpdatedData(formattedData);
+      setInitialData(formattedData);
+      setIsDirty(false); // Reset dirty state when modal opens
     }
-  }, [currentData]);
+  }, [currentData, show]);
+  
+  // Check if data has been modified
+  useEffect(() => {
+    if (show) {
+      const hasChanges = Object.keys(updatedData).some(
+        key => updatedData[key] !== initialData[key]
+      );
+      setIsDirty(hasChanges);
+    }
+  }, [updatedData, initialData, show]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -35,23 +53,76 @@ const UpdateInfoModal = ({ show, handleClose, currentData = {} }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    
+    // Confirmation dialog before saving changes
+    Swal.fire({
+      title: 'Confirm Changes',
+      text: 'Are you sure you want to save these changes?',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, save changes',
+      cancelButtonText: 'Cancel'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        saveChanges();
+      }
+    });
+  };
+  
+  const saveChanges = () => {
     axios.put(`${ip.address}/api/medicalsecretary/api/${currentData._id}/update`, updatedData)
       .then(response => {
+        Swal.fire({
+          title: 'Success!',
+          text: 'Your information has been updated.',
+          icon: 'success',
+          confirmButtonColor: '#3085d6'
+        });
         handleClose(updatedData); // Pass the updated data back to the form
       })
       .catch(err => {
         console.error('Error updating Medical Secretary data:', err);
+        Swal.fire({
+          title: 'Error!',
+          text: 'Failed to update your information.',
+          icon: 'error',
+          confirmButtonColor: '#3085d6'
+        });
       });
+  };
+  
+  const handleModalClose = () => {
+    if (isDirty) {
+      // Show confirmation dialog if there are unsaved changes
+      Swal.fire({
+        title: 'Unsaved Changes',
+        text: 'You have unsaved changes. Do you want to discard them?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, discard changes',
+        cancelButtonText: 'No, keep editing'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          handleClose(); // Close the modal without saving
+        }
+      });
+    } else {
+      handleClose(); // No changes, close directly
+    }
   };
 
   return (
-    <Modal show={show} onHide={() => handleClose()}>
+    <Modal show={show} onHide={handleModalClose}>
       <Modal.Header closeButton>
         <Modal.Title>Update Information</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <Form onSubmit={handleSubmit}>
-          <Form.Group controlId="formFirstName">
+          <Form.Group className="mb-3" controlId="formFirstName">
             <Form.Label>First Name</Form.Label>
             <Form.Control
               type="text"
@@ -61,7 +132,7 @@ const UpdateInfoModal = ({ show, handleClose, currentData = {} }) => {
               required
             />
           </Form.Group>
-          <Form.Group controlId="formLastName">
+          <Form.Group className="mb-3" controlId="formLastName">
             <Form.Label>Last Name</Form.Label>
             <Form.Control
               type="text"
@@ -71,7 +142,7 @@ const UpdateInfoModal = ({ show, handleClose, currentData = {} }) => {
               required
             />
           </Form.Group>
-          <Form.Group controlId="formUsername">
+          <Form.Group className="mb-3" controlId="formUsername">
             <Form.Label>Username</Form.Label>
             <Form.Control
               type="text"
@@ -81,7 +152,7 @@ const UpdateInfoModal = ({ show, handleClose, currentData = {} }) => {
               required
             />
           </Form.Group>
-          <Form.Group controlId="formEmail">
+          <Form.Group className="mb-3" controlId="formEmail">
             <Form.Label>Email</Form.Label>
             <Form.Control
               type="email"
@@ -91,7 +162,7 @@ const UpdateInfoModal = ({ show, handleClose, currentData = {} }) => {
               required
             />
           </Form.Group>
-          <Form.Group controlId="formContactNumber">
+          <Form.Group className="mb-3" controlId="formContactNumber">
             <Form.Label>Contact Number</Form.Label>
             <Form.Control
               type="text"
@@ -101,9 +172,14 @@ const UpdateInfoModal = ({ show, handleClose, currentData = {} }) => {
               required
             />
           </Form.Group>
-          <Button variant="primary" type="submit">
-            Save Changes
-          </Button>
+          <div className="d-flex justify-content-end">
+            <Button variant="secondary" className="me-2" onClick={handleModalClose}>
+              Cancel
+            </Button>
+            <Button variant="primary" type="submit" disabled={!isDirty}>
+              Save Changes
+            </Button>
+          </div>
         </Form>
       </Modal.Body>
     </Modal>

@@ -116,20 +116,54 @@ const createAppointment = async (req, res) => {
       Doctors.findByIdAndUpdate(doctor, { $push: { dr_appointments: savedAppointment._id } }),
     ]);
 
-    // Audit Logging for the Patient
-    const auditData = {
-      user: patientId,
-      userType: 'Patient',
-      action: 'Create Appointment',
-      description: `Appointment created for patient ${patientData.patient_firstName} ${patientData.patient_lastName} with Dr. ${doctorData.dr_firstName} ${doctorData.dr_lastName} on ${date} at ${time}. Reason: ${reason}`,
-      ipAddress: req.ip,
-      userAgent: req.get('User-Agent'),
-    };
+    
+    if(req.session.role === 'Patient') {
+      const auditData = {
+        user: patientId,
+        userType: 'Patient',
+        action: 'Create Appointment',
+        description: `Appointment created for patient ${patientData.patient_firstName} ${patientData.patient_lastName} with Dr. ${doctorData.dr_firstName} ${doctorData.dr_lastName} on ${date} at ${time}. Reason: ${reason}`,
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent'),
+      };
 
-    const audit = new Audit(auditData);
-    await audit.save();
+      const audit = new Audit(auditData);
+      await audit.save();
+  
+      await Patient.findByIdAndUpdate(patientId, { $push: { audits: audit._id } });
 
-    await Patient.findByIdAndUpdate(patientId, { $push: { audits: audit._id } });
+    } else if (req.session.role === 'Admin') {
+
+      const auditData = {
+        user: req.session.user,
+        userType: 'Admin',
+        action: 'Create Appointment',
+        description: `Appointment created for patient ${patientData.patient_firstName} ${patientData.patient_lastName} with Dr. ${doctorData.dr_firstName} ${doctorData.dr_lastName} on ${date} at ${time}. Reason: ${reason}`,
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent'),
+      };
+
+      const audit = new Audit(auditData);
+      await audit.save();
+  
+      await Admin.findByIdAndUpdate(req.session.user, { $push: { audits: audit._id } });
+    } else if (req.session.role === 'Medical Secretary') {
+      const auditData = {
+        user: req.session.user,
+        userType: 'Medical Secretary',  
+        action: 'Create Appointment',
+        description: `Appointment created for patient ${patientData.patient_firstName} ${patientData.patient_lastName} with Dr. ${doctorData.dr_firstName} ${doctorData.dr_lastName} on ${date} at ${time}. Reason: ${reason}`,
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent'),
+      };
+
+      const audit = new Audit(auditData);
+      await audit.save();
+      
+      await MedicalSecretary.findByIdAndUpdate(req.session.user, { $push: { audits: audit._id } });
+    } else {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
 
     // Notifications for Admins and Secretaries
     const [medicalSecretaries, admins] = await Promise.all([
@@ -149,7 +183,7 @@ const createAppointment = async (req, res) => {
       type: 'Appointment',
       recipientType: 'Admin',
     });
-
+ 
     const notificationMedsec = new Notification({
       message: notificationMessage,
       receiver: recipients,
@@ -204,10 +238,15 @@ const createAppointment = async (req, res) => {
   }
 };
 
-
-
 const createServiceAppointment = async (req, res) => {
   try {
+
+    const sessionUser = req.session.user;
+
+    if(!sessionUser) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
     const { date, reason, appointment_type, serviceId } = req.body;
     const patientId = req.params.uid;
     if (!date || !reason) {
@@ -233,6 +272,8 @@ const createServiceAppointment = async (req, res) => {
     if (serviceData.availability === 'Not Available' || serviceData.availability === 'Coming Soon') {
       return res.status(400).json({ message: `The selected service (${serviceData.name}) is currently not available.` });
     }
+
+
     const newAppointment = new Appointment({
       patient: new mongoose.Types.ObjectId(patientId),
       service: new mongoose.Types.ObjectId(serviceId),
@@ -246,6 +287,9 @@ const createServiceAppointment = async (req, res) => {
     });
     const savedAppointment = await newAppointment.save();
     await Patient.findByIdAndUpdate(patientId, { $push: { patient_appointments: savedAppointment._id } });
+
+    ///For auditing the actions (activity log)
+    if(req.session.role === 'Patient') {
     const patientFullName = `${patientData.patient_firstName} ${patientData.patient_lastName}`;
     const auditData = {
       user: patientId,
@@ -257,7 +301,39 @@ const createServiceAppointment = async (req, res) => {
     };
     const audit = new Audit(auditData);
     await audit.save();
+    
     await Patient.findByIdAndUpdate(patientId, { $push: { audits: audit._id } });
+  } else if (req.session.role === 'Admin') {
+    const auditData = {
+      user: req.session.user,
+      userType: 'Admin',
+      action: 'Create Service Appointment',
+      description: `Appointment created for patient: ${patientData.patient_firstName} ${patientData.patient_lastName} for service: ${serviceData.name} on ${date}. Reason: ${reason}`,
+      ipAddress: req.ip,
+      userAgent: req.get('User-Agent'),
+    };
+
+    const audit = new Audit(auditData);
+    await audit.save();
+
+    await Admin.findByIdAndUpdate(req.session.user, { $push: { audits: audit._id } });
+  } else if (req.session.role === 'Medical Secretary') {
+    const auditData = {
+      user: req.session.user,
+      userType: 'Medical Secretary',
+      action: 'Create Service Appointment',
+      description: `Appointment created for patient: ${patientData.patient_firstName} ${patientData.patient_lastName} for service: ${serviceData.name} on ${date}. Reason: ${reason}`,
+      ipAddress: req.ip,
+      userAgent: req.get('User-Agent'), 
+    };
+
+    const audit= new Audit(auditData);
+    await audit.save();
+
+    await MedicalSecretary.findByIdAndUpdate(req.session.user, { $push: { audits: audit._id } });
+  } else {
+    return res.status(401).json({ message: 'Unauthorized' });
+  }
     const [medicalSecretaries, admins] = await Promise.all([
       MedicalSecretary.find({}, '_id'),
       Admin.find({}, '_id'),
@@ -340,7 +416,7 @@ const countBookedPatients = async (req, res) => {
     }
 
     // Define the statuses to be included in the count
-    const statuses = ['Scheduled', 'Completed', 'Ongoing', 'To-send', 'For Payment', 'Upcoming'];
+    const statuses = ['Scheduled', 'Completed', 'Ongoing', 'To-send', 'For Payment', 'Upcoming',];
 
     const morningCount = await Appointment.countDocuments({
       doctor: doctorId,
@@ -371,6 +447,12 @@ const countBookedPatients = async (req, res) => {
 
 const updateAppointmentStatus = async (req, res) => {
   try {
+
+    const sessionUser = req.session.user;
+    
+    if(!sessionUser) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
     const { status } = req.body;
     const appointmentId = req.params.id;
     const validStatuses = [
@@ -514,9 +596,9 @@ const updateAppointmentStatus = async (req, res) => {
         to: appointment.patient.patient_email,
         subject: 'Your Appointment is Scheduled',
         text: `Dear ${appointment.patient.patient_firstName},
-Your appointment (${appointment.appointment_ID || appointment._id}) has been scheduled successfully.
-Best regards,
-Your Clinic Team`,
+              Your appointment (${appointment.appointment_ID || appointment._id}) has been scheduled successfully.
+              Best regards,
+              Your Clinic Team`,
       };
 
       transporter.sendMail(mailOptions, (error, info) => {
@@ -535,11 +617,11 @@ Your Clinic Team`,
         to: appointment.patient.patient_email,
         subject: 'Your Appointment is Completed',
         text: `Dear ${appointment.patient.patient_firstName},
-Your appointment (${appointment.appointment_ID || appointment._id}) has been successfully completed.
-Thank you for choosing our services.
-Best regards,
-Your Clinic Team`,
-      };
+              Your appointment (${appointment.appointment_ID || appointment._id}) has been successfully completed.
+              Thank you for choosing our services.
+              Best regards,
+              Your Clinic Team`,
+        };
 
       transporter.sendMail(mailOptions, (error, info) => {
         if (error) {
@@ -549,6 +631,45 @@ Your Clinic Team`,
         }
       });
     }
+
+    if(req.session.role === 'Doctor') {
+      const auditData = {
+        user: appointment.doctor._id,
+        userType: 'Doctor',
+        action: 'Update Appointment Status',
+        description: `Appointment status updated to ${status} for patient ${appointment.patient.patient_firstName} ${appointment.patient.patient_lastName}.`,
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent'),
+      };
+      const audit = new Audit(auditData);
+      await audit.save();
+      await Doctors.findByIdAndUpdate(appointment.doctor._id, { $push: { audits: audit._id } });
+    } else if (req.session.role === 'Admin') {
+      const auditData = {
+        user: req.session.user,
+        userType: 'Admin',
+        action: 'Update Appointment Status',
+        description: `Appointment status updated to ${status} for patient ${appointment.patient.patient_firstName} ${appointment.patient.patient_lastName}.`,
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent'),
+      };
+      const audit = new Audit(auditData);
+      await audit.save();
+      await Admin.findByIdAndUpdate(req.session.user, { $push: { audits: audit._id } });
+    } else if (req.session.role === 'Medical Secretary') {
+      const auditData = {
+        user: req.session.user,
+        userType: 'Medical Secretary',
+        action: 'Update Appointment Status',
+        description: `Appointment status updated to ${status} for patient ${appointment.patient.patient_firstName} ${appointment.patient.patient_lastName}.`,
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent'),
+      };
+      const audit = new Audit(auditData);
+      await audit.save();
+      await MedicalSecretary.findByIdAndUpdate(req.session.user, { $push: { audits: audit._id } });
+    }
+    
 
     res.status(200).json(appointment);
   } catch (error) {

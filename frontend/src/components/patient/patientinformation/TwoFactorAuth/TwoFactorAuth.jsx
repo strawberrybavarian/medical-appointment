@@ -1,89 +1,197 @@
 import axios from 'axios';
-import React, { useState } from 'react';
-import { useParams } from 'react-router-dom';
-import './TwoFactorAuth.css';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import { Modal, Button } from 'react-bootstrap';
+import React, { useState, useEffect } from 'react';
+import { Modal, Button, Form, Alert } from 'react-bootstrap';
 import { ip } from '../../../../ContentExport';
-function TwoFactorAuth() {
-    const { pid } = useParams();
+import Swal from 'sweetalert2';
+function TwoFactorAuth({ show, handleClose }) {
     const [qrCode, setQrCode] = useState(null);
     const [secretKey, setSecretKey] = useState(null);
-    const [showModal, setShowModal] = useState(false);
+    const [sessionActive, setSessionActive] = useState(true);
+    const [user, setUser] = useState('');
+    const [verificationCode, setVerificationCode] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [setupStep, setSetupStep] = useState('generate'); // 'generate', 'verify', or 'complete'
 
-    const setupTwoFactor = async (userId, regenerate = false) => {
+    // Check session status when component mounts
+    useEffect(() => {
+        const checkSession = async () => {
+            try {
+                const response = await axios.get(`${ip.address}/api/get/session`);
+                if (!response.data || !response.data.user) {
+                    console.log('Session expired or no user data:', response.data);
+                    setSessionActive(false);
+                } else {
+                    setUser(response.data.user);
+                    // Auto-generate QR code when modal opens
+                    setupTwoFactor();
+                }
+            } catch (error) {
+                console.error('Error checking session:', error);
+            }
+        };
+        checkSession();
+    }, []);
+
+    // Setup 2FA function
+    const setupTwoFactor = async (regenerate = false) => {
         try {
-            const response = await axios.post(`${ip.address}/api/patient/api/setup-2fa/${userId}`, { regenerate });
+            setLoading(true);
+            const response = await axios.post(`${ip.address}/api/set-up-2fa`, { 
+                regenerate,
+                id: user?._id,
+                role: user?.role
+            });
+
             if (response.data.qrCode && response.data.secret) {
                 setQrCode(response.data.qrCode);
                 setSecretKey(response.data.secret);
+                setSetupStep('verify');
             } else {
-                window.alert("Error setting up 2FA");
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Error setting up 2FA'
+                });
             }
         } catch (error) {
-            console.error('Error setting up 2FA:', error); // Log the error
-            window.alert("Error setting up 2FA");
+            console.error('Error setting up 2FA:', error);
+        } finally {
+            setLoading(false);
         }
     };
 
     const handleRegenerate = () => {
-        setShowModal(true); // Show confirmation modal
+        setupTwoFactor(true);
+        setQrCode(null);
+        setSecretKey(null);
     };
 
-    const confirmRegenerate = () => {
-        setupTwoFactor(pid, true);
-        setQrCode(null); // Clear the QR code when regenerating
-        setSecretKey(null); // Clear the secret key when regenerating
-        setShowModal(false); // Hide confirmation modal
-    };
+    const handleVerifyCode = async () => {
+        if (!verificationCode) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Input Required',
+                text: 'Please enter the verification code from your authenticator app'
+            });
+            return;
+        }
 
-    const cancelRegenerate = () => {
-        setShowModal(false); // Hide confirmation modal
+        try {
+            setLoading(true);
+            const response = await axios.post(`${ip.address}/api/verify-2fa`, {
+                userId: user?._id,
+                role: user?.role,
+                code: verificationCode
+            });
+
+            if (response.data.verified) {
+                setSetupStep('complete');
+                
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success',
+                    text: 'Two-factor authentication has been enabled for your account',
+                }).then(() => {
+                    handleClose();
+                    window.location.reload(); // Refresh the page
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Verification Failed',
+                    text: 'The code you entered is invalid. Please try again.'
+                });
+            }
+        } catch (error) {
+            console.error('Error verifying 2FA code:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Verification Error',
+                text: 'Failed to verify the code. Please try again.'
+            });
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
-        <div className="container mt-5">
-            <h2 className="text-center mb-4" style={{ lineHeight: '0.02' }}>Register to Two Factor Authentication</h2>
-            <p style={{ textAlign: 'center', fontSize: '13px', fontStyle: 'italic' }}>Use any authenticator app (Google Authenticator or Microsoft Authenticator) to add a protection layer to your account</p>
-            {qrCode && (
-                <div className="tfa-container">
-                    <div className="tfa-card">
-                        <div className="tfa-cardqr">
-                            <div className="tfa-cardqr1">
-                                <img src={qrCode} alt="QR Code" />
-                                <div className="tfa-cardqr2">
-                                    <p>Secret Key:</p>
-                                    {secretKey && (
-                                        <p className="tfa-text">{secretKey}</p>
-                                    )}
+        <Modal size="lg" show={show} onHide={handleClose} centered>
+            <Modal.Header closeButton>
+                <Modal.Title>Register for Two Factor Authentication</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+                <p style={{ fontSize: '13px', fontStyle: 'italic', textAlign: 'center' }}>
+                    Use any authenticator app (Google Authenticator or Microsoft Authenticator) to add a protection layer to your account
+                </p>
+                
+                {/* QR Code Display */}
+                {qrCode && (
+                    <div className="tfa-container">
+                        <div className="tfa-card">
+                            <div className="tfa-cardqr">
+                                <div className="tfa-cardqr1 text-center">
+                                    <img src={qrCode} alt="QR Code" />
+                                   
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            )}
-            <div className="text-center mb-4">
-                <button className="btn btn-primary" onClick={handleRegenerate}>Generate New Secret Key</button>
-            </div>
-
-            {/* Confirmation Modal */}
-            <Modal show={showModal} onHide={cancelRegenerate}>
-                <Modal.Header closeButton>
-                    <Modal.Title>Confirm Change</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    Are you sure you want to change your secret key?
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button variant="secondary" onClick={cancelRegenerate}>
-                        No
+                )}
+                
+                {/* Verification Code Input */}
+                {setupStep === 'verify' && qrCode && (
+                    <div className="mt-4">
+                        <Alert variant="info">
+                            Scan the QR code with your authenticator app, then enter the verification code below.
+                        </Alert>
+                        <Form.Group className="mb-3">
+                            <Form.Label>Enter verification code from your authenticator app</Form.Label>
+                            <Form.Control 
+                                type="text" 
+                                placeholder="e.g. 123456" 
+                                value={verificationCode}
+                                onChange={(e) => setVerificationCode(e.target.value)}
+                                maxLength={6}
+                            />
+                        </Form.Group>
+                    </div>
+                )}
+            </Modal.Body>
+            <Modal.Footer>
+                <Button variant="secondary" onClick={handleClose}>
+                    Cancel
+                </Button>
+                
+                {setupStep === 'generate' && (
+                    <Button 
+                        variant="primary" 
+                        onClick={() => setupTwoFactor(false)}
+                        disabled={!sessionActive || loading}
+                    >
+                        {loading ? 'Generating...' : 'Generate QR Code'}
                     </Button>
-                    <Button variant="danger" onClick={confirmRegenerate}>
-                        Yes
-                    </Button>
-                </Modal.Footer>
-            </Modal>
-        </div>
+                )}
+                
+                {setupStep === 'verify' && (
+                    <>
+                        <Button 
+                            variant="outline-primary" 
+                            onClick={handleRegenerate}
+                            disabled={loading}
+                        >
+                            Regenerate Code
+                        </Button>
+                        <Button 
+                            variant="success" 
+                            onClick={handleVerifyCode}
+                            disabled={loading || !verificationCode}
+                        >
+                            {loading ? 'Verifying...' : 'Verify & Enable 2FA'}
+                        </Button>
+                    </>
+                )}
+            </Modal.Footer>
+        </Modal>
     );
 }
 

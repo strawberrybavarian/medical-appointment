@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from "react-router-dom";
 import { Navbar, Nav, Container, Button, Dropdown } from "react-bootstrap";
-import "./Landing.css";
+
 import { image } from "../../ContentExport";
 
 function ForLoginAndSignupNavbar({ scrollToServices }) {

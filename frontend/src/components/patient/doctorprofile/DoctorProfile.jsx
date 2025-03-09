@@ -231,9 +231,6 @@ function DoctorProfile() {
           </div>
         </Container>
 
-        <Container fluid style={{ marginTop: '10rem' }}>
-          <Footer />
-        </Container>
       </Container>
     </>
   );

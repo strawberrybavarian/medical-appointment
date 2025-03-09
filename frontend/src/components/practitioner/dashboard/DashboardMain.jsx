@@ -69,7 +69,7 @@ function DashboardMain() {
         >
                   <DoctorNavbar doctor_image={doctorData.image} did={did} />
 
-          <div className="w-100 d-flex justify-content-center mt-5 position-relative">
+          <div className="w-100 d-flex justify-content-center position-relative">
             <div className="position-relative">
               <img
                 className="img-fluid dm-photo shadow-lg"
@@ -109,9 +109,7 @@ function DashboardMain() {
               </Row>
             </div>
 
-            <Container fluid className="footer-container cont-fluid-no-gutter w-100">
-              <Footer />
-            </Container>
+
           </div>
         </Container>
       </div>

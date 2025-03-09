@@ -1,0 +1,247 @@
+.doc-carousel-section {
+    padding: 2rem 0;
+  }
+  
+  .doc-carousel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding: 0 0.5rem;
+  }
+  
+  .doc-carousel-title {
+    margin: 0;
+    font-weight: 600;
+    color: #2c3e50;
+    position: relative;
+  }
+  
+  .doc-carousel-title:after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 0;
+    width: 60px;
+    height: 3px;
+    background: linear-gradient(90deg, #4a90e2, #6fade7);
+    border-radius: 3px;
+  }
+  
+  .doc-carousel-nav {
+    display: flex;
+    gap: 0.5rem;
+  }
+  
+  .doc-nav-button {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background-color: #f8f9fa;
+    border: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    font-size: 18px;
+    color: #4a90e2;
+    transition: all 0.3s ease;
+    padding: 0;
+  }
+  
+  .doc-nav-button:hover {
+    background-color: #4a90e2;
+    color: white;
+    transform: translateY(-2px);
+  }
+  
+  .doc-carousel-wrapper {
+    position: relative;
+    overflow: hidden;
+    padding: 1rem 0.5rem;
+  }
+  
+  .doc-carousel {
+    display: flex;
+    gap: 1rem;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+    padding: 1rem 0.5rem;
+    padding-bottom: 1.5rem;
+  }
+  
+  /* Hide scrollbar for Chrome, Safari and Opera */
+  .doc-carousel::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .doc-card {
+    flex: 0 0 auto;
+    width: 220px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    transition: all 0.3s ease;
+    background-color: #fff;
+    cursor: pointer;
+    position: relative;
+  }
+  
+  .doc-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+  }
+  
+  .doc-card:hover .doc-card-image img {
+    transform: scale(1.05);
+  }
+  
+  .doc-card-image-wrapper {
+    position: relative;
+    padding-top: 100%; /* 1:1 Aspect Ratio */
+    overflow: hidden;
+    background-color: #f0f4f8;
+  }
+  
+  .doc-card-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .doc-card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s ease;
+  }
+  
+  .doc-status-indicator {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  }
+  
+  .doc-status-indicator.doctor-status-online {
+    background-color: #2ecc71;
+  }
+  
+  .doc-status-indicator.doctor-status-session {
+    background-color: #f39c12;
+  }
+  
+  .doc-status-indicator.doctor-status-offline {
+    background-color: #95a5a6;
+  }
+  
+  .doc-card-content {
+    padding: 1rem;
+  }
+  
+  .doc-card-name {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.4rem;
+    color: #2c3e50;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .doc-card-specialty {
+    font-size: 0.85rem;
+    color: #7f8c8d;
+    font-style: italic;
+    margin-bottom: 0.75rem;
+    line-height: 1.4;
+    height: 2.4rem;
+    overflow: hidden;
+  }
+  
+  .doc-card-status {
+    display: flex;
+    align-items: center;
+    font-size: 0.75rem;
+  }
+  
+  .doc-status-text {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 20px;
+    font-weight: 500;
+  }
+  
+  .doc-status-text.doctor-status-online {
+    background-color: rgba(46, 204, 113, 0.15);
+    color: #27ae60;
+  }
+  
+  .doc-status-text.doctor-status-session {
+    background-color: rgba(243, 156, 18, 0.15);
+    color: #d35400;
+  }
+  
+  .doc-status-text.doctor-status-offline {
+    background-color: rgba(149, 165, 166, 0.15);
+    color: #7f8c8d;
+  }
+  
+  /* Responsive Styles */
+  @media (max-width: 992px) {
+    .doc-card {
+      width: 200px;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .doc-carousel-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    
+    .doc-carousel-nav {
+      margin-top: 1rem;
+    }
+    
+    .doc-card {
+      width: 180px;
+    }
+  }
+  
+  @media (max-width: 576px) {
+    .doc-carousel {
+      gap: 0.75rem;
+    }
+    
+    .doc-card {
+      width: 160px;
+    }
+    
+    .doc-card-name {
+      font-size: 0.9rem;
+    }
+    
+    .doc-card-specialty {
+      font-size: 0.8rem;
+      height: 2.2rem;
+    }
+  }
+  
+  /* For very small screens */
+  @media (max-width: 400px) {
+    .doc-card {
+      width: 140px;
+    }
+  }

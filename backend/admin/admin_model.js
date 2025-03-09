@@ -59,6 +59,15 @@ const AdminSchema = new mongoose.Schema({
         type: Schema.Types.ObjectId,
         ref: 'Audit'
     }],
+    twoFactorSecret: { type: String },
+    twoFactorEnabled: { type: Boolean, default: false },
+    otp: {
+        type: String
+    },
+    otpExpires: {
+        type: Date
+    },
+    
 }, { timestamps: true });
 
 AdminSchema.virtual('name').get(function () {

@@ -2,16 +2,21 @@
 
 import React, { useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Container, Row, Col } from 'react-bootstrap';
+import { Container, Row, Button } from 'react-bootstrap';
 import MedSecNavbar from '../../navbar/MedSecNavbar';
 import MedicalSecretaryInfoForm from './MedicalSecretaryInfoForm'; // Import the form component
+import AuditMedSec from './AuditMedSec';
+import TwoFactorAuth from '../../../../patient/patientinformation/TwoFactorAuth/TwoFactorAuth';
+import ChatComponent from '../../../../chat/ChatComponent';
+import { ChatDotsFill } from 'react-bootstrap-icons';
+
 
 const MedSecAccInfo = () => {
   const location = useLocation(); 
   const { userId, userName, role } = location.state || {};
 
   const [activeTab, setActiveTab] = useState('info');
-
+  const [showChat, setShowChat] = useState(false);
   return (
     <div>
       <MedSecNavbar msid={userId} />
@@ -27,12 +32,45 @@ const MedSecAccInfo = () => {
                   >
                     My details
                   </a>
+
+
+                  <a
+                    onClick={() => setActiveTab("audit")}
+                    className={activeTab === "audit" ? "active" : ""}
+                  >
+                    Activity Log
+                  </a>
                 </div>    
               </Row>
             </Container>
 
+            <div className="chat-btn-container">
+                  <Button
+                    className="chat-toggle-btn"
+                    onClick={() => setShowChat(!showChat)}
+                  >
+                    <ChatDotsFill size={30} />
+                  </Button>
+                </div>
+
+                {showChat && (
+                  <div className="chat-overlay">
+                    {showChat && (
+                      <div className="chat-overlay">
+                        <ChatComponent
+                          userId={userId}
+                          userRole={role}
+                          closeChat={() => setShowChat(false)}
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
+
             <Container className='border-top'>
               {activeTab === 'info' && <MedicalSecretaryInfoForm msid={userId} />} {/* Render the form */}
+              {activeTab === 'audit' && <AuditMedSec msid={userId} />} {/* Render the audit */}
+              {activeTab === 'authentication' && <TwoFactorAuth />} 
             </Container>
           </div>
         </div>

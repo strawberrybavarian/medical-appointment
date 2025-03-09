@@ -1,6 +1,6 @@
 // DoubleSliderLogin.jsx
 import React, { useRef, useEffect } from 'react';
-import './DoubleSliderLogin.css'; 
+
 import ForLoginAndSignupNavbar from '../landpage/ForLoginAndSignupNavbar';
 import Footer from '../Footer';
 import { Container } from 'react-bootstrap';

@@ -1,18 +1,41 @@
 import React, { useState, useEffect, useRef } from 'react';
 import io from 'socket.io-client';
-
 import { ip } from '../../ContentExport';
 import axios from 'axios';
-import { BsArrowRight } from 'react-icons/bs';
-
+import { BsArrowRight, BsX } from 'react-icons/bs';
+import { Container, Button } from 'react-bootstrap';
 function ChatComponent({ userId, userRole, closeChat }) {
+
+  const closeButtonStyle = {
+    marginLeft: '8px',
+    padding: '2px 6px',
+    backgroundColor: 'transparent',
+    border: 'none',
+    color: '#666',
+    cursor: 'pointer',
+    borderRadius: '50%',
+    display: 'none', 
+  };
+  
+  
+  const listItemStyle = {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: '8px 12px',
+    ':hover .close-btn': {
+      display: 'block',
+    },
+  };
+
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState([]);
   const [patientList, setPatientList] = useState([]);
   const [selectedPatient, setSelectedPatient] = useState(null);
   const [socket, setSocket] = useState(null);
+  const [unreadMessages, setUnreadMessages] = useState({}); 
 
-  const messagesEndRef = useRef(null); // Reference to the end of the chat
+  const messagesEndRef = useRef(null); 
   const isPatient = userRole === 'Patient';
   const isMedSec = userRole === 'Medical Secretary';
   const isAdmin = userRole === 'Admin';
@@ -20,7 +43,7 @@ function ChatComponent({ userId, userRole, closeChat }) {
 
   const selectedPatientRef = useRef(selectedPatient);
   const formatTimestamp = (isoDate) => {
-    const date = new Date(isoDate); // Convert ISO string to Date object
+    const date = new Date(isoDate); 
     const options = {
       year: 'numeric',
       month: '2-digit',
@@ -28,7 +51,7 @@ function ChatComponent({ userId, userRole, closeChat }) {
       hour: '2-digit',
       minute: '2-digit',
       second: '2-digit',
-      hour12: false, // Optional: Use 24-hour format
+      hour12: false, 
     };
     return date.toLocaleString('en-GB', options).replace(',', '');
   };
@@ -49,7 +72,7 @@ function ChatComponent({ userId, userRole, closeChat }) {
 
     if (isMedSecOrAdmin) {
       newSocket.on('patient list', (patients) => {
-        console.log('Received patient list:', patients);
+        
         setPatientList(patients);
       });
     }
@@ -61,32 +84,42 @@ function ChatComponent({ userId, userRole, closeChat }) {
     };
   }, [userId, userRole]);
 
-  const handleChatMessage = (data) => {
-    console.log('Received chat message:', data);
+  const [lastMessageForPatient, setLastMessageForPatient] = useState({}); 
 
+  const handleChatMessage = (data) => {
     if (isMedSecOrAdmin) {
       if (
         selectedPatientRef.current &&
         (data.sender === selectedPatientRef.current._id ||
           data.receiver.includes(selectedPatientRef.current._id))
       ) {
+        
         setMessages((prevMessages) => {
           if (!prevMessages.find((msg) => msg._id === data._id)) {
             return [...prevMessages, data];
           }
           return prevMessages;
         });
+  
+        
+        setUnreadMessages((prevUnreadMessages) => ({
+          ...prevUnreadMessages,
+          [data.sender]: false, 
+        }));
+      } else if (data.senderModel === 'Patient') {
+        
+        setLastMessageForPatient((prevMessages) => ({
+          ...prevMessages,
+          [data.sender]: data,
+        }));
+  
+        
+        setUnreadMessages((prevUnreadMessages) => ({
+          ...prevUnreadMessages,
+          [data.sender]: true, 
+        }));
       }
-
-      if (
-        data.senderModel === 'Patient' &&
-        !patientList.find((p) => p._id === data.sender)
-      ) {
-        setPatientList((prevList) => [
-          ...prevList,
-          { _id: data.sender, name: data.senderName || 'Unknown Patient' },
-        ]);
-      }
+      
     } else if (isPatient) {
       if (data.sender === userId || data.receiver.includes(userId)) {
         setMessages((prevMessages) => {
@@ -98,7 +131,7 @@ function ChatComponent({ userId, userRole, closeChat }) {
       }
     }
   };
-
+  
   useEffect(() => {
     if (isPatient) {
       fetchMessages();
@@ -112,7 +145,7 @@ function ChatComponent({ userId, userRole, closeChat }) {
   const fetchMessages = async (otherUserId) => {
     try {
       let response;
-
+  
       if (isPatient) {
         response = await axios.get(`${ip.address}/api/chat/messages`, {
           params: {
@@ -129,7 +162,7 @@ function ChatComponent({ userId, userRole, closeChat }) {
       } else {
         return;
       }
-
+  
       if (response.data.success) {
         const messagesData = response.data.data.map((msg) => ({
           ...msg,
@@ -137,6 +170,15 @@ function ChatComponent({ userId, userRole, closeChat }) {
           receiver: msg.receiver.map((id) => id.toString()),
         }));
         setMessages(messagesData);
+  
+        
+        if (isMedSecOrAdmin && selectedPatient) {
+          setUnreadMessages((prevUnreadMessages) => ({
+            ...prevUnreadMessages,
+            [selectedPatient._id]: false, 
+          }));
+        }
+  
         console.log('Fetched messages:', messagesData);
       } else {
         console.error('Failed to fetch messages:', response.data.message);
@@ -145,7 +187,7 @@ function ChatComponent({ userId, userRole, closeChat }) {
       console.error('Error fetching messages:', error);
     }
   };
-
+  
   const sendMessage = () => {
     if (message.trim() !== '') {
       let messageData = {
@@ -171,9 +213,18 @@ function ChatComponent({ userId, userRole, closeChat }) {
 
   const handlePatientSelect = (patient) => {
     setSelectedPatient(patient);
+
+    
+    setUnreadMessages((prevUnreadMessages) => ({
+      ...prevUnreadMessages,
+      [patient._id]: false, 
+    }));
   };
 
-  // Automatically scrolls to the bottom whenever the messages array changes
+  
+  
+
+  
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
@@ -186,56 +237,94 @@ function ChatComponent({ userId, userRole, closeChat }) {
     <div className="chat-container">
       {isMedSecOrAdmin && (
         <div className="patient-list">
-          <h3>Patients</h3>
+          <div>
+            <Container className='ml-3 mt-3 d-flex align-items-center'>
+                <Button
+                  className="close-btn"
+                  onClick={(e) => {
+                    e.stopPropagation(); 
+                    if (closeChat) {
+                      closeChat(true); 
+                    }
+                  }}
+                >
+                  <BsX size={20} />
+              </Button>
+              <h3>Patients</h3>
+            </Container>
+          </div>
+
+
           <ul>
-            {patientList.map((patient) => (
-              <li
-                key={patient._id}
-                onClick={() => handlePatientSelect(patient)}
-                className={selectedPatient?._id === patient._id ? 'active' : ''}
-              >
-                {patient.name}
-              </li>
-            ))}
-          </ul>
+  {patientList.map((patient) => {
+    const lastMessage = lastMessageForPatient[patient._id];
+    const isUnread = unreadMessages[patient._id];
+    const isLatestUnread = lastMessage && isUnread;
+
+    return (
+      <li
+        key={patient._id}
+        style={listItemStyle}
+        className={`${selectedPatient?._id === patient._id ? 'active' : ''} ${
+          isLatestUnread ? 'unread' : ''
+        }`}
+      >
+        <div 
+          style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}
+          onClick={() => handlePatientSelect(patient)}
+        >
+          {patient.name}
+          {isLatestUnread && (
+            <span className="new-message-indicator">•</span>
+          )}
         </div>
+       
+
+      </li>
+    );
+  })}
+</ul>
+</div>
+
+
+    
       )}
 
       <div className="chat-box">
         <div className="messages">
-        {messages.map((msg) => {
-  const isSentByCurrentUser = msg.sender === userId.toString();
-  const displayName = isSentByCurrentUser ? 'You' : `${msg.senderModel}`;
+          {messages.map((msg) => {
+            const isSentByCurrentUser = msg.sender === userId.toString();
+            const displayName = isSentByCurrentUser ? 'You' : `${msg.senderModel}`;
 
-  return (
-    <>
-      <div>
-        {!isSentByCurrentUser && (
-          <p style={{ fontSize: '12px', paddingLeft: '4px' }} className="sender-name">
-            {displayName}
-          </p>
-        )}
-      </div>
+            return (
+              <>
+                <div>
+                  {!isSentByCurrentUser && (
+                    <p style={{ fontSize: '12px', paddingLeft: '4px' }} className="sender-name">
+                      {displayName}
+                    </p>
+                  )}
+                </div>
 
-      <div
-        key={msg._id}
-        className={`message ${isSentByCurrentUser ? 'sent' : 'received'}`}
-      >
-        <p>{msg.message} <br /></p>
-        <div>
-          <p
-            style={{
-              fontSize: '10px',
-              color: isSentByCurrentUser ? 'white' : 'gray',
-            }}
-          >
-            Sent | {formatTimestamp(msg.createdAt)}
-          </p>
-        </div>
-      </div>
-    </>
-  );
-})}
+                <div
+                  key={msg._id}
+                  className={`message ${isSentByCurrentUser ? 'sent' : 'received'}`}
+                >
+                  <p>{msg.message} <br /></p>
+                  <div>
+                    <p
+                      style={{
+                        fontSize: '10px',
+                        color: isSentByCurrentUser ? 'white' : 'gray',
+                      }}
+                    >
+                      Sent | {formatTimestamp(msg.createdAt)}
+                    </p>
+                  </div>
+                </div>
+              </>
+            );
+          })}
           <div ref={messagesEndRef} /> {/* Scroll to this element */}
         </div>
 

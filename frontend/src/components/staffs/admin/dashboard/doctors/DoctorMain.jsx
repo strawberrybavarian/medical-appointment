@@ -2,20 +2,26 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 
-import { Container, Row, Col } from 'react-bootstrap';
+import { Container, Row, Col, Button } from 'react-bootstrap';
 import { useLocation, useParams } from 'react-router-dom';
 import SidebarAdmin from '../../sidebar/SidebarAdmin';
 import PieSpecialization from '../Charts/PieSpecialization';
 import DoctorStatsCards from '../cards/DoctorStatsCards';
 import { ip } from '../../../../../ContentExport';
 import AdminNavbar from '../../navbar/AdminNavbar';
+
 import DeactivationRequests from '../../appointment/doctors/DeactivationRequests';
+import DoctorAgeGroupChart from '../Charts/DoctorAgeGroupChart';
+import ChatComponent from '../../../../chat/ChatComponent';
+import { ChatDotsFill } from 'react-bootstrap-icons';
+
 function DoctorMain() {
     const [totalDoctors, setTotalDoctors] = useState(0);
     const [registeredDoctors, setRegisteredDoctors] = useState(0);
     const [reviewedDoctors, setReviewedDoctors] = useState(0);
     const [onlineDoctors, setOnlineDoctors] = useState(0);
     const [inSessionDoctors, setInSessionDoctors] = useState(0);
+    const [showChat, setShowChat] = useState(false);
     const location = useLocation();
     const { userId, userName, role } = location.state || {};
 
@@ -85,16 +91,20 @@ function DoctorMain() {
                             totalDoctors={totalDoctors}
                         /> */}
                         <Row>
-                            <Col md={6}>
+                            <Col md={4}>
                                 <div className="d-flex justify-content-between" style={{ paddingTop: '1.5rem' }}> 
                                     <PieSpecialization/>
 
                                 </div>
                             </Col>
 
-                   
+                            <Col md={4}>
+                                <div className="d-flex justify-content-between" style={{ paddingTop: '1.5rem' }}> 
+                                    <DoctorAgeGroupChart/>
+                                </div>
+                            </Col>
 
-                            <Col>
+                            <Col md={4}>
 
                                 <div className="d-flex justify-content-between" style={{ paddingTop: '1.5rem', width: '100%' }}> 
                                     
@@ -104,6 +114,29 @@ function DoctorMain() {
                         </Row>
 
                     </Container>
+
+                    <div className="chat-btn-container">
+                  <Button
+                    className="chat-toggle-btn"
+                    onClick={() => setShowChat(!showChat)}
+                  >
+                    <ChatDotsFill size={30} />
+                  </Button>
+                </div>
+
+                {showChat && (
+                  <div className="chat-overlay">
+                    {showChat && (
+                      <div className="chat-overlay">
+                        <ChatComponent
+                          userId={userId}
+                          userRole={role}
+                          closeChat={() => setShowChat(false)}
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
                 </Container>
         </div>
    

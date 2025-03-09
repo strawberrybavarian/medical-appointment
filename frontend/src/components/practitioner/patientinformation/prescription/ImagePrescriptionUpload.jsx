@@ -1,7 +1,7 @@
 // ImagePrescriptionUpload.js
 
 import React, { useState } from "react";
-import { Form } from "react-bootstrap";
+import { Form, Button } from "react-bootstrap";
 import { ip } from "../../../../ContentExport";
 function ImagePrescriptionUpload({ prescriptionImages = [], setPrescriptionImages }) {
   const [dragActive, setDragActive] = useState(false);
@@ -65,12 +65,13 @@ function ImagePrescriptionUpload({ prescriptionImages = [], setPrescriptionImage
                     alt="preview"
                     style={{ cursor: "pointer" }}
                   />
-                  <button
+                  <Button
+                   variant="danger"
                     className="button-delete-image"
                     onClick={() => removeImage(index)}
                   >
                     X
-                  </button>
+                  </Button>
                 </div>
               ))}
             </div>

@@ -97,7 +97,7 @@ function AppointmentModal({ show, handleClose, pid, did, doctorName }) {
         });
       }
 
-      
+
     }
 
     return times;
@@ -148,7 +148,7 @@ function AppointmentModal({ show, handleClose, pid, did, doctorName }) {
   };
 
   return (
-    <Modal show={show} onHide={handleClose} className="">
+    <Modal size="lg" show={show} onHide={handleClose} className="">
       <div className="">
         <Modal.Header closeButton>
           <Modal.Title>Book Appointment</Modal.Title>
@@ -173,28 +173,36 @@ function AppointmentModal({ show, handleClose, pid, did, doctorName }) {
                 </Form.Group>
                 <div>
 
-                <Form.Label>Time</Form.Label>
-                {loading ? (
-                  <Spinner animation="border" />
-                ) : availableTimes.length > 0 ? (
-                  <Form.Group className="mb-3">
-                  
-                    {availableTimes.map((slot, index) => (
-                      <Button
-                        key={index}
-                        variant={time === slot.timeRange ? "secondary" : "outline-primary"}
-                        onClick={() => setTime(slot.timeRange)}
-                        className="m-1"
-                      >
-                        {slot.label}: {slot.timeRange} <br /> Slots left: {slot.availableSlots}
-                      </Button>
-                    ))}
-                  </Form.Group>
-                ) : (
-                  <Alert variant="warning">No available slots for this day.</Alert>
-                )}
+                  <Form.Label>Time</Form.Label>
+                  {loading ? (
+                    <Container className="d-flex justify-content-center">
+                      <p>No Available Times</p>
 
-</div>
+                    </Container>
+                  ) : availableTimes.length > 0 ? (
+
+                    <Container fluid className="d-flex justify-content-center w-100">
+                      <Form.Group className="mb-3">
+
+                        {availableTimes.map((slot, index) => (
+                          <Button
+                            key={index}
+                            variant={time === slot.timeRange ? "secondary" : "outline-primary"}
+                            onClick={() => setTime(slot.timeRange)}
+                            className="m-1"
+                          >
+                            {slot.label}: {slot.timeRange} <br /> Slots left: {slot.availableSlots}
+                          </Button>
+                        ))}
+                      </Form.Group>
+
+                    </Container>
+
+                  ) : (
+                    <Alert variant="warning">No available slots for this day.</Alert>
+                  )}
+
+                </div>
 
                 <Form.Group className="mb-3">
                   <Form.Label>Primary Concern</Form.Label>

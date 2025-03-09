@@ -7,23 +7,27 @@ import { ip } from "../../../ContentExport";
 
 function DoctorSpecialty({ pid, did }) {
     const [specialties, setSpecialties] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
     const navigate = useNavigate();
 
     useEffect(() => {
+        setIsLoading(true);
         axios.get(`${ip.address}/api/doctor/api/specialties`)
             .then((res) => {
-                console.log("API Response:", res.data);
-                const data = res.data.specialties;  // Extract the array from the response object
+                const data = res.data.specialties;
                 if (Array.isArray(data)) {
-                    setSpecialties(data);  // Set the state with the extracted array
+                    setSpecialties(data);
                 } else {
                     console.error("Expected an array but received:", data);
-                    setSpecialties([]);  // Handle unexpected response structure
+                    setSpecialties([]);
                 }
             })
             .catch((err) => {
                 console.log("API call failed:", err);
-                setSpecialties([]);  // Handle errors gracefully
+                setSpecialties([]);
+            })
+            .finally(() => {
+                setIsLoading(false);
             });
     }, []);
 
@@ -32,35 +36,52 @@ function DoctorSpecialty({ pid, did }) {
     };
 
     return (
-        <>
+        <div className="specialty-section">
             <Container>
-                <h4 style={{ marginLeft: '15px', marginTop: '2rem' }}>List of Specialties</h4>
-            </Container>
-            <Container className="ds-container">
-                {specialties.length > 0 ? (
-                    specialties.map((specialty, index) => (
-                        <div
-                            key={index}
-                            className="specialtyButtonStyle"
-                            onClick={() => handleSpecialtyClick(specialty.name)}
-                        >
-                            <div className="ds-imgcontainer">
-                                <img
-                                    src={`${ip.address}/${specialty.imageUrl}`}
-                                    alt={specialty.name}
-                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                />
+                <div className="specialty-header">
+                    <h2 className="specialty-title">Medical Specialties</h2>
+                    <p className="specialty-subtitle">Choose from our wide range of medical specializations</p>
+                </div>
+                
+                {isLoading ? (
+                    <div className="specialty-loading">
+                        <div className="specialty-loading-pulse"></div>
+                        <p>Loading specialties...</p>
+                    </div>
+                ) : specialties.length > 0 ? (
+                    <div className="specialty-grid">
+                        {specialties.map((specialty, index) => (
+                            <div
+                                key={index}
+                                className="specialty-card"
+                                onClick={() => handleSpecialtyClick(specialty.name)}
+                            >
+                                <div className="specialty-card-inner">
+                                    <div className="specialty-image-container">
+                                        <img
+                                            src={`${ip.address}/${specialty.imageUrl}`}
+                                            alt={specialty.name}
+                                            className="specialty-image"
+                                        />
+                                        <div className="specialty-overlay">
+                                            <span className="specialty-view-btn">View Doctors</span>
+                                        </div>
+                                    </div>
+                                    <div className="specialty-info">
+                                        <h3 className="specialty-name">{specialty.name}</h3>
+                                    </div>
+                                </div>
                             </div>
-                            <div>
-                                <p style={{ fontWeight: '600', textAlign: 'center' }}>{specialty.name}</p>
-                            </div>
-                        </div>
-                    ))
+                        ))}
+                    </div>
                 ) : (
-                    <p>No specialties available</p>
+                    <div className="specialty-empty">
+                        <p>No specialties available at the moment</p>
+                        <small>Please check back later</small>
+                    </div>
                 )}
             </Container>
-        </>
+        </div>
     );
 }
 

@@ -6,6 +6,9 @@ import io from "socket.io-client";
 import { ThreeDots } from 'react-bootstrap-icons';
 import { ip } from '../../../../../ContentExport';
 import PatientFindingsModal from './modal/PatientFindingsModal';
+import Swal from 'sweetalert2';
+
+import { toast, ToastContainer } from 'react-toastify';
 
 function MedSecTodaysApp({ allAppointments, setAllAppointments }) {
   const [currentPage, setCurrentPage] = useState(1);
@@ -59,12 +62,14 @@ function MedSecTodaysApp({ allAppointments, setAllAppointments }) {
       socket.on('doctorStatusUpdate', (updatedDoctor) => {
         setAllAppointments(prevAppointments => 
           prevAppointments.map(appointment =>
-            appointment.doctor._id === updatedDoctor.doctorId
+            // Check if appointment.doctor exists before accessing its properties
+            appointment.doctor?._id === updatedDoctor.doctorId
               ? { ...appointment, doctor: { ...appointment.doctor, activityStatus: updatedDoctor.activityStatus } }
               : appointment
           )
         );
       });
+      
   
       return () => {
         socket.off('doctorStatusUpdate');
@@ -106,55 +111,87 @@ function MedSecTodaysApp({ allAppointments, setAllAppointments }) {
   const handleUpdateStatus = async (appointmentId, newStatus) => {
     const appointment = allAppointments.find(app => app._id === appointmentId);
   
-    if (!appointment) {
-      return console.log('Appointment not found');
+    // Check if the appointment has time and services assigned
+    const isValidAppointment =
+      appointment.time &&
+      appointment.time !== "Not Assigned" &&
+      appointment.appointment_type &&
+      appointment.appointment_type.length > 0 &&
+      appointment.appointment_type.some(type => type.appointment_type);
+  
+    if (!isValidAppointment) {
+      // Show a toast if required details are missing
+      toast.warning('To schedule an appointment, please assign a time and select the services.', {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
+      return;
     }
   
-    const doctorId = appointment.doctor?._id;
-    // If no doctorId is found, skip the socket emission part but still update the status
-    if (!doctorId) {
-      console.log('No doctor ID found, skipping status update for doctor.');
-    }
+    // First show a confirmation dialog using SweetAlert
+    const result = await Swal.fire({
+      title: "Update Appointment Status",
+      text: `Are you sure you want to change this appointment status to ${newStatus}?`,
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonText: "Yes, update status",
+      cancelButtonText: "Cancel",
+      reverseButtons: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+    });
   
-    try {
-      const response = await axios.put(
-        `${ip.address}/api/appointments/${appointmentId}/status`,
-        { status: newStatus }
-      );
-  
-      if (response.status === 200 && response.data) {
-        const updatedAppointment = response.data;
-  
-        // Update the state with the new status
-        setAllAppointments((prevAppointments) =>
-          prevAppointments.map((appointment) =>
-            appointment._id === appointmentId
-              ? { ...appointment, status: updatedAppointment.status }
-              : appointment
-          )
+    // Only proceed if the user confirmed
+    if (result.isConfirmed) {
+      try {
+        const response = await axios.put(
+          `${ip.address}/api/appointments/${appointmentId}/status`,
+          { status: newStatus }
         );
   
-        // Emit real-time update to change doctor's status only if doctorId exists
-        if (doctorId) {
-          if (newStatus === 'Ongoing') {
-            socket.emit('doctorStatusUpdate', {
-              doctorId,
-              activityStatus: 'In Session',
-            });
-          } else if (newStatus === 'Scheduled') {
-            socket.emit('doctorStatusUpdate', {
-              doctorId,
-              activityStatus: 'Online',
-            });
-          }
-        }
+        if (response.status === 200 && response.data) {
+          const updatedAppointment = response.data;
   
-      } else {
-        throw new Error('Unexpected server response');
+          // Update the state with the new status
+          setAllAppointments((prevAppointments) =>
+            prevAppointments.map((appointment) =>
+              appointment._id === appointmentId
+                ? { ...appointment, status: updatedAppointment.status }
+                : appointment
+            )
+          );
+  
+          // Show success message with SweetAlert
+          Swal.fire({
+            title: "Success!",
+            text: `Appointment status updated to ${newStatus}`,
+            icon: "success",
+            timer: 2000,
+            showConfirmButton: false
+          });
+        } else {
+          throw new Error('Unexpected server response');
+        }
+      } catch (err) {
+        console.error('Error updating status:', err);
+  
+        const errorMessage =
+          err.response?.data?.message || 'Failed to update the appointment status.';
+        setError(errorMessage);
+        
+        // Replace alert with SweetAlert for error message
+        Swal.fire({
+          title: "Error",
+          text: errorMessage,
+          icon: "error",
+          confirmButtonColor: "#3085d6"
+        });
       }
-    } catch (err) {
-      console.error("Error updating status:", err);
-      setError("Failed to update the appointment status.");
     }
   };
   
@@ -170,19 +207,19 @@ function MedSecTodaysApp({ allAppointments, setAllAppointments }) {
   const uniqueCategories = getUniqueCategories();
 
   const filteredAppointments = allAppointments
-    .filter(appointment => appointment.status === 'Scheduled')
-    .filter(appointment => {
-      const appointmentDate = new Date(appointment.date).toISOString().split('T')[0];
-      return appointmentDate === todayDate;
-    })
-    .filter(appointment => 
-      `${appointment.patient.patient_firstName} ${appointment.patient.patient_middleInitial}. ${appointment.patient.patient_lastName}`
+  .filter(appointment => appointment.status === 'Scheduled')
+  .filter(appointment => {
+    const appointmentDate = new Date(appointment.date).toISOString().split('T')[0];
+    return appointmentDate === todayDate;
+  })
+  .filter(appointment =>
+    `${appointment.patient.patient_firstName} ${appointment.patient.patient_middleInitial}. ${appointment.patient.patient_lastName}`
       .toLowerCase()
       .includes(searchTerm.toLowerCase())
-    )
-    .filter(appointment => selectedDoctor === "" || appointment?.doctor._id === selectedDoctor)
-    .filter(appointment => selectedAccountStatus === "" || appointment.patient.accountStatus === selectedAccountStatus)
-    .filter(appointment => selectedCategory === "" || appointment.appointment_type.some(typeObj => typeObj.category === selectedCategory)); // Category filter
+  )
+  .filter(appointment => selectedDoctor === "" || appointment?.doctor?._id === selectedDoctor) // Optional chaining added
+  .filter(appointment => selectedAccountStatus === "" || appointment.patient.accountStatus === selectedAccountStatus)
+  .filter(appointment => selectedCategory === "" || appointment.appointment_type.some(typeObj => typeObj.category === selectedCategory)); // Category filter
 
   const indexOfLastAppointment = currentPage * entriesPerPage;
   const indexOfFirstAppointment = indexOfLastAppointment - entriesPerPage;
@@ -323,92 +360,89 @@ function MedSecTodaysApp({ allAppointments, setAllAppointments }) {
             </tr>
           </thead>
           <tbody>
-            {currentAppointments.map((appointment) => {
-              const patient = appointment.patient;
-              const patientName = `${patient.patient_firstName} ${patient.patient_middleInitial}. ${patient.patient_lastName}`;
+  {currentAppointments.map((appointment) => {
+    const patient = appointment.patient;
+    const patientName = `${patient.patient_firstName} ${patient.patient_middleInitial}. ${patient.patient_lastName}`;
+    
+    // Safe access to doctor
+    const doctor = appointment?.doctor;
+    const doctorName = doctor
+      ? `${doctor?.dr_firstName} ${doctor?.dr_middleInitial}. ${doctor?.dr_lastName}`
+      : 'Not Assigned'; // Default value if no doctor is assigned
+    
+    // If appointment_type is an array of objects, extract the type names
+    const appointmentTypes = appointment.appointment_type
+      .map(typeObj => typeObj.appointment_type)
+      .join(', ');
 
-              const doctor = appointment.doctor;
-              const doctorName = doctor
-              ? `${doctor?.dr_firstName} ${doctor?.dr_middleInitial}. ${doctor?.dr_lastName}`
-              : "Not Assigned";
-              
-              const appointmentTypes = appointment.appointment_type
-              .map(typeObj => typeObj.appointment_type)
-              .join(', ');
+    const categoryTypes = appointment.appointment_type
+      .map(typeObj => typeObj.category)
+      .join(', ');
 
-              const categoryTypes = appointment.appointment_type
-              .map(typeObj => typeObj.category)
-              .join(', ');
+    return (
+      <tr key={appointment._id}>
+        <td style={{fontSize: '14px'}}>{patientName}</td>
+        <td style={{fontSize: '14px'}}>{doctorName}</td>
+        <td style={{fontSize: '14px'}}>{categoryTypes}</td>
+        <td style={{fontSize: '14px'}}>{appointmentTypes}</td>
+        <td style={{fontSize: '14px'}}>{new Date(appointment.date).toLocaleDateString()}</td>
+        <td style={{fontSize: '14px'}}>{appointment.time ? convertTimeRangeTo12HourFormat(appointment.time) : 'Not Assigned'}</td> {/* Convert time to 12-hour AM/PM format */}
+        <td>
+          <div className="scheduled-appointment" style={{fontSize: '12px'}}>
+            {appointment.status}
+          </div>
+        </td>
+        <td>
+          <Form.Check
+            type="checkbox"
+            disabled={true}
+            checked={appointment.followUp || false}
+            onChange={(e) => handleFollowUpChange(appointment._id, e.target.checked)}
+          />
+        </td>
+        <td>
+          <Dropdown>
+            <Dropdown.Toggle as={Button} variant="light" className="action-button">
+              <ThreeDots size={20} />
+            </Dropdown.Toggle>
 
-              return (
-                <tr key={appointment._id}>
-                  <td style={{fontSize: '14px'}}>{patientName}</td>
-                  <td style={{fontSize: '14px'}}>{doctorName}</td>
-                  <td style={{fontSize: '14px'}}>{categoryTypes}</td>
-                  <td style={{fontSize: '14px'}}>{appointmentTypes}</td>
-                  <td style={{fontSize: '14px'}}>{new Date(appointment.date).toLocaleDateString()}</td>
-                  <td style={{fontSize: '14px'}}>  {appointment.time ? convertTimeRangeTo12HourFormat(appointment.time) : 'Not Assigned'}</td> {/* Convert time to 12-hour AM/PM format */}
-              
-                  <td >
-                    <div className="d-flex justify-content-center">
-                      <div className="scheduled-appointment" style={{fontSize: '12px'}}>
-                        {appointment.status}
-                      </div>
-                    </div>
-                  </td>
-                  <td>
-                    <Form.Check
-                      type="checkbox"
-                      disabled={true}
-                      checked={appointment.followUp || false}
-                      onChange={(e) => {
-                        e.stopPropagation();
-                        handleFollowUpChange(appointment._id, e.target.checked);
-                      }}
-                    />
-                  </td>
-                  <td>
-                    <Dropdown >
-                      <Dropdown.Toggle as={Button} variant="light" className="action-button">
-                        <ThreeDots size={20} />
-                      </Dropdown.Toggle>
+            <Dropdown.Menu>
+              <Dropdown.Item
+                onClick={() => handleUpdateStatus(appointment._id, "Ongoing")}
+                className="action-item"
+              >
+                Ongoing
+              </Dropdown.Item>
 
-                      <Dropdown.Menu>
-                        <Dropdown.Item
-                          onClick={() => handleUpdateStatus(appointment._id, "Ongoing")}
-                          className="action-item"
-                        >
-                          Ongoing
-                        </Dropdown.Item>
+              <Dropdown.Item
+                onClick={() => handleReschedule(appointment)}
+                className="action-item"
+              >
+                Reschedule
+              </Dropdown.Item>
 
-                        <Dropdown.Item
-                          onClick={() => handleReschedule(appointment)}
-                          className="action-item"
-                        >
-                          Reschedule
-                        </Dropdown.Item>
+              <Dropdown.Item
+                onClick={() => handleUpdateStatus(appointment._id, "Cancelled")}
+                className="action-item"
+              >
+                Cancel
+              </Dropdown.Item>
 
-                        <Dropdown.Item
-                          onClick={() => handleUpdateStatus(appointment._id, "Cancelled")}
-                          className="action-item"
-                        >
-                          Cancel
-                        </Dropdown.Item>
+              {/* Add Findings Option */}
+              <Dropdown.Item
+                onClick={() => handleAddFindings(appointment)}
+                className="action-item"
+              >
+                Add Findings
+              </Dropdown.Item>
+            </Dropdown.Menu>
+          </Dropdown>
+        </td>
+      </tr>
+    );
+  })}
+</tbody>
 
-                        {/* Add Findings Option */}
-                        <Dropdown.Item
-                          onClick={() => handleAddFindings(appointment)}
-                          className="action-item"
-                        >
-                          Add Findings
-                        </Dropdown.Item>
-                      </Dropdown.Menu>
-                    </Dropdown>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
         </Table>
 
         <Container className="d-flex justify-content-between p-0">

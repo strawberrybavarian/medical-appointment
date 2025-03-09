@@ -62,9 +62,12 @@ import { PatientProvider } from './components/patient/PatientContext';
 import { DoctorProvider } from './components/practitioner/DoctorContext';
 import AdminNewsManagement from './components/staffs/admin/news/AdminNewsManagement';
 import { UserProvider } from './components/UserContext';
-
 import DoubleSliderLogin from './components/login/DoubleSliderLogin';
-
+import PatientDetailsInformation from './components/staffs/admin/management/account/patientmodal/PatientDetailsInformation';
+import DoctorDetailsInformation from './components/staffs/admin/management/account/patientmodal/DoctorDetailsInformation';
+import TwoFactorVerificationPage from './components/login/TwoFactorVerificationPage';
+import EmailVerificationPage from './components/login/EmailVerificationPage';
+import AdminPersonalInfoMain from './components/staffs/admin/personalinfo/AdminPersonalInfoMain';
 function App() {
 
   return (
@@ -78,6 +81,9 @@ function App() {
             <Route path={'/medapp/signup'} element={<NewSignUp/>}> </Route>
             <Route path={'/medapp/login'} element={<DoubleSliderLogin
               />}> </Route>
+            <Route path='/medapp/login/2fa' element={<TwoFactorVerificationPage />} />
+            <Route path="/medapp/login/email-otp" element={<EmailVerificationPage />} />
+
             <Route path={'/verify-otp'} element={<VerifyOTP/>}> </Route>
             <Route path="/reset-password/:role/:token" element={<ResetPassword />} />
             <Route path={'/news/:id'} element={<NewsDetailPage/>}/>
@@ -97,7 +103,6 @@ function App() {
             <Route path={"/doctorprofile"} element={<DoctorProfile />}/>
             <Route path={"/myappointment"} element={<MyAppointment />}/>
             <Route path={"/accinfo"} element={<MainPatientInformation />}/>
-           
             {/* Staff Login */}
             <Route path={"/staffs"} element={<StaffLogIn />}/>
 
@@ -119,7 +124,10 @@ function App() {
             <Route path={"/admin/appointments/"} element={<AdminAppointmentMain />}/>
             <Route path={"/admin/sas/"} element={<SasMain />}/>
             <Route path={"/admin/news-management"} element={<AdminNewsManagement />}/>
-            <Route path={"/admin/account"} element={<AdminPersonalInfo/>}/>
+            <Route path={"/admin/account"} element={<AdminPersonalInfoMain
+              />}/>
+            <Route path={"/admin/account/patient/personal-details"} element={<PatientDetailsInformation />}/>
+            <Route path={"/admin/account/doctor/personal-details"} element={<DoctorDetailsInformation />}/>
           </Routes>
 
           </UserProvider>

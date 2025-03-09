@@ -3,22 +3,23 @@ import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
-import Tippy from '@tippyjs/react';
-import 'tippy.js/dist/tippy.css'; // Required for styling
 import axios from 'axios';
-import { Container, Card } from 'react-bootstrap';
-import { useNavigate, useLocation } from 'react-router-dom'; // Import useNavigate and useLocation
+import { Container, Card, Modal, Button, Badge, Row, Col, ListGroup } from 'react-bootstrap';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { ip } from '../../../../../ContentExport';
+import { CalendarCheck, Clock, Person, ClipboardCheck, ChevronRight } from 'react-bootstrap-icons';
+
 function AppointmentFullCalendar() {
   const [allAppointments, setAllappointments] = useState([]);
-  const calendarRef = useRef(null); // Reference to FullCalendar
-  const navigate = useNavigate(); // Replace useHistory with useNavigate
-  const location = useLocation(); // Use useLocation to get the passed state
+  const [showModal, setShowModal] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [selectedDateAppointments, setSelectedDateAppointments] = useState([]);
+  const calendarRef = useRef(null);
+  const navigate = useNavigate();
+  const location = useLocation();
 
-  // Extract userId, userName, and role from location state
   const { userId: msid, userName: name, role: roles } = location.state || {};
 
-  // State variable for headerToolbar
   const [headerToolbar, setHeaderToolbar] = useState({
     left: 'prev,next today',
     center: 'title',
@@ -38,14 +39,12 @@ function AppointmentFullCalendar() {
     // Handle window resize
     const handleResize = () => {
       if (window.innerWidth < 768) {
-        // Small screen
         setHeaderToolbar({
           left: 'prev,next',
           center: 'title',
           right: 'today',
         });
       } else {
-        // Large screen
         setHeaderToolbar({
           left: 'prev,next today',
           center: 'title',
@@ -55,53 +54,68 @@ function AppointmentFullCalendar() {
     };
 
     window.addEventListener('resize', handleResize);
-    handleResize(); // Call once to set initial state
+    handleResize();
 
     return () => {
       window.removeEventListener('resize', handleResize);
     };
   }, []);
 
-  const parseTimeString = (timeString) => {
-    if (!timeString) return '00:00:00'; // Default to midnight if time is not provided
 
-    const [time, modifier] = timeString.split(' ');
-    let [hours, minutes] = time.split(':');
+  // Group appointments by date and create aggregated events
+  const events = React.useMemo(() => {
+    const eventsByDate = {};
+    
+    allAppointments.forEach(appointment => {
+      const datePart = appointment.date.split('T')[0];
+      
+      if (!eventsByDate[datePart]) {
+        eventsByDate[datePart] = {
+          date: datePart,
+          appointments: []
+        };
+      }
+      
+      eventsByDate[datePart].appointments.push(appointment);
+    });
+    
+    return Object.values(eventsByDate).map(dateGroup => {
+      // Count by status
+      const statusCounts = dateGroup.appointments.reduce((counts, app) => {
+        counts[app.status] = (counts[app.status] || 0) + 1;
+        return counts;
+      }, {});
+      
+      return {
+        start: dateGroup.date,
+        title: `${dateGroup.appointments.length} Patient${dateGroup.appointments.length > 1 ? 's' : ''}`,
+        extendedProps: {
+          appointments: dateGroup.appointments,
+          statusCounts
+        },
+        classNames: ['appointment-count-event']
+      };
+    });
+  }, [allAppointments]);
 
-    if (hours === '12') {
-      hours = '00';
+  const handleDateClick = (info) => {
+    const clickedDate = info.dateStr;
+    const dateAppointments = allAppointments.filter(appointment => 
+      appointment.date.split('T')[0] === clickedDate
+    );
+    
+    if (dateAppointments.length > 0) {
+      setSelectedDate(clickedDate);
+      setSelectedDateAppointments(dateAppointments);
+      setShowModal(true);
     }
-
-    if (modifier === 'PM') {
-      hours = parseInt(hours, 10) + 12;
-    }
-
-    return `${hours}:${minutes}:00`;
   };
 
-  const events = allAppointments.map((appointment) => {
-    const datePart = appointment.date.split('T')[0];
-    const timePart = appointment.time ? parseTimeString(appointment.time) : '00:00:00'; // Fallback to '00:00:00' if no time
-    const dateTimeString = `${datePart}T${timePart}`;
-    const startTime = new Date(dateTimeString);
+  const handleModalClose = () => {
+    setShowModal(false);
+  };
 
-    return {
-      id: appointment._id,
-      title: `${appointment.patient.patient_firstName} ${appointment.patient.patient_lastName}`,
-      start: startTime,
-      end: new Date(startTime.getTime() + 30 * 60000),
-      description: appointment.reason,
-      status: appointment.status,
-      doctorName: appointment.doctor
-        ? `${appointment.doctor.dr_firstName} ${appointment.doctor.dr_lastName}`
-        : 'No doctor assigned',
-    };
-  });
-
-  const handleEventClick = (eventInfo) => {
-    const { status } = eventInfo.event.extendedProps; // Get status from extendedProps
-
-    // Determine the correct tab based on the appointment status
+  const navigateToAppointmentTab = (status) => {
     let tab;
     if (status === 'Scheduled') {
       tab = 'todays';
@@ -109,9 +123,14 @@ function AppointmentFullCalendar() {
       tab = 'ongoing';
     } else if (status === 'Pending') {
       tab = 'pending';
+    } else if (status === 'Completed') {
+      tab = 'completed';
+    } else if (status === 'Cancelled') {
+      tab = 'cancelled';
+    } else if (status === 'Rescheduled') {
+      tab = 'rescheduled';
     }
 
-    // If a valid tab is found, navigate to the respective URL
     if (tab) {
       navigate(`/medsec/appointments?tab=${tab}`, {
         state: { userId: msid, userName: name, role: roles },
@@ -119,72 +138,178 @@ function AppointmentFullCalendar() {
     }
   };
 
-  const renderEventContent = (eventInfo) => {
-    const tooltipContent = `
-      <strong>Patient:</strong> ${eventInfo.event.title} <br/>
-      <strong>Doctor:</strong> ${eventInfo.event.extendedProps.doctorName} <br/>
-      <strong>Concern:</strong> ${eventInfo.event.extendedProps.description} <br/>
-      <strong>Start:</strong> ${eventInfo.event.start.toLocaleTimeString()} <br/>
-      <strong>Status:</strong> ${eventInfo.event.extendedProps.status}
-    `;
+  const convertTimeRangeTo12HourFormat = (timeRange) => {
+    // Check if the timeRange is missing or empty
+    if (!timeRange) return 'Not Assigned';
 
-    return (
-      <Tippy
-        content={<span dangerouslySetInnerHTML={{ __html: tooltipContent }} />}
-        allowHTML={true}
-        theme="light-border"
-      >
-        <div
-          style={{ cursor: 'pointer' }}
-          onClick={() => handleEventClick(eventInfo)} // Attach click handler here
-        >
-          {eventInfo.event.title}
-        </div>
-      </Tippy>
-    );
-  };
+    const convertTo12Hour = (time) => {
+        // Handle single time values like "10:00"
+        if (!time) return '';
 
-  const getEventClassNames = (eventInfo) => {
-    return [eventInfo.event.extendedProps.status]; // Apply the status as a class name
-  };
+        let [hours, minutes] = time.split(':').map(Number);
+        const period = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12 || 12; // Convert 0 or 12 to 12 in 12-hour format
 
-  const handleDatesRender = () => {
-    if (calendarRef.current) {
-      const calendarApi = calendarRef.current.getApi();
-      if (calendarApi) {
-        const calendarEl = calendarApi.el;
-        calendarEl.style.transition = 'transform 2s ease-in-out';
-        calendarEl.style.transform = 'translateX(100%)'; // Start from the right
-        setTimeout(() => {
-          calendarEl.style.transform = 'translateX(0)'; // Slide to center
-        }, 10); // Slight delay to allow transition to take effect
-      }
+        return `${hours}:${String(minutes).padStart(2, '0')} ${period}`;
+    };
+
+    // Handle both single times and ranges
+    if (timeRange.includes(' - ')) {
+        const [startTime, endTime] = timeRange.split(' - ');
+        return `${convertTo12Hour(startTime)} - ${convertTo12Hour(endTime)}`;
+    } else {
+        return convertTo12Hour(timeRange); // Single time case
+    }
+};
+
+  const getStatusBadge = (status) => {
+    switch(status) {
+      case 'Pending':
+        return <Badge bg="warning" text="dark">Pending</Badge>;
+      case 'Scheduled':
+        return <Badge bg="info">Scheduled</Badge>;
+      case 'Ongoing':
+        return <Badge bg="primary">Ongoing</Badge>;
+      case 'Completed':
+        return <Badge bg="success">Completed</Badge>;
+      case 'Cancelled':
+        return <Badge bg="danger">Cancelled</Badge>;
+      case 'Rescheduled':
+        return <Badge bg="secondary">Rescheduled</Badge>;
+      default:
+        return <Badge bg="light" text="dark">{status}</Badge>;
     }
   };
 
   return (
-
-      <Card className="shadow mb-4 ">
-        <Card.Header className="py-3">
-          <h6 className="m-0 font-weight-bold text-primary">Appointment Calendar</h6>
+    <>
+      <Card className="shadow mb-4">
+        <Card.Header className="py-3 d-flex justify-content-between align-items-center bg-gradient-primary-to-secondary text-white">
+          <h6 className="m-0 font-weight-bold">Appointment Calendar</h6>
         </Card.Header>
         <Card.Body>
           <FullCalendar
             ref={calendarRef}
             plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
             initialView="dayGridMonth"
-            headerToolbar={headerToolbar} // Use the responsive headerToolbar
-            height="auto" // Or a fixed height like '500px'
+            headerToolbar={headerToolbar}
+            height="auto"
             events={events}
-            editable={false}
-            selectable={true}
-            eventContent={renderEventContent} // Use eventContent to render custom event content
-            eventClassNames={getEventClassNames} // Use eventClassNames to apply custom styles
-            datesSet={handleDatesRender} // Trigger transition when dates are rendered
+            dateClick={handleDateClick}
+            eventContent={(eventInfo) => {
+              const { statusCounts, appointments } = eventInfo.event.extendedProps;
+              
+              return (
+                <div className="calendar-event-content d-flex flex-column align-items-center">
+                  <div className="appointment-count font-weight-bold">
+                    {appointments.length}
+                  </div>
+                  <div className="appointment-label small">
+                    {appointments.length === 1 ? 'Patient' : 'Patients'}
+                  </div>
+                  <div className="status-indicators d-flex mt-1 justify-content-center">
+                    {statusCounts['Scheduled'] && (
+                      <div className="status-dot scheduled-dot" title={`${statusCounts['Scheduled']} Scheduled`}></div>
+                    )}
+                    {statusCounts['Pending'] && (
+                      <div className="status-dot pending-dot" title={`${statusCounts['Pending']} Pending`}></div>
+                    )}
+                    {statusCounts['Ongoing'] && (
+                      <div className="status-dot ongoing-dot" title={`${statusCounts['Ongoing']} Ongoing`}></div>
+                    )}
+                    {statusCounts['Completed'] && (
+                      <div className="status-dot completed-dot" title={`${statusCounts['Completed']} Completed`}></div>
+                    )}
+                  </div>
+                </div>
+              );
+            }}
+            eventClassNames={(arg) => {
+              return ['calendar-event'];
+            }}
           />
         </Card.Body>
       </Card>
 
+      {/* Appointments Modal */}
+      <Modal
+        show={showModal}
+        onHide={handleModalClose}
+        size="lg"
+        centered
+        className="appointments-modal"
+      >
+        <Modal.Header closeButton className="bg-primary text-white">
+          <Modal.Title>
+            <CalendarCheck className="me-2" />
+            Appointments for {selectedDate && new Date(selectedDate).toLocaleDateString('en-US', { 
+              weekday: 'long', 
+              year: 'numeric', 
+              month: 'long', 
+              day: 'numeric' 
+            })}
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="p-0">
+          {selectedDateAppointments.length > 0 ? (
+            <ListGroup variant="flush">
+              {selectedDateAppointments.map((appointment, index) => (
+                <ListGroup.Item 
+                  key={appointment._id}
+                  className="appointment-item p-3 border-bottom"
+                  action
+                  onClick={() => navigateToAppointmentTab(appointment.status)}
+                >
+                  <Row className="align-items-center">
+                    <Col xs={12} md={6} className="mb-2 mb-md-0">
+                      <div className="d-flex align-items-center">
+                        <div className="patient-icon me-3 rounded-circle bg-light p-2">
+                          <Person size={22} className="text-primary" />
+                        </div>
+                        <div>
+                          <h6 className="mb-0 fw-bold">
+                            {appointment.patient?.patient_firstName} {appointment.patient?.patient_lastName}
+                          </h6>
+                          <div className="text-muted small">
+                            Patient ID: {appointment.patient?.patient_ID || 'N/A'}
+                          </div>
+                        </div>
+                      </div>
+                    </Col>
+                    <Col xs={6} md={3}>
+                      <div className="d-flex align-items-center mb-2">
+                        <Clock size={16} className="text-muted me-2" />
+                        <span>{convertTimeRangeTo12HourFormat (appointment.time)}</span>
+                      </div>
+                      <div className="d-flex align-items-center">
+                        <ClipboardCheck size={16} className="text-muted me-2" />
+                        <span>{appointment.appointment_type?.[0]?.appointment_type || 'General'}</span>
+                      </div>
+                    </Col>
+                    <Col xs={6} md={2} className="text-center">
+                      {getStatusBadge(appointment.status)}
+                    </Col>
+                    <Col xs={12} md={1} className="text-end">
+                      <ChevronRight className="text-muted" />
+                    </Col>
+                  </Row>
+                </ListGroup.Item>
+              ))}
+            </ListGroup>
+          ) : (
+            <div className="text-center p-5">
+              <p className="text-muted mb-0">No appointments for this date</p>
+            </div>
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleModalClose}>
+            Close
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+    </>
   );
 }
 

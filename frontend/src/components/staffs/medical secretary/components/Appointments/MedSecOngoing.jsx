@@ -6,6 +6,8 @@ import { ip } from '../../../../../ContentExport';
 import { toast, ToastContainer } from 'react-toastify';
 import { ThreeDots } from 'react-bootstrap-icons';
 import io from "socket.io-client";
+import Swal from 'sweetalert2';
+
 function MedSecOngoing({ allAppointments, setAllAppointments }) {
   const [currentPage, setCurrentPage] = useState(1);
   const [entriesPerPage, setEntriesPerPage] = useState(5);
@@ -26,7 +28,7 @@ function MedSecOngoing({ allAppointments, setAllAppointments }) {
       socket.on('doctorStatusUpdate', (updatedDoctor) => {
         setAllAppointments(prevAppointments => 
           prevAppointments.map(appointment =>
-            appointment.doctor._id === updatedDoctor.doctorId
+            appointment.doctor?._id === updatedDoctor.doctorId
               ? { ...appointment, doctor: { ...appointment.doctor, activityStatus: updatedDoctor.activityStatus } }
               : appointment
           )
@@ -112,44 +114,65 @@ function MedSecOngoing({ allAppointments, setAllAppointments }) {
       return;
     }
   
-    try {
-      const response = await axios.put(
-        `${ip.address}/api/appointments/${appointmentId}/status`,
-        { status: newStatus }
-      );
+    // First show a confirmation dialog using SweetAlert
+    const result = await Swal.fire({
+      title: "Update Appointment Status",
+      text: `Are you sure you want to change this appointment status to ${newStatus}?`,
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonText: "Yes, update status",
+      cancelButtonText: "Cancel",
+      reverseButtons: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+    });
   
-      if (response.status === 200 && response.data) {
-        const updatedAppointment = response.data;
-  
-        // Update the state with the new status
-        setAllAppointments((prevAppointments) =>
-          prevAppointments.map((appointment) =>
-            appointment._id === appointmentId
-              ? { ...appointment, status: updatedAppointment.status }
-              : appointment
-          )
+    // Only proceed if the user confirmed
+    if (result.isConfirmed) {
+      try {
+        const response = await axios.put(
+          `${ip.address}/api/appointments/${appointmentId}/status`,
+          { status: newStatus }
         );
-
-
-
-        if (newStatus === 'Scheduled') 
-          // Emit real-time update to change doctor's status to "Online"
-          socket.emit('doctorStatusUpdate', {
-            doctorId: allAppointments.find(app => app._id === appointmentId)?.doctor?._id,
-            activityStatus: 'Online',
+  
+        if (response.status === 200 && response.data) {
+          const updatedAppointment = response.data;
+  
+          // Update the state with the new status
+          setAllAppointments((prevAppointments) =>
+            prevAppointments.map((appointment) =>
+              appointment._id === appointmentId
+                ? { ...appointment, status: updatedAppointment.status }
+                : appointment
+            )
+          );
+  
+          // Show success message with SweetAlert
+          Swal.fire({
+            title: "Success!",
+            text: `Appointment status updated to ${newStatus}`,
+            icon: "success",
+            timer: 2000,
+            showConfirmButton: false
           });
+        } else {
+          throw new Error('Unexpected server response');
+        }
+      } catch (err) {
+        console.error('Error updating status:', err);
   
-        console.log('Appointment status updated successfully:', updatedAppointment);
-      } else {
-        throw new Error('Unexpected server response');
+        const errorMessage =
+          err.response?.data?.message || 'Failed to update the appointment status.';
+        setError(errorMessage);
+        
+        // Replace alert with SweetAlert for error message
+        Swal.fire({
+          title: "Error",
+          text: errorMessage,
+          icon: "error",
+          confirmButtonColor: "#3085d6"
+        });
       }
-    } catch (err) {
-      console.error('Error updating status:', err);
-  
-      const errorMessage =
-        err.response?.data?.message || 'Failed to update the appointment status.';
-      setError(errorMessage);
-      alert(errorMessage);
     }
   };
 
@@ -229,101 +252,90 @@ function MedSecOngoing({ allAppointments, setAllAppointments }) {
               </tr>
             </thead>
             <tbody>
-              {currentAppointments.map((appointment) => {
-                const patient = appointment.patient;
-                const patientName = `${patient.patient_firstName} ${patient.patient_middleInitial}. ${patient.patient_lastName}`;
+  {currentAppointments.map((appointment) => {
+    const patient = appointment.patient;
+    const patientName = `${patient.patient_firstName} ${patient.patient_middleInitial}. ${patient.patient_lastName}`;
 
-                // Handle missing doctor gracefully
-                const doctor = appointment.doctor;
-                const doctorName = doctor 
-                  ? `${doctor.dr_firstName} ${doctor.dr_middleInitial}. ${doctor.dr_lastName}` 
-                  : 'No Doctor Assigned';
+    // Handle missing doctor gracefully
+    const doctor = appointment.doctor;
+    const doctorName = doctor 
+      ? `${doctor.dr_firstName} ${doctor.dr_middleInitial}. ${doctor.dr_lastName}` 
+      : 'No Doctor Assigned';
 
-                // If appointment_type is an array of objects, extract the type names
-                const appointmentTypes = appointment.appointment_type
-                  .map(typeObj => typeObj.appointment_type) // Extract the service type name
-                  .join(', ');
+    // If appointment_type is an array of objects, extract the type names
+    const appointmentTypes = appointment.appointment_type
+      .map(typeObj => typeObj.appointment_type) // Extract the service type name
+      .join(', ');
 
-                return (
-                  <tr key={appointment._id}>
-                    <td style={{fontSize: '14px'}}>{patientName}</td>
-                    <td style={{fontSize: '14px'}}>{doctorName}</td>
-                    <td style={{fontSize: '14px'}}>{appointmentTypes}</td>
-                    <td style={{fontSize: '14px'}}>{new Date(appointment.date).toLocaleDateString()}</td>
-                    <td style={{fontSize: '14px'}}>{convertTimeRangeTo12HourFormat(appointment.time)}</td> {/* Add time format conversion */}
-                    <td style={{fontSize: '14px'}}>{appointment.reason}</td>
-                    <td>
+    return (
+      <tr key={appointment._id}>
+        <td style={{fontSize: '14px'}}>{patientName}</td>
+        <td style={{fontSize: '14px'}}>{doctorName}</td>
+        <td style={{fontSize: '14px'}}>{appointmentTypes}</td>
+        <td style={{fontSize: '14px'}}>{new Date(appointment.date).toLocaleDateString()}</td>
+        <td style={{fontSize: '14px'}}>{convertTimeRangeTo12HourFormat(appointment.time)}</td> {/* Add time format conversion */}
+        <td style={{fontSize: '14px'}}>{appointment.reason}</td>
+        <td>
+          <div className="">
+            <div className="ongoing-appointment" style={{fontSize: '12px'}}>
+              {appointment.status}
+            </div>
+          </div>
+        </td>
+        <td>
+          <div className="d-flex justify-content-around flex-wrap">
+            <Dropdown>
+              <Dropdown.Toggle as={Button} variant="light" className="action-button">
+                <ThreeDots size={20} />
+              </Dropdown.Toggle>
+              <Dropdown.Menu style={{zIndex:'99999'}}>
+                {appointment.patient.accountStatus === "Unregistered" && (
+                  <>
+                    <Dropdown.Item
+                      onClick={() => handleUpdateStatus(appointment._id, "For Payment")}
+                      className="action-item"
+                    >
+                      For Payment
+                    </Dropdown.Item>
+                    <Dropdown.Item
+                      onClick={() => handleUpdateStatus(appointment._id, "Scheduled")}
+                      className="action-item"
+                    >
+                      Scheduled
+                    </Dropdown.Item>
+                  </>
+                )}
+                {appointment.patient.accountStatus === "Registered" && (
+                  <>
+                    <Dropdown.Item
+                      onClick={() => handleUpdateStatus(appointment._id, "For Payment")}
+                      className="action-item"
+                    >
+                      For Payment
+                    </Dropdown.Item>
+                    <Dropdown.Item
+                      onClick={() => handleUpdateStatus(appointment._id, "Scheduled")}
+                      className="action-item"
+                    >
+                      Scheduled
+                    </Dropdown.Item>
+                  </>
+                )}
+                <Dropdown.Item
+                  onClick={() => handleUpdateStatus(appointment._id, "Cancelled")}
+                  className="action-item"
+                >
+                  Cancel
+                </Dropdown.Item>
+              </Dropdown.Menu>
+            </Dropdown>
+          </div>
+        </td>
+      </tr>
+    );
+  })}
+</tbody>
 
-                        <div className="d-flex justify-content-center">
-                          <div className="ongoing-appointment" style={{fontSize: '12px'}}>
-                            {appointment.status}
-                          </div>
-                        </div>
-                    </td>
-                    <td>
-                    <div className="d-flex justify-content-around flex-wrap">
-                        <Dropdown >
-                          <Dropdown.Toggle s as={Button} variant="light" className="action-button">
-                            <ThreeDots size={20} />
-                          </Dropdown.Toggle>
-
-                          <Dropdown.Menu style={{zIndex:'99999'}}>
-                            {/* {(  !appointment.date || !appointment.time || !appointmentTypes || !categoryTypes) && ( */}
-
-                            {/* )} */}
-                            
-                            {appointment.patient.accountStatus === "Unregistered" && (
-                              <>
-                                <Dropdown.Item
-                                  onClick={() => handleUpdateStatus(appointment._id, "For Payment")}
-                                  className="action-item"
-                                >
-                                  For Payment
-                                </Dropdown.Item>
-                                <Dropdown.Item
-                                  onClick={() => handleUpdateStatus(appointment._id, "Scheduled")}
-                                  className="action-item"
-                                >
-                                  Scheduled
-                                </Dropdown.Item>
-
-
-                              </>
-                             
-                            )}
-                            {appointment.patient.accountStatus === "Registered" && (
-                              <>
-                                <Dropdown.Item
-                                  onClick={() => handleUpdateStatus(appointment._id, "For Payment")}
-                                  className="action-item"
-                                >
-                                  For Payment
-                                </Dropdown.Item>
-                                <Dropdown.Item
-                                  onClick={() => handleUpdateStatus(appointment._id, "Scheduled")}
-                                  className="action-item"
-                                >
-                                  Scheduled
-                                </Dropdown.Item>
-
-
-                              </>
-                             
-                            )}
-                            <Dropdown.Item
-                              onClick={() => handleUpdateStatus(appointment._id, "Cancelled")}
-                              className="action-item"
-                            >
-                              Cancel
-                            </Dropdown.Item>
-                          </Dropdown.Menu>
-                        </Dropdown>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
           </Table>
 
           {/* Pagination */}

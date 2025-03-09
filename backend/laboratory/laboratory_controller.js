@@ -127,9 +127,12 @@ const createLaboratoryResult = async (req, res) => {
 
 
 const createMedSecLaboratoryResult = async (req, res) => {
-    const { patientId, appointmentId, medsecId } = req.params;
+    const { patientId, appointmentId } = req.params;
     const { interpretation, recommendations, testResults = '[]' } = req.body;
 
+    const sessionUser = req.session
+
+    console.log('Session User:', sessionUser);  
     // Check if a file was uploaded
     if (!req.file) {
         return res.status(400).send('No file uploaded.');
@@ -223,13 +226,44 @@ const createMedSecLaboratoryResult = async (req, res) => {
             return res.status(404).json({ message: 'Patient not found in appointment.' });
         }
 
-        // Fetch the Medical Secretary
-        console.log('medsecId:', medsecId);
-        const medSec = await MedicalSecretary.findById(medsecId);
-        if (!medSec) {
-            return res.status(404).json({ message: 'Medical Secretary not found.' });
+        if(sessionUser.role !== 'Medical Secretary'){
+            return res.status(403).json({ message: 'Unauthorized access.' });
+        } 
+
+        // Find the Medical Secretary by ID
+        if (sessionUser.role === 'Medical Secretary') {
+            const medsecId = sessionUser._id;
+
+            const medSec = await MedicalSecretary.findById(medsecId);
+            if (!medSec) {
+                return res.status(404).json({ message: 'Medical Secretary not found.' });
+
+            }
+
+            const audit = new Audit({
+                user: medsecId,
+                userType: 'Medical Secretary',
+                action: 'Created laboratory result',
+                description: `Laboratory result created for patient ${patientObj.patient_ID} for appointment ${appointment._id}`,
+                ipAddress: req.ip,
+                userAgent: req.headers['user-agent'],
+            });
+
+            await audit.save();
+
+            await MedicalSecretary.findByIdAndUpdate(medsecId, { $push: { audits: audit._id } });
+
+
+
+            console.log('Medical Secretary:', medSec); // Log the Medical Secretary for debugging
+
+        } else if (sessionUser.role === 'Admin') {
+            console.log('Admin user:', sessionUser);
+            
+
         }
-        console.log('Medical Secretary:', medSec); // Log the Medical Secretary for debugging
+
+      
 
         // Check if the laboratory result is already in the patient's array
         if (!patient.laboratoryResults.includes(laboratoryResult._id)) {

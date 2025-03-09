@@ -1,21 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Modal, Button, Form } from 'react-bootstrap';
 import axios from 'axios';
 import { ip } from '../../../ContentExport';
 
-const CreateStaffModal = ({ show, handleClose, user, onComplete }) => {
-  const [oldPassword, setOldPassword] = useState('');
+const CreateStaffModal = ({ show, handleClose, userId, onComplete }) => {
   const [newPassword, setNewPassword] = useState('');
   const [confirmNewPassword, setConfirmNewPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
-
-  // Use effect to set the old password from the user prop when modal opens
-  useEffect(() => {
-    if (user && user.ms_password) {
-      setOldPassword(user.ms_password);
-    }
-  }, [user]);
 
   const handleChangePassword = async () => {
     if (newPassword !== confirmNewPassword) {
@@ -23,26 +15,35 @@ const CreateStaffModal = ({ show, handleClose, user, onComplete }) => {
       return;
     }
 
+    if (!userId) {
+      setErrorMessage('User ID is missing!');
+      return;
+    }
+
     try {
-      // Make the request to change the password
-      await axios.put(`${ip.address}/api/medicalsecretary/api/change-password/${user._id}`, {
-        oldPassword,
+      // Use the changePendingAdminPassword endpoint
+      await axios.post(`${ip.address}/api/medicalsecretary/change-pending-password/${userId}`, {
         newPassword,
-        confirmNewPassword,
+        confirmNewPassword
       });
 
-      setSuccessMessage('Password changed successfully!');
-      onComplete();  // Call onComplete to hide modal and proceed
+      setSuccessMessage('Password changed successfully! Your account is now activated.');
+
+      // Wait for a short delay before reloading the page
+      setTimeout(() => {
+        window.location.reload(); // Reload the page to reflect changes
+      }, 1500); // Increased delay to show the success message
+
     } catch (error) {
-      setErrorMessage('Failed to change password. Please try again.');
-      console.log(error);
+      setErrorMessage(error.response?.data?.message || 'Failed to change password. Please try again.');
+      console.error('Password change error:', error);
     }
   };
 
   return (
     <Modal show={show} onHide={handleClose}>
       <Modal.Header closeButton>
-        <Modal.Title>Change Your Password</Modal.Title>
+        <Modal.Title>Set Your Password</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
@@ -58,7 +59,7 @@ const CreateStaffModal = ({ show, handleClose, user, onComplete }) => {
             />
           </Form.Group>
 
-          <Form.Group controlId="confirmNewPassword">
+          <Form.Group controlId="confirmNewPassword" className="mt-3">
             <Form.Label>Confirm New Password</Form.Label>
             <Form.Control
               type="password"
@@ -74,7 +75,7 @@ const CreateStaffModal = ({ show, handleClose, user, onComplete }) => {
           Cancel
         </Button>
         <Button variant="primary" onClick={handleChangePassword}>
-          Change Password
+          Set Password
         </Button>
       </Modal.Footer>
     </Modal>

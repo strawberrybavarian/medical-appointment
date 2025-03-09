@@ -44,4 +44,5 @@ module.exports = app => {
     app.get('/api/find/admin/specialties', SpecialtyController.getSpecialties);
     app.put('/api/admin/specialty/update', upload.single('image'), SpecialtyController.updateSpecialty);
     app.delete('/api/admin/specialty/delete/:specialtyId', SpecialtyController.deleteSpecialty);
+    app.get('/api/admin/find/specialty/:specialtyId', SpecialtyController.getOneSpecialtyById);
 };

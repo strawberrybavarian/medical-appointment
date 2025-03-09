@@ -54,11 +54,11 @@ const CreateStaffModal = ({ show, handleClose, handleStaffCreation }) => {
   };
 
   return (
-    <Modal show={show} onHide={handleClose}>
-      <Modal.Header closeButton>
+    <Modal size='lg' aria-labelledby="contained-modal-title-vcenter" centered style={{width:'100%'}} show={show} onHide={handleClose}>
+      <Modal.Header style={{width:'100%'}} closeButton>
         <Modal.Title>Create New Staff</Modal.Title>
       </Modal.Header>
-      <Modal.Body>
+      <Modal.Body style={{width:'100%'}} >
         {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
         <Form>
           <Form.Group controlId="firstName">
@@ -110,7 +110,7 @@ const CreateStaffModal = ({ show, handleClose, handleStaffCreation }) => {
           </Form.Group>
         </Form>
       </Modal.Body>
-      <Modal.Footer>
+      <Modal.Footer style={{width:'100%'}}>
         <Button variant="secondary" onClick={handleClose}>
           Cancel
         </Button>

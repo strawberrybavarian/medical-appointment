@@ -8,7 +8,7 @@ import Footer from '../../Footer';
 import DoctorServices from './DoctorServices';
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import ReactTooltip from 'react-tooltip'; // Tooltip library
+import ReactTooltip from 'react-tooltip'; 
 import { ChatDotsFill } from 'react-bootstrap-icons';
 import ChatComponent from '../../chat/ChatComponent';
 import { useUser } from '../../UserContext';
@@ -16,7 +16,7 @@ function HomePagePatient() {
   const navigate = useNavigate();
   const { user } = useUser();
 
-
+  
   const [showChat, setShowChat] = useState(false);
   const [tooltipMessage, setTooltipMessage] = useState('');
 
@@ -27,7 +27,7 @@ function HomePagePatient() {
   }, [user._id, navigate]);
 
 
-  // Tooltip messages array
+  
   const tooltips = [
     "Chat with us!",
     "Need help? Click here to chat!",
@@ -45,13 +45,8 @@ function HomePagePatient() {
   useEffect(() => {
     const randomMessage = tooltips[Math.floor(Math.random() * tooltips.length)];
     setTooltipMessage(randomMessage);
-  }, []);
+  }, [tooltipMessage]);
 
-
-
-
-  // Extract patient information
-  const fullName = `${user.firstName} ${user.lastName}`;
 
   return (
     <>
@@ -65,17 +60,17 @@ function HomePagePatient() {
           {/* Main Content Area */}
           <div className="content-area p-0 m-0">
             
-            <div fluid className="background-hpp">
-              <DoctorCarousel fluid className="w-100" pid={user._id} />
+            <div  className="background-hpp">
+              <DoctorCarousel  className="w-100" pid={user._id} />
             </div>
-            <DoctorSpecialty fluid className="w-100" pid={user._id} />
-            <DoctorServices fluid className="w-100" pid={user._id} />
+            <DoctorSpecialty  className="w-100" pid={user._id} />
+            <DoctorServices  className="w-100" pid={user._id} />
             {/* Chat Button */}
             <div className="chat-btn-container">
               <Button
                 className="chat-toggle-btn"
                 onClick={() => setShowChat(!showChat)}
-                data-tip={tooltipMessage} // Attach the tooltip message
+                data-tip={tooltipMessage} 
                 data-for="chatTooltip"
               >
                 <ChatDotsFill size={30} />
@@ -92,10 +87,7 @@ function HomePagePatient() {
               </div>
             )}
           </div>
-          {/* Footer at the bottom */}
-          <Container fluid className="footer-container cont-fluid-no-gutter">
-            <Footer />
-          </Container>
+
         </div>
       </Container>
     </>

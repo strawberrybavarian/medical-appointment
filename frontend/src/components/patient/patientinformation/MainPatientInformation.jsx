@@ -12,10 +12,7 @@ function MainPatientInformation() {
         <>
             <div >
                     <PatientNavBar pid={user._id} />
-                
-             
-           
-                            <PatientInformationSidebar pid={user._id}/>
+                    <PatientInformationSidebar pid={user._id}/>
                  
       
             </div>
