@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Table, Button, Form, Container, Row, Col } from 'react-bootstrap';
+import { Table, Button, Form, Container, Row, Col, Card } from 'react-bootstrap';
 import { ip } from '../../../../ContentExport';
-import { FaEdit, FaTrash } from 'react-icons/fa';
+import { FaEdit, FaTrash, FaPlus, FaImage, FaTimes } from 'react-icons/fa';
 import Swal from 'sweetalert2';
+import './ManageSpecialty.css';
+
 function ManageSpecialty({ aid }) {
     const [specialties, setSpecialties] = useState([]);
     const [newSpecialty, setNewSpecialty] = useState({
@@ -12,6 +14,7 @@ function ManageSpecialty({ aid }) {
         image: null,
     });
     const [editSpecialtyId, setEditSpecialtyId] = useState(null);
+    const [imagePreview, setImagePreview] = useState(null);
 
     useEffect(() => {
         fetchSpecialties();
@@ -23,17 +26,29 @@ function ManageSpecialty({ aid }) {
             setSpecialties(res.data);
         } catch (err) {
             console.error('Error fetching specialties:', err);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Failed to load specialties'
+            });
         }
     };
 
     const handleInputChange = (e) => {
-        const { name, value } = e.target;
+        const { name, value, files } = e.target;
 
-        if (name === 'image') {
+        if (name === 'image' && files && files[0]) {
             setNewSpecialty({
                 ...newSpecialty,
-                image: e.target.files[0],
+                image: files[0],
             });
+            
+            // Create a preview for the image
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setImagePreview(reader.result);
+            };
+            reader.readAsDataURL(files[0]);
         } else {
             setNewSpecialty({
                 ...newSpecialty,
@@ -44,6 +59,7 @@ function ManageSpecialty({ aid }) {
 
     const handleSaveSpecialty = async (e) => {
         e.preventDefault();
+        
         try {
             const formData = new FormData();
             formData.append('name', newSpecialty.name);
@@ -52,25 +68,58 @@ function ManageSpecialty({ aid }) {
                 formData.append('image', newSpecialty.image);
             }
 
+            Swal.fire({
+                title: 'Processing...',
+                text: editSpecialtyId ? 'Updating specialty' : 'Adding new specialty',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
             if (editSpecialtyId) {
                 formData.append('specialtyId', editSpecialtyId);
                 await axios.put(`${ip.address}/api/admin/specialty/update`, formData, {
                     headers: { 'Content-Type': 'multipart/form-data' },
                 });
+                
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success!',
+                    text: 'Specialty updated successfully',
+                });
+                
                 fetchSpecialties();
             } else {
                 formData.append('adminId', aid);
                 const res = await axios.post(`${ip.address}/api/admin/specialty/add`, formData, {
                     headers: { 'Content-Type': 'multipart/form-data' },
                 });
+                
                 setSpecialties([...specialties, res.data.specialty]);
+                
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success!',
+                    text: 'New specialty added successfully',
+                });
             }
 
-            setNewSpecialty({ name: '', description: '', image: null });
-            setEditSpecialtyId(null);
+            resetForm();
         } catch (err) {
             console.error('Error saving specialty:', err);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Failed to save specialty'
+            });
         }
+    };
+
+    const resetForm = () => {
+        setNewSpecialty({ name: '', description: '', image: null });
+        setEditSpecialtyId(null);
+        setImagePreview(null);
     };
 
     const handleDeleteSpecialty = async (id) => {
@@ -89,19 +138,19 @@ function ManageSpecialty({ aid }) {
                 await axios.delete(`${ip.address}/api/admin/specialty/delete/${id}`);
                 setSpecialties(specialties.filter(s => s._id !== id));
                 
-                Swal.fire(
-                    'Deleted!',
-                    'Specialty has been deleted.',
-                    'success'
-                );
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Deleted!',
+                    text: 'Specialty has been deleted.'
+                });
             }
         } catch (err) {
             console.error('Error deleting specialty:', err);
-            Swal.fire(
-                'Error!',
-                'Failed to delete specialty.',
-                'error'
-            );
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: 'Failed to delete specialty.'
+            });
         }
     };
 
@@ -112,121 +161,221 @@ function ManageSpecialty({ aid }) {
             description: specialty.description,
             image: null,
         });
+        
+        // Set image preview if available
+        if (specialty.imageUrl) {
+            setImagePreview(`${ip.address}/${specialty.imageUrl}`);
+        } else {
+            setImagePreview(null);
+        }
     };
 
     return (
-        <>
-           
-            <Row>
+        <Container fluid className="specialty-container">
+            <Row className="mb-4">
+             <Col>
+                       <h3 className="hmo-title">Manage Specialty</h3>
+                       <p className="hmo-subtitle">Add, edit or remove Specialty</p>
+                     </Col>
+            </Row>
+            
+            <Row className="specialty-content d-flex">
                 {/* Left Side Form */}
-                <Col>
-                    <div className="card p-3 shadow-sm">
-                        <h4>{editSpecialtyId ? 'Edit Specialty' : 'Add New Specialty'}</h4>
-                        {editSpecialtyId && specialties.find(s => s._id === editSpecialtyId)?.imageUrl && (
-                            <div className="mb-3">
-                                <p>Current Image:</p>
-                                <img
-                                    src={`${ip.address}/${specialties.find(s => s._id === editSpecialtyId).imageUrl}`}
-                                    alt={newSpecialty.name}
-                                    style={{ width: '100px', height: '100px', objectFit: 'cover' }}
-                                />
-                            </div>
-                        )}
-                        <Form onSubmit={handleSaveSpecialty}>
-                            <Form.Group controlId="specialtyName">
-                                <Form.Label>Specialty Name</Form.Label>
-                                <Form.Control
-                                    type="text"
-                                    name="name"
-                                    value={newSpecialty.name}
-                                    onChange={handleInputChange}
-                                    placeholder="Specialty Name"
-                                    required
-                                />
-                            </Form.Group>
-                            <Form.Group controlId="specialtyDescription">
-                                <Form.Label>Description</Form.Label>
-                                <Form.Control
-                                     as="textarea"
-                                     rows={3}
-                                    name="description"
-                                    value={newSpecialty.description}
-                                    onChange={handleInputChange}
-                                    placeholder="Description"
-                                    required
-                                />
-                            </Form.Group>
-                            <Form.Group controlId="specialtyImage">
-                                <Form.Label>Image</Form.Label>
-                                <Form.Control
-                                    type="file"
-                                    name="image"
-                                    accept="image/*"
-                                    onChange={handleInputChange}
-                                />
-                            </Form.Group>
-                            <Button variant="primary" type="submit" className="mt-3">
-                                {editSpecialtyId ? 'Update' : 'Add'}
-                            </Button>
-                            {editSpecialtyId && (
-                                <Button variant="secondary" className="mt-3 ms-2" onClick={() => {
-                                    setEditSpecialtyId(null);
-                                    setNewSpecialty({ name: '', description: '', image: null });
-                                }}>
-                                    Cancel
-                                </Button>
-                            )}
-                        </Form>
-                    </div>
+                <Col md={4} className="mb-4">
+                    <Card className="specialty-form-card">
+                        <Card.Header className="specialty-card-header">
+                            <h4>
+                                {editSpecialtyId ? (
+                                    <>
+                                        <FaEdit className="icon-margin" /> Edit Specialty
+                                    </>
+                                ) : (
+                                    <>
+                                        <FaPlus className="icon-margin" /> Add New Specialty
+                                    </>
+                                )}
+                            </h4>
+                        </Card.Header>
+                        <Card.Body>
+                            <Form onSubmit={handleSaveSpecialty}>
+                                <div className="image-preview-container mb-4">
+                                    {imagePreview ? (
+                                        <div className="image-preview">
+                                            <img src={imagePreview} alt="Preview" />
+                                            <Button 
+                                                variant="light" 
+                                                className="clear-image-btn"
+                                                onClick={() => {
+                                                    setImagePreview(null);
+                                                    setNewSpecialty({
+                                                        ...newSpecialty,
+                                                        image: null
+                                                    });
+                                                }}
+                                            >
+                                                <FaTimes />
+                                            </Button>
+                                        </div>
+                                    ) : (
+                                        <div className="image-placeholder">
+                                            <FaImage size={40} />
+                                            <p>No Image Selected</p>
+                                        </div>
+                                    )}
+                                </div>
+                                
+                                <Form.Group controlId="specialtyName" className="mb-3">
+                                    <Form.Label>Specialty Name</Form.Label>
+                                    <Form.Control
+                                        type="text"
+                                        name="name"
+                                        value={newSpecialty.name}
+                                        onChange={handleInputChange}
+                                        placeholder="Enter specialty name"
+                                        required
+                                    />
+                                </Form.Group>
+                                
+                                <Form.Group controlId="specialtyDescription" className="mb-3">
+                                    <Form.Label>Description</Form.Label>
+                                    <Form.Control
+                                        as="textarea"
+                                        rows={4}
+                                        name="description"
+                                        value={newSpecialty.description}
+                                        onChange={handleInputChange}
+                                        placeholder="Enter specialty description"
+                                        required
+                                    />
+                                </Form.Group>
+                                
+                                <Form.Group controlId="specialtyImage" className="mb-3">
+                                    <Form.Label>Upload Image</Form.Label>
+                                    <div className="custom-file-input">
+                                        <Button 
+                                            variant="outline-secondary" 
+                                            className="upload-btn"
+                                            onClick={() => document.getElementById('imageInput').click()}
+                                        >
+                                            <FaImage className="icon-margin" /> 
+                                            {newSpecialty.image ? 'Change Image' : 'Select Image'}
+                                        </Button>
+                                        <Form.Control
+                                            type="file"
+                                            name="image"
+                                            id="imageInput"
+                                            accept="image/*"
+                                            onChange={handleInputChange}
+                                            className="d-none"
+                                        />
+                                        <small className="text-muted">Recommended size: 400x400px</small>
+                                    </div>
+                                </Form.Group>
+                                
+                                <div className="button-group">
+                                    {editSpecialtyId ? (
+                                        <>
+                                            <Button variant="primary" type="submit" className="w-100 mb-2">
+                                                Update Specialty
+                                            </Button>
+                                            <Button 
+                                                variant="outline-secondary" 
+                                                className="w-100"
+                                                onClick={resetForm}
+                                            >
+                                                Cancel
+                                            </Button>
+                                        </>
+                                    ) : (
+                                        <Button variant="primary" type="submit" className="w-100">
+                                            Add Specialty
+                                        </Button>
+                                    )}
+                                </div>
+                            </Form>
+                        </Card.Body>
+                    </Card>
                 </Col>
 
                 {/* Right Side Table */}
-                <div className="col-md-8">
-                    <Table striped bordered hover className="shadow-sm">
-                        <thead>
-                            <tr>
-                                <th>Image</th>
-                                <th>Name</th>
-                                <th>Description</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {specialties.map((specialty) => (
-                                <tr key={specialty._id}>
-                                    <td>
-                                        {specialty.imageUrl ? (
-                                            <img
-                                                src={`${ip.address}/${specialty.imageUrl}`}
-                                                alt={specialty.name}
-                                                style={{ width: '50px', height: '50px', objectFit: 'cover' }}
-                                            />
-                                        ) : 'No Image'}
-                                    </td>
-                                    <td>{specialty.name}</td>
-                                    <td>{specialty.description}</td>
-                                    <td>
-                                        <Button
-                                            variant="warning"
-                                            className="me-2"
-                                            onClick={() => handleEditClick(specialty)}
-                                        >
-                                            <FaEdit />
-                                        </Button>
-                                        <Button
-                                            variant="danger"
-                                            onClick={() => handleDeleteSpecialty(specialty._id)}
-                                        >
-                                            <FaTrash />
-                                        </Button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </Table>
-                </div>
+                <Col md={7} style={{width :'66%'}} >
+                    <Card className="specialty-table-card">
+                        <Card.Header className="specialty-card-header">
+                            <h4>Specialty List</h4>
+                            <span className="specialty-count">{specialties.length} specialties</span>
+                        </Card.Header>
+                        <Card.Body className="p-0">
+                            <div className="table-responsive">
+                                <Table hover className="specialty-table mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th width="80">Image</th>
+                                            <th>Name</th>
+                                            <th>Description</th>
+                                            <th width="120">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {specialties.length > 0 ? (
+                                            specialties.map((specialty) => (
+                                                <tr key={specialty._id}>
+                                                    <td>
+                                                        {specialty.imageUrl ? (
+                                                            <div className="table-img-container">
+                                                                <img
+                                                                    src={`${ip.address}/${specialty.imageUrl}`}
+                                                                    alt={specialty.name}
+                                                                />
+                                                            </div>
+                                                        ) : (
+                                                            <div className="table-no-img">
+                                                                <FaImage />
+                                                            </div>
+                                                        )}
+                                                    </td>
+                                                    <td className="specialty-name">{specialty.name}</td>
+                                                    <td className="specialty-description">
+                                                        {specialty.description.length > 100 
+                                                            ? `${specialty.description.substring(0, 100)}...` 
+                                                            : specialty.description}
+                                                    </td>
+                                                    <td>
+                                                        <div className="action-buttons">
+                                                            <Button
+                                                                variant="outline-primary"
+                                                                className="btn-action"
+                                                                onClick={() => handleEditClick(specialty)}
+                                                                title="Edit"
+                                                            >
+                                                                <FaEdit />
+                                                            </Button>
+                                                            <Button
+                                                                variant="outline-danger"
+                                                                className="btn-action"
+                                                                onClick={() => handleDeleteSpecialty(specialty._id)}
+                                                                title="Delete"
+                                                            >
+                                                                <FaTrash />
+                                                            </Button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        ) : (
+                                            <tr>
+                                                <td colSpan="4" className="text-center py-5">
+                                                    <p className="mb-0">No specialties found. Add your first specialty!</p>
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </Table>
+                            </div>
+                        </Card.Body>
+                    </Card>
+                </Col>
             </Row>
-        </>
+        </Container>
     );
 }
 

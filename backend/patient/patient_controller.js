@@ -12,10 +12,6 @@ const bcrypt = require('bcryptjs');
 const { staff_email } = require('../EmailExport');
 const crypto = require('crypto');
 const Audit = require('../audit/audit_model')
-
-
-
-
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
@@ -23,7 +19,6 @@ const transporter = nodemailer.createTransport({
       pass: 'vqbi dqjv oupi qndp'
   }
 });
-
 const sendOTP = async (req, res) => {
   try {
       const patient = await Patient.findOne({ patient_email: req.body.email });
@@ -157,7 +152,6 @@ const verifyTwoFactor = async (req, res) => {
     res.status(500).json({ message: 'Error verifying 2FA token', error });
   }
 };
-
 const NewPatientSignUp = async (req, res) => {
   const { patient_email, patient_password, ...otherFields } = req.body;
 
@@ -175,8 +169,6 @@ const NewPatientSignUp = async (req, res) => {
     res.status(500).json({ message: 'Error registering patient', error });
   }
 };
-
-
 const updatePatientStatus = async (req, res) => {
   try {
       const { pid } = req.params;
@@ -195,8 +187,6 @@ const updatePatientStatus = async (req, res) => {
       res.status(400).json({ status: 'error', message: error.message });
   }
 };
-
-
 const changePatientPassword = async (req, res) => {
   const { pid } = req.params;
   const { oldPassword, newPassword } = req.body;
@@ -227,8 +217,6 @@ const changePatientPassword = async (req, res) => {
     res.status(500).json({ message: 'Error updating password', error });
   }
 };
-
-
 const updatePatientInfo = async (req, res) => {
   try {
     const { pid } = req.params;
@@ -280,7 +268,8 @@ const updatePatientInfo = async (req, res) => {
     patient.patient_email = updatedInfo.patient_email || patient.patient_email;
     // Update other fields similarly
 
-    // Create the audit description based on changes3    const auditDescription = changes.length > 0 ? changes.join(', ') : 'No significant changes made.';
+    // Create the audit description based on changes3    
+    const auditDescription = changes.length > 0 ? changes.join(', ') : 'No significant changes made.';
 
     // Create the audit record
     const auditData = {
@@ -308,8 +297,6 @@ const updatePatientInfo = async (req, res) => {
     res.status(500).json({ message: 'Error updating patient information', error });
   }
 };
-
-
 const createUnregisteredPatient = async (req, res) => {
   try {
     // Extract patient data from request body
@@ -350,7 +337,6 @@ const createUnregisteredPatient = async (req, res) => {
     res.status(400).json({ message: 'Something went wrong. Please try again.', error: err.message });
   }
 };
-
 const findAllPatient = (req, res) => {
     Patient.find()
     .populate('patient_appointments')
@@ -361,7 +347,6 @@ const findAllPatient = (req, res) => {
       res.json({ message: 'Something went wrong', error: err })
   });
 }
-
 //getPatient
 const findPatientById = (req, res) => {
   Patient.findOne({ _id: req.params.uid })
@@ -442,7 +427,6 @@ const findPatientById = (req, res) => {
       res.status(500).json({ message: 'Something went wrong', error: err });
     });
 };
-
 const findPatientByEmail = (req, res) => {
   Patient.findOne({email:req.params.email})
       .then((thePatient) => {
@@ -452,7 +436,6 @@ const findPatientByEmail = (req, res) => {
           res.json({ message: 'Something went wrong', error: err })
       });
 }
-
 const bookedSlots = async (req, res) => {
   try {
     const { doctorId } = req.params;
@@ -485,18 +468,6 @@ const bookedSlots = async (req, res) => {
     res.status(400).json({ message: error.message });
   }
 };
-
-
-
-
-
-
-
-
-
-
-
-
 const cancelAppointment = async (req, res) => {
   try {
     const { cancelReason } = req.body;
@@ -507,7 +478,7 @@ const cancelAppointment = async (req, res) => {
 
     // Find the appointment before updating (to know the current doctor, date, and time)
     const appointment = await Appointment.findById(appointmentId)
-      .populate('doctor', 'dr_firstName dr_lastName') // Populate doctor's name
+      .populate('doctor') // Populate the entire doctor document
       .populate('patient', 'patient_firstName patient_lastName'); // Optionally, populate patient's name
 
     if (!appointment) {
@@ -526,12 +497,33 @@ const cancelAppointment = async (req, res) => {
       { new: true }
     );
 
+    // Safely format the doctor's name - handle cases where doctor info might be missing
+    let doctorName = "Unknown Doctor";
+    if (appointment.doctor) {
+      if (appointment.doctor.dr_firstName || appointment.doctor.dr_lastName) {
+        doctorName = `Dr. ${appointment.doctor.dr_firstName || ''} ${appointment.doctor.dr_lastName || ''}`.trim();
+      } else {
+        // If neither first nor last name exists, use doctor ID as fallback
+        doctorName = `Doctor (ID: ${appointment.doctor._id})`;
+      }
+    }
+
+    // Format the date safely
+    let appointmentDate = "unknown date";
+    try {
+      if (appointment.date) {
+        appointmentDate = appointment.date.toLocaleDateString();
+      }
+    } catch (error) {
+      console.error("Error formatting date:", error);
+    }
+
     // Create audit for appointment cancellation
     const auditData = {
       user: appointment.patient._id, // Assuming the patient is cancelling the appointment
       userType: 'Patient', // Specify the user type
       action: 'Cancel Appointment',
-      description: `Appointment with Dr. ${appointment.doctor.dr_firstName} ${appointment.doctor.dr_lastName} on ${appointment.date.toLocaleDateString()} at ${appointment.time} was cancelled. Reason: ${cancelReason}`,
+      description: `Appointment with ${doctorName} on ${appointmentDate} at ${appointment.time || 'unknown time'} was cancelled. Reason: ${cancelReason}`,
       ipAddress: req.ip,  // Get the IP address from the request
       userAgent: req.get('User-Agent'),  // Get the User-Agent (browser/device info)
     };
@@ -552,11 +544,6 @@ const cancelAppointment = async (req, res) => {
     res.status(400).json({ message: error.message });
   }
 };
-
-
-
-
-
 const updatePatientImage = async (req, res) => {
   try {
     const patientId = req.params.id;
@@ -596,7 +583,6 @@ const updatePatientImage = async (req, res) => {
     res.status(500).json({ message: 'Error updating patient image', error });
   }
 };
-
 // PatientController.js
 const createPatientSession = (req, res) => {
   const { userId, role } = req.body;
@@ -613,7 +599,6 @@ const createPatientSession = (req, res) => {
       res.status(403).json({ message: "Unauthorized role" });
   }
 };
-
 const forgotPassword = async (req, res) => {
   const { email } = req.body;
 
@@ -687,10 +672,6 @@ const forgotPassword = async (req, res) => {
     res.status(500).json({ message: 'Error in forgot password process', error });
   }
 };
-
-
-
-
 const resetPassword = async (req, res) => {
     const { token } = req.params;
     const { password } = req.body;
@@ -716,7 +697,6 @@ const resetPassword = async (req, res) => {
         res.status(500).json({ message: 'Error in resetting password', error });
     }
 };
-
 const getAllPatientEmails = (req, res) => {
   Patient.find({}, 'patient_email')
       .then((patient) => {
@@ -728,7 +708,6 @@ const getAllPatientEmails = (req, res) => {
           res.status(500).json({ message: 'Something went wrong', error: err });
       });
 };
-
 const getAllContactNumbers = (req, res) => {
   Patient.find({}, 'patient_contactNumber')
   .then((patient) => {
@@ -740,7 +719,6 @@ const getAllContactNumbers = (req, res) => {
       res.status(500).json({ message: 'Something went wrong', error: err });
   } );
 }
-
 // Assuming you're using Mongoose
 const getPatientWithAudits = async (req, res) => {
   try {
@@ -761,7 +739,6 @@ const getPatientWithAudits = async (req, res) => {
       res.status(500).json({ message: 'Error fetching patient data', error });
   }
 };
-
 const getPatientByPatientID = async (req, res) => {
   try {
     const patientID = req.params.patientID;

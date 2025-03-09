@@ -180,7 +180,7 @@ const cancelLogout = () => {
   };
 
 
-  console.log('User', user)
+  // console.log('User', user)
 
   // Calculate unread notifications count and set max to 9+
   const unreadCount = notifications.filter((notif) => !notif.isRead).length;

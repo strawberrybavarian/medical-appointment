@@ -9,22 +9,25 @@ import io from 'socket.io-client';
 import { useUser } from '../../../UserContext';
 
 function AdminNavbar() {
-
-  const {user,setUser} = useUser();
-  const userId = user._id;
-  const userName = user.firstName + " " + user.lastName;
-  const role = user.role;
-
-  // console.log(user)
+  const {user, setUser} = useUser();
   const defaultImage = "images/Admin-Icon.jpg";
   const navigate = useNavigate();
-
   const [notifications, setNotifications] = useState([]);
   const [showNotifications, setShowNotifications] = useState(false);
-  
   const socketRef = useRef();
 
+  // All useEffect hooks need to be at the top level, before any conditional returns
   useEffect(() => {
+    // Check if user exists and is admin
+    if (!user) {
+      return;
+    }
+    
+    if (user.role !== 'Admin' || !user._id || !user) {
+      navigate('/medapp/login');
+      return;
+    }
+    
     // Request browser notification permission if needed
     if ('Notification' in window && Notification.permission !== 'granted') {
       Notification.requestPermission();
@@ -40,8 +43,8 @@ function AdminNavbar() {
       console.error('Socket connection error:', error);
     });
 
-    if (userId) {
-      socketRef.current.emit('identify', { userId, userRole: 'Admin' });
+    if (user._id) {
+      socketRef.current.emit('identify', { userId: user._id, userRole: 'Admin' });
     } else {
       console.warn('Admin ID is undefined');
     }
@@ -65,25 +68,24 @@ function AdminNavbar() {
 
     socketRef.current.io.on('reconnect', () => {
       // console.log('Socket reconnected');
-      if (userId) {
-        socketRef.current.emit('identify', { userId, userRole: 'Admin' });
+      if (user._id) {
+        socketRef.current.emit('identify', { userId: user._id, userRole: 'Admin' });
       }
     });
 
     return () => {
       socketRef.current.disconnect();
     };
-  }, [userId]);
+  }, [user, navigate]);
 
   useEffect(() => {
-    if (!userId) {
-      console.warn('Admin ID is undefined');
+    if (!user || !user._id) {
       return;
     }
 
     // Fetch existing notifications for Admin
     axios
-      .get(`${ip.address}/api/admin/${userId}`)
+      .get(`${ip.address}/api/admin/${user._id}`)
       .then((res) => {
         const adminData = res.data.theAdmin;
         if (adminData.notifications && Array.isArray(adminData.notifications)) {
@@ -96,7 +98,7 @@ function AdminNavbar() {
       .catch((err) => {
         console.log('Error fetching Admin data:', err);
       });
-  }, [userId]);
+  }, [user]);
 
   const showBrowserNotification = (message) => {
     if ('Notification' in window && Notification.permission === 'granted') {
@@ -118,8 +120,14 @@ function AdminNavbar() {
         return;
       }
 
-      if (notification.link) {
-        navigate(notification.link, { state: { userId, userName, role } });
+      if (notification.link && user) {
+        navigate(notification.link, { 
+          state: { 
+            userId: user._id, 
+            userName: user.firstName + " " + user.lastName, 
+            role: user.role 
+          } 
+        });
       }
 
       await axios.put(`${ip.address}/api/notifications/${notification._id}/read`);
@@ -133,6 +141,20 @@ function AdminNavbar() {
       console.error('Error marking notification as read:', error);
     }
   };
+
+  // If user doesn't exist, render nothing
+  if (!user) {
+    return navigate('/medapp/login');
+  }
+
+  const userId = user._id;
+  const userName = user.firstName + " " + user.lastName;
+  const role = user.role;
+
+  // If not admin, don't render
+  if(role !== 'Admin' || !userId) {
+    return null;
+  }
 
   const unreadCount = notifications.filter((notif) => !notif.isRead).length;
   const displayCount = unreadCount > 9 ? '9+' : unreadCount;

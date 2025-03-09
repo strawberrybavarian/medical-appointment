@@ -69,6 +69,7 @@ app.use('/images', express.static(path.join(__dirname, 'announcement', 'images')
 app.use('/images', express.static(path.join(__dirname, 'news', 'images')));
 app.use('/images', express.static(path.join(__dirname, 'specialty', 'images')));
 app.use('/images', express.static(path.join(__dirname, 'services', 'images')));
+app.use('images', express.static(path.join(__dirname, 'about-company', 'images')));
 
 app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 
@@ -128,6 +129,8 @@ const ChatRoutes = require('./chat/chat_routes');
 ChatRoutes(app);
 const ProxyRoutes = require('./proxy/proxyRoutes');
 ProxyRoutes(app);
+const AboutCompanyRoutes = require('./about-company/aboutcompany_routes');
+AboutCompanyRoutes(app);
 
 
 // Serve frontend

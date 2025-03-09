@@ -6,6 +6,9 @@ import io from "socket.io-client";
 import { ThreeDots } from 'react-bootstrap-icons';
 import { ip } from '../../../../../ContentExport';
 import PatientFindingsModal from './modal/PatientFindingsModal';
+import Swal from 'sweetalert2';
+
+import { toast, ToastContainer } from 'react-toastify';
 
 function MedSecTodaysApp({ allAppointments, setAllAppointments }) {
   const [currentPage, setCurrentPage] = useState(1);
@@ -108,55 +111,87 @@ function MedSecTodaysApp({ allAppointments, setAllAppointments }) {
   const handleUpdateStatus = async (appointmentId, newStatus) => {
     const appointment = allAppointments.find(app => app._id === appointmentId);
   
-    if (!appointment) {
-      return console.log('Appointment not found');
+    // Check if the appointment has time and services assigned
+    const isValidAppointment =
+      appointment.time &&
+      appointment.time !== "Not Assigned" &&
+      appointment.appointment_type &&
+      appointment.appointment_type.length > 0 &&
+      appointment.appointment_type.some(type => type.appointment_type);
+  
+    if (!isValidAppointment) {
+      // Show a toast if required details are missing
+      toast.warning('To schedule an appointment, please assign a time and select the services.', {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
+      return;
     }
   
-    const doctorId = appointment.doctor?._id;
-    // If no doctorId is found, skip the socket emission part but still update the status
-    if (!doctorId) {
-      console.log('No doctor ID found, skipping status update for doctor.');
-    }
+    // First show a confirmation dialog using SweetAlert
+    const result = await Swal.fire({
+      title: "Update Appointment Status",
+      text: `Are you sure you want to change this appointment status to ${newStatus}?`,
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonText: "Yes, update status",
+      cancelButtonText: "Cancel",
+      reverseButtons: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+    });
   
-    try {
-      const response = await axios.put(
-        `${ip.address}/api/appointments/${appointmentId}/status`,
-        { status: newStatus }
-      );
-  
-      if (response.status === 200 && response.data) {
-        const updatedAppointment = response.data;
-  
-        // Update the state with the new status
-        setAllAppointments((prevAppointments) =>
-          prevAppointments.map((appointment) =>
-            appointment._id === appointmentId
-              ? { ...appointment, status: updatedAppointment.status }
-              : appointment
-          )
+    // Only proceed if the user confirmed
+    if (result.isConfirmed) {
+      try {
+        const response = await axios.put(
+          `${ip.address}/api/appointments/${appointmentId}/status`,
+          { status: newStatus }
         );
   
-        // Emit real-time update to change doctor's status only if doctorId exists
-        if (doctorId) {
-          if (newStatus === 'Ongoing') {
-            socket.emit('doctorStatusUpdate', {
-              doctorId,
-              activityStatus: 'In Session',
-            });
-          } else if (newStatus === 'Scheduled') {
-            socket.emit('doctorStatusUpdate', {
-              doctorId,
-              activityStatus: 'Online',
-            });
-          }
-        }
+        if (response.status === 200 && response.data) {
+          const updatedAppointment = response.data;
   
-      } else {
-        throw new Error('Unexpected server response');
+          // Update the state with the new status
+          setAllAppointments((prevAppointments) =>
+            prevAppointments.map((appointment) =>
+              appointment._id === appointmentId
+                ? { ...appointment, status: updatedAppointment.status }
+                : appointment
+            )
+          );
+  
+          // Show success message with SweetAlert
+          Swal.fire({
+            title: "Success!",
+            text: `Appointment status updated to ${newStatus}`,
+            icon: "success",
+            timer: 2000,
+            showConfirmButton: false
+          });
+        } else {
+          throw new Error('Unexpected server response');
+        }
+      } catch (err) {
+        console.error('Error updating status:', err);
+  
+        const errorMessage =
+          err.response?.data?.message || 'Failed to update the appointment status.';
+        setError(errorMessage);
+        
+        // Replace alert with SweetAlert for error message
+        Swal.fire({
+          title: "Error",
+          text: errorMessage,
+          icon: "error",
+          confirmButtonColor: "#3085d6"
+        });
       }
-    } catch (err) {
-      console.error("Error updating status:", err);
-      setError("Failed to update the appointment status.");
     }
   };
   

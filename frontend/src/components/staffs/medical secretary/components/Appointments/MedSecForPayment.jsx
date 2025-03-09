@@ -7,7 +7,9 @@ import './Styles.css';
 import { ThreeDots } from 'react-bootstrap-icons';
 import RescheduleModal from "../../../../practitioner/appointment/Reschedule Modal/RescheduleModal";
 import { ip } from "../../../../../ContentExport";
+import Swal from 'sweetalert2';
 
+import { toast, ToastContainer } from 'react-toastify';
 const MedSecForPayment = ({ allAppointments, setAllAppointments }) => {
   const { did } = useParams();
   const [error, setError] = useState("");
@@ -177,19 +179,91 @@ const MedSecForPayment = ({ allAppointments, setAllAppointments }) => {
       });
   };
 
-  const handleUpdateStatus = (appointmentId, newStatus) => {
-    axios.put(`${ip.address}/api/appointments/${appointmentId}/status`, { status: newStatus })
-      .then((response) => {
-        setAllAppointments(prevAppointments =>
-          prevAppointments.map(appointment =>
-            appointment._id === appointmentId ? { ...appointment, status: newStatus } : appointment
-          )
-        );
-      })
-      .catch((err) => {
-        console.error("Error updating status:", err);
-        setError("Failed to update the appointment status.");
+  const handleUpdateStatus = async (appointmentId, newStatus) => {
+    const appointment = allAppointments.find(app => app._id === appointmentId);
+  
+    // Check if the appointment has time and services assigned
+    const isValidAppointment =
+      appointment.time &&
+      appointment.time !== "Not Assigned" &&
+      appointment.appointment_type &&
+      appointment.appointment_type.length > 0 &&
+      appointment.appointment_type.some(type => type.appointment_type);
+  
+    if (!isValidAppointment) {
+      // Show a toast if required details are missing
+      toast.warning('To schedule an appointment, please assign a time and select the services.', {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
       });
+      return;
+    }
+  
+    // First show a confirmation dialog using SweetAlert
+    const result = await Swal.fire({
+      title: "Update Appointment Status",
+      text: `Are you sure you want to change this appointment status to ${newStatus}?`,
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonText: "Yes, update status",
+      cancelButtonText: "Cancel",
+      reverseButtons: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+    });
+  
+    // Only proceed if the user confirmed
+    if (result.isConfirmed) {
+      try {
+        const response = await axios.put(
+          `${ip.address}/api/appointments/${appointmentId}/status`,
+          { status: newStatus }
+        );
+  
+        if (response.status === 200 && response.data) {
+          const updatedAppointment = response.data;
+  
+          // Update the state with the new status
+          setAllAppointments((prevAppointments) =>
+            prevAppointments.map((appointment) =>
+              appointment._id === appointmentId
+                ? { ...appointment, status: updatedAppointment.status }
+                : appointment
+            )
+          );
+  
+          // Show success message with SweetAlert
+          Swal.fire({
+            title: "Success!",
+            text: `Appointment status updated to ${newStatus}`,
+            icon: "success",
+            timer: 2000,
+            showConfirmButton: false
+          });
+        } else {
+          throw new Error('Unexpected server response');
+        }
+      } catch (err) {
+        console.error('Error updating status:', err);
+  
+        const errorMessage =
+          err.response?.data?.message || 'Failed to update the appointment status.';
+        setError(errorMessage);
+        
+        // Replace alert with SweetAlert for error message
+        Swal.fire({
+          title: "Error",
+          text: errorMessage,
+          icon: "error",
+          confirmButtonColor: "#3085d6"
+        });
+      }
+    }
   };
 
   return (

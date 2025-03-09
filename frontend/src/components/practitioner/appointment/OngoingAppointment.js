@@ -7,7 +7,7 @@ import { Button, Pagination, Form, Row, Col, Collapse } from 'react-bootstrap';
 import './Appointment.css';
 import RescheduleModal from "./Reschedule Modal/RescheduleModal";
 import { ip } from "../../../ContentExport";
-
+import Swal from 'sweetalert2'; 
 const OngoingAppointment = ({ allAppointments, setAllAppointments }) => {
   const location = useLocation();
   const { did } = location.state || {}; 
@@ -70,18 +70,51 @@ const OngoingAppointment = ({ allAppointments, setAllAppointments }) => {
   }, [allAppointments]);
 
   const handleUpdateStatus = (appointmentId, newStatus) => {
-    axios.put(`${ip.address}/api/appointments/${appointmentId}/status`, { status: newStatus })
-      .then((response) => {
-        setAllAppointments(prevAppointments =>
-          prevAppointments.map(appointment =>
-            appointment._id === appointmentId ? { ...appointment, status: newStatus } : appointment
-          )
-        );
-      })
-      .catch((err) => {
-        console.error("Error updating status:", err);
-        setError("Failed to update the appointment status.");
-      });
+    // Show confirmation dialog and wait for user response
+    Swal.fire({
+      title: "Confirmation",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonText: "Yes",
+      cancelButtonText: "No",
+      text: `Are you sure you want to update this appointment status to ${newStatus}?`,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+    }).then((result) => {
+      // Only proceed if the user confirmed
+      if (result.isConfirmed) {
+        axios.put(`${ip.address}/api/appointments/${appointmentId}/status`, { status: newStatus })
+          .then((response) => {
+            // Update the appointment status locally in the state
+            setAllAppointments(prevAppointments =>
+              prevAppointments.map(appointment =>
+                appointment._id === appointmentId ? { ...appointment, status: newStatus } : appointment
+              )
+            );
+            setError(""); // Clear error if successful
+            
+            // Show success message
+            Swal.fire({
+              title: "Success!",
+              text: `Appointment status updated to ${newStatus}`,
+              icon: "success",
+              timer: 2000,
+              showConfirmButton: false
+            });
+          })
+          .catch((err) => {
+            console.error("Error updating status:", err);
+            setError("Failed to update the appointment status.");
+            
+            // Show error message
+            Swal.fire({
+              title: "Error",
+              text: "Failed to update the appointment status.",
+              icon: "error"
+            });
+          });
+      }
+    });
   };
 
   const getTodayDate = () => {

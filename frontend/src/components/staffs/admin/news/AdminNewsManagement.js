@@ -16,13 +16,13 @@ function AdminNewsManagement() {
   const containerStyle = {
     display: 'flex',
     height: '100vh', // Full height of the viewport
-    overflow: 'hidden', // Prevents scrolling issues for the main layout
+    // overflow: 'hidden', // Prevents scrolling issues for the main layout
   };
 
   const sidebarWrapperStyle = {
     flex: '0 0 250px', // Sidebar fixed width
     height: '100vh',
-    overflowY: 'auto', // Make sidebar scrollable if necessary
+   
   };
 
   const contentWrapperStyle = {
@@ -33,11 +33,7 @@ function AdminNewsManagement() {
     flexDirection: 'column', // Navbar on top, content below
   };
 
-  const announcementWrapperStyle = {
-    flex: '1', // Take available space for announcements
-    overflowY: 'auto', // Ensure the announcements scroll properly
-    padding: '3rem', // Add padding for better layout
-  };
+
 
   return (
     <div style={containerStyle}>
@@ -45,14 +41,17 @@ function AdminNewsManagement() {
         <SidebarAdmin userId={userId} userName={userName} role={role} />
       </div>
       <div style={contentWrapperStyle}>
+       
+        <div>
         <AdminNavbar userId={userId} userName={userName} role={role} />
-        <div style={announcementWrapperStyle}>
           <Container
             fluid
             className="d-flex justify-content-center"
             style={{width:'100%'}}
 
           >
+
+            
             <Row>
               <Col>
                 <NewsAnnouncement

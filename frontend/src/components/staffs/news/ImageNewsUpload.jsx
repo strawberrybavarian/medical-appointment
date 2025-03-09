@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import { Form, Button } from "react-bootstrap";
+import { Form } from "react-bootstrap";
 import { ip } from "../../../ContentExport";
+import './ImageNewsUpload.css';
 
 function ImageNewsUpload({ newsImages = [], setNewsImages, handleImageDelete }) {
   const [dragActive, setDragActive] = useState(false);
@@ -36,7 +37,8 @@ function ImageNewsUpload({ newsImages = [], setNewsImages, handleImageDelete }) 
     setNewsImages([...newsImages, ...newImages]);
   };
 
-  const removeImage = (index) => {
+  const removeImage = (index, e) => {
+    e.stopPropagation(); // Prevent opening file dialog
     const imageToDelete = newsImages[index];
     if (typeof handleImageDelete === 'function') {
       handleImageDelete(imageToDelete);
@@ -46,77 +48,77 @@ function ImageNewsUpload({ newsImages = [], setNewsImages, handleImageDelete }) 
     setNewsImages(newImages);
   };
 
-  // Updated helper function to get image source with IP address when needed
+  // Helper function to get image source
   const getImageSource = (image) => {
     if (typeof image === 'string') {
-      // For string paths, add the IP address prefix
       return `${ip.address}/${image}`;
     } else if (image.preview) {
-      // For new uploads with preview URL
       return image.preview;
     } else if (image.path) {
-      // For existing images with path property
       return `${ip.address}/${image.path}`;
     } else if (image.url) {
-      // For images with a url property
       return image.url;
     } else if (image.src) {
-      // For images with a src property
       return image.src;
     } else if (image.image) {
-      // For images with an image property
       return image.image;
     }
-    
-    console.log("Unknown image format:", image);
     return ""; // Fallback
   };
 
-  console.log("Current newsImages:", newsImages); // Debug log
-
   return (
-    <Form.Group>
+    <Form.Group className="image-upload-container">
       <div
-        className={`upload-container ${dragActive ? "drag-active" : ""}`}
+        className={`image-dropzone ${dragActive ? "dropzone-active" : ""} ${newsImages.length > 0 ? "has-images" : ""}`}
         onClick={() => document.getElementById("imageInput").click()}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
       >
-        <div className="upload-inside-container">
-          {newsImages.length === 0 ? (
-            <div className="add-photos-placeholder">
-              <span>Add Photos/Videos</span>
-              <span>or drag and drop</span>
+        {newsImages.length === 0 ? (
+          <div className="dropzone-placeholder">
+            <div className="upload-icon">
+              <i className="fas fa-cloud-upload-alt"></i>
             </div>
-          ) : (
-            <div className="image-previews">
-              {newsImages.map((image, index) => (
-                <div key={index} className="image-preview">
+            <div className="upload-text">
+              <p className="upload-primary-text">Drag and drop images here</p>
+              <p className="upload-secondary-text">or click to browse files</p>
+            </div>
+            <p className="upload-formats">Supported formats: JPG, PNG, GIF</p>
+          </div>
+        ) : (
+          <div className="image-gallery">
+            {newsImages.map((image, index) => (
+              <div key={index} className="image-item">
+                <div className="image-preview-wrapper">
                   <img
                     src={getImageSource(image)}
                     alt={`preview-${index}`}
-                    style={{ cursor: "pointer" }}
                     onError={(e) => {
                       console.error("Image failed to load:", image);
-                      e.target.src = "https://via.placeholder.com/150?text=Image+Error";
+                      e.target.src = "https://via.placeholder.com/150?text=Error";
                     }}
                   />
-                  <Button
-                    className="button-delete-image"
-                    variant="danger"
-                    onClick={(e) => {
-                      e.stopPropagation(); // Prevent opening file dialog
-                      removeImage(index);
-                    }}
+                  <button
+                    className="image-delete-btn"
+                    onClick={(e) => removeImage(index, e)}
+                    type="button"
+                    aria-label="Remove image"
                   >
-                    x
-                  </Button>
+                    <i className="fas fa-times"></i>
+                  </button>
                 </div>
-              ))}
+              </div>
+            ))}
+            <div className="add-more-images" onClick={(e) => {
+              e.stopPropagation();
+              document.getElementById("imageInput").click();
+            }}>
+              <div className="add-more-icon">+</div>
+              <span style={{marginBottom: '3rem'}}>Add More</span>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
       <input

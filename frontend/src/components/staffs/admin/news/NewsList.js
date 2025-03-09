@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Container, Row, Col, Button, Dropdown, ButtonGroup } from "react-bootstrap";
+import { Container, Button, Dropdown } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEllipsisH, faChevronLeft, faChevronRight } from "@fortawesome/free-solid-svg-icons";
+import { 
+  faEllipsisH, faChevronLeft, faChevronRight, 
+  faNewspaper, faPen, faTrash, faCalendarAlt 
+} from "@fortawesome/free-solid-svg-icons";
 import { Link } from "react-router-dom";
-import EditNewsModal from "../../news/EditNewsModal";
 import { ip } from "../../../../ContentExport";
 import EditNewsModalByAdmin from "./EditNewsModalByAdmin";
 import { ChatDotsFill } from "react-bootstrap-icons";
 import ChatComponent from "../../../chat/ChatComponent";
+import "../../news/NewsAnnouncement.css"; // Import the NewsAnnouncement CSS
 
 function NewsList({ user_id, role }) {
   const [newsList, setNewsList] = useState([]);
@@ -17,10 +20,12 @@ function NewsList({ user_id, role }) {
   const [editNewsContent, setEditNewsContent] = useState("");
   const [editNewsImages, setEditNewsImages] = useState([]);
   const [showChat, setShowChat] = useState(false);
-  const [currentImageIndexes, setCurrentImageIndexes] = useState({}); // Store individual image indexes for each news
-    // console.log(newsList);  // Check if userId is correct
+  const [currentImageIndexes, setCurrentImageIndexes] = useState({});
+  const [isLoading, setIsLoading] = useState(true);
+
   // Fetch all general news posts
   useEffect(() => {
+    setIsLoading(true);
     axios
       .get(`${ip.address}/api/news/api/getgeneralnews`)
       .then((res) => {
@@ -34,8 +39,12 @@ function NewsList({ user_id, role }) {
           }
         });
         setCurrentImageIndexes(initialIndexes);
+        setIsLoading(false);
       })
-      .catch((err) => console.log("Error fetching news:", err));
+      .catch((err) => {
+        console.log("Error fetching news:", err);
+        setIsLoading(false);
+      });
   }, []);
 
   // Open edit modal for specific news post
@@ -81,131 +90,158 @@ function NewsList({ user_id, role }) {
     }));
   };
 
+  // Format date for display
+  const formatDate = (dateString) => {
+    if (!dateString) return "";
+    const options = { year: 'numeric', month: 'long', day: 'numeric' };
+    return new Date(dateString).toLocaleDateString(undefined, options);
+  };
+
   return (
-    <div className="news-list-container">
-      <h3>All News</h3>
-      <hr />
-      <Container>
-        {newsList.map((newsItem, index) => (
-          <div key={index} className="posted-announcement-container shadow-sm d-flex flex-column align-items-start p-3 mb-3 w-100">
-            {/* Profile image and user name */}
-            <div className="d-flex w-100 align-items-center justify-content-between">
-              <div className="d-flex align-items-center" style={{ width: "100%" }}>
-                <img
-                  src={`${ip.address}/images/014ef2f860e8e56b27d4a3267e0a193a.jpg`} // Use your default or dynamic profile image path
-                  alt="User"
-                  style={{
-                    width: "45px",
-                    height: "45px",
-                    borderRadius: "9999px",
-                    objectFit: "cover",
-                    marginRight: "10px", // Space between image and text
-                  }}
-                />
-                <div className="w-100">
+    <div className="news-announcement">
+      <div className="news-header">
+        <div className="news-title-wrapper">
+          <FontAwesomeIcon icon={faNewspaper} className="news-title-icon" />
+          <h2 className="news-title">All News</h2>
+        </div>
+        <p className="news-subtitle">View and manage all news posts from the platform</p>
+      </div>
 
-                <span
-                    style={{
-                        fontSize: "12px",
-                        margin: "5px 0",
-                        fontWeight: "bold",
-                        lineHeight: "1.2",
-                    }}
-                    >
-                    {/* Check if the role is 'Admin' or 'Medical Secretary' */}
-                    {newsItem.postedByInfo.role === "Admin"
-                        ? (`${newsItem.postedByInfo?.firstName} ${newsItem.postedByInfo?.lastName} `)  // If Admin, show firstName
-                        : (`${newsItem.postedByInfo?.ms_firstName} ${newsItem.postedByInfo?.ms_lastName} `)}  
-                    </span>
-
-
-                  <p style={{ fontSize: "12px", margin: "1.2px 0", lineHeight: "1.2" }}>
-                    <span>{newsItem?.role}</span>
-                  </p>
+      {isLoading ? (
+        <div className="news-loading">
+          <div className="news-loading-spinner"></div>
+          <p>Loading news...</p>
+        </div>
+      ) : newsList.length > 0 ? (
+        <div className="news-feed">
+          {newsList.map((newsItem, index) => (
+            <div key={index} className="news-card">
+              <div className="news-card-header">
+                <div className="news-author">
+                  <div className="news-author-avatar">
+                    <img
+                      src={`${ip.address}/images/014ef2f860e8e56b27d4a3267e0a193a.jpg`}
+                      alt="User"
+                    />
+                  </div>
+                  <div className="news-author-info">
+                    <h5 className="news-author-name">
+                      {newsItem.postedByInfo.role === "Admin"
+                        ? `${newsItem.postedByInfo?.firstName} ${newsItem.postedByInfo?.lastName}`
+                        : `${newsItem.postedByInfo?.ms_firstName} ${newsItem.postedByInfo?.ms_lastName}`}
+                    </h5>
+                    <div className="news-meta">
+                      <span className="news-author-role">{newsItem?.role}</span>
+                      {newsItem.createdAt && (
+                        <span className="news-date">
+                          <FontAwesomeIcon icon={faCalendarAlt} className="news-date-icon" />
+                          {formatDate(newsItem.createdAt)}
+                        </span>
+                      )}
+                    </div>
+                  </div>
                 </div>
+
+                <Dropdown className="news-actions">
+                  <Dropdown.Toggle variant="light" className="news-actions-toggle">
+                    <FontAwesomeIcon icon={faEllipsisH} />
+                  </Dropdown.Toggle>
+                  <Dropdown.Menu align="end" className="news-actions-menu">
+                    <Dropdown.Item className="news-action-item" onClick={() => openEditNewsModal(newsItem._id, newsItem.content, newsItem.images)}>
+                      <FontAwesomeIcon icon={faPen} className="news-action-icon" /> Edit
+                    </Dropdown.Item>
+                    <Dropdown.Item className="news-action-item news-action-delete" onClick={() => deleteNews(newsItem._id)}>
+                      <FontAwesomeIcon icon={faTrash} className="news-action-icon" /> Delete
+                    </Dropdown.Item>
+                  </Dropdown.Menu>
+                </Dropdown>
               </div>
 
-              {/* Dropdown for Edit and Delete */}
-              <Dropdown as={ButtonGroup}>
-                <Dropdown.Toggle variant="secondary" id="dropdown-custom-components">
-                  <FontAwesomeIcon icon={faEllipsisH} />
-                </Dropdown.Toggle>
-                <Dropdown.Menu>
-                  <Dropdown.Item onClick={() => openEditNewsModal(newsItem._id, newsItem.content, newsItem.images)}>
-                    Edit
-                  </Dropdown.Item>
-                  <Dropdown.Item onClick={() => deleteNews(newsItem._id)}>Delete</Dropdown.Item>
-                </Dropdown.Menu>
-              </Dropdown>
-            </div>
+              <div className="news-card-body">
+                {newsItem.headline && (
+                  <Link to={`/news/${newsItem.news_ID}`} className="news-headline-link">
+                    <h4 className="news-headline">{newsItem.headline}</h4>
+                  </Link>
+                )}
 
-            {/* News Headline */}
-            {newsItem.headline && (
-              <h5 className="mt-2" style={{ fontWeight: "bold" }}>
-                <Link to={`/news/${newsItem.news_ID}`} style={{ textDecoration: "none", color: "inherit" }}>
-                  {newsItem.headline}
-                </Link>
-              </h5>
-            )}
-
-            {/* News Content */}
-            <div className="mt-2">
-              <div dangerouslySetInnerHTML={{ __html: newsItem.content }} />
-              {newsItem.images && newsItem.images.length > 0 && (
-                <div className="w-100 position-relative">
-                  <img
-                    src={`${ip.address}/${newsItem.images[currentImageIndexes[newsItem._id]]}`}
-                    alt="News"
-                    style={{ maxWidth: "100%", height: "auto", cursor: "pointer" }}
-                  />
-                  {/* Left chevron button */}
-                  <Button
-                    className="position-absolute top-50 start-0 mx-3 translate-middle-y"
-                    variant="light"
-                    onClick={() => handlePreviousImage(newsItem._id, newsItem.images)}
-                    style={{ zIndex: 1, borderRadius: "9999px" }}
-                  >
-                    <FontAwesomeIcon icon={faChevronLeft} />
-                  </Button>
-                  {/* Right chevron button */}
-                  <Button
-                    className="position-absolute top-50 end-0 translate-middle-y"
-                    variant="light"
-                    onClick={() => handleNextImage(newsItem._id, newsItem.images)}
-                    style={{ zIndex: 1, borderRadius: "9999px" }}
-                  >
-                    <FontAwesomeIcon icon={faChevronRight} />
-                  </Button>
-                </div>
-              )}
-            </div>
-          </div>
-        ))}
-      </Container>
-
-
-      <div className="chat-btn-container">
-                  <Button
-                    className="chat-toggle-btn"
-                    onClick={() => setShowChat(!showChat)}
-                  >
-                    <ChatDotsFill size={30} />
-                  </Button>
+                <div className="news-content">
+                  <div dangerouslySetInnerHTML={{ __html: newsItem.content }} />
                 </div>
 
-                {showChat && (
-                  <div className="chat-overlay">
-                    {showChat && (
-                      <div className="chat-overlay">
-                        <ChatComponent
-                          userId={user_id}
-                          userRole={role}
-                          closeChat={() => setShowChat(false)}
-                        />
-                      </div>
-                    )}
+                {newsItem.images && newsItem.images.length > 0 && (
+                  <div className="news-image-gallery">
+                    <div className="news-image-container">
+                      <img
+                        src={`${ip.address}/${newsItem.images[currentImageIndexes[newsItem._id] || 0]}`}
+                        alt="News"
+                        className="news-image"
+                      />
+
+                      {newsItem.images.length > 1 && (
+                        <>
+                          <Button
+                            className="news-nav-button news-prev-button"
+                            variant="light"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              handlePreviousImage(newsItem._id, newsItem.images);
+                            }}
+                            aria-label="Previous image"
+                          >
+                            <FontAwesomeIcon icon={faChevronLeft} />
+                          </Button>
+
+                          <Button
+                            className="news-nav-button news-next-button"
+                            variant="light"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              handleNextImage(newsItem._id, newsItem.images);
+                            }}
+                            aria-label="Next image"
+                          >
+                            <FontAwesomeIcon icon={faChevronRight} />
+                          </Button>
+
+                          <div className="news-image-counter">
+                            {(currentImageIndexes[newsItem._id] || 0) + 1}/{newsItem.images.length}
+                          </div>
+                        </>
+                      )}
+                    </div>
                   </div>
                 )}
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="news-empty">
+          <FontAwesomeIcon icon={faNewspaper} className="news-empty-icon" />
+          <h4>No News Available</h4>
+          <p>There are no news posts to display at this time.</p>
+        </div>
+      )}
+
+      {/* Chat Button */}
+      <div className="chat-btn-container">
+        <Button
+          className="chat-toggle-btn"
+          onClick={() => setShowChat(!showChat)}
+        >
+          <ChatDotsFill size={30} />
+        </Button>
+      </div>
+
+      {showChat && (
+        <div className="chat-overlay">
+          <ChatComponent
+            userId={user_id}
+            userRole={role}
+            closeChat={() => setShowChat(false)}
+          />
+        </div>
+      )}
 
       {/* Edit News Modal */}
       <EditNewsModalByAdmin

@@ -152,76 +152,96 @@ function AppointmentForm({ pid, did }) {
     return times;
   };
 
-  const createAppointment = () => {
-    if (!date || !time) {
-      Swal.fire({
-        title: "Validation Error",
-        text: "Please fill out all fields.",
-        icon: "error",
-      });
-      return;
-    }
-  
-    const formData = {
-      doctor: did || null,
-      date,
-      time: time || null,
-      reason,
-      appointment_type: {
-        appointment_type: "Consultation", 
-        category: "General", 
-      },
-    };
-  
-    axios
-      .post(`${ip.address}/api/patient/api/${pid}/createappointment`, formData)
-      .then(() => {
-        Swal.fire({
-          title: "Success",
-          text: "Appointment created successfully.",
-          icon: "success",
-        });
-        
-        const updatedAvailableTimes = availableTimes.map((slot) => {
-          if (slot.timeRange === time) {
-            return { ...slot, availableSlots: slot.availableSlots - 1 };
+const createAppointment = () => {
+  if (!date || !time) {
+    Swal.fire({
+      title: "Validation Error",
+      text: "Please fill out all fields.",
+      icon: "error",
+    });
+    return;
+  }
+
+  // First show a confirmation dialog
+  Swal.fire({
+    title: "Confirm Appointment",
+    html: `
+      <div class="text-left">
+        <p><strong>Doctor:</strong> ${doctorName}</p>
+        <p><strong>Date:</strong> ${new Date(date).toLocaleDateString()}</p>
+        <p><strong>Time:</strong> ${time}</p>
+        <p><strong>Reason:</strong> ${reason}</p>
+      </div>
+      <p>Are you sure you want to create this appointment?</p>
+    `,
+    icon: "question",
+    showCancelButton: true,
+    confirmButtonText: "Yes, create appointment",
+    cancelButtonText: "Cancel",
+    reverseButtons: true,
+    confirmButtonColor: "#198754", // Bootstrap success green
+  }).then((result) => {
+    // Only create the appointment if the user confirmed
+    if (result.isConfirmed) {
+      const formData = {
+        doctor: did || null,
+        date,
+        time: time || null,
+        reason,
+        appointment_type: {
+          appointment_type: "Consultation", 
+          category: "General", 
+        },
+      };
+      
+      axios
+        .post(`${ip.address}/api/patient/api/${pid}/createappointment`, formData)
+        .then(() => {
+          Swal.fire({
+            title: "Success",
+            text: "Appointment created successfully.",
+            icon: "success",
+          });
+          
+          const updatedAvailableTimes = availableTimes.map((slot) => {
+            if (slot.timeRange === time) {
+              return { ...slot, availableSlots: slot.availableSlots - 1 };
+            }
+            return slot;
+          });
+    
+          setAvailableTimes(updatedAvailableTimes); 
+    
+          const period = updatedAvailableTimes.find(
+            (slot) => slot.timeRange === time
+          )?.period;
+          setBookedPatients((prev) => ({
+            ...prev,
+            [period]: prev[period] + 1, 
+          }));
+    
+          navigate("/myappointment", { state: { pid } });
+        })
+        .catch((err) => {
+          if (err.response) {
+            console.log(err.response.data);
+            Swal.fire({
+              title: "Error",
+              text: err.response.data.message || "An error occurred while creating the appointment.",
+              icon: "error",
+            });
+          } else {
+            console.log(err);
+            Swal.fire({
+              title: "Error",
+              text: "An error occurred while creating the appointment.",
+              icon: "error",
+            });
           }
-          return slot;
         });
-  
-        setAvailableTimes(updatedAvailableTimes); 
-  
-        
-        const period = updatedAvailableTimes.find(
-          (slot) => slot.timeRange === time
-        )?.period;
-        setBookedPatients((prev) => ({
-          ...prev,
-          [period]: prev[period] + 1, 
-        }));
-  
-        navigate("/myappointment", { state: { pid } });
-      })
-      .catch((err) => {
-        if (err.response) {
-          console.log(err.response.data);
-          Swal.fire({
-            title: "Error",
-            text: "An error occurred while creating the appointment.",
-            icon: "error",
-          });
-
-        } else {
-          console.log(err);
-          Swal.fire({
-            title: "Error",
-            text: "An error occurred while creating the appointment.",
-            icon: "error",
-          });
-        }
-      });
-  };
-
+    }
+  });
+};
   const getTodayDate = () => {
     const today = new Date();
     return today.toISOString().split("T")[0];

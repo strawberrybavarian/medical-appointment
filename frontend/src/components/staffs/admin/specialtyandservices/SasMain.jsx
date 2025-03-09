@@ -23,12 +23,12 @@ function SasMain() {
                     <AdminNavbar userId={userId} userName={userName} role={role} />
                     <Container fluid style={{ overflowY: 'auto', height: 'calc(100vh - 100px)', width: '100%', paddingBottom: '1.5rem' }}>
                         <div className='maincolor-container'>
-                            <div className='content-area '>
+                            <div className='content-area px-5 '>
 
-                                <Container className='px-3'>
+                                <Container className=''>
 
 
-                                    <div className="horizontal-tabs ">
+                                    <Container className="horizontal-tabs ">
                                         <a
                                             onClick={() => setActiveTab("specialty")}
                                             className={activeTab === "specialty" ? "active" : ""}
@@ -47,9 +47,9 @@ function SasMain() {
                                         >
                                             Manage HMO
                                         </a>
-                                    </div>
+                                    </Container>
                                 </Container>
-                                <Container fluid className="w-100 border-top">
+                                <div  className="border-top" style={{paddingBottom: '80px'}}>
 
                                     <Col>
                                         {/* Conditionally Render Components Based on Active Tab */}
@@ -58,7 +58,7 @@ function SasMain() {
                                         {activeTab === 'hmo' && <ManageHMO aid={userId} />}
                                     </Col>
 
-                                </Container>
+                                </div>
 
                                 <div className="chat-btn-container">
                                     <Button

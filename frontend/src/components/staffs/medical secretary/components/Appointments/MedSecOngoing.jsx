@@ -6,6 +6,8 @@ import { ip } from '../../../../../ContentExport';
 import { toast, ToastContainer } from 'react-toastify';
 import { ThreeDots } from 'react-bootstrap-icons';
 import io from "socket.io-client";
+import Swal from 'sweetalert2';
+
 function MedSecOngoing({ allAppointments, setAllAppointments }) {
   const [currentPage, setCurrentPage] = useState(1);
   const [entriesPerPage, setEntriesPerPage] = useState(5);
@@ -112,44 +114,65 @@ function MedSecOngoing({ allAppointments, setAllAppointments }) {
       return;
     }
   
-    try {
-      const response = await axios.put(
-        `${ip.address}/api/appointments/${appointmentId}/status`,
-        { status: newStatus }
-      );
+    // First show a confirmation dialog using SweetAlert
+    const result = await Swal.fire({
+      title: "Update Appointment Status",
+      text: `Are you sure you want to change this appointment status to ${newStatus}?`,
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonText: "Yes, update status",
+      cancelButtonText: "Cancel",
+      reverseButtons: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+    });
   
-      if (response.status === 200 && response.data) {
-        const updatedAppointment = response.data;
-  
-        // Update the state with the new status
-        setAllAppointments((prevAppointments) =>
-          prevAppointments.map((appointment) =>
-            appointment._id === appointmentId
-              ? { ...appointment, status: updatedAppointment.status }
-              : appointment
-          )
+    // Only proceed if the user confirmed
+    if (result.isConfirmed) {
+      try {
+        const response = await axios.put(
+          `${ip.address}/api/appointments/${appointmentId}/status`,
+          { status: newStatus }
         );
-
-
-
-        if (newStatus === 'Scheduled') 
-          // Emit real-time update to change doctor's status to "Online"
-          socket.emit('doctorStatusUpdate', {
-            doctorId: allAppointments.find(app => app._id === appointmentId)?.doctor?._id,
-            activityStatus: 'Online',
+  
+        if (response.status === 200 && response.data) {
+          const updatedAppointment = response.data;
+  
+          // Update the state with the new status
+          setAllAppointments((prevAppointments) =>
+            prevAppointments.map((appointment) =>
+              appointment._id === appointmentId
+                ? { ...appointment, status: updatedAppointment.status }
+                : appointment
+            )
+          );
+  
+          // Show success message with SweetAlert
+          Swal.fire({
+            title: "Success!",
+            text: `Appointment status updated to ${newStatus}`,
+            icon: "success",
+            timer: 2000,
+            showConfirmButton: false
           });
+        } else {
+          throw new Error('Unexpected server response');
+        }
+      } catch (err) {
+        console.error('Error updating status:', err);
   
-        console.log('Appointment status updated successfully:', updatedAppointment);
-      } else {
-        throw new Error('Unexpected server response');
+        const errorMessage =
+          err.response?.data?.message || 'Failed to update the appointment status.';
+        setError(errorMessage);
+        
+        // Replace alert with SweetAlert for error message
+        Swal.fire({
+          title: "Error",
+          text: errorMessage,
+          icon: "error",
+          confirmButtonColor: "#3085d6"
+        });
       }
-    } catch (err) {
-      console.error('Error updating status:', err);
-  
-      const errorMessage =
-        err.response?.data?.message || 'Failed to update the appointment status.';
-      setError(errorMessage);
-      alert(errorMessage);
     }
   };
 
