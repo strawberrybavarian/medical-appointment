@@ -11,10 +11,11 @@ const server = http.createServer(app); // Use this server for Socket.IO
 require('dotenv').config();
 const MongoStore = require('connect-mongo');
 
+
 const cors = require('cors');
 app.use(
   cors({
-    origin: 'http://localhost:3000',
+    origin: 'http://localhost:8081',
     credentials: true, // Allow credentials (cookies, authorization headers, etc.)
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
@@ -52,7 +53,6 @@ require('./appointments/scheduler');
 // Connect to MongoDB
 require('./config/mongoose');
 //FrontendOrigins
-const allowedOrigins = ['http://localhost:3000','http://localhost:3001'];
 // CORS Configuration
 
 
@@ -69,7 +69,7 @@ app.use('/images', express.static(path.join(__dirname, 'announcement', 'images')
 app.use('/images', express.static(path.join(__dirname, 'news', 'images')));
 app.use('/images', express.static(path.join(__dirname, 'specialty', 'images')));
 app.use('/images', express.static(path.join(__dirname, 'services', 'images')));
-app.use('images', express.static(path.join(__dirname, 'about-company', 'images')));
+app.use('/images', express.static(path.join(__dirname, 'about-company', 'images')));
 
 app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 
